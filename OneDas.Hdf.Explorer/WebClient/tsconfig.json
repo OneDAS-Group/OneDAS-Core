@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "outFile": "./../wwwroot/js/site.js",
+    "target": "es6",
+    "experimentalDecorators": true,
+    "module": "none",
+    "typeRoots": [
+      "./../../../OneDas-Support/web/node_modules/@types/"
+    ]
+  },
+  "exclude": [
+    "wwwroot"
+  ],
+  "files": [
+    "./../../../OneDas-Support/web/typings/moment.d.ts",
+    "./../../../OneDas-Support/web/typings/global.d.ts",
+
+    "./OneDas/FileGranularityEnum.ts",
+
+    "./OneDas.Hdf.Explorer/DataAvailabilityGranularityEnum.ts",
+    "./OneDas.Hdf.Explorer/FileFormatEnum.ts",
+
+    "./Core/EventDispatcher.ts",
+    "./Core/HdfExplorerState.ts",
+    "./Core/IEvent.ts",
+
+    "./Static/EnumerationHelper.ts",
+
+    "./ViewModels/AppViewModel.ts",
+    "./ViewModels/HdfElementViewModelBase.ts",
+    "./ViewModels/CampaignInfoViewModel.ts",
+    "./ViewModels/DataAvailabilityStatisticsViewModel.ts",
+    "./ViewModels/DatasetInfoViewModel.ts",
+    "./ViewModels/VariableInfoViewModel.ts",
+
+    "./site.ts"
+  ],
+  "compileOnSave": true
+}

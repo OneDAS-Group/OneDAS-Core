@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Application_SingeltonInstance" xml:space="preserve">
+    <value>Only one instance of this application is allowed.</value>
+  </data>
+  <data name="AuthorizationBehaviorAttribute_NotActive" xml:space="preserve">
+    <value>The calling client is not active. Access denied.</value>
+  </data>
+  <data name="AuthorizationBehaviorAttribute_NotRegistered" xml:space="preserve">
+    <value>The calling client is not registered. Access denied.</value>
+  </data>
+  <data name="AuthorizationBehaviorAttribute_UserIsNotInRequiredRole" xml:space="preserve">
+    <value>User is not in required role (access denied).</value>
+  </data>
+  <data name="AuthorizationBehaviorAttribute_WindowsAuthenticationRequired" xml:space="preserve">
+    <value>Windows authentication must be used if role-based authorization is active (access denied).</value>
+  </data>
+  <data name="Broadcaster_ChannelHubNotFound" xml:space="preserve">
+    <value>The requested channel is inactive or not available in the project.</value>
+  </data>
+  <data name="Broadcaster_MissingPluginActionRequestAttribute" xml:space="preserve">
+    <value>No PluginActionRequestAttribute was found on the the specified plugin.</value>
+  </data>
+  <data name="Broadcaster_PluginNotFound" xml:space="preserve">
+    <value>The specified plugin was not found.</value>
+  </data>
+  <data name="CsaReader_CsaNotUnique" xml:space="preserve">
+    <value>The configured slave aliases are not unique.</value>
+  </data>
+  <data name="CsaReader_CsaReadingTimeout" xml:space="preserve">
+    <value>A timeout occured while reading the configured slave alias of all boxes.</value>
+  </data>
+  <data name="OneDasController_OneDasStateNotGreaterEqualReady" xml:space="preserve">
+    <value>OneDAS state must be ready or run to get a data snapshot.</value>
+  </data>
+  <data name="OneDasController_OneDasStateNotGreaterOrEqualReady" xml:space="preserve">
+    <value>OneDAS server must be in state OneDasState.Ready or OneDasState.Run to provide the mapped Hd5Variable set.</value>
+  </data>
+  <data name="OneDasController_ReferenceClockNotMonotonouslyRising" xml:space="preserve">
+    <value>The reference clock is not monotonously rising.</value>
+  </data>
+  <data name="OneDasManager_DirectoryNameInvalid" xml:space="preserve">
+    <value>The directory contains none or invalid characters.</value>
+  </data>
+  <data name="OneDasManager_SystemFaultedAcknowledgeFirst" xml:space="preserve">
+    <value>The system is faulted. Acknowledge the error first.</value>
+  </data>
+  <data name="OleMessageFilterBehaviorAttribute_OnlySynchronousMethodsAllowed" xml:space="preserve">
+    <value>The OleMessageFilterBehavior attribute only works for synchronous method invocations.</value>
+  </data>
+  <data name="ProjectUpgrader_ErrorLoadingProject" xml:space="preserve">
+    <value>An error occured load the project.</value>
+  </data>
+  <data name="ProjectUpgrader_InvalidProjectVersion" xml:space="preserve">
+    <value>The project's version is invalid.</value>
+  </data>
+  <data name="RemoteControlService_AlreadyActiveClient" xml:space="preserve">
+    <value>There is already an active client. Request denied.</value>
+  </data>
+  <data name="RemoteControlService_AlreadyRegistered" xml:space="preserve">
+    <value>The client is already registered.</value>
+  </data>
+  <data name="RemoteControlService_OneDasConfigurationNullReference" xml:space="preserve">
+    <value>OneDasConfiguration must not be a null reference.</value>
+  </data>
+</root>

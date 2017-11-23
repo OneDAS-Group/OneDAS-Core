@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+    <Description>Provides an user interface to modify the HDF database.</Description>
+    <PackageTags></PackageTags>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="3.20.0" />
+    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha1-6514-26370" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>OneDas.Hdf.VdsTool</CustomToolNamespace>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(TargetDir)bin32&quot; md &quot;$(TargetDir)bin32&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin32\*.*&quot; &quot;$(TargetDir)bin32&quot;&#xD;&#xA;if not exist &quot;$(TargetDir)bin64&quot; md &quot;$(TargetDir)bin64&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin64\*.*&quot; &quot;$(TargetDir)bin64&quot;" />
+  </Target>
+  <Import Project="$(ProjectDir)..\support\OneDas.targets" />
+</Project>

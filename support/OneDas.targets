@@ -1,0 +1,36 @@
+<Project>
+  <UsingTask TaskName="BuildTask" AssemblyFile="$(ProjectDir)\..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
+  <Target Name="BuildTask1" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+	   <Major Condition="$(Major) == ''">0</Major>
+	   <Minor Condition="$(Minor) == ''">1</Minor>
+	   <Revision Condition="$(Revision) == ''">0</Revision>
+	   <VersionSuffix Condition="$(VersionSuffix) == ''">alpha</VersionSuffix>
+	   <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/Apollo3zehn/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
+	   <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/Apollo3zehn/OneDAS-Core</ProjectUrl>
+    </PropertyGroup>
+    <BuildTask Input_Major="$(Major)" 
+	           Input_Minor="$(Minor)" 
+	           Input_Revision="$(Revision)" 
+	           Input_VersionSuffix="$(VersionSuffix)"
+	           Input_LicenseUrl="$(LicenseUrl)"
+	           Input_ProjectUrl="$(ProjectUrl)"
+			   
+	           Input_Authors="$(Authors)"
+	           Input_Company="$(Company)"
+	           Input_Copyright="$(Copyright)"
+	           Input_Product="$(Product)">
+      <Output TaskParameter="Version" PropertyName="Version" />
+      <Output TaskParameter="PackageVersion" PropertyName="PackageVersion" />
+      <Output TaskParameter="Authors" PropertyName="Authors" />
+      <Output TaskParameter="AssemblyVersion" PropertyName="AssemblyVersion" />
+      <Output TaskParameter="Company" PropertyName="Company" />
+      <Output TaskParameter="Copyright" PropertyName="Copyright" />
+      <Output TaskParameter="FileVersion" PropertyName="FileVersion" />
+      <Output TaskParameter="PackageLicenseUrl" PropertyName="PackageLicenseUrl" />
+      <Output TaskParameter="PackageProjectUrl" PropertyName="PackageProjectUrl" />
+      <Output TaskParameter="Product" PropertyName="Product" />
+      <Output TaskParameter="RepositoryUrl" PropertyName="RepositoryUrl" />
+    </BuildTask>
+  </Target>
+</Project>

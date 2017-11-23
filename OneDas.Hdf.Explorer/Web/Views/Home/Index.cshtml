@@ -1,0 +1,203 @@
+﻿<!-- https://kangax.github.io/compat-table/es6/ -->
+
+<div style="display: none"
+     data-bind="style: { display: HdfExplorerState() === 1 ? 'inherit' : 'none' }">
+    <div class="row my-4">
+        <div class="col">
+            <h1 class="text-center display-4">Download Measurement Data</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="card my-2">
+                <div class="card-header">
+                    Settings
+                </div>
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="d-flex w-50">
+                            <div class="input-group pr-3">
+                                <input type="text" class="form-control date" data-bind="dateTimePicker: StartDate" id="start-date" readonly
+                                       data-target="#start-date"
+                                       placeholder="dd/mm/yyyy HH:mm" />
+                                <div class="input-group-addon">to</div>
+                                <input type="text" class="form-control date" data-bind="dateTimePicker: EndDate" id="end-date" readonly
+                                       data-target="#end-date"
+                                       placeholder="dd/mm/yyyy HH:mm" />
+                            </div>
+                        </div>
+                        <div class="d-flex w-50">
+                            <select class="form-control mx-3"
+                                    id="sample-rate"
+                                    data-bind="options: SampleRateSet,
+                                           optionsCaption: 'select sample rate ...',
+                                           value: SelectedSampleRate"></select>
+
+                            <!-- ko if: SelectedSampleRate() && SelectedDatasetInfoSet().length > 0 && SelectedFileGranularity() >= 86400 / GetSamplesPerDayFromString(SelectedSampleRate()) -->
+                            <button type="button"
+                                    class="btn btn-info ml-auto align-self-center"
+                                    data-bind="click: LoadData"
+                                    style="width: 6em;">
+                                Go!
+                            </button>
+                            <!-- /ko -->
+                            <!-- ko ifnot: SelectedSampleRate() && SelectedDatasetInfoSet().length > 0 && SelectedFileGranularity() >= 86400 / GetSamplesPerDayFromString(SelectedSampleRate()) -->
+                            <button type="button"
+                                    class="btn btn-outline-info ml-auto align-self-center"
+                                    disabled
+                                    style="width: 6em;">
+                                Go!
+                            </button>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                    <div class="d-flex mt-2">
+                        <div class="d-flex w-50">
+                        </div>
+                        <div class="d-flex w-50 pl-3">
+                            <div class="btn-group mr-2 w-50">
+                                <button class="btn btn-info w-100"
+                                        type="button"
+                                        data-toggle="dropdown"
+                                        data-bind="text: EnumerationHelper.GetEnumLocalization('FileGranularityEnum', SelectedFileGranularity())"></button>
+                                <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <!-- ko foreach: EnumerationHelper.GetEnumValues('FileGranularityEnum') -->
+                                    <button class="dropdown-item"
+                                            type="button"
+                                            data-bind="text: EnumerationHelper.GetEnumLocalization('FileGranularityEnum', $data),
+                                                    click: $parent.SelectedFileGranularity"></button>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <div class="btn-group w-50">
+                                <button class="btn btn-info w-100"
+                                        type="button"
+                                        data-toggle="dropdown"
+                                        data-bind="text: EnumerationHelper.GetEnumLocalization('FileFormatEnum', SelectedFileFormat())"></button>
+                                <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <!-- ko foreach: EnumerationHelper.GetEnumValues('FileFormatEnum') -->
+                                    <button class="dropdown-item"
+                                            type="button"
+                                            data-bind="text: EnumerationHelper.GetEnumLocalization('FileFormatEnum', $data),
+                                                    click: $parent.SelectedFileFormat"></button>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="display: none"
+         data-bind="style: { display: !IsMainViewRequested() ? 'none' : 'flex' }">
+        <div class="col-6">
+            <div class="card my-2">
+                <div class="card-header">
+                    Selected datasets
+                </div>
+                <div class="card-body">
+                    <!-- ko if: SelectedDatasetInfoSet().length === 0 -->
+                    <h5 class="d-block text-center"><small class="text-muted">- no datasets selected -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: SelectedDatasetInfoSet().length > 0 -->
+                    <table class="table table-hover">
+                        <tbody data-bind="foreach: SelectedDatasetInfoSet">
+                            <tr data-bind="click: ToggleIsSelected" class="noselect">
+                                <th data-bind="text: $index"></th>
+                                <td>
+                                    <div class="flex-column">
+                                        <div><strong data-bind="text: Parent.GetDisplayName() + ' (' + GetDisplayName() + ')'"></strong></div>
+                                        <small data-bind="text: Parent.Parent.GetDisplayName()"></small>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card my-2">
+                <div class="card-header">
+                    Available campaigns
+                </div>
+                <div class="card-body">
+                    <!-- ko if: CampaignInfoSet().length === 0 -->
+                    <h5 class="d-block text-center"><small class="text-muted">- no campaigns available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: CampaignInfoSet().length > 0 -->
+                    <div class="list-group list-group-root" data-bind="foreach: CampaignInfoSet">
+                        <div class="d-flex">
+                            <a class="list-group-item list-group-item-action noselect"
+                               data-toggle="collapse"
+                               data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
+                                <span class="fa fa-caret-right"></span><span data-placement="right" data-toggle="tooltip" data-bind="text: GetDisplayName(), attr: { title: $parent.CampaignDescriptionSet[Name] }"></span>
+                            </a>
+                            <span data-toggle="tooltip" title="Show data availability.">
+                                <span class="fa fa-bar-chart mr-2 url"
+                                      data-bind="click: $parent.ShowDataAvailability"></span>
+                            </span>
+                        </div>
+                        <div class="list-group collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
+                            <a class="list-group-item list-group-item-action noselect"
+                               role="button"
+                               data-toggle="collapse"
+                               data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$index() + '_' + $index() }">
+                                <span class="fa fa-caret-right"></span><span data-bind="text: Key"></span>
+                            </a>
+                            <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members">
+                                <a class="list-group-item list-group-item-action noselect"
+                                   role="button"
+                                   data-toggle="collapse"
+                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }">
+                                    <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
+                                </a>
+                                <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">
+                                    <a class="list-group-item list-group-item-action noselect"
+                                       role="button"
+                                       data-bind="text: GetDisplayName(),
+                                           style: { 'background-color': IsSelected() ? 'lightgreen' : 'transparent' },
+                                           click: ToggleIsSelected">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row flex-column" style="display: none"
+         data-bind="style: { display: IsMainViewRequested() ? 'none' : 'inherit' }">
+        <canvas class="mt-2" height="100" id="chart_data_availability"></canvas>
+        <button class="btn btn-primary pull-right" role="button" data-bind="click: ShowMainView">Get back</button>
+    </div>
+</div>
+
+<div class="center-vertically plus-center-horizontally"
+     style="display: none;"
+     data-bind="style: { display: HdfExplorerState() !== 1 ? 'flex' : 'none' }">
+    <h1 class="display-4 text-center mb-5 noselect" data-bind="text: 'Preparing download (' + Math.round(ByteCount() / 1024 / 1024) + ' MB) ...'"></h1>
+    <strong class="align-self-start" data-bind="text: Message"></strong>
+    <div class="progress w-100">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+             role="progressbar"
+             data-bind="style: { width: Progress() + '%' }"></div>
+    </div>
+    <div class="d-flex w-100 justify-content-between mt-4">
+        <button class="btn btn-primary" data-bind="click: CancelLoadData">
+            Cancel
+        </button>
+        <span><small>* size: uncompressed binary data</small></span>
+    </div>
+</div>

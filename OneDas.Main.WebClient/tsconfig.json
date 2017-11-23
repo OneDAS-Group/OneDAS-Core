@@ -1,0 +1,76 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "outFile": "./../OneDas.Main/wwwroot/js/site.js",
+    "target": "es6",
+    "experimentalDecorators": true,
+    "module": "none",
+    "typeRoots": [
+      "./../../OneDas-Support/web/node_modules/@types/"
+    ]
+  },
+  "exclude": [
+    "wwwroot"
+  ],
+  "files": [
+    "./../../OneDas-Support/web/typings/global.d.ts",
+
+    "./OneDas.Types/DataDirectionEnum.ts",
+    "./OneDas.Types/FileGranularityEnum.ts",
+    "./OneDas.Types/OneDasDataTypeEnum.ts",
+    "./OneDas.Types/OneDasStateEnum.ts",
+    "./OneDas.Types/SampleRateEnum.ts",
+
+    "./Core/ActionRequest.ts",
+    "./Core/ActionResponse.ts",
+    "./Core/ChartContext.ts",
+    "./Core/EventDispatcher.ts",
+    "./Core/IEvent.ts",
+    "./Core/IModelizable.ts",
+    "./Core/LiveViewPeriodEnum.ts",
+    "./Core/WorkspaceBase.ts",
+
+    "./Models/ChannelHubModel.ts",
+    "./Models/OneDasModuleModel.ts",
+    "./Models/TransferFunctionModel.ts",
+
+    "./Static/ConnectionManager.ts",
+    "./Static/EnumerationHelper.ts",
+    "./Static/ErrorMessage.ts",
+    "./Static/Helper.ts",
+    "./Static/PluginFactory.ts",
+    "./Static/PluginHive.ts",
+
+    "./ViewModels/Core/ChannelHubViewModel.ts",
+    "./ViewModels/Core/SlimOneDasSettingsViewModel.ts",
+    "./ViewModels/Core/OneDasPerformanceInformationViewModel.ts",
+    "./ViewModels/Core/MessageLogEntryViewModel.ts",
+    "./ViewModels/Core/MultiMappingEditorViewModel.ts",
+    "./ViewModels/Core/OneDasModuleViewModel.ts",
+    "./ViewModels/Core/OneDasModuleSelectorViewModel.ts",
+    "./ViewModels/Core/ProjectViewModel.ts",
+    "./ViewModels/Core/ProjectDescriptionViewModel.ts",
+    "./ViewModels/Core/TransferFunctionViewModel.ts",
+
+    "./ViewModels/Navigation/ControlViewModel.ts",
+    "./ViewModels/Navigation/DiscoveryViewModel.ts",
+    "./ViewModels/Navigation/EditorViewModel.ts",
+    "./ViewModels/Navigation/ExtensionViewModel.ts",
+    "./ViewModels/Navigation/LiveViewViewModel.ts",
+    "./ViewModels/Navigation/StartViewModel.ts",
+
+    "./ViewModels/Plugin/PluginViewModelBase.ts",
+    "./ViewModels/Plugin/DataGatewayViewModelBase.ts",
+    "./ViewModels/Plugin/DataPortViewModelBase.ts",
+    "./ViewModels/Plugin/DataWriterViewModelBase.ts",
+    "./ViewModels/Plugin/PluginDescriptionViewModel.ts",
+    "./ViewModels/Plugin/PluginIdentificationViewModel.ts",
+
+    "./ViewModels/AppViewModel.ts",
+
+    "./site.ts"
+  ],
+  "compileOnSave": true
+}

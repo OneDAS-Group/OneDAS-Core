@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\OneDas.Ethercat.csproj" Category="CSProject" Bounds="-467.93911099241,248.732244613569,189.363333333333,85.9602000000001" Group="Expanded" Label="OneDas.Ethercat" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\bin\Debug\OneDas.Ethercat.dll" Bounds="-447.93911099241,288.732344613569,149.363333333333,25.96" Label="OneDas.Ethercat.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Ethercat.Native\OneDas.Ethercat.Native.vcxproj" Category="CppProject" Bounds="-786.339602590264,470.439113068138,226.043333333333,85.9601999999999" Group="Expanded" Label="OneDas.Ethercat.Native" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Ethercat.Native\bin\OneDas.Ethercat.Native.dll" Bounds="-766.339602590264,510.439213068138,186.043333333333,25.96" Label="OneDas.Ethercat.Native.dll" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj" Category="CSProject" Bounds="268.148968777127,-132.659684503174,216.583333333333,85.9602" Group="Expanded" Label="OneDas.Hdf.Explorer" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Explorer\bin\Debug\net452\win7-x86\OneDas.Hdf.Explorer.exe" Bounds="288.148968777127,-92.6595845031738,176.583333333333,25.96" Label="OneDas.Hdf.Explorer.exe" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Export\OneDas.Hdf.Export.csproj" Category="CSProject" Bounds="514.73230211046,-132.113099420166,207.293333333334,85.9602" Group="Expanded" Label="OneDas.Hdf.Export" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Export\bin\Debug\OneDas.Hdf.Export.exe" Bounds="534.73230211046,-92.112999420166,167.293333333333,25.96" Label="OneDas.Hdf.Export.exe" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Importer\OneDas.Hdf.Importer.csproj" Category="CSProject" Bounds="522.729079524129,20.5346466568073,219.696666666667,85.9602" Group="Expanded" Label="OneDas.Hdf.Importer" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Importer\bin\Debug\OneDas.Hdf.Importer.exe" Bounds="542.729073149345,60.5347466568074,179.696666666667,25.96" Label="OneDas.Hdf.Importer.exe" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj" Category="CSProject" Bounds="496.977319650926,390.78458148503,216.26,85.9602" Group="Expanded" Label="OneDas.Hdf.VdsTool" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.VdsTool\bin\Debug\OneDas.Hdf.VdsTool.exe" Bounds="516.977319650926,430.78468148503,176.26,25.96" Label="OneDas.Hdf.VdsTool.exe" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Category="CSProject" Bounds="148.213243315992,253.535356948785,165.613333333333,85.9602000000001" Group="Expanded" Label="OneDas.Hdf" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\bin\Debug\OneDas.Hdf.dll" Bounds="168.213243315992,293.535456948785,125.613333333333,25.96" Label="OneDas.Hdf.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Server.WebClient\OneDas.Server.WebClient.csproj" Category="CSProject" Bounds="-37.7410550788199,430.796050055852,236.806666666666,85.9602000000007" Group="Expanded" Label="OneDas.Server.WebClient" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Server.WebClient\bin\Debug\net452\win7-x86\OneDas.Server.WebClient.dll" Bounds="-17.74105507882,470.796150055852,196.806666666667,25.96" Label="OneDas.Server.WebClient.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Server\OneDas.Server.csproj" Category="CSProject" Bounds="-172.957053098788,616.79134365434,184.47,85.9602000000004" Group="Expanded" Label="OneDas.Server" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Server\bin\Debug\net452\win7-x86\OneDas.Server.exe" Bounds="-152.957053098788,656.79144365434,144.47,25.96" Label="OneDas.Server.exe" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Utilities\OneDas.Utilities.csproj" Category="CSProject" Bounds="1630.71640089653,-204.434895724247,190.823333333333,85.9602" Group="Expanded" Label="OneDas.Utilities" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas.Utilities\bin\Debug\OneDas.Utilities.exe" Bounds="1650.7163751335,-164.434795724248,150.823333333333,25.96" Label="OneDas.Utilities.exe" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Category="CSProject" Bounds="-158.532880680536,250.94732488561,143.67,85.9602000000001" Group="Expanded" Label="OneDas" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\OneDas\bin\Debug\OneDas.dll" Bounds="-138.532880680536,290.94742488561,103.67,25.96" Label="OneDas.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.AdwenUdpProtocol\OneDas.Plugin.AdwenUdpProtocol.csproj" Category="CSProject" Bounds="-183.425338185628,-122.846421563721,285.46,85.9602" Group="Expanded" Label="OneDas.Plugin.AdwenUdpProtocol" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.AdwenUdpProtocol\bin\Debug\OneDas.Plugin.AdwenUdpProtocol.dll" Bounds="-163.425338185628,-82.8463215637207,245.46,25.96" Label="OneDas.Plugin.AdwenUdpProtocol.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Ethercat\OneDas.Plugin.Ethercat.csproj" Category="CSProject" Bounds="-790.598426316835,242.526539568744,225.143333333333,85.9602000000002" Group="Expanded" Label="OneDas.Plugin.Ethercat" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Ethercat\bin\Debug\OneDas.Plugin.Ethercat.dll" Bounds="-770.598426316836,282.526639568744,185.143333333333,25.96" Label="OneDas.Plugin.Ethercat.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Example\OneDas.Plugin.Example.csproj" Category="CSProject" Bounds="-439.732004852295,-120.202432000732,226.306666666667,85.9602" Group="Expanded" Label="OneDas.Plugin.Example" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Example\bin\Debug\OneDas.Plugin.Example.dll" Bounds="-419.732004852295,-80.2023320007324,186.306666666667,25.96" Label="OneDas.Plugin.Example.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataWriter\OneDas.Plugin.Hdf\OneDas.Plugin.Hdf.csproj" Category="CSProject" Bounds="526.16991338031,254.449598372684,201.393333333333,85.9602000000002" Group="Expanded" Label="OneDas.Plugin.Hdf" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\DataWriter\OneDas.Plugin.Hdf\bin\Debug\OneDas.Plugin.Hdf.dll" Bounds="546.183636050124,294.449698372684,161.393333333333,25.96" Label="OneDas.Plugin.Hdf.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\EthercatSlaveExtension\OneDas.Plugin.Individual\OneDas.Plugin.Individual.csproj" Category="CSProject" Bounds="-797.353513089594,101.470359913825,233.53,85.9602000000001" Group="Expanded" Label="OneDas.Plugin.Individual" UseManualLocation="True" />
+    <Node Id="C:\Users\vwilms\Desktop\OneDas\Plugins\EthercatSlaveExtension\OneDas.Plugin.Individual\bin\Debug\OneDas.Plugin.Individual.dll" Bounds="-777.353513089594,141.470459913825,193.53,25.96" Label="OneDas.Plugin.Individual.dll" />
+    <Node Id="C:\Users\vwilms\Desktop\SOEM\VsProject\Debug\soem.lib" Bounds="-710.108808243433,680.413463134766,64.2033333333334,25.96" Label="soem.lib" />
+    <Node Id="C:\Users\vwilms\Desktop\SOEM\VsProject\soem.vcxproj" Category="CppProject" Bounds="-730.108820264686,640.413330989669,104.203333333333,85.9602000000003" Group="Expanded" Label="soem" UseManualLocation="True" />
+  </Nodes>
+  <Links>
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\OneDas.Ethercat.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\bin\Debug\OneDas.Ethercat.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\OneDas.Ethercat.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-278.575777659076,292.444225585502,111.043165848434,0.858353924353366" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Ethercat.Native\OneDas.Ethercat.Native.vcxproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Ethercat.Native\bin\OneDas.Ethercat.Native.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Ethercat.Native\OneDas.Ethercat.Native.vcxproj" Target="C:\Users\vwilms\Desktop\SOEM\VsProject\soem.vcxproj" Bounds="-676.573230526012,556.399313068138,2.06956745489276,75.0174408622786" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Explorer\bin\Debug\net452\win7-x86\OneDas.Hdf.Explorer.exe" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Bounds="250.375487627433,-46.6994845031738,109.881104388735,291.812171405622" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Export\OneDas.Hdf.Export.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Export\bin\Debug\OneDas.Hdf.Export.exe" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Export\OneDas.Hdf.Export.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Bounds="280.568683097438,-46.152899420166,294.639540904389,293.338393811321" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Importer\OneDas.Hdf.Importer.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.Importer\bin\Debug\OneDas.Hdf.Importer.exe" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.VdsTool\bin\Debug\OneDas.Hdf.VdsTool.exe" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Bounds="322.275851271744,329.996421163428,174.962982288634,64.1923064530786" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-6.04129316938941,310.230852380555,503.018612820316,101.677094652564" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\bin\Debug\OneDas.Hdf.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-5.86317925120385,294.585879669271,154.076422567196,1.25505946944537" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Server.WebClient\OneDas.Server.WebClient.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Server.WebClient\bin\Debug\net452\win7-x86\OneDas.Server.WebClient.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Server\OneDas.Server.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Server\bin\Debug\net452\win7-x86\OneDas.Server.exe" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Server\OneDas.Server.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-85.8488386683675,345.906324475023,4.42473318148556,270.885019179317" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas.Utilities\OneDas.Utilities.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Utilities\bin\Debug\OneDas.Utilities.exe" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\bin\Debug\OneDas.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.AdwenUdpProtocol\OneDas.Plugin.AdwenUdpProtocol.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-80.3090190483843,-36.8862215637207,34.3241491478283,278.900939118149" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.AdwenUdpProtocol\OneDas.Plugin.AdwenUdpProtocol.csproj" Target="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.AdwenUdpProtocol\bin\Debug\OneDas.Plugin.AdwenUdpProtocol.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Ethercat\OneDas.Plugin.Ethercat.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\OneDas.Ethercat.csproj" Bounds="-565.455092983502,287.79882098141,88.5178471561607,1.80239815176066" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Ethercat\OneDas.Plugin.Ethercat.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-565.455078125,316.795684814453,398.26481628418,28.6033630371094" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Ethercat\OneDas.Plugin.Ethercat.csproj" Target="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Ethercat\bin\Debug\OneDas.Plugin.Ethercat.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Example\OneDas.Plugin.Example.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-298.799856668567,-34.2422320007324,179.437847052648,277.630872722349" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Example\OneDas.Plugin.Example.csproj" Target="C:\Users\vwilms\Desktop\OneDas\Plugins\DataGateway\OneDas.Plugin.Example\bin\Debug\OneDas.Plugin.Example.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataWriter\OneDas.Plugin.Hdf\OneDas.Plugin.Hdf.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.Hdf\OneDas.Hdf.csproj" Bounds="322.826552645604,296.727492168629,203.343360734706,0.46963872053874" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataWriter\OneDas.Plugin.Hdf\OneDas.Plugin.Hdf.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-6.08669519424438,242.828750610352,532.256617069244,36.4152984619141" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\DataWriter\OneDas.Plugin.Hdf\OneDas.Plugin.Hdf.csproj" Target="C:\Users\vwilms\Desktop\OneDas\Plugins\DataWriter\OneDas.Plugin.Hdf\bin\Debug\OneDas.Plugin.Hdf.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\EthercatSlaveExtension\OneDas.Plugin.Individual\OneDas.Plugin.Individual.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas.EtherCat\OneDas.Ethercat.csproj" Bounds="-590.89035327377,187.430559913825,119.818451798238,57.4126498325882" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\EthercatSlaveExtension\OneDas.Plugin.Individual\OneDas.Plugin.Individual.csproj" Target="C:\Users\vwilms\Desktop\OneDas\OneDas\OneDas.csproj" Bounds="-563.823513089594,173.839166962682,396.562833725605,99.811321430451" />
+    <Link Source="C:\Users\vwilms\Desktop\OneDas\Plugins\EthercatSlaveExtension\OneDas.Plugin.Individual\OneDas.Plugin.Individual.csproj" Target="C:\Users\vwilms\Desktop\OneDas\Plugins\EthercatSlaveExtension\OneDas.Plugin.Individual\bin\Debug\OneDas.Plugin.Individual.dll" Category="Contains" />
+    <Link Source="C:\Users\vwilms\Desktop\SOEM\VsProject\soem.vcxproj" Target="C:\Users\vwilms\Desktop\SOEM\VsProject\Debug\soem.lib" Category="Contains" />
+  </Links>
+  <Categories>
+    <Category Id="CSProject" Background="#FF3A8F35" />
+    <Category Id="Contains" Label="Enthält" Description="Gibt an, ob die Quelle der Verknüpfung das Zielobjekt enthält" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Enthalten in" IsContainment="True" OutgoingActionLabel="Enthält" />
+    <Category Id="CppProject" Background="#FFA0519C" Foreground="#FFFFFFFF" />
+  </Categories>
+  <Properties>
+    <Property Id="Background" Label="Hintergrund" Description="Die Hintergrundfarbe." DataType="System.Windows.Media.Brush" />
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Foreground" Label="Vordergrund" Description="Die Vordergrundfarbe." DataType="System.Windows.Media.Brush" />
+    <Property Id="Group" Label="Gruppe" Description="Knoten als Gruppe anzeigen" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="Label" Label="Bezeichnung" Description="Anzeigbare Bezeichnung eines Objekts, das Anmerkungen einblenden werden kann" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+  </Properties>
+</DirectedGraph>

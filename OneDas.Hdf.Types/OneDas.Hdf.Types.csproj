@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+    <Description>Provides a common type system and helper functions for HDF based OneDAS application parts.</Description>
+    <PackageTags>OneDAS data aquisition measurement HDF</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="HDF.PInvoke" Version="1.10.1" />
+    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha1-6515-20041" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>OneDas.Hdf</CustomToolNamespace>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(ProjectDir)..\support\OneDas.targets" />
+</Project>

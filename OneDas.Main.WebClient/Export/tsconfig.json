@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "outFile": "./OneDas.Main.Types.js",
+    "declaration": true,
+    "typeRoots": [
+      "./../../../OneDas-Support/web/node_modules/@types/"
+    ]
+  },
+  "exclude": [
+    "wwwroot"
+  ],
+  "files": [
+    "./../../../OneDas-Support/web/typings/global.d.ts",
+
+    "./../OneDas.Types/DataDirectionEnum.ts",
+    "./../OneDas.Types/FileGranularityEnum.ts",
+    "./../OneDas.Types/OneDasDataTypeEnum.ts",
+    "./../OneDas.Types/OneDasStateEnum.ts",
+    "./../OneDas.Types/SampleRateEnum.ts",
+
+    "./../Core/ActionRequest.ts",
+    "./../Core/ActionResponse.ts",
+    "./../Core/EventDispatcher.ts",
+    "./../Core/IEvent.ts",
+    "./../Core/IModelizable.ts",
+
+    "./../Models/ChannelHubModel.ts",
+    "./../Models/OneDasModuleModel.ts",
+    "./../Models/TransferFunctionModel.ts",
+
+    "./../Static/ConnectionManager.ts",
+    "./../Static/EnumerationHelper.ts",
+    "./../Static/ErrorMessage.ts",
+    "./../Static/Helper.ts",
+    "./../Static/PluginFactory.ts",
+    "./../Static/PluginHive.ts",
+
+    "./../ViewModels/Core/ChannelHubViewModel.ts",
+    "./../ViewModels/Core/OneDasModuleViewModel.ts",
+    "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
+    "./../ViewModels/Core/TransferFunctionViewModel.ts",
+
+    "./../ViewModels/Plugin/DataPortViewModelBase.ts",
+    "./../ViewModels/Plugin/PluginViewModelBase.ts",
+    "./../ViewModels/Plugin/DataGatewayViewModelBase.ts",
+    "./../ViewModels/Plugin/DataWriterViewModelBase.ts",
+    "./../ViewModels/Plugin/PluginDescriptionViewModel.ts",
+    "./../ViewModels/Plugin/PluginIdentificationViewModel.ts"
+  ],
+  "compileOnSave": true
+}
