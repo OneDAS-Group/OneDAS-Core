@@ -1,0 +1,1094 @@
+﻿<!-- ko if: !Project() -->
+<div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
+    <h1 class="display-4">Open a project or create a new one!</h1>
+    <p>Here you can you can change plugin settings, specify MDAS channels and edit the input-output variable mapping.</p>
+    <p>&nbsp;</p>
+    <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary btn-wide"
+                role="button"
+                data-bind="click: GetProjectDescriptions"
+                data-toggle="modal"
+                data-target="#Editor_OpenProjectModal"
+                data-backdrop="static">
+            Open
+        </button>
+        <button class="btn btn-outline-primary btn-wide"
+                role="button"
+                data-toggle="modal"
+                data-target="#Editor_CreateNewProjectModal"
+                data-backdrop="static">
+            New
+        </button>
+    </div>
+</div>
+<!-- /ko -->
+
+<div id="Editor_OpenProjectModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Available projects</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <!-- ko if: ProjectDescriptionSet().length == 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no projects available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko foreach: ProjectDescriptionSet -->
+                    <a class="list-group-item list-group-item-action noselect url"
+                       data-dismiss="modal"
+                       data-bind="click: $parents[1].OpenProject">
+                        <div class="d-flex">
+                            <h6 class="mb-1 mr-auto" data-bind="text: CampaignPrimaryGroup + ' / ' + CampaignSecondaryGroup + ' / ' + CampaignName"></h6>
+                            <span class="fa fa-folder-open-o fa-fix ml-auto"></span>
+                        </div>
+                        <div class="d-flex">
+                            <h6 class="mr-auto"><small class="text-muted" data-bind="text: Guid"></small></h6>
+                            <h6><small class="text-muted" data-bind="text: 'Version: ' + CampaignVersion()"></small></h6>
+                        </div>
+                    </a>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        role="button"
+                        data-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Editor_CreateNewProjectModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Define the new project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-control-label" for="campaign_primary_group">1st level group:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               id="campaign_primary_group"
+                               data-bind="textinput: CampaignPrimaryGroup"
+                               autofocus>
+                        <div class="form-control-feedback"
+                             data-bind="visible: CampaignPrimaryGroupHasError(), text: CampaignPrimaryGroupErrorDescription"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label" for="campaign_secondary_group">2nd level group:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               id="campaign_secondary_group"
+                               data-bind="textinput: CampaignSecondaryGroup">
+                        <div class="form-control-feedback"
+                             data-bind="visible: CampaignSecondaryGroupHasError(), text: CampaignSecondaryGroupErrorDescription"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label" for="campaign_name">Campaign:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               id="campaign_name"
+                               data-bind="textinput: CampaignName">
+                        <div class="form-control-feedback"
+                             data-bind="visible: CampaignNameHasError(), text: CampaignNameErrorDescription"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        role="button"
+                        data-dismiss="modal"
+                        data-bind="disable: CampaignPrimaryGroup().length == 0 || CampaignSecondaryGroup().length == 0 || CampaignName().length == 0 ||
+                                            CampaignPrimaryGroupHasError() || CampaignSecondaryGroupHasError() || CampaignNameHasError(),
+                                            click: CreateNewProject">
+                    Create
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PROJECT -->
+<!-- ko with: Project -->
+
+<div id="Project_Header" class="container">
+    <div class="row align-content-end my-5" data-bind="with: Description">
+        <h1 class="display-4 mr-auto">Editor</h1>
+        <h1 class="display-small text-muted mt-auto" data-bind="text: CampaignPrimaryGroup + ' / ' + CampaignSecondaryGroup + ' / ' + CampaignName + ' v' + CampaignVersion()"></h1>
+    </div>
+    <div class="row mb-1">
+        <div class="col">
+            <div class="row justify-content-end">
+                <a class="fa fa-file-o glyphicon-action-bg mr-2 url"
+                   data-toggle="modal"
+                   data-target="#Editor_CreateNewProjectModal"
+                   data-backdrop="static">
+                </a>
+                <a class="fa fa-folder-open-o glyphicon-action-bg url"
+                   data-bind="click: $parent.GetProjectDescriptions"
+                   data-toggle="modal"
+                   data-target="#Editor_OpenProjectModal"
+                   data-backdrop="static">
+                </a>
+                <a class="fa fa-save glyphicon-action-bg ml-5 url"
+                   data-bind="click: $parent.SaveProject">
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ko with: MultiMappingEditor -->
+    <div class="row">
+        <div class="col-sm-6">
+            <form>
+                <div class="form-row">
+                    <div class="col-4">
+                        <label>start variable</label>
+                        <input type="number" class="form-control"
+                               min="0" step="1"
+                               data-bind="value: DataPortStartIndex">
+                    </div>
+                    <div class="col-4">
+                        <label>start channel</label>
+                        <input type="number" class="form-control"
+                               min="0" step="1"
+                               data-bind="value: ChannelHubStartIndex">
+                    </div>
+                    <div class="col-4">
+                        <label>range</label>
+                        <input type="number" class="form-control"
+                               min="0" step="1"
+                               data-bind="value: Length">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-6">
+            <form>
+                <div class="form-row">
+                    <div class="col-6">
+                        <label>channel group</label>
+                        <select class="form-control"
+                                place
+                                data-bind="options: ChannelHubGroupNameSet,
+                                                   value: SelectedGroupName,
+                                                   optionsCaption: 'Select a group ...'"></select>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-check"
+                             data-toggle="tooltip"
+                             data-title="enable this option to allow a variable to be mapped to multiple channels (1:n relationship)">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="checkbox" data-bind="checked: KeepVariableMappings"><span class="noselect">keep variable mappings</span>
+                            </label>
+                        </div>
+                        <button type="button" class="btn btn-primary w-100"
+                                data-bind="disable: !IsValid(), click: Apply">
+                            Apply
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ko ifnot: IsValid -->
+        <div class="alert alert-danger mt-2" role="alert" data-bind="text: ErrorMessage"></div>
+    <!-- /ko -->
+<!-- /ko -->
+
+<div id="Project_Content" class="row">
+    <div class="col-sm-6">
+        <div class="card my-2 noselect">
+            <nav class="navbar navbar-light bg-light" style="border-bottom:1px solid rgba(0, 0, 0, 0.125); padding:0.5rem 1.25rem">
+                <button class="navbar-toggler navbar-toggler-right" role="button" type="button" data-toggle="collapse" data-target="#navbar-settings" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <a>
+                    <span data-bind="text: CurrentTitle"></span>
+                    <!-- ko ifnot: MultiMappingEditor -->
+                        <!-- ko with: SelectedDataGateway -->
+                        <span class="fa fa-cog ml-1 url"
+                              data-title="open settings page"
+                              data-toggle="tooltip"
+                              data-bind="click: ToggleSettingsMode">
+                        </span>
+                        <!-- /ko -->
+                        <!-- ko with: SelectedDataWriter -->
+                        <span class="fa fa-cog ml-1 url"
+                              data-title="open settings page"
+                              data-toggle="tooltip"
+                              data-bind="click: ToggleSettingsMode">
+                        </span>
+                        <!-- /ko -->
+                    <!-- /ko -->
+                </a>
+                <div class="collapse navbar-collapse" id="navbar-settings">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link"
+                               data-toggle="collapse"
+                               data-target=".navbar-collapse.show"
+                               data-bind="page-href: 'general'">General</a>
+                        </li>
+                        <!-- ko foreach: DataGatewaySet -->
+                        <li class="nav-item"
+                            data-toggle="collapse"
+                            data-target=".navbar-collapse.show">
+                            <div class="container row">
+                                <a class="nav-link mr-auto"
+                                   data-bind="page-href: PluginIdentification.Id + '_DG' + Description.InstanceId">
+                                    <span class="fa fa-exchange mx-1"
+                                          data-toggle="tooltip"
+                                          title="I/O operation (data-gateway)"></span>
+                                    <span data-bind="text: PluginIdentification.Name"></span>
+                                </a>
+                                <a class="nav-link url"
+                                   role="button"
+                                   data-toggle="modal"
+                                   data-target="#Project_DeleteDataGatewayModal"
+                                   data-backdrop="static"
+                                   data-bind="click: $parent.SelectPlugin">
+                                    <span class="fa fa-times" />
+                                </a>
+                            </div>
+                        </li>
+
+                        <!-- /ko -->
+                        <!-- ko foreach: DataWriterSet -->
+                        <li class="nav-item"
+                            data-toggle="collapse"
+                            data-target=".navbar-collapse.show">
+                            <div class="container row align-content-center">
+                                <a class="nav-link mr-auto"
+                                   data-bind="page-href: PluginIdentification.Id + '_DW' + Description.InstanceId">
+                                    <span class="fa fa-database mx-1"
+                                          data-toggle="tooltip"
+                                          title="data recording (data-writer)"></span>
+                                    <span data-bind="text: PluginIdentification.Name"></span>
+                                </a>
+                                <a class="nav-link url"
+                                   data-toggle="modal"
+                                   data-target="#Project_DeleteDataWriterModal"
+                                   data-backdrop="static"
+                                   data-bind="click: $parent.SelectPlugin">
+                                    <span class="fa fa-times" />
+                                </a>
+                            </div>
+                        </li>
+                        <!-- /ko -->
+                        <li class="nav-item"
+                            data-toggle="collapse"
+                            data-target=".navbar-collapse.show">
+                            <a class="nav-link d-flex url"
+                               style="height:2.64em;"
+                               data-toggle="modal"
+                               data-target="#Project_NewPluginModal"
+                               data-backdrop="static">
+                                <span class="fa fa-plus m-auto"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="card-body">
+                <div data-bind="page: {id: 'general', role: 'start', afterShow: ClearSelectedViewModels, title: 'General'}">
+                    <h6>Triggers</h6>
+                    ...
+                    <h6>Mail notification</h6>
+                    ...
+                    <h6>UPS behavior</h6>
+                    ...
+                </div>
+
+                <!-- ko foreach: DataGatewaySet -->
+                <div data-bind="page: {id: PluginIdentification.Id + '_DG' + Description.InstanceId, afterShow: $parent.SelectDataGateway, title: PluginIdentification.Name}">
+                    <!-- ko ifnot: $parents[1].MultiMappingEditor -->
+                        <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetDataGatewayCallback: $parents[1].GetDataGateway } } -->
+                    <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $parents[1].MultiMappingEditor -->
+                        <!-- ko if: DataPortSet().length === 0 -->
+                            <h5 class="d-block text-center mt-3"><small class="text-muted">- no variables available -</small></h5>
+                        <!-- /ko -->
+                        <!-- ko if: DataPortSet().length > 0 -->
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Variable</th>
+                                        <th>Data Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- ko foreach: DataPortSet -->
+                                    <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
+                                        <th class="table-row-condensed" data-bind="text: $index"></th>
+                                        <td class="table-row-condensed" data-bind="text: GetId()"></td>
+                                        <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', OneDasDataType)"></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                </tbody>
+                            </table>
+                        <!-- /ko -->
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+                <!-- ko foreach: DataWriterSet -->
+                <div data-bind="page: {id: PluginIdentification.Id + '_DW' + Description.InstanceId, afterShow: $parent.SelectDataWriter, title: PluginIdentification.Name}">
+                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetDataWriterCallback: $parents[1].GetDataWriter } } -->
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="card my-2 noselect">
+            <div class="card-header" style="padding:1rem 1.25rem">
+                <!-- ko if: SelectedDataGateway -->
+                    <span class="fa fa-arrows-alt mr-1 url"
+                          data-bind="click: ToggleMultiMappingMode, tooltip: { title: 'toggle multi-mapping mode' }">
+                    </span>
+                <!-- /ko -->
+                Channels
+            </div>
+            <div class="card-body">
+                <!-- ko ifnot: MultiMappingEditor -->
+                    <form class="form-group">
+                        <div class="input-group mb-2">
+                            <div class="input-group-addon url"
+                                 data-bind="click: ResetSearch">
+                                <!-- ko if: SearchString().length > 0 -->
+                                <strong>X</strong>
+                                <!-- /ko -->
+                                <!-- ko ifnot: SearchString().length > 0 -->
+                                <span class="fa fa-search fa-fix"></span>
+                                <!-- /ko -->
+                            </div>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Search ..."
+                                   data-bind="textInput: SearchString">
+                            <div class="input-group-addon url"
+                                 data-toggle="modal"
+                                 data-target="#Project_NewChannelModal"
+                                 data-backdrop="static">
+                                <span class="fa fa-plus fa-fix"
+                                      data-toggle="tooltip"
+                                      data-title="create new channel"></span>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- ko if: ChannelHubSet().length === 0 -->
+                    <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: ChannelHubSet().length > 0 -->
+                    <div class="list-group list-group-root editor-channel-hub-list" data-bind="foreach: GroupedChannelHubSet">
+                        <a class="list-group-item list-group-item-action noselect" data-toggle="collapse" data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
+                            <span class="fa fa-caret-down"></span><span data-bind="text: Key"></span>
+                        </a>
+                        <div class="list-group collapse show" data-bind="attr: { id: 'item_' + $index() }, foreach: Members">
+                            <a class="list-group-item list-group-item-action url"
+                               data-bind="event: { contextmenu: $parents[1].ShowContextMenu }, callFunction: $parents[1].Dropable">
+                                <div class="d-flex">
+                                    <small class="mb-1 mr-auto" data-bind="text: Name"></small>
+                                    <small data-bind="text: 100 / SampleRate() + ' Hz' + ' / ' + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', OneDasDataType())"></small>
+                                </div>
+                                <div class="d-flex" style="font-size:0.6em;">
+                                    <div class="w-50">
+                                        <!-- ko with: AssociatedDataInput -->
+                                        <span class="d-block">
+                                            <span class="fa fa-angle-double-left fa-fw" style="color:green" />
+                                            <em data-bind="text: ToFullQualifiedIdentifier()"></em>
+                                        </span>
+                                        <!-- /ko -->
+                                    </div>
+                                    <div class="w-50">
+                                        <!-- ko foreach: AssociatedDataOutputSet -->
+                                        <span class="text-right d-block"><span class="fa fa-angle-double-left fa-fw" style="color:red" /><em data-bind="text: ToFullQualifiedIdentifier()"></em></span>
+                                        <!-- /ko -->
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                <!-- /ko -->
+
+                <!-- ko with: MultiMappingEditor -->
+                    <!-- ko if: FilteredChannelHubSet().length === 0 -->
+                        <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: FilteredChannelHubSet().length > 0 -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Channel</th>
+                                    <th>Data Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- ko foreach: FilteredChannelHubSet() -->
+                                <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
+                                    <th class="table-row-condensed" data-bind="text: $index"></th>
+                                    <td class="table-row-condensed" data-bind="text: Name"></td>
+                                    <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', OneDasDataType())"></td>
+                                </tr>
+                                <!-- /ko -->
+                            </tbody>
+                        </table>
+                    <!-- /ko -->
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Project_ChannelContextMenu" class="dropdown-menu" style="display:none">
+    <!-- ko if: SelectedChannelHub_ContextMenu() -->
+    <a class="dropdown-item noselect"
+       data-toggle="modal"
+       data-target="#Project_EditChannelModal"
+       data-backdrop="static"
+       data-bind="click: BeginEditChannel">
+        <span class="fa fa-pencil-square-o fa-fw" /> Edit
+    </a>
+    <a class="dropdown-item noselect"
+       data-toggle="modal"
+       data-target="#Project_EditChannelTransferFunctionModal"
+       data-backdrop="static">
+        <span class="fa fa-cog fa-fw" /> Transfer function
+    </a>
+    <a class="dropdown-item noselect" tabindex=""
+       data-bind="css: { disabled: !SelectedChannelHub_ContextMenu().AssociatedDataInput() }, click: HubResetDataInputAssociation">
+        <span class="fa fa-angle-double-left fa-fw" data-bind="style: { color: SelectedChannelHub_ContextMenu().AssociatedDataInput() ? 'green' : 'inherit' }" /> Reset
+    </a>
+    <a class="dropdown-item noselect" tabindex=""
+       data-bind="css: { disabled: SelectedChannelHub_ContextMenu().AssociatedDataOutputSet().length === 0 }, click: HubResetDataOutputAssociations">
+        <span class="fa fa-angle-double-left fa-fw" data-bind="style: { color: SelectedChannelHub_ContextMenu().AssociatedDataOutputSet().length != 0 ? 'red' : 'inherit' }" /> Reset all
+    </a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item noselect" tabindex=""
+       data-toggle="modal"
+       data-target="#Project_DeleteChannelModal"
+       data-backdrop="static"
+       data-bind="css: { disabled: !IsFullEditingEnabled() }">
+        <span class="fa fa-times fa-fw" /> Remove
+    </a>
+    <!-- /ko -->
+</div>
+
+<div id="Project_NewChannelModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create new channel(s)</h5>
+                <button type="button" class="close" data-bind="click: OnNewChannelModalClosing" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-control-label"
+                               data-toggle="tooltip"
+                               title="Use line breaks to create multiple channels.">
+                            Name(s):
+                        </label>
+                        <textarea type="text" rows="3"
+                                  class="form-control modal-input-full-width"
+                                  data-bind="textInput: NewChannelName"
+                                  autofocus></textarea>
+                        <div class="form-control-feedback"
+                             data-bind="visible: NewChannelNameHasError(), text: NewChannelNameErrorDescription">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">
+                            Group(s):
+                        </label>
+                        <textarea type="text" rows="2"
+                                  class="form-control modal-input-full-width"
+                                  data-bind="textInput: NewChannelGroup"></textarea>
+                        <div class="form-control-feedback"
+                             data-bind="visible: NewChannelGroupHasError(), text: NewChannelGroupErrorDescription">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label" for="new_channel_mdas_data_type">Data type:</label>
+                        <select class="form-control"
+                                id="new_channel_mdas_data_type"
+                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                           optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                           value: NewChannelSelectedOneDasDataType"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label" for="new_channel_sample_rate">Sample rate:</label>
+                        <select class="form-control"
+                                id="new_channel_sample_rate"
+                                data-bind="options: EnumerationHelper.GetEnumValues('SampleRateEnum'),
+                                           optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('SampleRateEnum', x) },
+                                           value: NewChannelSelectedSampleRate"></select>
+                    </div>
+                </form>
+                <div id="new_channel_alert" class="alert alert-success alert-hidden m-0" role="alert" data-bind="css: {'alert-show-fade' : NewChannelIsNotificationVisible() }">
+                    <strong>Well done!</strong> The channel was created successfully.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        role="button"
+                        data-bind="disable: NewChannelName().length == 0 || NewChannelGroup().length == 0 || NewChannelNameHasError() || NewChannelGroupHasError(), click: AddNewChannel">
+                    Create
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Project_EditChannelModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit channel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-control-label">Name:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               data-bind="textInput: EditChannelDummyChannel().Name"
+                               autofocus>
+                        <div class="form-control-feedback"
+                             data-bind="visible: EditChannelNameHasError(), text: EditChannelNameErrorDescription"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">Group:</label>
+                        <textarea type="text" rows="2"
+                               class="form-control modal-input-full-width"
+                               data-bind="textInput: EditChannelDummyChannel().Group"></textarea>
+                        <div class="form-control-feedback"
+                             data-bind="visible: EditChannelGroupHasError(), text: EditChannelGroupErrorDescription"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">Data type:</label>
+                        <select class="form-control" disabled
+                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                           optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                           value: EditChannelDummyChannel().OneDasDataType,
+                                           enable: IsFullEditingEnabled"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">Sample rate:</label>
+                        <select class="form-control" disabled
+                                data-bind="options: EnumerationHelper.GetEnumValues('SampleRateEnum'),
+                                           optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('SampleRateEnum', x) },
+                                           value: EditChannelDummyChannel().SampleRate,
+                                           enable: IsFullEditingEnabled"></select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        role="button"
+                        data-dismiss="modal"
+                        data-bind="disable: EditChannelDummyChannel().Name().length == 0 || EditChannelDummyChannel().Group().length == 0 || EditChannelNameHasError() || EditChannelGroupHasError(), click: EndEditChannel">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ko with: SelectedChannelHub -->
+<div id="Project_EditChannelTransferFunctionModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit transfer functions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex no-gutters">
+                    <div class="col-12 mr-1">
+                        <form>
+                            <div class="form-group">
+                                <label class="form-control-label" for="unit">Unit:</label>
+                                <input type="text"
+                                       class="form-control modal-input-full-width"
+                                       id="unit"
+                                       data-bind="textInput: Unit">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="d-flex no-gutters">
+                    <div class="col-6 mr-1">
+                        <form>
+                            <div class="form-group">
+                                <label class="form-control-label" for="transfer_function_date_time">Date / Time:</label>
+                                <input type="text"
+                                       class="form-control modal-input-full-width"
+                                       id="transfer_function_date_time"
+                                       data-bind="textInput: SelectedTransferFunction().DateTime"
+                                       autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label" for="transfer_function_type">Type:</label>
+                                <input type="text"
+                                       class="form-control modal-input-full-width"
+                                       id="transfer_function_type"
+                                       data-bind="textInput: SelectedTransferFunction().Type">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-6 ml-1">
+                        <form>
+                            <div class="form-group">
+                                <label class="form-control-label" for="transfer_function_option">Option:</label>
+                                <input type="text"
+                                       class="form-control modal-input-full-width"
+                                       id="transfer_function_option"
+                                       data-bind="textInput: SelectedTransferFunction().Option">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label" for="transfer_function_argument">Argument:</label>
+                                <input type="text"
+                                       class="form-control modal-input-full-width"
+                                       id="transfer_function_argument"
+                                       data-bind="textInput: SelectedTransferFunction().Argument">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- ko if: TransferFunctionSet().indexOf(SelectedTransferFunction()) === -1 -->
+                <button type="button"
+                        class="btn btn-primary mb-3"
+                        role="button"
+                        data-bind="click: AddTransferFunction">
+                    Add
+                </button>
+                <!-- /ko -->
+                <!-- ko if: TransferFunctionSet().indexOf(SelectedTransferFunction()) > -1 -->
+                <button type="button"
+                        class="btn btn-primary mb-3"
+                        role="button"
+                        data-bind="click: NewTransferFunction">
+                    New
+                </button>
+                <!-- /ko -->
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date / Time</th>
+                            <th>Type</th>
+                            <th>Option</th>
+                            <th>Argument</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: TransferFunctionSet">
+                        <tr data-bind="css: { 'table-active': $data === $parent.SelectedTransferFunction() }, click: $parent.SelectTransferFunction" role="button">
+                            <th data-bind="text: $index"></th>
+                            <td data-bind="text: DateTime"></td>
+                            <td data-bind="text: Type"></td>
+                            <td data-bind="text: Option"></td>
+                            <td data-bind="text: Argument"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button"
+                        class="btn btn-danger"
+                        role="button"
+                        data-bind="click: DeleteTransferFunction, attr: { disabled: TransferFunctionSet().indexOf(SelectedTransferFunction()) === -1 }">
+                    Delete
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        data-dismiss="modal"
+                        role="button">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+
+<div id="Project_DeleteChannelModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to delete the channel, this procedure not reversible.</p>
+                <p>Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                        role="button">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="btn btn-danger"
+                        data-dismiss="modal"
+                        role="button"
+                        data-bind="click: DeleteChannel">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Project_NewPluginModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create new plugin instance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group mb-3">
+                    <a class="list-group-item active text-white">Data gateway</a>
+                    <!-- ko foreach: PluginHive.PluginIdentificationSet.get('DataGateway') -->
+                    <a class="list-group-item list-group-item-action noselect url"
+                       data-bind="click: $parent.AddNewDataGateway">
+                        <div>
+                            <h6 data-bind="text: Name + ' (v' + ProductVersion + ') '"></h6>
+                            <h6><small class="text-muted" data-bind="text: Description"></small></h6>
+                        </div>
+                    </a>
+                    <!-- /ko -->
+                </div>
+                <div class="list-group">
+                    <a class="list-group-item active text-white">Data writer</a>
+                    <!-- ko foreach: PluginHive.PluginIdentificationSet.get('DataWriter') -->
+                    <a class="list-group-item list-group-item-action noselect url"
+                       data-bind="event: { click: $parent.AddNewDataWriter }">
+                        <div>
+                            <h6 data-bind="text: Name + ' (v' + ProductVersion + ') '"></h6>
+                            <h6><small class="text-muted" data-bind="text: Description"></small></h6>
+                        </div>
+                    </a>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        data-dismiss="modal"
+                        role="button">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Project_DeleteDataGatewayModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to delete the data-writer instance, this procedure not reversible.</p>
+                <p>Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                        role="button">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="btn btn-danger"
+                        data-dismiss="modal"
+                        role="button"
+                        data-bind="click: DeleteDataGateway">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Project_DeleteDataWriterModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to delete the data-writer instance, this procedure not reversible.</p>
+                <p>Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                        role="button">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="btn btn-danger"
+                        data-dismiss="modal"
+                        role="button"
+                        data-bind="click: DeleteDataWriter">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="Project_OneDasModuleSelectorTemplate">
+
+    <!-- ko if: AllowInputs -->
+    <div class="card my-2">
+        <div class="card-header">
+            <!-- ko if: Number.isNaN(InputRemainingBytes()) -->
+            <span>Input modules (Rx-PDOs)</span>
+            <!-- /ko -->
+            <!-- ko if: !Number.isNaN(InputRemainingBytes()) -->
+            <span data-bind="text: 'Input modules (Rx-PDOs, ' + InputRemainingBytes() + ' bytes left)'"></span>
+            <!-- /ko -->
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="d-flex col-9">
+                            <div class="w-50 mr-1">
+                                <input type="number" min="1" step="1" class="form-control" data-bind="value: InputCount, attr: { max: InputRemainingCount }" />
+                            </div>
+                            <div class="w-50 ml-1">
+                                <!-- ko if: AllowBoolean -->
+                                <select class="form-control"
+                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedInputDataType"></select>
+                                <!-- /ko -->
+                                <!-- ko ifnot: AllowBoolean -->
+                                <select class="form-control"
+                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedInputDataType"></select>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <div class="d-flex col-3">
+                            <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddInputModule">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <!-- ko if: InputModuleSet().length > 0 -->
+                    <div class="list-group">
+                        <!-- ko foreach: InputModuleSet -->
+                        <a class="d-flex list-group-item list-group-item-action noselect align-content-between" role="button" data-bind="click: $parent.DeleteInputModule">
+                            <span data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', $data.DataType) + ' [ ' + $data.Size + 'x ]'"></span>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: InputModuleSet().length === 0 -->
+                        <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+                    <!-- /ko -->
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- /ko -->
+    <!-- ko if: AllowOutputs -->
+    <div class="card my-2">
+        <div class="card-header">
+            <!-- ko if: Number.isNaN(OutputRemainingBytes()) -->
+            <span>Output modules (Tx-PDOs)</span>
+            <!-- /ko -->
+            <!-- ko if: !Number.isNaN(OutputRemainingBytes()) -->
+            <span data-bind="text: 'Output modules (Tx-PDOs, ' + OutputRemainingBytes() + ' bytes left)'"></span>
+            <!-- /ko -->
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="d-flex col-9">
+                            <div class="w-50 mr-1">
+                                <input type="number" min="1" step="1" class="form-control" data-bind="value: OutputCount, attr: { max: OutputRemainingCount }" />
+                            </div>
+                            <div class="w-50 ml-1">
+                                <!-- ko if: AllowBoolean -->
+                                <select class="form-control"
+                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedOutputDataType"></select>
+                                <!-- /ko -->
+                                <!-- ko ifnot: AllowBoolean -->
+                                <select class="form-control"
+                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedOutputDataType"></select>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <div class="d-flex col-3">
+                            <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddOutputModule">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <!-- ko if: OutputModuleSet().length > 0 -->
+                    <div class="list-group">
+                        <!-- ko foreach: OutputModuleSet -->
+                        <a class="d-flex list-group-item list-group-item-action noselect align-content-between" role="button" data-bind="click: $parent.DeleteOutputModule">
+                            <span data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', $data.DataType) + ' [ ' + $data.Size + 'x ]'"></span>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: OutputModuleSet().length === 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+                    <!-- /ko -->
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- /ko -->
+
+</script>
+
+<script type="xml/html" id="Project_DataPortSetTemplate">
+    <div class="card my-2">
+        <div class="card-header">
+            Variables
+        </div>
+        <div class="card-body">
+            <!-- ko if: DataPortSet().length === 0 -->
+            <h5 class="d-block text-center my-5"><small class="text-muted">- no variables available -</small></h5>
+            <!-- /ko -->
+            <div data-bind="foreach: DataPortSet">
+                <div style="display:inline-block" data-bind="template: { name: 'Project_DataPortTemplate', data: { OriginalData: $data, DraggableCallback: $parents.find(parent =&gt; parent.Draggable).Draggable } }"></div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="Project_DataPortTemplate">
+    <!-- ko with: OriginalData -->
+        <!-- ko if: DataDirection === 1 -->
+        <div class="d-inline-block" style="width:15px; height:15px; border:1px solid green"
+             draggable="true"
+             data-html="true"
+             data-toggle="tooltip"
+             data-bind="dynamicTooltip: LiveDescription,
+                        callFunction: $parent.DraggableCallback,
+                        style: { 'background-color': AssociatedChannelHubSet().length &gt; 0 ? 'green' : 'transparent' }">
+        </div>
+        <!-- /ko -->
+        <!-- ko if: DataDirection === 2 -->
+        <div class="d-inline-block" style="width:15px; height:15px; border:1px solid red"
+             draggable="true"
+             data-html="true"
+             data-toggle="tooltip"
+             data-bind="dynamicTooltip: LiveDescription,
+                        callFunction: $parent.DraggableCallback,
+                        style: { 'background-color': AssociatedChannelHubSet().length &gt; 0 ? 'red' : 'transparent' }">
+        </div>
+        <!-- /ko -->
+    <!-- /ko -->
+</script>
+
+<script type="text/html" id="Project_PluginTemplate_DataGateway">
+<!--ko if: IsInSettingsMode -->
+    <form>
+        <!-- ko with: Description -->
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" value=""
+                       data-bind="checked: IsEnabled">
+                Enable Plugin
+            </label>
+        </div>
+        <!-- /ko -->
+        <div class="form-group">
+            <label class="form-control-label">Valid data age (ms):</label>
+            <input class="form-control" type="number" min="0" max="10000" step="1" data-bind="textInput: MaximumDatasetAge">  
+        </div>
+    </form>
+<!-- /ko -->
+
+<div id="Project_PluginTemplate_Content"></div>
+
+<!-- ko if: IsInSettingsMode -->
+    <button type="button"
+            class="btn btn-block btn-info"
+            role="button"
+            data-bind="click: DisableSettingsMode">
+        Back
+    </button>
+<!-- /ko -->
+</script>
+
+<script type="text/html" id="Project_PluginTemplate_DataWriter">
+    <!--ko if: IsInSettingsMode -->
+    <form>
+        <div class="form-check">
+            <!-- ko with: Description -->
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" type="checkbox" value=""
+                           data-bind="checked: IsEnabled">
+                    Enable Plugin
+                </label>
+            </div>
+            <!-- /ko -->
+        </div>
+        <div class="form-group">
+            <label class="form-control-label">File granularity:</label>
+            <select class="form-control"
+                    data-bind="options: EnumerationHelper.GetEnumValues('FileGranularityEnum'),
+                                optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('FileGranularityEnum', x) },
+                                value: FileGranularity">
+            </select>
+        </div>
+    </form>
+    <!-- /ko -->
+
+    <div id="Project_PluginTemplate_Content"></div>
+
+    <!-- ko if: IsInSettingsMode -->
+    <button type="button"
+            class="btn btn-block btn-info"
+            role="button"
+            data-bind="click: DisableSettingsMode">
+        Back
+    </button>
+    <!-- /ko -->
+</script>
+
+<!-- /ko -->

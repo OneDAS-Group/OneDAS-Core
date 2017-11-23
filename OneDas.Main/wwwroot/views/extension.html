@@ -1,0 +1,33 @@
+﻿<div class="container">
+    <div class="row my-5">
+        <div class="col">
+            <h2>Extensions and Updates</h2>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover small">
+        <thead class="thead-default">
+            <tr>
+                <th>Plugin</th>
+                <th>Name</th>
+                <th>Version</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: PluginHive.PluginIdentificationSet.get('DataGateway')">
+            <tr data-toggle="tooltip" data-bind="attr: {title: Description}">
+                <td>data gateway</td>
+                <td data-bind="text: Name"></td>
+                <td data-bind="text: ProductVersion"></td>
+            </tr>
+        </tbody>
+        <tbody data-bind="foreach: PluginHive.PluginIdentificationSet.get('DataWriter')">
+            <tr data-toggle="tooltip" data-bind="attr: {title: Description}">
+                <td>data writer</td>
+                <td data-bind="text: Name"></td>
+                <td data-bind="text: ProductVersion"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

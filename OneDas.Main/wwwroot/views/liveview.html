@@ -1,0 +1,85 @@
+﻿<!-- ko if: !$root.ActiveProject() -->
+<div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
+    <h1 class="display-4">Activate a project (<a data-bind="page-href: '../' + $root.WorkspaceSet()[1].Address, text: $root.WorkspaceSet()[1].Title"></a>) to get live data!</h1>
+    <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
+</div>
+<!-- /ko -->
+
+<!-- ACTIVE PROJECT -->
+<!-- ko if: $root.ActiveProject() && $root.OneDasState() !== 5 -->
+<!-- ko with: $root.ActiveProject -->
+<div id="ActiveProject_Header" class="container">
+    <div class="row align-content-end my-5" data-bind="with: Description">
+        <h1 class="display-4 mr-auto">Live View</h1>
+        <h1 class="display-small text-muted mt-auto" data-bind="text: CampaignPrimaryGroup + ' / ' + CampaignSecondaryGroup + ' / ' + CampaignName +  ' v' + CampaignVersion()"></h1>
+    </div>
+</div>
+<hr />
+<!-- /ko -->
+
+<div id="LiveView_Content">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- ko if: SelectedChannelHubSet().length === 0 -->
+            <h5 class="d-block text-center mt-5"><small class="text-muted">- no channel selected -</small></h5>
+            <!-- /ko -->
+            <div data-bind="foreach: SelectedChannelHubSet(), callFunction: InitializeCharts">
+                <canvas height="50" data-bind="attr: { id: 'chart_' + Guid }"></canvas>
+                <br />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="form-control-label" for="live_view_period">Period:</label>
+                <select class="form-control"
+                        id="live_view_period"
+                        data-bind="options: EnumerationHelper.GetEnumValues('LiveViewPeriodEnum'),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('LiveViewPeriodEnum', x) },
+                                            value: SelectedLiveViewPeriod"></select>
+            </div>
+            <!-- ko with: $root.ActiveProject -->
+                <form class="form-group">
+                    <div class="input-group mb-2">
+                        <div class="input-group-addon url"
+                             data-bind="click: ResetSearch">
+                            <!-- ko if: SearchString().length > 0 -->
+                            <strong>X</strong>
+                            <!-- /ko -->
+                            <!-- ko ifnot: SearchString().length > 0 -->
+                            <span class="fa fa-search fa-fix"></span>
+                            <!-- /ko -->
+                        </div>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Search ..."
+                               data-bind="textInput: SearchString">
+                    </div>
+                </form>
+                <div class="card my-2">
+                <div class="card-header">
+                    Available channels
+                </div>
+                <div class="card-body">
+                    <!-- ko if: ChannelHubSet().length == 0 -->
+                    <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: ChannelHubSet().length > 0 -->
+                    <div class="list-group list-group-root live-view-channel-hub-list" data-bind="foreach: GroupedChannelHubSet">
+                        <a class="list-group-item list-group-item-action noselect" role="button" data-toggle="collapse" data-bind="toggleArrow: {}, attr: { 'data-target': '#lvitem_' + $index() }">
+                            <span class="fa fa-caret-down"></span><span data-bind="text: Key"></span>
+                        </a>
+                        <div class="list-group collapse show" data-bind="attr: { id: 'lvitem_' + $index() }, foreach: Members().filter(channelHub => channelHub.AssociatedDataInput())">
+                            <a class="list-group-item list-group-item-action noselect url"
+                                data-bind="click: $parents[2].ToggleChannelHubIsSelected, style: { 'background-color': IsSelected() ? 'lightgreen' : 'transparent' }">
+                                <small data-bind="text: Name"></small>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <!-- /ko -->
+        </div>
+    </div>
+</div>
+<!-- /ko -->

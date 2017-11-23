@@ -1,7 +1,7 @@
-set "targetDirectory=.\..\OneDAS-Core\OneDas.Hdf.Explorer\wwwroot\lib"
+set "targetDirectory=.\..\OneDas.Hdf.Explorer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
-set "sourceDirectory=.\web\node_modules"
+set "sourceDirectory=.\..\..\OneDAS-Support\web\node_modules"
 
 set list="@aspnet\signalr-client\dist\browser"
 set list=%list%;bootstrap\dist   
