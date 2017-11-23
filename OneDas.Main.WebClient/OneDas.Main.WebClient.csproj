@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
@@ -11,14 +10,11 @@
     <OutputType>Library</OutputType>
     <StartupObject />
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="wwwroot\**" />
     <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties tsconfig_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
-
 </Project>

@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
-    <Description>Helper application to fetch data from running OneDAS systems.</Description>
-    <PackageTags>OneDAS data aquisition measurement HDF Import</PackageTags>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject />
