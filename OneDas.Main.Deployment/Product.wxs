@@ -4,7 +4,6 @@
            Name="OneDAS (Main)"
            Language="1033"
            Version="$(var.WixVersion)"
-           Manufacturer="Adwen"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
