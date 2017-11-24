@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Main", "OneDas.Main\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Main.WebClient", "OneDas.Main.WebClient\OneDas.Main.WebClient.csproj", "{E447632F-94EF-42F6-BF31-39547F84E232}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Main.Deployment", "OneDas.Main.Deployment\OneDas.Main.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,14 @@ Global
 		{E447632F-94EF-42F6-BF31-39547F84E232}.Release|x64.Build.0 = Release|Any CPU
 		{E447632F-94EF-42F6-BF31-39547F84E232}.Release|x86.ActiveCfg = Release|Any CPU
 		{E447632F-94EF-42F6-BF31-39547F84E232}.Release|x86.Build.0 = Release|Any CPU
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Debug|x64.ActiveCfg = Debug|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Debug|x86.ActiveCfg = Debug|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Debug|x86.Build.0 = Debug|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Release|Any CPU.ActiveCfg = Release|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Release|x64.ActiveCfg = Release|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Release|x86.ActiveCfg = Release|x86
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
