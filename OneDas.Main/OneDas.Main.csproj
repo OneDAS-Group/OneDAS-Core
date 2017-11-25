@@ -27,6 +27,7 @@
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneDas.Main.WebClient\OneDas.Main.WebClient.csproj" />
     <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
   <ItemGroup>

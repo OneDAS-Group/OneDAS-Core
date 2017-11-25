@@ -49,7 +49,7 @@
       <WixHarvestPath>..\$(WixApplicationName)\bin\$(WixConfiguration)\PublishOutput</WixHarvestPath>
       <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Major).$(Minor).$(Revision).0</DefineConstants>
     </PropertyGroup>
-    <Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(Configuration)" />
+    <Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(WixConfiguration) -o $(WixHarvestPath)" />
     <ItemGroup>
       <HarvestDirectory Include="$(WixHarvestPath)">
         <AutogenerateGuids>true</AutogenerateGuids>

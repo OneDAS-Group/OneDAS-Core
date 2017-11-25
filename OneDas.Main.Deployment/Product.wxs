@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*"
-           Name="OneDAS (Main)"
+           Name="OneDAS"
            Language="1033"
            Version="$(var.WixVersion)"
+           Manufacturer="OneDAS Group"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes"/>
 
@@ -24,6 +25,23 @@
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="DesktopFolder" Name="Desktop">
+        <Component Id="ApplicationShortcutDesktop" Guid="*">
+          <Shortcut Id="ApplicationDesktopShortcut"
+              Name="OneDAS"
+              Description="free open and flexible measurement data aquisuition system with plugin support"
+              Target="[INSTALLFOLDER]$(var.WixApplicationName).exe"
+              WorkingDirectory="INSTALLFOLDER"/>
+          <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+          <RegistryValue
+              Root="HKCU"
+              Key="Software/OneDAS.Main"
+              Name="installed"
+              Type="integer"
+              Value="1"
+              KeyPath="yes"/>
+        </Component>
+      </Directory>
       <Directory Id="ProgramFilesFolder">
         <Directory Id="CompanyFolder" Name="OneDAS">
           <Directory Id="INSTALLFOLDER" Name="Main" />
@@ -35,6 +53,7 @@
   <Fragment>
     <ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
       <ComponentGroupRef Id="AdwenMdasServerComponents" />
+      <ComponentRef Id="ApplicationShortcutDesktop" />
     </ComponentGroup>
   </Fragment>
 </Wix>
