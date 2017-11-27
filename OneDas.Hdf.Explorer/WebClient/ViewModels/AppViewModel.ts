@@ -233,7 +233,7 @@
 
     private RemoveTimeZoneOffset = (date: Date) =>
     {
-        return moment(date).add(<any>moment().utcOffset(), "minute").toDate()
+        return moment(date).add(<any>moment(date).utcOffset(), "minute").toDate()
     }
 
     private PrepareChart = async () =>
