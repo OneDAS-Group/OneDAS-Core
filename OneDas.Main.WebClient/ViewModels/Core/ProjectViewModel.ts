@@ -527,10 +527,10 @@
 
     public AddNewChannel = () =>
     {
-        this.NewChannelName().split("\n").forEach(channelName =>
+        this.ChannelHubSet.push(...this.NewChannelName().split("\n").map(channelName =>
         {
-            this.ChannelHubSet.push(new ChannelHubViewModel(new ChannelHubModel(channelName, this.NewChannelGroup(), this.NewChannelSelectedOneDasDataType(), this.NewChannelSelectedSampleRate())))
-        })
+            return new ChannelHubViewModel(new ChannelHubModel(channelName, this.NewChannelGroup(), this.NewChannelSelectedOneDasDataType(), this.NewChannelSelectedSampleRate()))
+        }))
 
         this.NewChannelCheckError(false)
         this.NewChannelName("")
