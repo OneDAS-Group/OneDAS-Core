@@ -103,6 +103,9 @@ namespace OneDas.Main
             // parse command line
             Bootloader.ParseCommandLineArgumentSet(args);
 
+            // ensure AppDomain shadow copying
+            Bootloader.EnsureAppDomainShadowCopying();
+
             // OneDasServiceController
             _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);
 
@@ -180,6 +183,40 @@ namespace OneDas.Main
                         Environment.Exit(0);
                     }
                 }
+            }
+        }
+
+        public static void EnsureAppDomainShadowCopying()
+        {
+            if (!AppDomain.CurrentDomain.ShadowCopyFiles)
+            {
+                string assemblyFilePath;
+                string directoryPath;
+                string cacheFilePath;
+                string configFilePath;
+
+                AppDomain appDomain;
+                AppDomainSetup appDomainSetup;
+
+                assemblyFilePath = Assembly.GetExecutingAssembly().Location;
+                directoryPath = Path.GetDirectoryName(assemblyFilePath);
+
+                cacheFilePath = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, ".cache");
+                configFilePath = $"{ assemblyFilePath }.config";
+
+                appDomainSetup = new AppDomainSetup()
+                {
+                    CachePath = cacheFilePath,
+                    ConfigurationFile = configFilePath,
+                    ShadowCopyDirectories = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "plugin"),
+                    ShadowCopyFiles = "true"
+                };
+               
+                appDomain = AppDomain.CreateDomain("ShadowCopyTest", AppDomain.CurrentDomain.Evidence, appDomainSetup);
+                appDomain.ExecuteAssembly(assemblyFilePath);
+                AppDomain.Unload(appDomain);
+                //Directory.Delete(cacheFilePath, true);
+                Environment.Exit(0);
             }
         }
 

@@ -8,7 +8,7 @@
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
     <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
     <MediaTemplate EmbedCab="yes"/>
 
     <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
@@ -52,7 +52,7 @@
 
   <Fragment>
     <ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
-      <ComponentGroupRef Id="AdwenMdasServerComponents" />
+      <ComponentGroupRef Id="OneDasMainComponents" />
       <ComponentRef Id="ApplicationShortcutDesktop" />
     </ComponentGroup>
   </Fragment>
