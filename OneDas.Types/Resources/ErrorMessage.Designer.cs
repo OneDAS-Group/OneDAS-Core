@@ -106,7 +106,7 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The requested period has alread been written before. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The requested period has already been written before. ähnelt.
         /// </summary>
         internal static string DataWriterPluginLogicBase_DateTimeAlreadyWritten {
             get {

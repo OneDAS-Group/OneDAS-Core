@@ -178,7 +178,7 @@
     <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute.</value>
   </data>
   <data name="DataWriterPluginLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
-    <value>The requested period has alread been written before.</value>
+    <value>The requested period has already been written before.</value>
   </data>
   <data name="ProjectDescription_InvalidFormatVersion" xml:space="preserve">
     <value>The format version must be equal or greater zero.</value>
