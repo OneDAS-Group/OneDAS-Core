@@ -85,6 +85,7 @@ namespace OneDas.Main.Core
         private List<DataGatewayPluginLogicBase> _dataGatewaySet;
         private List<DataWriterPluginLogicBase> _dataWriterSet;
         private IList<List<DataStorageBase>> _dataStorageSet;
+        private Exception _exception;
 
         #endregion
 
@@ -665,6 +666,13 @@ namespace OneDas.Main.Core
 
             currentWindowsDateTime = DateTime.UtcNow;
 
+            if (_exception != null)
+            {
+                this.DisposePlugins();
+                Bootloader.HandleException(_exception);
+                _exception = null;
+            }
+
             lock (_syncLock)
             {
                 if (this.OneDasState >= OneDasState.Ready)
@@ -937,8 +945,7 @@ namespace OneDas.Main.Core
                 }
                 catch (Exception ex)
                 {
-                    this.DisposePlugins();
-                    Bootloader.HandleException(ex);
+                    _exception = ex;
                 }
             }
         }
