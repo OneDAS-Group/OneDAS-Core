@@ -5,7 +5,7 @@ using OneDas.Infrastructure;
 namespace OneDas.Plugin
 {
     [DataContract]
-    public abstract class DataPort
+    public class DataPort
     {
         public DataPort(string name, OneDasDataType oneDasDataType, DataDirection dataDirection)
         {
