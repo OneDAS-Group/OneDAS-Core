@@ -1,4 +1,4 @@
-﻿abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase
+﻿abstract class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase
 {
     public OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
     public GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
@@ -24,6 +24,11 @@
         })
     }
 
+    public async InitializeAsync()
+    {
+        this.UpdateDataPortSet()
+    }
+
     public UpdateDataPortSet()
     {
         let index: number
@@ -34,13 +39,12 @@
         // inputs
         index = 0
 
-
-        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(module =>
+        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(oneDasModule =>
         {
             let group: ObservableGroup<DataPortViewModel>
 
-            group = new ObservableGroup<DataPortViewModel>(this._mapModuleNameAction(module), this.CreateDataPortSet(module, index))
-            index += module.Size;
+            group = new ObservableGroup<DataPortViewModel>(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index))
+            index += oneDasModule.Size;
 
             return group
         }))
@@ -64,7 +68,6 @@
 
     public CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number)
     {
-        let dataPortModelSet: any[]
         let prefix: string
 
         switch (oneDasModule.DataDirection)
@@ -78,16 +81,14 @@
                 break
         }
 
-        dataPortModelSet = Array.from(new Array(oneDasModule.Size), (x, i) => 
+        return Array.from(new Array(oneDasModule.Size), (x, i) => 
         {
             return {
                 Name: <string>prefix + " " + (index + i),
                 OneDasDataType: <OneDasDataTypeEnum>oneDasModule.DataType,
                 DataDirection: <DataDirectionEnum>oneDasModule.DataDirection
             }
-        })
-
-        return dataPortModelSet.map(dataPortModel => new DataPortViewModel(dataPortModel, this))
+        }).map(dataPortModel => new DataPortViewModel(dataPortModel, this))
     }
 
     public ExtendModel(model: any)

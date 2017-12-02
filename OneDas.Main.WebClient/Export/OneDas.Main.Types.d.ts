@@ -246,11 +246,12 @@ declare abstract class DataGatewayViewModelBase extends PluginViewModelBase {
     constructor(model: any, identification: PluginIdentificationViewModel);
     ExtendModel(model: any): void;
 }
-declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
+declare abstract class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
     OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
     GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>;
     private _mapModuleNameAction;
     constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel, mapModuleNameAction?: (oneDasModule: OneDasModuleViewModel) => string);
+    InitializeAsync(): Promise<void>;
     UpdateDataPortSet(): void;
     CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number): DataPortViewModel[];
     ExtendModel(model: any): void;

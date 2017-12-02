@@ -11,6 +11,7 @@ namespace OneDas.Plugin
 
         public DataGatewayPluginSettingsBase()
         {
+            //
         }
 
         #endregion

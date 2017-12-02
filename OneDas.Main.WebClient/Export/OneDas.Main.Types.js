@@ -587,7 +587,7 @@ class DataGatewayViewModelBase extends PluginViewModelBase {
         model.MaximumDatasetAge = Number.parseInt(this.MaximumDatasetAge());
     }
 }
-class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
+class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
     constructor(model, identification, oneDasModuleSelector, mapModuleNameAction = oneDasModule => oneDasModule.Size + "x " + EnumerationHelper.GetEnumLocalization("OneDasDataTypeEnum", oneDasModule.DataType)) {
         super(model, identification);
         this.OneDasModuleSelector = ko.observable(oneDasModuleSelector);
@@ -600,16 +600,21 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
             this.UpdateDataPortSet();
         });
     }
+    InitializeAsync() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.UpdateDataPortSet();
+        });
+    }
     UpdateDataPortSet() {
         let index;
         let groupedDataPortSet;
         groupedDataPortSet = [];
         // inputs
         index = 0;
-        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(module => {
+        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(oneDasModule => {
             let group;
-            group = new ObservableGroup(this._mapModuleNameAction(module), this.CreateDataPortSet(module, index));
-            index += module.Size;
+            group = new ObservableGroup(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index));
+            index += oneDasModule.Size;
             return group;
         }));
         // outputs
@@ -624,7 +629,6 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
         this.DataPortSet(MapMany(this.GroupedDataPortSet(), group => group.Members()));
     }
     CreateDataPortSet(oneDasModule, index) {
-        let dataPortModelSet;
         let prefix;
         switch (oneDasModule.DataDirection) {
             case DataDirectionEnum.Input:
@@ -634,14 +638,13 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
                 prefix = "Output";
                 break;
         }
-        dataPortModelSet = Array.from(new Array(oneDasModule.Size), (x, i) => {
+        return Array.from(new Array(oneDasModule.Size), (x, i) => {
             return {
                 Name: prefix + " " + (index + i),
                 OneDasDataType: oneDasModule.DataType,
                 DataDirection: oneDasModule.DataDirection
             };
-        });
-        return dataPortModelSet.map(dataPortModel => new DataPortViewModel(dataPortModel, this));
+        }).map(dataPortModel => new DataPortViewModel(dataPortModel, this));
     }
     ExtendModel(model) {
         super.ExtendModel(model);
