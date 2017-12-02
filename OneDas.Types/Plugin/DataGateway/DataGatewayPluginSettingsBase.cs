@@ -24,7 +24,7 @@ namespace OneDas.Plugin
 
         #region "Methods"
 
-        public abstract IEnumerable<DataPortBase> GetDataPortSet();
+        public abstract IEnumerable<DataPort> GetDataPortSet();
 
         public override void Validate()
         {

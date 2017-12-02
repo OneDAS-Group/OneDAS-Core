@@ -102,7 +102,7 @@ declare let ErrorMessage: {
 declare class ObservableGroup<T> {
     Key: string;
     Members: KnockoutObservableArray<T>;
-    constructor(key: string);
+    constructor(key: string, members?: T[]);
 }
 declare function ObservableGroupBy<T>(list: T[], nameGetter: (x: T) => string, groupNameGetter: (x: T) => string, filter: string): ObservableGroup<T>[];
 declare function AddToGroupedArray<T>(item: T, groupName: string, observableGroupSet: ObservableGroup<T>[]): void;
@@ -134,17 +134,17 @@ declare class ChannelHubViewModel implements IModelizable {
     SelectedTransferFunction: KnockoutObservable<TransferFunctionViewModel>;
     EvaluatedTransferFunctionSet: ((value: number) => number)[];
     IsSelected: KnockoutObservable<boolean>;
-    readonly AssociatedDataInput: KnockoutObservable<DataPortViewModelBase>;
-    readonly AssociatedDataOutputSet: KnockoutObservableArray<DataPortViewModelBase>;
+    readonly AssociatedDataInput: KnockoutObservable<DataPortViewModel>;
+    readonly AssociatedDataOutputSet: KnockoutObservableArray<DataPortViewModel>;
     private AssociatedDataInputId;
     private AssociatedDataOutputIdSet;
     constructor(channelHubModel: ChannelHubModel);
     GetTransformedValue: (value: any) => string;
     private CreateDefaultTransferFunction;
-    IsAssociationAllowed(dataPort: DataPortViewModelBase): boolean;
-    UpdateAssociation: (dataPort: DataPortViewModelBase) => void;
-    SetAssociation(dataPort: DataPortViewModelBase): void;
-    ResetAssociation(maintainWeakReference: boolean, ...dataPortSet: DataPortViewModelBase[]): void;
+    IsAssociationAllowed(dataPort: DataPortViewModel): boolean;
+    UpdateAssociation: (dataPort: DataPortViewModel) => void;
+    SetAssociation(dataPort: DataPortViewModel): void;
+    ResetAssociation(maintainWeakReference: boolean, ...dataPortSet: DataPortViewModel[]): void;
     ResetAllAssociations(maintainWeakReference: boolean): void;
     GetAssociatedDataInputId: () => string;
     GetAssociatedDataOutputIdSet: () => string[];
@@ -211,7 +211,7 @@ declare class TransferFunctionViewModel implements IModelizable {
     constructor(transferFunctionModel: TransferFunctionModel);
     ToModel(): TransferFunctionModel;
 }
-declare abstract class DataPortViewModelBase {
+declare class DataPortViewModel implements IModelizable {
     Name: KnockoutObservable<string>;
     readonly OneDasDataType: OneDasDataTypeEnum;
     readonly DataDirection: DataDirectionEnum;
@@ -219,9 +219,11 @@ declare abstract class DataPortViewModelBase {
     AssociatedChannelHubSet: KnockoutObservableArray<ChannelHubViewModel>;
     readonly AssociatedDataGateway: DataGatewayViewModelBase;
     readonly LiveDescription: KnockoutComputed<string>;
-    constructor(name: string, oneDasDataType: OneDasDataTypeEnum, dataDirection: DataDirectionEnum, associatedDataGateway: DataGatewayViewModelBase);
-    abstract GetId(): string;
+    constructor(dataPortModel: any, associatedDataGateway: DataGatewayViewModelBase);
+    GetId(): string;
     ToFullQualifiedIdentifier(): string;
+    ExtendModel(model: any): void;
+    ToModel(): any;
     ResetAssociations(maintainWeakReference: boolean): void;
 }
 declare abstract class PluginViewModelBase implements IModelizable {
@@ -240,8 +242,17 @@ declare abstract class PluginViewModelBase implements IModelizable {
 }
 declare abstract class DataGatewayViewModelBase extends PluginViewModelBase {
     readonly MaximumDatasetAge: KnockoutObservable<number>;
-    readonly DataPortSet: KnockoutObservableArray<DataPortViewModelBase>;
+    readonly DataPortSet: KnockoutObservableArray<DataPortViewModel>;
     constructor(model: any, identification: PluginIdentificationViewModel);
+    ExtendModel(model: any): void;
+}
+declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
+    OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
+    GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>;
+    private _mapModuleNameAction;
+    constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel, mapModuleNameAction?: (oneDasModule: OneDasModuleViewModel) => string);
+    UpdateDataPortSet(): void;
+    CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number): DataPortViewModel[];
     ExtendModel(model: any): void;
 }
 declare abstract class DataWriterViewModelBase extends PluginViewModelBase {

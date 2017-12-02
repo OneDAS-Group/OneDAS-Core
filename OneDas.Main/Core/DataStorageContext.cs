@@ -5,7 +5,7 @@ namespace OneDas.Main.Core
 {
     public class DataStorageContext
     {
-        public DataStorageContext(ChannelHub channelHub, DataGatewayPluginLogicBase dataGateway, DataPortBase dataPort)
+        public DataStorageContext(ChannelHub channelHub, DataGatewayPluginLogicBase dataGateway, DataPort dataPort)
         {
             this.ChannelHub = channelHub;
             this.DataGateway = dataGateway;
@@ -14,6 +14,6 @@ namespace OneDas.Main.Core
 
         public ChannelHub ChannelHub { get; private set; }
         public DataGatewayPluginLogicBase DataGateway { get; private set; }
-        public DataPortBase DataPort { get; private set; }
+        public DataPort DataPort { get; private set; }
     }
 }

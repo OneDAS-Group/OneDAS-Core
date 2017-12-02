@@ -1,6 +1,6 @@
 ﻿<div class="row my-5">
     <div class="col">
-        <h2 class="text-center">Welcome to MDAS server</h2>
+        <h2 class="text-center">Welcome to OneDAS server</h2>
         <p class="text-center subtitle">
             This is the home page - here you get a quick overview of the current status.
             Navigate to
@@ -9,7 +9,7 @@
             <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a>,
             <a data-bind="page-href: '../' + $root.WorkspaceSet()[4].Address, text: $root.WorkspaceSet()[4].Title"></a> or
             <a data-bind="page-href: '../' + $root.WorkspaceSet()[5].Address, text: $root.WorkspaceSet()[5].Title"></a>
-            to dive into MDAS.
+            to dive into OneDAS.
         </p>
     </div>
 </div>
@@ -51,7 +51,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <h5 class="list-group-item-heading">Discovery</h5>
                 </div>
-                <small class="list-group-item-text">Find other running MDAS that are registered to a central server.</small>
+                <small class="list-group-item-text">Find other running OneDAS that are registered to a central server.</small>
             </a>
         </div>       
     </div>
@@ -70,21 +70,21 @@
                         <th>
                             <div class="d-flex">
                                 <span class="mr-auto">Value</span>
-                                <span data-toggle="tooltip" title="Edit MDAS settings." 
-                                      data-bind="click: UpdateNewSlimMdasSettings">
+                                <span data-toggle="tooltip" title="Edit OneDAS settings." 
+                                      data-bind="click: UpdateNewSlimOneDasSettings">
                                     <span class="fa fa-cog mr-2 url"
                                           data-toggle="modal"
-                                          data-target="#Start_SlimMdasSettingsModal"
+                                          data-target="#Start_SlimOneDasSettingsModal"
                                           data-backdrop="static"></span>
                                 </span>
                             </div>                           
                         </th>
                     </tr>
                 </thead>
-                <tbody data-bind="with: SlimMdasSettings">
-                    <tr data-toggle="tooltip" title="Name of the current MDAS instance.">
-                        <td>MDAS Name</td>
-                        <td data-bind="text: MdasName"></td>
+                <tbody data-bind="with: SlimOneDasSettings">
+                    <tr data-toggle="tooltip" title="Name of the current OneDAS instance.">
+                        <td>OneDAS Name</td>
+                        <td data-bind="text: OneDasName"></td>
                     </tr>
                     <tr data-toggle="tooltip" title="Used to create a socket for web requests.">
                         <td>Web address</td>
@@ -100,35 +100,35 @@
     </div>
 </div>
 
-<div class="modal fade" id="Start_SlimMdasSettingsModal" role="dialog">
+<div class="modal fade" id="Start_SlimOneDasSettingsModal" role="dialog">
     <div class="modal-dialog modal-lg center-vertically">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">MDAS settings</h5>
+                <h5 class="modal-title">OneDAS settings</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body" data-bind="with: $root">
                 <form>
                     <div class="form-group">
-                        <label class="form-control-label" for="MdasName">MDAS Name:</label>
+                        <label class="form-control-label" for="OneDasName">OneDAS Name:</label>
                         <input type="text"
                                class="form-control modal-input-full-width"
-                               id="MdasName"
-                               data-bind="textInput: NewSlimMdasSettingsMdasName">
+                               id="OneDasName"
+                               data-bind="textInput: NewSlimOneDasSettingsOneDasName">
                     </div>
                     <div class="form-group">
                         <label class="form-control-label" for="AspBaseUrl">Web Address:</label>
                         <input type="text"
                                class="form-control modal-input-full-width"
                                id="AspBaseUrl"
-                               data-bind="textInput: NewSlimMdasSettingsAspBaseUrl">
+                               data-bind="textInput: NewSlimOneDasSettingsAspBaseUrl">
                     </div>
                     <div class="BaseFolder">
                         <label class="form-control-label" for="BaseDirectoryPath">Base Folder:</label>
                         <input type="text"
                                class="form-control modal-input-full-width"
                                id="BaseDirectoryPath"
-                               data-bind="textInput: NewSlimMdasSettingsBaseDirectoryPath">
+                               data-bind="textInput: NewSlimOneDasSettingsBaseDirectoryPath">
                     </div>
                 </form>
             </div>
@@ -137,7 +137,7 @@
                         class="btn btn-primary"
                         role="button"
                         data-dismiss="modal"
-                        data-bind="click: $root.SaveSlimMdasSettings">
+                        data-bind="click: $root.SaveSlimOneDasSettings">
                     Save settings
                 </button>
             </div>

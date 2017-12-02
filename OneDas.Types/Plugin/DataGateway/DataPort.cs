@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using OneDas.Infrastructure;
 
 namespace OneDas.Plugin
 {
     [DataContract]
-    public abstract class DataPortBase
+    public abstract class DataPort
     {
-        public DataPortBase(string name, OneDasDataType oneDasDataType, DataDirection dataDirection)
+        public DataPort(string name, OneDasDataType oneDasDataType, DataDirection dataDirection)
         {
             this.Name = name;
             this.OneDasDataType = oneDasDataType;
@@ -32,7 +31,10 @@ namespace OneDas.Plugin
         public DataGatewayPluginSettingsBase AssociatedDataGateway { get; set; }
 
         // methods
-        public abstract string GetId();
+        public string GetId()
+        {
+            return this.Name;
+        }
 
         public string ToUniqueIdentifier()
         {

@@ -12,8 +12,8 @@
     public EvaluatedTransferFunctionSet: ((value: number) => number)[]
     public IsSelected: KnockoutObservable<boolean>
 
-    public readonly AssociatedDataInput: KnockoutObservable<DataPortViewModelBase>
-    public readonly AssociatedDataOutputSet: KnockoutObservableArray<DataPortViewModelBase>
+    public readonly AssociatedDataInput: KnockoutObservable<DataPortViewModel>
+    public readonly AssociatedDataOutputSet: KnockoutObservableArray<DataPortViewModel>
 
     private AssociatedDataInputId: string
     private AssociatedDataOutputIdSet: string[]
@@ -31,8 +31,8 @@
         this.SelectedTransferFunction = ko.observable<TransferFunctionViewModel>(this.CreateDefaultTransferFunction())
         this.IsSelected = ko.observable<boolean>(false)
 
-        this.AssociatedDataInput = ko.observable<DataPortViewModelBase>()
-        this.AssociatedDataOutputSet = ko.observableArray<DataPortViewModelBase>()
+        this.AssociatedDataInput = ko.observable<DataPortViewModel>()
+        this.AssociatedDataOutputSet = ko.observableArray<DataPortViewModel>()
 
         this.AssociatedDataInputId = channelHubModel.SerializerDataInputId
         this.AssociatedDataOutputIdSet = channelHubModel.SerializerDataOutputIdSet
@@ -57,12 +57,12 @@
         return new TransferFunctionViewModel(new TransferFunctionModel("0001-01-01T00:00:00Z", "polynomial", "permanent", "1;0"))
     }
 
-    public IsAssociationAllowed(dataPort: DataPortViewModelBase)
+    public IsAssociationAllowed(dataPort: DataPortViewModel)
     {
         return (dataPort.OneDasDataType & 0xff) == (this.OneDasDataType() & 0xff)
     }
 
-    public UpdateAssociation = (dataPort: DataPortViewModelBase) =>
+    public UpdateAssociation = (dataPort: DataPortViewModel) =>
     {
         switch (dataPort.DataDirection)
         {
@@ -83,7 +83,7 @@
         this.SetAssociation(dataPort)
     }
 
-    public SetAssociation(dataPort: DataPortViewModelBase)
+    public SetAssociation(dataPort: DataPortViewModel)
     {
         dataPort.AssociatedChannelHubSet.push(this)
 
@@ -111,7 +111,7 @@
         }
     }
 
-    public ResetAssociation(maintainWeakReference: boolean, ...dataPortSet: DataPortViewModelBase[])
+    public ResetAssociation(maintainWeakReference: boolean, ...dataPortSet: DataPortViewModel[])
     {
         dataPortSet.forEach(dataPort =>
         {

@@ -38,7 +38,7 @@
     public SearchString: KnockoutObservable<string>
 
     // helper
-    public SelectedDataPort: KnockoutObservable<DataPortViewModelBase>
+    public SelectedDataPort: KnockoutObservable<DataPortViewModel>
     public SelectedChannelHub: KnockoutObservable<ChannelHubViewModel>
     public SelectedChannelHub_ContextMenu: KnockoutObservable<ChannelHubViewModel>
     public SelectedDataGateway: KnockoutObservable<DataGatewayViewModelBase>
@@ -83,7 +83,7 @@
         this.SearchString = ko.observable("")
         this.SearchString.extend({ rateLimit: { timeout: 300, method: "notifyWhenChangesStop" } })
 
-        this.SelectedDataPort = ko.observable<DataPortViewModelBase>()
+        this.SelectedDataPort = ko.observable<DataPortViewModel>()
         this.SelectedChannelHub = ko.observable<ChannelHubViewModel>()
         this.SelectedChannelHub_ContextMenu = ko.observable<ChannelHubViewModel>()
         this.SelectedDataGateway = ko.observable<DataGatewayViewModelBase>()
@@ -652,9 +652,9 @@
 
     private CreateDataPortIdMap = () =>
     {
-        let dataPortIdMap: Map<DataPortViewModelBase, string>
+        let dataPortIdMap: Map<DataPortViewModel, string>
 
-        dataPortIdMap = new Map<DataPortViewModelBase, string>()
+        dataPortIdMap = new Map<DataPortViewModel, string>()
 
         this.DataGatewaySet().forEach(dataGateway =>
         {
@@ -671,9 +671,9 @@
     {
         console.log("OneDAS: update mapping")
 
-        let inputSet: DataPortViewModelBase[]
-        let outputSet: DataPortViewModelBase[]
-        let dataPortIdMap: Map<DataPortViewModelBase, string>
+        let inputSet: DataPortViewModel[]
+        let outputSet: DataPortViewModel[]
+        let dataPortIdMap: Map<DataPortViewModel, string>
 
         inputSet = []
         outputSet = []
@@ -699,7 +699,7 @@
 
         this.ChannelHubSet().forEach(channelHub =>
         {
-            let dataPort: DataPortViewModelBase
+            let dataPort: DataPortViewModel
             let inputId: string
 
             this.SelectedChannelHub(channelHub)

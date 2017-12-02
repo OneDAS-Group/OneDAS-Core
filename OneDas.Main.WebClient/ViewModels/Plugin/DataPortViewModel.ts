@@ -1,4 +1,4 @@
-﻿abstract class DataPortViewModelBase
+﻿class DataPortViewModel implements IModelizable
 {
     // fields
     public Name: KnockoutObservable<string>
@@ -11,11 +11,11 @@
     public readonly LiveDescription: KnockoutComputed<string>
 
     // constructors
-    constructor(name: string, oneDasDataType: OneDasDataTypeEnum, dataDirection: DataDirectionEnum, associatedDataGateway: DataGatewayViewModelBase)
+    constructor(dataPortModel: any, associatedDataGateway: DataGatewayViewModelBase)
     {
-        this.Name = ko.observable(name)
-        this.OneDasDataType = oneDasDataType
-        this.DataDirection = dataDirection
+        this.Name = ko.observable(dataPortModel.Name)
+        this.OneDasDataType = dataPortModel.OneDasDataType
+        this.DataDirection = dataPortModel.DataDirection
 
         this.IsSelected = ko.observable<boolean>(false)
         this.AssociatedChannelHubSet = ko.observableArray<ChannelHubViewModel>()
@@ -40,11 +40,32 @@
     }
 
     // methods
-    abstract GetId(): string
+    public GetId(): string
+    {
+        return this.Name()
+    }
 
     public ToFullQualifiedIdentifier(): string
     {
         return this.AssociatedDataGateway.Description.Id + " (" + this.AssociatedDataGateway.Description.InstanceId + ") / " + this.GetId();
+    }
+
+    public ExtendModel(model: any)
+    {
+        //
+    }
+
+    public ToModel()
+    {
+        let model: any = {
+            Name: <string>this.Name(),
+            OneDasDataType: <OneDasDataTypeEnum>this.OneDasDataType,
+            DataDirection: <DataDirectionEnum>this.DataDirection
+        }
+
+        this.ExtendModel(model)
+
+        return model
     }
 
     public ResetAssociations(maintainWeakReference: boolean)

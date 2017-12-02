@@ -126,8 +126,8 @@ namespace OneDas.Infrastructure
 
         private void Initialize()
         {
-            IEnumerable<DataPortBase> dataPortSet;
-            IDictionary<DataPortBase, string> dataPortIdMap;
+            IEnumerable<DataPort> dataPortSet;
+            IDictionary<DataPort, string> dataPortIdMap;
 
             // assign correct data-gateway instances to all data ports
             this.DataGatewaySettingsSet.ToList().ForEach(dataGateway =>
@@ -148,7 +148,7 @@ namespace OneDas.Infrastructure
 
                 if (!string.IsNullOrWhiteSpace(inputId))
                 {
-                    DataPortBase foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == inputId);
+                    DataPort foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == inputId);
 
                     if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub))
                     {
@@ -158,7 +158,7 @@ namespace OneDas.Infrastructure
 
                 foreach (string outputId in channelHub.AssociatedDataOutputIdSet)
                 {
-                    DataPortBase foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == outputId);
+                    DataPort foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == outputId);
 
                     if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub))
                     {
@@ -170,7 +170,7 @@ namespace OneDas.Infrastructure
             this.ActiveChannelHubSet = this.ChannelHubSet.Where(channelHub => channelHub.AssociatedDataInput != null).ToList();
         }
 
-        private bool IsAssociationAllowed(DataPortBase dataPort, ChannelHub channelHub)
+        private bool IsAssociationAllowed(DataPort dataPort, ChannelHub channelHub)
         {
             return InfrastructureHelper.GetBitLength(dataPort.OneDasDataType, true) == InfrastructureHelper.GetBitLength(channelHub.OneDasDataType, true);
         }

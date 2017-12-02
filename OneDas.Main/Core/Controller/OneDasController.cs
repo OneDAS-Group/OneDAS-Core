@@ -854,7 +854,7 @@ namespace OneDas.Main.Core
             return DateTime.MinValue;
         }
 
-        public unsafe void WriteToDataStorage(ExtendedDataStorageBase dataStorage, int index, DataPortBase dataPort, byte status)
+        public unsafe void WriteToDataStorage(ExtendedDataStorageBase dataStorage, int index, DataPort dataPort, byte status)
         {
             byte* sourcePtr;
             byte* targetPtr;
@@ -880,7 +880,7 @@ namespace OneDas.Main.Core
             }
         }
 
-        public unsafe void WriteToDataPort(DataPortBase dataPort, DataStorageBase dataStorage, int index)
+        public unsafe void WriteToDataPort(DataPort dataPort, DataStorageBase dataStorage, int index)
         {
             byte* sourcePtr;
             byte* targetPtr;

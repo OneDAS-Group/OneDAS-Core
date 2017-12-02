@@ -3,10 +3,10 @@
     Key: string;
     Members: KnockoutObservableArray<T>
 
-    constructor(key: string)
+    constructor(key: string, members: T[] = new Array<T>())
     {
         this.Key = key
-        this.Members = ko.observableArray([])
+        this.Members = ko.observableArray(members)
     }
 }
 

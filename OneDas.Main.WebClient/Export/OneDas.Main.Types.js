@@ -138,9 +138,9 @@ ErrorMessage["Project_InvalidCharacters"] = "Use A-Z, a-z, 0-9 or _.";
 ErrorMessage["Project_InvalidLeadingCharacter"] = "Use A-Z or a-z as first character.";
 ErrorMessage["Project_NameEmpty"] = "The name must not be empty.";
 class ObservableGroup {
-    constructor(key) {
+    constructor(key, members = new Array()) {
         this.Key = key;
-        this.Members = ko.observableArray([]);
+        this.Members = ko.observableArray(members);
     }
 }
 function ObservableGroupBy(list, nameGetter, groupNameGetter, filter) {
@@ -499,12 +499,12 @@ class TransferFunctionViewModel {
         return new TransferFunctionModel(this.DateTime(), this.Type(), this.Option(), this.Argument());
     }
 }
-class DataPortViewModelBase {
+class DataPortViewModel {
     // constructors
-    constructor(name, oneDasDataType, dataDirection, associatedDataGateway) {
-        this.Name = ko.observable(name);
-        this.OneDasDataType = oneDasDataType;
-        this.DataDirection = dataDirection;
+    constructor(dataPortModel, associatedDataGateway) {
+        this.Name = ko.observable(dataPortModel.Name);
+        this.OneDasDataType = dataPortModel.OneDasDataType;
+        this.DataDirection = dataPortModel.DataDirection;
         this.IsSelected = ko.observable(false);
         this.AssociatedChannelHubSet = ko.observableArray();
         this.AssociatedDataGateway = associatedDataGateway;
@@ -519,8 +519,24 @@ class DataPortViewModelBase {
             return result;
         });
     }
+    // methods
+    GetId() {
+        return this.Name();
+    }
     ToFullQualifiedIdentifier() {
         return this.AssociatedDataGateway.Description.Id + " (" + this.AssociatedDataGateway.Description.InstanceId + ") / " + this.GetId();
+    }
+    ExtendModel(model) {
+        //
+    }
+    ToModel() {
+        let model = {
+            Name: this.Name(),
+            OneDasDataType: this.OneDasDataType,
+            DataDirection: this.DataDirection
+        };
+        this.ExtendModel(model);
+        return model;
     }
     ResetAssociations(maintainWeakReference) {
         if (this.AssociatedChannelHubSet().length > 0) {
@@ -569,6 +585,68 @@ class DataGatewayViewModelBase extends PluginViewModelBase {
     ExtendModel(model) {
         super.ExtendModel(model);
         model.MaximumDatasetAge = Number.parseInt(this.MaximumDatasetAge());
+    }
+}
+class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
+    constructor(model, identification, oneDasModuleSelector, mapModuleNameAction = oneDasModule => oneDasModule.Size + "x " + EnumerationHelper.GetEnumLocalization("OneDasDataTypeEnum", oneDasModule.DataType)) {
+        super(model, identification);
+        this.OneDasModuleSelector = ko.observable(oneDasModuleSelector);
+        this.GroupedDataPortSet = ko.observableArray();
+        this._mapModuleNameAction = mapModuleNameAction;
+        this.OneDasModuleSelector().OnInputModuleSetChanged.subscribe((sender, args) => {
+            this.UpdateDataPortSet();
+        });
+        this.OneDasModuleSelector().OnOutputModuleSetChanged.subscribe((sender, args) => {
+            this.UpdateDataPortSet();
+        });
+    }
+    UpdateDataPortSet() {
+        let index;
+        let groupedDataPortSet;
+        groupedDataPortSet = [];
+        // inputs
+        index = 0;
+        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(module => {
+            let group;
+            group = new ObservableGroup(this._mapModuleNameAction(module), this.CreateDataPortSet(module, index));
+            index += module.Size;
+            return group;
+        }));
+        // outputs
+        index = 0;
+        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().OutputModuleSet().map(oneDasModule => {
+            let group;
+            group = new ObservableGroup(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index));
+            index += oneDasModule.Size;
+            return group;
+        }));
+        this.GroupedDataPortSet(groupedDataPortSet);
+        this.DataPortSet(MapMany(this.GroupedDataPortSet(), group => group.Members()));
+    }
+    CreateDataPortSet(oneDasModule, index) {
+        let dataPortModelSet;
+        let prefix;
+        switch (oneDasModule.DataDirection) {
+            case DataDirectionEnum.Input:
+                prefix = "Input";
+                break;
+            case DataDirectionEnum.Output:
+                prefix = "Output";
+                break;
+        }
+        dataPortModelSet = Array.from(new Array(oneDasModule.Size), (x, i) => {
+            return {
+                Name: prefix + " " + (index + i),
+                OneDasDataType: oneDasModule.DataType,
+                DataDirection: oneDasModule.DataDirection
+            };
+        });
+        return dataPortModelSet.map(dataPortModel => new DataPortViewModel(dataPortModel, this));
+    }
+    ExtendModel(model) {
+        super.ExtendModel(model);
+        model.InputModuleSet = this.OneDasModuleSelector().InputModuleSet().map(moduleModel => moduleModel.ToModel());
+        model.OutputModuleSet = this.OneDasModuleSelector().OutputModuleSet().map(moduleModel => moduleModel.ToModel());
     }
 }
 class DataWriterViewModelBase extends PluginViewModelBase {

@@ -10,10 +10,10 @@
     public IsValid: KnockoutObservable<boolean>
     public ErrorMessage: KnockoutObservable<string>
 
-    private _dataPortSet: DataPortViewModelBase[]
+    private _dataPortSet: DataPortViewModel[]
     private _channelHubSet: ChannelHubViewModel[]
 
-    constructor(dataPortSet: DataPortViewModelBase[], channelHubSet: ChannelHubViewModel[])
+    constructor(dataPortSet: DataPortViewModel[], channelHubSet: ChannelHubViewModel[])
     {
         this._dataPortSet = dataPortSet
         this._channelHubSet = channelHubSet

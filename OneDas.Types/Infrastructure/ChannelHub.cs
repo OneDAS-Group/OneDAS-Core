@@ -11,7 +11,7 @@ namespace OneDas.Infrastructure
     {
         #region "Fields"
 
-        private List<DataPortBase> _associatedDataOutputSet;
+        private List<DataPort> _associatedDataOutputSet;
 
         #endregion
 
@@ -21,7 +21,7 @@ namespace OneDas.Infrastructure
         {
             this.TransferFunctionSet = new List<TransferFunction>();
 
-            _associatedDataOutputSet = new List<DataPortBase>();
+            _associatedDataOutputSet = new List<DataPort>();
         }
 
         #endregion
@@ -52,9 +52,9 @@ namespace OneDas.Infrastructure
         [DataMember]
         public List<TransferFunction> TransferFunctionSet { get; private set; }
 
-        public DataPortBase AssociatedDataInput { get; private set; }
+        public DataPort AssociatedDataInput { get; private set; }
 
-        public IEnumerable<DataPortBase> AssociatedDataOutputSet
+        public IEnumerable<DataPort> AssociatedDataOutputSet
         {
             get {
                 return _associatedDataOutputSet;
@@ -67,7 +67,7 @@ namespace OneDas.Infrastructure
 
         #region "Methods"
 
-        public void SetAssociation(DataPortBase dataPort)
+        public void SetAssociation(DataPort dataPort)
         {
             Contract.Requires(dataPort != null);
 
@@ -103,7 +103,7 @@ namespace OneDas.Infrastructure
         [OnDeserialized]
         private void OnDeserialized(StreamingContext streamingContext)
         {
-            _associatedDataOutputSet = new List<DataPortBase>();
+            _associatedDataOutputSet = new List<DataPort>();
         }
 
         #endregion

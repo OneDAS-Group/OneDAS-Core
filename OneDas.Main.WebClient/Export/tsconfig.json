@@ -41,9 +41,10 @@
     "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
     "./../ViewModels/Core/TransferFunctionViewModel.ts",
 
-    "./../ViewModels/Plugin/DataPortViewModelBase.ts",
+    "./../ViewModels/Plugin/DataPortViewModel.ts",
     "./../ViewModels/Plugin/PluginViewModelBase.ts",
     "./../ViewModels/Plugin/DataGatewayViewModelBase.ts",
+    "./../ViewModels/Plugin/ExtendedDataGatewayViewModelBase.ts",
     "./../ViewModels/Plugin/DataWriterViewModelBase.ts",
     "./../ViewModels/Plugin/PluginDescriptionViewModel.ts",
     "./../ViewModels/Plugin/PluginIdentificationViewModel.ts"
