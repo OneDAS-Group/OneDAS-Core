@@ -55,9 +55,6 @@ interface IEvent<TSender, TArgs> {
     subscribe(fn: (sender: TSender, args: TArgs) => void): void;
     unsubscribe(fn: (sender: TSender, args: TArgs) => void): void;
 }
-interface IModelizable {
-    ToModel(): any;
-}
 declare class ChannelHubModel {
     Name: string;
     Group: string;
@@ -122,7 +119,7 @@ declare class PluginHive {
     static Initialize: () => void;
     static FindPluginIdentification: (pluginTypeName: string, pluginId: string) => PluginIdentificationViewModel;
 }
-declare class ChannelHubViewModel implements IModelizable {
+declare class ChannelHubViewModel {
     Name: KnockoutObservable<string>;
     Group: KnockoutObservable<string>;
     readonly OneDasDataType: KnockoutObservable<OneDasDataTypeEnum>;
@@ -165,22 +162,22 @@ declare class ChannelHubViewModel implements IModelizable {
     NewTransferFunction: () => void;
     SelectTransferFunction: (transferFunction: TransferFunctionViewModel) => void;
 }
-declare class OneDasModuleViewModel implements IModelizable {
-    DataType: OneDasDataTypeEnum;
-    DataDirection: DataDirectionEnum;
-    Size: number;
+declare class OneDasModuleViewModel {
+    DataType: KnockoutObservable<OneDasDataTypeEnum>;
+    DataDirection: KnockoutObservable<DataDirectionEnum>;
+    Size: KnockoutObservable<number>;
     constructor(model: OneDasModuleModel);
     GetByteCount: (booleanBitSize?: number) => number;
-    ToModel(): {
-        DataType: OneDasDataTypeEnum;
-        Size: number;
-        DataDirection: DataDirectionEnum;
-    };
+    ToString(): string;
+    ExtendModel(model: any): void;
+    ToModel(): any;
 }
-declare abstract class OneDasModuleSelectorViewModel {
+declare abstract class OneDasModuleSelectorViewModelBase {
     AllowInputs: KnockoutObservable<boolean>;
     AllowOutputs: KnockoutObservable<boolean>;
     AllowBoolean: KnockoutObservable<boolean>;
+    InputSettingsTemplateName: KnockoutObservable<string>;
+    OutputSettingsTemplateName: KnockoutObservable<string>;
     InputCount: KnockoutObservable<number>;
     OutputCount: KnockoutObservable<number>;
     InputRemainingBytes: KnockoutObservable<number>;
@@ -194,16 +191,18 @@ declare abstract class OneDasModuleSelectorViewModel {
     private _onInputModuleSetChanged;
     private _onOutputModuleSetChanged;
     constructor(allowInputs: boolean, allowOutputs: boolean, allowBoolean: boolean);
-    readonly OnInputModuleSetChanged: IEvent<OneDasModuleSelectorViewModel, OneDasModuleViewModel[]>;
-    readonly OnOutputModuleSetChanged: IEvent<OneDasModuleSelectorViewModel, OneDasModuleViewModel[]>;
+    readonly OnInputModuleSetChanged: IEvent<OneDasModuleSelectorViewModelBase, OneDasModuleViewModel[]>;
+    readonly OnOutputModuleSetChanged: IEvent<OneDasModuleSelectorViewModelBase, OneDasModuleViewModel[]>;
     abstract Update(): void;
+    CreateInputModule(): OneDasModuleViewModel;
+    CreateOutputModule(): OneDasModuleViewModel;
     AddInputModule: () => void;
     DeleteInputModule: (value: OneDasModuleViewModel) => void;
     AddOutputModule: () => void;
     DeleteOutputModule: (value: OneDasModuleViewModel) => void;
     CheckDataType(oneDasDataType: OneDasDataTypeEnum): void;
 }
-declare class TransferFunctionViewModel implements IModelizable {
+declare class TransferFunctionViewModel {
     DateTime: KnockoutObservable<string>;
     Type: KnockoutObservable<string>;
     Option: KnockoutObservable<string>;
@@ -211,7 +210,7 @@ declare class TransferFunctionViewModel implements IModelizable {
     constructor(transferFunctionModel: TransferFunctionModel);
     ToModel(): TransferFunctionModel;
 }
-declare class DataPortViewModel implements IModelizable {
+declare class DataPortViewModel {
     Name: KnockoutObservable<string>;
     readonly OneDasDataType: OneDasDataTypeEnum;
     readonly DataDirection: DataDirectionEnum;
@@ -226,7 +225,7 @@ declare class DataPortViewModel implements IModelizable {
     ToModel(): any;
     ResetAssociations(maintainWeakReference: boolean): void;
 }
-declare abstract class PluginViewModelBase implements IModelizable {
+declare abstract class PluginViewModelBase {
     Description: PluginDescriptionViewModel;
     PluginIdentification: PluginIdentificationViewModel;
     IsInSettingsMode: KnockoutObservable<boolean>;
@@ -246,11 +245,10 @@ declare abstract class DataGatewayViewModelBase extends PluginViewModelBase {
     constructor(model: any, identification: PluginIdentificationViewModel);
     ExtendModel(model: any): void;
 }
-declare abstract class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
-    OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
+declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
+    OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModelBase>;
     GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>;
-    private _mapModuleNameAction;
-    constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel, mapModuleNameAction?: (oneDasModule: OneDasModuleViewModel) => string);
+    constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModelBase);
     InitializeAsync(): Promise<void>;
     UpdateDataPortSet(): void;
     CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number): DataPortViewModel[];
@@ -261,7 +259,7 @@ declare abstract class DataWriterViewModelBase extends PluginViewModelBase {
     constructor(model: any, identification: PluginIdentificationViewModel);
     ExtendModel(model: any): void;
 }
-declare class PluginDescriptionViewModel implements IModelizable {
+declare class PluginDescriptionViewModel {
     ProductVersion: number;
     Id: string;
     InstanceId: number;

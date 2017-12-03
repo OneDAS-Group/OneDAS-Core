@@ -14,6 +14,9 @@ namespace OneDas.Plugin
 
         public ExtendedDataGatewayPluginSettingsBase()
         {
+            this.InputModuleSet = new List<OneDasModule>();
+            this.OutputModuleSet = new List<OneDasModule>();
+
             this.UpdateDataPortSet();
         }
 

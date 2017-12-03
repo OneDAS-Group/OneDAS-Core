@@ -1,4 +1,4 @@
-﻿abstract class PluginViewModelBase implements IModelizable
+﻿abstract class PluginViewModelBase
 {
     public Description: PluginDescriptionViewModel
     public PluginIdentification: PluginIdentificationViewModel

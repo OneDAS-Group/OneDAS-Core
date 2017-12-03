@@ -1,4 +1,4 @@
-﻿class ProjectDescriptionViewModel implements IModelizable
+﻿class ProjectDescriptionViewModel
 {
     public FormatVersion: number
     public Guid: string

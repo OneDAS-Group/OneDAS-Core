@@ -1,4 +1,4 @@
-﻿class PluginDescriptionViewModel implements IModelizable
+﻿class PluginDescriptionViewModel
 {
     public ProductVersion: number
     public Id: string

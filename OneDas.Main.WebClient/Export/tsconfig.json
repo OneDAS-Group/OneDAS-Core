@@ -23,7 +23,6 @@
     "./../Core/ActionResponse.ts",
     "./../Core/EventDispatcher.ts",
     "./../Core/IEvent.ts",
-    "./../Core/IModelizable.ts",
 
     "./../Models/ChannelHubModel.ts",
     "./../Models/OneDasModuleModel.ts",
@@ -38,7 +37,7 @@
 
     "./../ViewModels/Core/ChannelHubViewModel.ts",
     "./../ViewModels/Core/OneDasModuleViewModel.ts",
-    "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
+    "./../ViewModels/Core/OneDasModuleSelectorViewModelBase.ts",
     "./../ViewModels/Core/TransferFunctionViewModel.ts",
 
     "./../ViewModels/Plugin/DataPortViewModel.ts",

@@ -1,4 +1,4 @@
-﻿class DataPortViewModel implements IModelizable
+﻿class DataPortViewModel
 {
     // fields
     public Name: KnockoutObservable<string>

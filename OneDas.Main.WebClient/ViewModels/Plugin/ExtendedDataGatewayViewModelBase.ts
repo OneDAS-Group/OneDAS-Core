@@ -1,17 +1,14 @@
-﻿abstract class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase
+﻿abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase
 {
-    public OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
+    public OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModelBase>
     public GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
 
-    private _mapModuleNameAction: (oneDasModule: OneDasModuleViewModel) => string
-
-    constructor(model, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel, mapModuleNameAction: (oneDasModule: OneDasModuleViewModel) => string = oneDasModule => oneDasModule.Size + "x " + EnumerationHelper.GetEnumLocalization("OneDasDataTypeEnum", oneDasModule.DataType))
+    constructor(model, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModelBase)
     {
         super(model, identification)
 
-        this.OneDasModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasModuleSelector)
+        this.OneDasModuleSelector = ko.observable<OneDasModuleSelectorViewModelBase>(oneDasModuleSelector)
         this.GroupedDataPortSet = ko.observableArray()
-        this._mapModuleNameAction = mapModuleNameAction
 
         this.OneDasModuleSelector().OnInputModuleSetChanged.subscribe((sender, args) =>
         {
@@ -43,8 +40,8 @@
         {
             let group: ObservableGroup<DataPortViewModel>
 
-            group = new ObservableGroup<DataPortViewModel>(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index))
-            index += oneDasModule.Size;
+            group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
+            index += oneDasModule.Size();
 
             return group
         }))
@@ -56,8 +53,8 @@
         {
             let group: ObservableGroup<DataPortViewModel>
 
-            group = new ObservableGroup<DataPortViewModel>(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index))
-            index += oneDasModule.Size;
+            group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
+            index += oneDasModule.Size();
 
             return group
         }))
@@ -70,7 +67,7 @@
     {
         let prefix: string
 
-        switch (oneDasModule.DataDirection)
+        switch (oneDasModule.DataDirection())
         {
             case DataDirectionEnum.Input:
                 prefix = "Input"
@@ -85,8 +82,8 @@
         {
             return {
                 Name: <string>prefix + " " + (index + i),
-                OneDasDataType: <OneDasDataTypeEnum>oneDasModule.DataType,
-                DataDirection: <DataDirectionEnum>oneDasModule.DataDirection
+                OneDasDataType: <OneDasDataTypeEnum>oneDasModule.DataType(),
+                DataDirection: <DataDirectionEnum>oneDasModule.DataDirection()
             }
         }).map(dataPortModel => new DataPortViewModel(dataPortModel, this))
     }

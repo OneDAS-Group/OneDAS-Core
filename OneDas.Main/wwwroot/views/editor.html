@@ -871,55 +871,15 @@
     <div class="card my-2">
         <div class="card-header">
             <!-- ko if: Number.isNaN(InputRemainingBytes()) -->
-            <span>Input modules (Rx-PDOs)</span>
+                <span>Input modules (Rx-PDOs)</span>
             <!-- /ko -->
-            <!-- ko if: !Number.isNaN(InputRemainingBytes()) -->
-            <span data-bind="text: 'Input modules (Rx-PDOs, ' + InputRemainingBytes() + ' bytes left)'"></span>
+            <!-- ko ifnot: Number.isNaN(InputRemainingBytes()) -->
+                <span data-bind="text: 'Input modules (Rx-PDOs, ' + InputRemainingBytes() + ' bytes left)'"></span>
             <!-- /ko -->
         </div>
         <div class="card-body">
-            <form>
-                <div class="form-group">
-                    <div class="row">
-                        <div class="d-flex col-9">
-                            <div class="w-50 mr-1">
-                                <input type="number" min="1" step="1" class="form-control" data-bind="value: InputCount, attr: { max: InputRemainingCount }" />
-                            </div>
-                            <div class="w-50 ml-1">
-                                <!-- ko if: AllowBoolean -->
-                                <select class="form-control"
-                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
-                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedInputDataType"></select>
-                                <!-- /ko -->
-                                <!-- ko ifnot: AllowBoolean -->
-                                <select class="form-control"
-                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
-                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedInputDataType"></select>
-                                <!-- /ko -->
-                            </div>
-                        </div>
-                        <div class="d-flex col-3">
-                            <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddInputModule">Add</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <!-- ko if: InputModuleSet().length > 0 -->
-                    <div class="list-group">
-                        <!-- ko foreach: InputModuleSet -->
-                        <a class="d-flex list-group-item list-group-item-action noselect align-content-between" role="button" data-bind="click: $parent.DeleteInputModule">
-                            <span data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', $data.DataType) + ' [ ' + $data.Size + 'x ]'"></span>
-                        </a>
-                        <!-- /ko -->
-                    </div>
-                    <!-- /ko -->
-                    <!-- ko if: InputModuleSet().length === 0 -->
-                        <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
-                    <!-- /ko -->
-                </div>
-            </form>
+            <!-- ko template: { name: InputSettingsTemplateName} -->
+            <!-- /ko -->
         </div>
     </div>
     <!-- /ko -->
@@ -927,62 +887,112 @@
     <div class="card my-2">
         <div class="card-header">
             <!-- ko if: Number.isNaN(OutputRemainingBytes()) -->
-            <span>Output modules (Tx-PDOs)</span>
+                <span>Output modules (Tx-PDOs)</span>
             <!-- /ko -->
-            <!-- ko if: !Number.isNaN(OutputRemainingBytes()) -->
-            <span data-bind="text: 'Output modules (Tx-PDOs, ' + OutputRemainingBytes() + ' bytes left)'"></span>
+            <!-- ko ifnot: Number.isNaN(OutputRemainingBytes()) -->
+                <span data-bind="text: 'Output modules (Tx-PDOs, ' + OutputRemainingBytes() + ' bytes left)'"></span>
             <!-- /ko -->
         </div>
         <div class="card-body">
-            <form>
-                <div class="form-group">
-                    <div class="row">
-                        <div class="d-flex col-9">
-                            <div class="w-50 mr-1">
-                                <input type="number" min="1" step="1" class="form-control" data-bind="value: OutputCount, attr: { max: OutputRemainingCount }" />
-                            </div>
-                            <div class="w-50 ml-1">
-                                <!-- ko if: AllowBoolean -->
-                                <select class="form-control"
-                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
-                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedOutputDataType"></select>
-                                <!-- /ko -->
-                                <!-- ko ifnot: AllowBoolean -->
-                                <select class="form-control"
-                                        data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
-                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedOutputDataType"></select>
-                                <!-- /ko -->
-                            </div>
-                        </div>
-                        <div class="d-flex col-3">
-                            <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddOutputModule">Add</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <!-- ko if: OutputModuleSet().length > 0 -->
-                    <div class="list-group">
-                        <!-- ko foreach: OutputModuleSet -->
-                        <a class="d-flex list-group-item list-group-item-action noselect align-content-between" role="button" data-bind="click: $parent.DeleteOutputModule">
-                            <span data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', $data.DataType) + ' [ ' + $data.Size + 'x ]'"></span>
-                        </a>
-                        <!-- /ko -->
-                    </div>
-                    <!-- /ko -->
-                    <!-- ko if: OutputModuleSet().length === 0 -->
-                    <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
-                    <!-- /ko -->
-                </div>
-            </form>
+            <!-- ko template: { name: OutputSettingsTemplateName } -->
+            <!-- /ko -->
         </div>
     </div>
     <!-- /ko -->
 
 </script>
 
-<script type="xml/html" id="Project_GroupedDataPortSetTemplate">
+<script type="text/html" id="Project_OneDasModuleSelectorInputSettingsTemplate">
+    <form>
+        <div class="form-group">
+            <div class="row">
+                <div class="d-flex col-9">
+                    <div class="w-50 mr-1">
+                        <input type="number" min="1" step="1" class="form-control" data-bind="value: InputCount, attr: { max: InputRemainingCount }" />
+                    </div>
+                    <div class="w-50 ml-1">
+                        <!-- ko if: AllowBoolean -->
+                        <select class="form-control"
+                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedInputDataType"></select>
+                        <!-- /ko -->
+                        <!-- ko ifnot: AllowBoolean -->
+                        <select class="form-control"
+                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedInputDataType"></select>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="d-flex col-3">
+                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddInputModule">Add</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <!-- ko if: InputModuleSet().length > 0 -->
+            <div class="list-group">
+                <!-- ko foreach: InputModuleSet -->
+                    <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteInputModule">
+                        <span data-bind="text: ToString()"></span>
+                    </a>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <!-- ko if: InputModuleSet().length === 0 -->
+            <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+            <!-- /ko -->
+        </div>
+    </form>
+</script>
+
+<script type="text/html" id="Project_OneDasModuleSelectorOutputSettingsTemplate">
+    <form>
+        <div class="form-group">
+            <div class="row">
+                <div class="d-flex col-9">
+                    <div class="w-50 mr-1">
+                        <input type="number" min="1" step="1" class="form-control" data-bind="value: OutputCount, attr: { max: OutputRemainingCount }" />
+                    </div>
+                    <div class="w-50 ml-1">
+                        <!-- ko if: AllowBoolean -->
+                        <select class="form-control"
+                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedOutputDataType"></select>
+                        <!-- /ko -->
+                        <!-- ko ifnot: AllowBoolean -->
+                        <select class="form-control"
+                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
+                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
+                                            value: SelectedOutputDataType"></select>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="d-flex col-3">
+                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddOutputModule">Add</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <!-- ko if: OutputModuleSet().length > 0 -->
+            <div class="list-group">
+                <!-- ko foreach: OutputModuleSet -->
+                    <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteOutputModule">
+                        <span data-bind="text: ToString()"></span>
+                    </a>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <!-- ko if: OutputModuleSet().length === 0 -->
+            <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+            <!-- /ko -->
+        </div>
+    </form>
+</script>
+
+<script type="text/html" id="Project_GroupedDataPortSetTemplate">
     <div class="card my-2">
         <div class="card-header">
             Variables
@@ -1001,7 +1011,7 @@
     </div>
 </script>
 
-<script type="xml/html" id="Project_DataPortSetTemplate">
+<script type="text/html" id="Project_DataPortSetTemplate">
     <div class="card my-2">
         <div class="card-header">
             Variables

@@ -1,4 +1,4 @@
-﻿class TransferFunctionViewModel implements IModelizable
+﻿class TransferFunctionViewModel
 {
     public DateTime: KnockoutObservable<string>
     public Type: KnockoutObservable<string>

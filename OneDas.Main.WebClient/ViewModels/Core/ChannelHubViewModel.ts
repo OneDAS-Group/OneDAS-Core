@@ -1,4 +1,4 @@
-﻿class ChannelHubViewModel implements IModelizable
+﻿class ChannelHubViewModel
 {
     public Name: KnockoutObservable<string>
     public Group: KnockoutObservable<string>

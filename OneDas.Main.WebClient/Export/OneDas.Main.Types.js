@@ -389,41 +389,42 @@ class ChannelHubViewModel {
 class OneDasModuleViewModel {
     constructor(model) {
         this.GetByteCount = (booleanBitSize) => {
-            if (booleanBitSize && this.DataType === OneDasDataTypeEnum.BOOLEAN) {
+            if (booleanBitSize && this.DataType() === OneDasDataTypeEnum.BOOLEAN) {
                 booleanBitSize = parseInt(booleanBitSize);
-                return Math.ceil(booleanBitSize * this.Size / 8);
+                return Math.ceil(booleanBitSize * this.Size() / 8);
             }
             else {
-                return (this.DataType & 0x0FF) / 8 * this.Size;
+                return (this.DataType() & 0x0FF) / 8 * this.Size();
             }
         };
-        if (!Number.isInteger(model.Size)) {
-            throw new Error("The value of size must be integer.");
-        }
-        if (model.Size <= 0) {
-            throw new Error("The minimum value for size is 1.");
-        }
-        this.DataType = model.DataType;
-        this.DataDirection = model.DataDirection;
-        this.Size = model.Size;
+        this.DataType = ko.observable(model.DataType);
+        this.DataDirection = ko.observable(model.DataDirection);
+        this.Size = ko.observable(model.Size);
+    }
+    ToString() {
+        return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.DataType()) + ' [ ' + this.Size() + 'x ]';
+    }
+    ExtendModel(model) {
+        //
     }
     ToModel() {
-        return {
-            DataType: this.DataType,
-            Size: this.Size,
-            DataDirection: this.DataDirection
+        let model = {
+            DataType: this.DataType(),
+            Size: this.Size(),
+            DataDirection: this.DataDirection()
         };
+        this.ExtendModel(model);
+        return model;
     }
 }
-class OneDasModuleSelectorViewModel {
+class OneDasModuleSelectorViewModelBase {
     constructor(allowInputs, allowOutputs, allowBoolean) {
         // commands
         this.AddInputModule = () => {
             if (this.AllowInputs()) {
-                this.InputCount(this.InputCount());
                 this.CheckDataType(this.SelectedInputDataType());
                 if (Number.isNaN(this.InputCount()) || this.InputCount() <= this.InputRemainingCount()) {
-                    this.InputModuleSet.push(new OneDasModuleViewModel(new OneDasModuleModel(this.SelectedInputDataType(), DataDirectionEnum.Input, this.InputCount())));
+                    this.InputModuleSet.push(this.CreateInputModule());
                 }
                 this._onInputModuleSetChanged.dispatch(this, this.InputModuleSet());
             }
@@ -438,10 +439,9 @@ class OneDasModuleSelectorViewModel {
         };
         this.AddOutputModule = () => {
             if (this.AllowOutputs()) {
-                this.OutputCount(this.OutputCount());
                 this.CheckDataType(this.SelectedOutputDataType());
                 if (Number.isNaN(this.OutputCount()) || this.OutputCount() <= this.OutputRemainingCount()) {
-                    this.OutputModuleSet.push(new OneDasModuleViewModel(new OneDasModuleModel(this.SelectedOutputDataType(), DataDirectionEnum.Output, this.OutputCount())));
+                    this.OutputModuleSet.push(this.CreateOutputModule());
                 }
                 this._onOutputModuleSetChanged.dispatch(this, this.OutputModuleSet());
             }
@@ -457,6 +457,8 @@ class OneDasModuleSelectorViewModel {
         this.AllowInputs = ko.observable(allowInputs);
         this.AllowOutputs = ko.observable(allowOutputs);
         this.AllowBoolean = ko.observable(allowBoolean);
+        this.InputSettingsTemplateName = ko.observable("Project_OneDasModuleSelectorInputSettingsTemplate");
+        this.OutputSettingsTemplateName = ko.observable("Project_OneDasModuleSelectorOutputSettingsTemplate");
         this.InputCount = ko.observable(1);
         this.OutputCount = ko.observable(1);
         this.InputRemainingBytes = ko.observable(NaN);
@@ -480,6 +482,12 @@ class OneDasModuleSelectorViewModel {
     }
     get OnOutputModuleSetChanged() {
         return this._onOutputModuleSetChanged;
+    }
+    CreateInputModule() {
+        return new OneDasModuleViewModel(new OneDasModuleModel(this.SelectedInputDataType(), DataDirectionEnum.Input, this.InputCount()));
+    }
+    CreateOutputModule() {
+        return new OneDasModuleViewModel(new OneDasModuleModel(this.SelectedOutputDataType(), DataDirectionEnum.Output, this.OutputCount()));
     }
     CheckDataType(oneDasDataType) {
         if (!this.AllowBoolean() && oneDasDataType === OneDasDataTypeEnum.BOOLEAN) {
@@ -587,12 +595,11 @@ class DataGatewayViewModelBase extends PluginViewModelBase {
         model.MaximumDatasetAge = Number.parseInt(this.MaximumDatasetAge());
     }
 }
-class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
-    constructor(model, identification, oneDasModuleSelector, mapModuleNameAction = oneDasModule => oneDasModule.Size + "x " + EnumerationHelper.GetEnumLocalization("OneDasDataTypeEnum", oneDasModule.DataType)) {
+class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
+    constructor(model, identification, oneDasModuleSelector) {
         super(model, identification);
         this.OneDasModuleSelector = ko.observable(oneDasModuleSelector);
         this.GroupedDataPortSet = ko.observableArray();
-        this._mapModuleNameAction = mapModuleNameAction;
         this.OneDasModuleSelector().OnInputModuleSetChanged.subscribe((sender, args) => {
             this.UpdateDataPortSet();
         });
@@ -613,16 +620,16 @@ class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
         index = 0;
         groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(oneDasModule => {
             let group;
-            group = new ObservableGroup(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index));
-            index += oneDasModule.Size;
+            group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
+            index += oneDasModule.Size();
             return group;
         }));
         // outputs
         index = 0;
         groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().OutputModuleSet().map(oneDasModule => {
             let group;
-            group = new ObservableGroup(this._mapModuleNameAction(oneDasModule), this.CreateDataPortSet(oneDasModule, index));
-            index += oneDasModule.Size;
+            group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
+            index += oneDasModule.Size();
             return group;
         }));
         this.GroupedDataPortSet(groupedDataPortSet);
@@ -630,7 +637,7 @@ class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
     }
     CreateDataPortSet(oneDasModule, index) {
         let prefix;
-        switch (oneDasModule.DataDirection) {
+        switch (oneDasModule.DataDirection()) {
             case DataDirectionEnum.Input:
                 prefix = "Input";
                 break;
@@ -641,8 +648,8 @@ class ExtendedDataGatewayViewModel extends DataGatewayViewModelBase {
         return Array.from(new Array(oneDasModule.Size), (x, i) => {
             return {
                 Name: prefix + " " + (index + i),
-                OneDasDataType: oneDasModule.DataType,
-                DataDirection: oneDasModule.DataDirection
+                OneDasDataType: oneDasModule.DataType(),
+                DataDirection: oneDasModule.DataDirection()
             };
         }).map(dataPortModel => new DataPortViewModel(dataPortModel, this));
     }

@@ -1,4 +1,4 @@
-﻿class ProjectViewModel implements IModelizable
+﻿class ProjectViewModel
 {
     // settings
     public Description: ProjectDescriptionViewModel

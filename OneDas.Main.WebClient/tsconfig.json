@@ -28,7 +28,6 @@
     "./Core/ChartContext.ts",
     "./Core/EventDispatcher.ts",
     "./Core/IEvent.ts",
-    "./Core/IModelizable.ts",
     "./Core/LiveViewPeriodEnum.ts",
     "./Core/WorkspaceBase.ts",
 
@@ -49,7 +48,7 @@
     "./ViewModels/Core/MessageLogEntryViewModel.ts",
     "./ViewModels/Core/MultiMappingEditorViewModel.ts",
     "./ViewModels/Core/OneDasModuleViewModel.ts",
-    "./ViewModels/Core/OneDasModuleSelectorViewModel.ts",
+    "./ViewModels/Core/OneDasModuleSelectorViewModelBase.ts",
     "./ViewModels/Core/ProjectViewModel.ts",
     "./ViewModels/Core/ProjectDescriptionViewModel.ts",
     "./ViewModels/Core/TransferFunctionViewModel.ts",
