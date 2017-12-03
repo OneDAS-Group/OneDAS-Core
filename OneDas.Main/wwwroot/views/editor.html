@@ -1,7 +1,7 @@
 ﻿<!-- ko if: !Project() -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
     <h1 class="display-4">Open a project or create a new one!</h1>
-    <p>Here you can you can change plugin settings, specify MDAS channels and edit the input-output variable mapping.</p>
+    <p>Here you can you can change plugin settings, specify channels and edit the input-output variable mapping.</p>
     <p>&nbsp;</p>
     <div class="btn-group" role="group">
         <button class="btn btn-outline-primary btn-wide"
@@ -524,17 +524,15 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-control-label" for="new_channel_mdas_data_type">Data type:</label>
+                        <label class="form-control-label">Data type:</label>
                         <select class="form-control"
-                                id="new_channel_mdas_data_type"
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
                                            value: NewChannelSelectedOneDasDataType"></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-control-label" for="new_channel_sample_rate">Sample rate:</label>
+                        <label class="form-control-label">Sample rate:</label>
                         <select class="form-control"
-                                id="new_channel_sample_rate"
                                 data-bind="options: EnumerationHelper.GetEnumValues('SampleRateEnum'),
                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('SampleRateEnum', x) },
                                            value: NewChannelSelectedSampleRate"></select>
@@ -878,8 +876,24 @@
             <!-- /ko -->
         </div>
         <div class="card-body">
-            <!-- ko template: { name: InputSettingsTemplateName} -->
+            <!-- ko template: { name: InputSettingsTemplateName, data: NewInputModule } -->
             <!-- /ko -->
+            <form>
+                <div class="form-group">
+                    <!-- ko if: InputModuleSet().length > 0 -->
+                    <div class="list-group">
+                        <!-- ko foreach: InputModuleSet -->
+                        <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteInputModule">
+                            <span data-bind="text: ToString()"></span>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: InputModuleSet().length === 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+                    <!-- /ko -->
+                </div>
+            </form>
         </div>
     </div>
     <!-- /ko -->
@@ -894,8 +908,24 @@
             <!-- /ko -->
         </div>
         <div class="card-body">
-            <!-- ko template: { name: OutputSettingsTemplateName } -->
+            <!-- ko template: { name: OutputSettingsTemplateName, data: NewOutputModule } -->
             <!-- /ko -->
+            <form>
+                <div class="form-group">
+                    <!-- ko if: OutputModuleSet().length > 0 -->
+                    <div class="list-group">
+                        <!-- ko foreach: OutputModuleSet -->
+                        <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteOutputModule">
+                            <span data-bind="text: ToString()"></span>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: OutputModuleSet().length === 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+                    <!-- /ko -->
+                </div>
+            </form>
         </div>
     </div>
     <!-- /ko -->
@@ -908,41 +938,27 @@
             <div class="row">
                 <div class="d-flex col-9">
                     <div class="w-50 mr-1">
-                        <input type="number" min="1" step="1" class="form-control" data-bind="value: InputCount, attr: { max: InputRemainingCount }" />
+                        <input type="number" min="1" step="1" class="form-control" data-bind="value: Size, attr: { max: $parent.InputRemainingCount }" />
                     </div>
                     <div class="w-50 ml-1">
-                        <!-- ko if: AllowBoolean -->
+                        <!-- ko if: $parent.AllowBoolean -->
                         <select class="form-control"
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
                                             optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedInputDataType"></select>
+                                            value: DataType"></select>
                         <!-- /ko -->
-                        <!-- ko ifnot: AllowBoolean -->
+                        <!-- ko ifnot: $parent.AllowBoolean -->
                         <select class="form-control"
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
                                             optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedInputDataType"></select>
+                                            value: DataType"></select>
                         <!-- /ko -->
                     </div>
                 </div>
                 <div class="d-flex col-3">
-                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddInputModule">Add</button>
+                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: $parent.AddInputModule">Add</button>
                 </div>
             </div>
-        </div>
-        <div class="form-group">
-            <!-- ko if: InputModuleSet().length > 0 -->
-            <div class="list-group">
-                <!-- ko foreach: InputModuleSet -->
-                    <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteInputModule">
-                        <span data-bind="text: ToString()"></span>
-                    </a>
-                <!-- /ko -->
-            </div>
-            <!-- /ko -->
-            <!-- ko if: InputModuleSet().length === 0 -->
-            <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
-            <!-- /ko -->
         </div>
     </form>
 </script>
@@ -953,41 +969,27 @@
             <div class="row">
                 <div class="d-flex col-9">
                     <div class="w-50 mr-1">
-                        <input type="number" min="1" step="1" class="form-control" data-bind="value: OutputCount, attr: { max: OutputRemainingCount }" />
+                        <input type="number" min="1" step="1" class="form-control" data-bind="value: Size, attr: { max: $parent.OutputRemainingCount }" />
                     </div>
                     <div class="w-50 ml-1">
-                        <!-- ko if: AllowBoolean -->
+                        <!-- ko if: $parent.AllowBoolean -->
                         <select class="form-control"
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
                                             optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedOutputDataType"></select>
+                                            value: DataType"></select>
                         <!-- /ko -->
-                        <!-- ko ifnot: AllowBoolean -->
+                        <!-- ko ifnot: $parent.AllowBoolean -->
                         <select class="form-control"
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== 0x008),
                                             optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                            value: SelectedOutputDataType"></select>
+                                            value: DataType"></select>
                         <!-- /ko -->
                     </div>
                 </div>
                 <div class="d-flex col-3">
-                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: AddOutputModule">Add</button>
+                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: $parent.AddOutputModule">Add</button>
                 </div>
             </div>
-        </div>
-        <div class="form-group">
-            <!-- ko if: OutputModuleSet().length > 0 -->
-            <div class="list-group">
-                <!-- ko foreach: OutputModuleSet -->
-                    <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteOutputModule">
-                        <span data-bind="text: ToString()"></span>
-                    </a>
-                <!-- /ko -->
-            </div>
-            <!-- /ko -->
-            <!-- ko if: OutputModuleSet().length === 0 -->
-            <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
-            <!-- /ko -->
         </div>
     </form>
 </script>

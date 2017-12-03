@@ -1,6 +1,6 @@
 ﻿<!-- ko if: !$root.ActiveProject() && $root.OneDasState() !== 5 -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
-    <h1 class="display-4">Activate a project to start ruling MDAS!</h1>
+    <h1 class="display-4">Activate a project to start ruling OneDAS!</h1>
     <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
     <p>&nbsp;</p>
     <div class="btn-group" role="group">
@@ -88,12 +88,12 @@
                         <div class="flex-column">
                             <!-- ko if: $root.OneDasState() === OneDasStateEnum.Ready -->
                             <span class="fa fa-play url mr-2 text-white"
-                                  data-bind="click: StartMdas">
+                                  data-bind="click: StartOneDas">
                             </span>
                             <!-- /ko -->
                             <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
                             <span class="fa fa-pause url mr-2 text-white"
-                                  data-bind="click: StopMdas">
+                                  data-bind="click: StopOneDas">
                             </span>
                             <!-- /ko -->
                         </div>
@@ -125,17 +125,17 @@
                     <!-- /ko -->
                     <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.Ready -->
                     <span class="text-white">
-                        MDAS is intialized waiting for a project file.
+                        OneDAS is intialized waiting for a project file.
                     </span>
                     <!-- /ko -->
                     <!-- ko if: $root.OneDasState() === OneDasStateEnum.Ready -->
                     <span class="text-white">
-                        MDAS is running but not recording data.
+                        OneDAS is running but not recording data.
                     </span>
                     <!-- /ko -->
                     <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
                     <span class="text-white">
-                        MDAS is running and recording data.
+                        OneDAS is running and recording data.
                     </span>
                     <!-- /ko -->
 
@@ -217,7 +217,7 @@
                     </div>
                     <div class="d-flex justify-content-between">
                         <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'MDAS timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
+                            data-bind="tooltip: { title: 'OneDAS timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
                             Delay
                         </h5>
                         <div data-bind="with: $root.PerformanceInformation">
@@ -227,7 +227,7 @@
                     </div>
                     <div class="d-flex justify-content-between">
                         <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'Indicates the MDAS load.'}">
+                            data-bind="tooltip: { title: 'Indicates the OneDAS load.'}">
                             Cycle Time
                         </h5>
                         <div data-bind="with: $root.PerformanceInformation">
@@ -236,7 +236,7 @@
                         </div>
                     </div>
                     <div class="progress mt-2"
-                         data-bind="tooltip: { title: 'Time difference of MDAS reference clock and Windows clock.' },
+                         data-bind="tooltip: { title: 'Time difference of OneDAS reference clock and Windows clock.' },
                                     with: $root.PerformanceInformation">
                         <div class="progress-bar progress-bar-striped progress-bar-animated"
                              role="progressbar"

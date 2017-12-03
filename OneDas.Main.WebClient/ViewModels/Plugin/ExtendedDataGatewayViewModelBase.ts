@@ -78,7 +78,7 @@
                 break
         }
 
-        return Array.from(new Array(oneDasModule.Size), (x, i) => 
+        return Array.from(new Array(oneDasModule.Size()), (x, i) => 
         {
             return {
                 Name: <string>prefix + " " + (index + i),

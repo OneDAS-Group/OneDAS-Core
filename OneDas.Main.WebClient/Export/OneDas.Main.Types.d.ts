@@ -166,7 +166,9 @@ declare class OneDasModuleViewModel {
     DataType: KnockoutObservable<OneDasDataTypeEnum>;
     DataDirection: KnockoutObservable<DataDirectionEnum>;
     Size: KnockoutObservable<number>;
+    protected _onPropertyChanged: EventDispatcher<OneDasModuleViewModel, any>;
     constructor(model: OneDasModuleModel);
+    readonly OnPropertyChanged: IEvent<OneDasModuleViewModel, any>;
     GetByteCount: (booleanBitSize?: number) => number;
     ToString(): string;
     ExtendModel(model: any): void;
@@ -178,14 +180,12 @@ declare abstract class OneDasModuleSelectorViewModelBase {
     AllowBoolean: KnockoutObservable<boolean>;
     InputSettingsTemplateName: KnockoutObservable<string>;
     OutputSettingsTemplateName: KnockoutObservable<string>;
-    InputCount: KnockoutObservable<number>;
-    OutputCount: KnockoutObservable<number>;
+    NewInputModule: KnockoutObservable<OneDasModuleViewModel>;
+    NewOutputModule: KnockoutObservable<OneDasModuleViewModel>;
     InputRemainingBytes: KnockoutObservable<number>;
     OutputRemainingBytes: KnockoutObservable<number>;
     InputRemainingCount: KnockoutObservable<number>;
     OutputRemainingCount: KnockoutObservable<number>;
-    SelectedInputDataType: KnockoutObservable<OneDasDataTypeEnum>;
-    SelectedOutputDataType: KnockoutObservable<OneDasDataTypeEnum>;
     InputModuleSet: KnockoutObservableArray<OneDasModuleViewModel>;
     OutputModuleSet: KnockoutObservableArray<OneDasModuleViewModel>;
     private _onInputModuleSetChanged;
@@ -194,12 +194,15 @@ declare abstract class OneDasModuleSelectorViewModelBase {
     readonly OnInputModuleSetChanged: IEvent<OneDasModuleSelectorViewModelBase, OneDasModuleViewModel[]>;
     readonly OnOutputModuleSetChanged: IEvent<OneDasModuleSelectorViewModelBase, OneDasModuleViewModel[]>;
     abstract Update(): void;
-    CreateInputModule(): OneDasModuleViewModel;
-    CreateOutputModule(): OneDasModuleViewModel;
+    InternalCreateNewInputModule(): void;
+    CreateNewInputModule(): OneDasModuleViewModel;
+    InternalCreateNewOutputModule(): void;
+    CreateNewOutputModule(): OneDasModuleViewModel;
+    private OnModulePropertyChanged;
     AddInputModule: () => void;
-    DeleteInputModule: (value: OneDasModuleViewModel) => void;
+    DeleteInputModule: () => void;
     AddOutputModule: () => void;
-    DeleteOutputModule: (value: OneDasModuleViewModel) => void;
+    DeleteOutputModule: () => void;
     CheckDataType(oneDasDataType: OneDasDataTypeEnum): void;
 }
 declare class TransferFunctionViewModel {

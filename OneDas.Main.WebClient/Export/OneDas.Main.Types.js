@@ -400,9 +400,16 @@ class OneDasModuleViewModel {
         this.DataType = ko.observable(model.DataType);
         this.DataDirection = ko.observable(model.DataDirection);
         this.Size = ko.observable(model.Size);
+        this._onPropertyChanged = new EventDispatcher();
+        this.DataType.subscribe(newValue => this._onPropertyChanged.dispatch(this, null));
+        this.DataDirection.subscribe(newValue => this._onPropertyChanged.dispatch(this, null));
+        this.Size.subscribe(newValue => this._onPropertyChanged.dispatch(this, null));
+    }
+    get OnPropertyChanged() {
+        return this._onPropertyChanged;
     }
     ToString() {
-        return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.DataType()) + ' [ ' + this.Size() + 'x ]';
+        return this.Size() + "x " + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.DataType());
     }
     ExtendModel(model) {
         //
@@ -419,12 +426,16 @@ class OneDasModuleViewModel {
 }
 class OneDasModuleSelectorViewModelBase {
     constructor(allowInputs, allowOutputs, allowBoolean) {
+        this.OnModulePropertyChanged = () => {
+            this.Update();
+        };
         // commands
         this.AddInputModule = () => {
             if (this.AllowInputs()) {
-                this.CheckDataType(this.SelectedInputDataType());
-                if (Number.isNaN(this.InputCount()) || this.InputCount() <= this.InputRemainingCount()) {
-                    this.InputModuleSet.push(this.CreateInputModule());
+                this.CheckDataType(this.NewInputModule().DataType());
+                if (Number.isNaN(this.NewInputModule().Size()) || this.NewInputModule().Size() <= this.InputRemainingCount()) {
+                    this.InputModuleSet.push(this.NewInputModule());
+                    this.InternalCreateNewInputModule();
                 }
                 this._onInputModuleSetChanged.dispatch(this, this.InputModuleSet());
             }
@@ -432,16 +443,17 @@ class OneDasModuleSelectorViewModelBase {
                 throw new Error("Input modules are disabled.");
             }
         };
-        this.DeleteInputModule = (value) => {
+        this.DeleteInputModule = () => {
             this.InputModuleSet.pop();
             this.Update();
             this._onInputModuleSetChanged.dispatch(this, this.InputModuleSet());
         };
         this.AddOutputModule = () => {
             if (this.AllowOutputs()) {
-                this.CheckDataType(this.SelectedOutputDataType());
-                if (Number.isNaN(this.OutputCount()) || this.OutputCount() <= this.OutputRemainingCount()) {
-                    this.OutputModuleSet.push(this.CreateOutputModule());
+                this.CheckDataType(this.NewOutputModule().DataType());
+                if (Number.isNaN(this.NewOutputModule().Size()) || this.NewOutputModule().Size() <= this.OutputRemainingCount()) {
+                    this.OutputModuleSet.push(this.NewOutputModule());
+                    this.InternalCreateNewOutputModule();
                 }
                 this._onOutputModuleSetChanged.dispatch(this, this.OutputModuleSet());
             }
@@ -449,7 +461,7 @@ class OneDasModuleSelectorViewModelBase {
                 throw new Error("Outputs modules are disabled.");
             }
         };
-        this.DeleteOutputModule = (value) => {
+        this.DeleteOutputModule = () => {
             this.OutputModuleSet.pop();
             this.Update();
             this._onOutputModuleSetChanged.dispatch(this, this.OutputModuleSet());
@@ -459,20 +471,18 @@ class OneDasModuleSelectorViewModelBase {
         this.AllowBoolean = ko.observable(allowBoolean);
         this.InputSettingsTemplateName = ko.observable("Project_OneDasModuleSelectorInputSettingsTemplate");
         this.OutputSettingsTemplateName = ko.observable("Project_OneDasModuleSelectorOutputSettingsTemplate");
-        this.InputCount = ko.observable(1);
-        this.OutputCount = ko.observable(1);
+        this.NewInputModule = ko.observable();
+        this.NewOutputModule = ko.observable();
         this.InputRemainingBytes = ko.observable(NaN);
         this.OutputRemainingBytes = ko.observable(NaN);
         this.InputRemainingCount = ko.observable(NaN);
         this.OutputRemainingCount = ko.observable(NaN);
-        this.SelectedInputDataType = ko.observable(OneDasDataTypeEnum.UINT16);
-        this.SelectedOutputDataType = ko.observable(OneDasDataTypeEnum.UINT16);
         this.InputModuleSet = ko.observableArray();
         this.OutputModuleSet = ko.observableArray();
-        this.SelectedInputDataType.subscribe(newValue => { this.Update(); });
-        this.SelectedOutputDataType.subscribe(newValue => { this.Update(); });
-        this.InputModuleSet.subscribe(newValue => { this.Update(); });
-        this.OutputModuleSet.subscribe(newValue => { this.Update(); });
+        this.InputModuleSet.subscribe(newValue => this.Update());
+        this.OutputModuleSet.subscribe(newValue => this.Update());
+        this.InternalCreateNewInputModule();
+        this.InternalCreateNewOutputModule();
         this._onInputModuleSetChanged = new EventDispatcher();
         this._onOutputModuleSetChanged = new EventDispatcher();
         this.Update();
@@ -483,11 +493,25 @@ class OneDasModuleSelectorViewModelBase {
     get OnOutputModuleSetChanged() {
         return this._onOutputModuleSetChanged;
     }
-    CreateInputModule() {
-        return new OneDasModuleViewModel(new OneDasModuleModel(this.SelectedInputDataType(), DataDirectionEnum.Input, this.InputCount()));
+    InternalCreateNewInputModule() {
+        if (this.NewInputModule()) {
+            this.NewInputModule().OnPropertyChanged.unsubscribe(this.OnModulePropertyChanged);
+        }
+        this.NewInputModule(this.CreateNewInputModule());
+        this.NewInputModule().OnPropertyChanged.subscribe(this.OnModulePropertyChanged);
     }
-    CreateOutputModule() {
-        return new OneDasModuleViewModel(new OneDasModuleModel(this.SelectedOutputDataType(), DataDirectionEnum.Output, this.OutputCount()));
+    CreateNewInputModule() {
+        return new OneDasModuleViewModel(new OneDasModuleModel(OneDasDataTypeEnum.UINT16, DataDirectionEnum.Input, 1));
+    }
+    InternalCreateNewOutputModule() {
+        if (this.NewOutputModule()) {
+            this.NewOutputModule().OnPropertyChanged.unsubscribe(this.OnModulePropertyChanged);
+        }
+        this.NewOutputModule(this.CreateNewOutputModule());
+        this.NewOutputModule().OnPropertyChanged.subscribe(this.OnModulePropertyChanged);
+    }
+    CreateNewOutputModule() {
+        return new OneDasModuleViewModel(new OneDasModuleModel(OneDasDataTypeEnum.UINT16, DataDirectionEnum.Output, 1));
     }
     CheckDataType(oneDasDataType) {
         if (!this.AllowBoolean() && oneDasDataType === OneDasDataTypeEnum.BOOLEAN) {
@@ -645,7 +669,7 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
                 prefix = "Output";
                 break;
         }
-        return Array.from(new Array(oneDasModule.Size), (x, i) => {
+        return Array.from(new Array(oneDasModule.Size()), (x, i) => {
             return {
                 Name: prefix + " " + (index + i),
                 OneDasDataType: oneDasModule.DataType(),
