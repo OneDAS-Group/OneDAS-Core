@@ -31,7 +31,7 @@ namespace OneDas.Plugin
         public DataGatewayPluginSettingsBase AssociatedDataGateway { get; set; }
 
         // methods
-        public string GetId()
+        public virtual string GetId()
         {
             return this.Name;
         }
