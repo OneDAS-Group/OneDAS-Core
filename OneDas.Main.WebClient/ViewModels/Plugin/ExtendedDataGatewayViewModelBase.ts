@@ -1,24 +1,32 @@
 ﻿abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase
 {
-    public OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModelBase>
     public GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
+    public OneDasInputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
+    public OneDasOutputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
 
-    constructor(model, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModelBase)
+    constructor(model, identification: PluginIdentificationViewModel, oneDasInputModuleSelector: OneDasModuleSelectorViewModel, oneDasOutputModuleSelector: OneDasModuleSelectorViewModel)
     {
         super(model, identification)
 
-        this.OneDasModuleSelector = ko.observable<OneDasModuleSelectorViewModelBase>(oneDasModuleSelector)
         this.GroupedDataPortSet = ko.observableArray()
+        this.OneDasInputModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasInputModuleSelector)
+        this.OneDasOutputModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasOutputModuleSelector)
 
-        this.OneDasModuleSelector().OnInputModuleSetChanged.subscribe((sender, args) =>
+        if (this.OneDasInputModuleSelector())
         {
-            this.UpdateDataPortSet()
-        })
+            this.OneDasInputModuleSelector().OnModuleSetChanged.subscribe((sender, args) =>
+            {
+                this.UpdateDataPortSet()
+            })
+        }
 
-        this.OneDasModuleSelector().OnOutputModuleSetChanged.subscribe((sender, args) =>
+        if (this.OneDasOutputModuleSelector())
         {
-            this.UpdateDataPortSet()
-        })
+            this.OneDasOutputModuleSelector().OnModuleSetChanged.subscribe((sender, args) =>
+            {
+                this.UpdateDataPortSet()
+            })
+        }
     }
 
     public async InitializeAsync()
@@ -34,30 +42,36 @@
         groupedDataPortSet = []
 
         // inputs
-        index = 0
-
-        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().InputModuleSet().map(oneDasModule =>
+        if (this.OneDasInputModuleSelector())
         {
-            let group: ObservableGroup<DataPortViewModel>
+            index = 0
 
-            group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
-            index += oneDasModule.Size();
+            groupedDataPortSet = groupedDataPortSet.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule =>
+            {
+                let group: ObservableGroup<DataPortViewModel>
 
-            return group
-        }))
+                group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
+                index += oneDasModule.Size();
+
+                return group
+            }))
+        }
 
         // outputs
-        index = 0
-
-        groupedDataPortSet = groupedDataPortSet.concat(this.OneDasModuleSelector().OutputModuleSet().map(oneDasModule =>
+        if (this.OneDasOutputModuleSelector())
         {
-            let group: ObservableGroup<DataPortViewModel>
+            index = 0
 
-            group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
-            index += oneDasModule.Size();
+            groupedDataPortSet = groupedDataPortSet.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule =>
+            {
+                let group: ObservableGroup<DataPortViewModel>
 
-            return group
-        }))
+                group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
+                index += oneDasModule.Size();
+
+                return group
+            }))
+        }
 
         this.GroupedDataPortSet(groupedDataPortSet)
         this.DataPortSet(MapMany(this.GroupedDataPortSet(), group => group.Members()))
@@ -86,13 +100,5 @@
                 DataDirection: <DataDirectionEnum>oneDasModule.DataDirection()
             }
         }).map(dataPortModel => new DataPortViewModel(dataPortModel, this))
-    }
-
-    public ExtendModel(model: any)
-    {
-        super.ExtendModel(model)
-
-        model.InputModuleSet = <OneDasModuleModel[]>this.OneDasModuleSelector().InputModuleSet().map(moduleModel => moduleModel.ToModel())
-        model.OutputModuleSet = <OneDasModuleModel[]>this.OneDasModuleSelector().OutputModuleSet().map(moduleModel => moduleModel.ToModel())
     }
 }

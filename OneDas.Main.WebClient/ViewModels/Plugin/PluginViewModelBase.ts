@@ -4,11 +4,11 @@
     public PluginIdentification: PluginIdentificationViewModel
     public IsInSettingsMode: KnockoutObservable<boolean>
 
-    private Model: any
+    private _model: any
 
     constructor(pluginSettingsModel: any, pluginIdentification: PluginIdentificationViewModel)
     {
-        this.Model = pluginSettingsModel
+        this._model = pluginSettingsModel
         this.Description = new PluginDescriptionViewModel(pluginSettingsModel.Description)
         this.PluginIdentification = pluginIdentification
         this.IsInSettingsMode = ko.observable<boolean>(false)
@@ -30,7 +30,7 @@
     public ToModel()
     {
         let model: any = {
-            $type: <string>this.Model.$type,
+            $type: <string>this._model.$type,
             Description: <PluginDescriptionViewModel>this.Description.ToModel()
         }
 

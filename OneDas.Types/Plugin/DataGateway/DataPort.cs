@@ -7,11 +7,12 @@ namespace OneDas.Plugin
     [DataContract]
     public class DataPort
     {
-        public DataPort(string name, OneDasDataType oneDasDataType, DataDirection dataDirection)
+        public DataPort(string name, OneDasDataType oneDasDataType, DataDirection dataDirection, Endianness endianness)
         {
             this.Name = name;
             this.OneDasDataType = oneDasDataType;
             this.DataDirection = dataDirection;
+            this.Endianness = endianness;
 
             this.BitOffset = -1; // i.e. bool is treated as byte-oriented
         }
@@ -25,6 +26,9 @@ namespace OneDas.Plugin
 
         [DataMember]
         public DataDirection DataDirection { get; private set; }
+
+        [DataMember]
+        public Endianness Endianness { get; private set; }
 
         public IntPtr DataPtr { get; set; }
         public int BitOffset { get; set; }

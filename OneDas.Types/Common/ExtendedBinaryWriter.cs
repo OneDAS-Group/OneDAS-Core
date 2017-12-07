@@ -10,40 +10,40 @@ namespace OneDas.Common
             //
         }
 
-        private void WriteBE(byte[] data)
+        private void WriteReverse(byte[] data)
         {
             Array.Reverse(data);
             base.Write(data);
         }
 
-        public void WriteBE(short value)
+        public void WriteReverse(short value)
         {
-            this.WriteBE(BitConverter.GetBytes(value));
+            this.WriteReverse(BitConverter.GetBytes(value));
         }
 
-        public void WriteBE(ushort value)
+        public void WriteReverse(ushort value)
         {
-            this.WriteBE(BitConverter.GetBytes(value));
+            this.WriteReverse(BitConverter.GetBytes(value));
         }
 
-        public void WriteBE(long value)
+        public void WriteReverse(long value)
         {
-            this.WriteBE(BitConverter.GetBytes(value));
+            this.WriteReverse(BitConverter.GetBytes(value));
         }
 
-        public void WriteBE(ulong value)
+        public void WriteReverse(ulong value)
         {
-            this.WriteBE(BitConverter.GetBytes(value));
+            this.WriteReverse(BitConverter.GetBytes(value));
         }
 
-        public void WriteBE(float value)
+        public void WriteReverse(float value)
         {
-            this.WriteBE(BitConverter.GetBytes(value));
+            this.WriteReverse(BitConverter.GetBytes(value));
         }
 
-        public void WriteBE(double value)
+        public void WriteReverse(double value)
         {
-            this.WriteBE(BitConverter.GetBytes(value));
+            this.WriteReverse(BitConverter.GetBytes(value));
         }
     }
 }

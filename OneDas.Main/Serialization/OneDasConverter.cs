@@ -42,6 +42,10 @@ namespace OneDas.Main.Serialization
             {
                 SerializationHelper.JsonSerializer.Serialize(writer, value, typeof(PluginSettingsBase));
             }
+            else if (value is OneDasModule) // here also
+            {
+                SerializationHelper.JsonSerializer.Serialize(writer, value, typeof(OneDasModule));
+            }
             else
             {
                 SerializationHelper.JsonSerializer.Serialize(writer, value, typeof(JsonSerializer));

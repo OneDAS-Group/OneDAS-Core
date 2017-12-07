@@ -14,6 +14,7 @@
     "./../../../OneDas-Support/web/typings/global.d.ts",
 
     "./../OneDas.Types/DataDirectionEnum.ts",
+    "./../OneDas.Types/EndiannessEnum.ts",
     "./../OneDas.Types/FileGranularityEnum.ts",
     "./../OneDas.Types/OneDasDataTypeEnum.ts",
     "./../OneDas.Types/OneDasStateEnum.ts",
@@ -37,7 +38,7 @@
 
     "./../ViewModels/Core/ChannelHubViewModel.ts",
     "./../ViewModels/Core/OneDasModuleViewModel.ts",
-    "./../ViewModels/Core/OneDasModuleSelectorViewModelBase.ts",
+    "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
     "./../ViewModels/Core/TransferFunctionViewModel.ts",
 
     "./../ViewModels/Plugin/DataPortViewModel.ts",

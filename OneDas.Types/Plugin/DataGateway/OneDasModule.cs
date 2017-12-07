@@ -9,10 +9,11 @@ namespace OneDas.Plugin
     {
         #region "Constructors"
 
-        public OneDasModule(OneDasDataType dataType, DataDirection dataDirection, int size)
+        public OneDasModule(OneDasDataType dataType, DataDirection dataDirection, Endianness endianness, int size)
         {
             this.DataType = dataType;
             this.DataDirection = DataDirection;
+            this.Endianness = endianness;
             this.Size = size;
         }
 
@@ -21,13 +22,16 @@ namespace OneDas.Plugin
         #region "Properties"
 
         [DataMember]
-        public OneDasDataType DataType { get; set; }
+        public OneDasDataType DataType { get; private set; }
 
         [DataMember]
-        public DataDirection DataDirection { get; set; }
+        public DataDirection DataDirection { get; private set; }
 
         [DataMember]
-        public int Size { get; set; }
+        public Endianness Endianness { get; private set; }
+
+        [DataMember]
+        public int Size { get; private set; }
 
         #endregion
 

@@ -3,6 +3,10 @@ declare enum DataDirectionEnum {
     Input = 1,
     Output = 2,
 }
+declare enum EndiannessEnum {
+    LittleEndian = 1,
+    BigEndian = 2,
+}
 declare enum FileGranularityEnum {
     Minute_1 = 60,
     Minute_10 = 600,
@@ -71,8 +75,9 @@ declare class ChannelHubModel {
 declare class OneDasModuleModel {
     DataType: OneDasDataTypeEnum;
     DataDirection: DataDirectionEnum;
+    Endianness: EndiannessEnum;
     Size: number;
-    constructor(dataType: OneDasDataTypeEnum, dataDirection: DataDirectionEnum, size: number);
+    constructor(dataType: OneDasDataTypeEnum, dataDirection: DataDirectionEnum, endianness: EndiannessEnum, size: number);
 }
 declare class TransferFunctionModel {
     DateTime: string;
@@ -165,45 +170,44 @@ declare class ChannelHubViewModel {
 declare class OneDasModuleViewModel {
     DataType: KnockoutObservable<OneDasDataTypeEnum>;
     DataDirection: KnockoutObservable<DataDirectionEnum>;
+    Endianness: KnockoutObservable<EndiannessEnum>;
     Size: KnockoutObservable<number>;
-    protected _onPropertyChanged: EventDispatcher<OneDasModuleViewModel, any>;
-    constructor(model: OneDasModuleModel);
-    readonly OnPropertyChanged: IEvent<OneDasModuleViewModel, any>;
+    MaxSize: KnockoutObservable<number>;
+    ErrorMessage: KnockoutObservable<string>;
+    HasError: KnockoutComputed<boolean>;
+    DataTypeSet: KnockoutObservableArray<OneDasDataTypeEnum>;
+    private _onPropertyChanged;
+    protected _model: any;
+    constructor(oneDasModuleModel: OneDasModuleModel);
+    readonly PropertyChanged: IEvent<OneDasModuleViewModel, any>;
+    OnPropertyChanged: () => void;
     GetByteCount: (booleanBitSize?: number) => number;
+    Validate(): void;
     ToString(): string;
     ExtendModel(model: any): void;
     ToModel(): any;
 }
-declare abstract class OneDasModuleSelectorViewModelBase {
-    AllowInputs: KnockoutObservable<boolean>;
-    AllowOutputs: KnockoutObservable<boolean>;
-    AllowBoolean: KnockoutObservable<boolean>;
-    InputSettingsTemplateName: KnockoutObservable<string>;
-    OutputSettingsTemplateName: KnockoutObservable<string>;
-    NewInputModule: KnockoutObservable<OneDasModuleViewModel>;
-    NewOutputModule: KnockoutObservable<OneDasModuleViewModel>;
-    InputRemainingBytes: KnockoutObservable<number>;
-    OutputRemainingBytes: KnockoutObservable<number>;
-    InputRemainingCount: KnockoutObservable<number>;
-    OutputRemainingCount: KnockoutObservable<number>;
-    InputModuleSet: KnockoutObservableArray<OneDasModuleViewModel>;
-    OutputModuleSet: KnockoutObservableArray<OneDasModuleViewModel>;
-    private _onInputModuleSetChanged;
-    private _onOutputModuleSetChanged;
-    constructor(allowInputs: boolean, allowOutputs: boolean, allowBoolean: boolean);
-    readonly OnInputModuleSetChanged: IEvent<OneDasModuleSelectorViewModelBase, OneDasModuleViewModel[]>;
-    readonly OnOutputModuleSetChanged: IEvent<OneDasModuleSelectorViewModelBase, OneDasModuleViewModel[]>;
-    abstract Update(): void;
-    InternalCreateNewInputModule(): void;
-    CreateNewInputModule(): OneDasModuleViewModel;
-    InternalCreateNewOutputModule(): void;
-    CreateNewOutputModule(): OneDasModuleViewModel;
+declare class OneDasModuleSelectorViewModel {
+    SettingsTemplateName: KnockoutObservable<string>;
+    NewModule: KnockoutObservable<OneDasModuleViewModel>;
+    MaxBytes: KnockoutObservable<number>;
+    RemainingBytes: KnockoutObservable<number>;
+    RemainingCount: KnockoutObservable<number>;
+    ModuleSet: KnockoutObservableArray<OneDasModuleViewModel>;
+    ErrorMessage: KnockoutObservable<string>;
+    HasError: KnockoutComputed<boolean>;
+    DataDirection: KnockoutObservable<DataDirectionEnum>;
+    private _onModuleSetChanged;
+    constructor(dataDirection: DataDirectionEnum, moduleSet?: OneDasModuleViewModel[]);
+    readonly OnModuleSetChanged: IEvent<OneDasModuleSelectorViewModel, OneDasModuleViewModel[]>;
+    SetMaxBytes: (value: number) => void;
+    protected Update(): void;
+    protected Validate(): void;
+    protected CreateNewModule(): OneDasModuleViewModel;
+    private InternalCreateNewModule();
     private OnModulePropertyChanged;
-    AddInputModule: () => void;
-    DeleteInputModule: () => void;
-    AddOutputModule: () => void;
-    DeleteOutputModule: () => void;
-    CheckDataType(oneDasDataType: OneDasDataTypeEnum): void;
+    AddModule: () => void;
+    DeleteModule: () => void;
 }
 declare class TransferFunctionViewModel {
     DateTime: KnockoutObservable<string>;
@@ -217,6 +221,7 @@ declare class DataPortViewModel {
     Name: KnockoutObservable<string>;
     readonly OneDasDataType: OneDasDataTypeEnum;
     readonly DataDirection: DataDirectionEnum;
+    readonly Endianness: EndiannessEnum;
     IsSelected: KnockoutObservable<boolean>;
     AssociatedChannelHubSet: KnockoutObservableArray<ChannelHubViewModel>;
     readonly AssociatedDataGateway: DataGatewayViewModelBase;
@@ -232,7 +237,7 @@ declare abstract class PluginViewModelBase {
     Description: PluginDescriptionViewModel;
     PluginIdentification: PluginIdentificationViewModel;
     IsInSettingsMode: KnockoutObservable<boolean>;
-    private Model;
+    private _model;
     constructor(pluginSettingsModel: any, pluginIdentification: PluginIdentificationViewModel);
     abstract InitializeAsync(): Promise<any>;
     SendActionRequest: (instanceId: number, methodName: string, data: any) => Promise<ActionResponse>;
@@ -249,13 +254,13 @@ declare abstract class DataGatewayViewModelBase extends PluginViewModelBase {
     ExtendModel(model: any): void;
 }
 declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
-    OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModelBase>;
     GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>;
-    constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModelBase);
+    OneDasInputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
+    OneDasOutputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
+    constructor(model: any, identification: PluginIdentificationViewModel, oneDasInputModuleSelector: OneDasModuleSelectorViewModel, oneDasOutputModuleSelector: OneDasModuleSelectorViewModel);
     InitializeAsync(): Promise<void>;
     UpdateDataPortSet(): void;
     CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number): DataPortViewModel[];
-    ExtendModel(model: any): void;
 }
 declare abstract class DataWriterViewModelBase extends PluginViewModelBase {
     readonly FileGranularity: KnockoutObservable<FileGranularityEnum>;

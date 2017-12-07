@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using OneDas.Infrastructure;
@@ -10,7 +9,7 @@ namespace OneDas.Plugin
     [DataContract]
     public abstract class ExtendedDataGatewayPluginSettingsBase : DataGatewayPluginSettingsBase
     {
-        #region "Constructors
+        #region "Constructors"
 
         public ExtendedDataGatewayPluginSettingsBase()
         {
@@ -31,6 +30,7 @@ namespace OneDas.Plugin
         public IEnumerable<OneDasModule> OutputModuleSet;
 
         public List<DataPort> DataPortSet { get; protected set; }
+        public Dictionary<OneDasModule, List<DataPort>> ModuleDictionary { get; protected set; }
 
         #endregion
 
@@ -38,40 +38,45 @@ namespace OneDas.Plugin
 
         public virtual void UpdateDataPortSet()
         {
-            int index;
+            int indexInput;
+            int indexOutput;
 
             this.DataPortSet = new List<DataPort>();
+            this.ModuleDictionary = new Dictionary<OneDasModule, List<DataPort>>();
 
             // inputs
-            index = 0;
+            indexInput = 0;
+            indexOutput = 0;
 
-            this.DataPortSet.AddRange(this.InputModuleSet.ToList().SelectMany(oneDasModule =>
+            this.ModuleDictionary = this.InputModuleSet.Concat(this.OutputModuleSet).ToDictionary(oneDasModule => oneDasModule, oneDasModule =>
             {
-                IEnumerable<DataPort> dataPortSet;
+                List<DataPort> dataPortSet;
 
-                dataPortSet = this.CreateDataPortSet(oneDasModule, index);
-                index += oneDasModule.Size;
+                switch (oneDasModule.DataDirection)
+                {
+                    case DataDirection.Input:
+
+                        dataPortSet = this.CreateDataPortSet(oneDasModule, indexInput);
+                        indexInput += oneDasModule.Size;
+                        break;
+
+                    case DataDirection.Output:
+
+                        dataPortSet = this.CreateDataPortSet(oneDasModule, indexOutput);
+                        indexOutput += oneDasModule.Size;
+                        break;
+
+                    default:
+                        throw new ArgumentException();
+                }
 
                 return dataPortSet;
+            });
 
-            }).ToList());
-
-            // outputs
-            index = 0;
-
-            this.DataPortSet.AddRange(this.OutputModuleSet.ToList().SelectMany(oneDasModule =>
-            {
-                IEnumerable<DataPort> dataPortSet;
-
-                dataPortSet = this.CreateDataPortSet(oneDasModule, index);
-                index += oneDasModule.Size;
-
-                return dataPortSet;
-
-            }).ToList());
+            this.DataPortSet = this.ModuleDictionary.SelectMany(moduleEntry => moduleEntry.Value).ToList();
         }
 
-        public virtual IEnumerable<DataPort> CreateDataPortSet(OneDasModule oneDasModule, int index)
+        public virtual List<DataPort> CreateDataPortSet(OneDasModule oneDasModule, int index)
         {
             string prefix;
 
@@ -85,15 +90,7 @@ namespace OneDas.Plugin
                     throw new ArgumentOutOfRangeException();
             }
 
-            return Enumerable.Range(0, oneDasModule.Size).Select(i => new DataPort($"{ prefix } { index + i }", oneDasModule.DataType, oneDasModule.DataDirection));
-        }
-
-        public override void Validate()
-        {
-            base.Validate();
-
-            Contract.Requires(this.InputModuleSet != null);
-            Contract.Requires(this.OutputModuleSet != null);
+            return Enumerable.Range(0, oneDasModule.Size).Select(i => new DataPort($"{ prefix } { index + i }", oneDasModule.DataType, oneDasModule.DataDirection, Endianness.LittleEndian)).ToList();
         }
 
         public override IEnumerable<DataPort> GetDataPortSet()

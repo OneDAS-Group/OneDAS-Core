@@ -4,6 +4,7 @@
     public Name: KnockoutObservable<string>
     public readonly OneDasDataType: OneDasDataTypeEnum
     public readonly DataDirection: DataDirectionEnum
+    public readonly Endianness: EndiannessEnum
 
     public IsSelected: KnockoutObservable<boolean>
     public AssociatedChannelHubSet: KnockoutObservableArray<ChannelHubViewModel>
@@ -16,6 +17,7 @@
         this.Name = ko.observable(dataPortModel.Name)
         this.OneDasDataType = dataPortModel.OneDasDataType
         this.DataDirection = dataPortModel.DataDirection
+        this.Endianness = dataPortModel.Endianness
 
         this.IsSelected = ko.observable<boolean>(false)
         this.AssociatedChannelHubSet = ko.observableArray<ChannelHubViewModel>()

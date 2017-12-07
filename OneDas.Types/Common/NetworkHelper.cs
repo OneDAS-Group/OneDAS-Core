@@ -8,12 +8,7 @@ namespace OneDas.Common
         {
             ipAddress = null;
 
-            if (ipAddressString.Split('.').Length != 4)
-            {
-                return false;
-            }
-
-            return IPAddress.TryParse(ipAddressString, out ipAddress);
+            return IPAddress.TryParse(ipAddressString, out ipAddress) && ipAddressString.Split('.').Length == 4;
         }
     }
 }

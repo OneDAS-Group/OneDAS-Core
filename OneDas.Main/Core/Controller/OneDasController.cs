@@ -873,9 +873,29 @@ namespace OneDas.Main.Core
             }
             else
             {
-                for (int i = 0; i < dataStorage.ElementSize; i++)
+                switch (dataPort.Endianness)
                 {
-                    targetPtr[i] = sourcePtr[i];
+                    case Endianness.LittleEndian:
+
+                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        {
+                            targetPtr[i] = sourcePtr[i];
+                        }
+
+                        break;
+
+                    case Endianness.BigEndian:
+
+                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        {
+                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i];
+                        }
+
+                        break;
+
+                    default:
+
+                        throw new ArgumentException();
                 }
             }
         }
@@ -901,9 +921,29 @@ namespace OneDas.Main.Core
             }
             else
             {
-                for (int i = 0; i < dataStorage.ElementSize; i++)
+                switch (dataPort.Endianness)
                 {
-                    targetPtr[i] = sourcePtr[i];
+                    case Endianness.LittleEndian:
+
+                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        {
+                            targetPtr[i] = sourcePtr[i];
+                        }
+
+                        break;
+
+                    case Endianness.BigEndian:
+
+                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        {
+                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i];
+                        }
+
+                        break;
+
+                    default:
+
+                        throw new ArgumentException();
                 }
             }
         }
@@ -936,7 +976,7 @@ namespace OneDas.Main.Core
                         break;
                     }
 
-                    _dataWriterSet.ToList().ForEach(dataWriter =>
+                    _dataWriterSet.ToList().AsParallel().ForAll(dataWriter =>
                     {
                         dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataStorageSet[_cachedDataStorageIndex]);
                     });
