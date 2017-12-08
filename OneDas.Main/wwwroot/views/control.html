@@ -1,4 +1,4 @@
-﻿<!-- ko if: !$root.ActiveProject() && $root.OneDasState() !== 5 -->
+﻿<!-- ko if: !$root.ActiveProject() && $root.OneDasState() !== OneDasStateEnum.ApplyConfiguration -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
     <h1 class="display-4">Activate a project to start ruling OneDAS!</h1>
     <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
@@ -16,7 +16,7 @@
 </div>
 <!-- /ko -->
 
-<!-- ko if: $root.OneDasState() === 5 -->
+<!-- ko if: $root.OneDasState() === OneDasStateEnum.ApplyConfiguration -->
 <div id="Editor_ApplyConfiguration" class="center-vertically plus-center-horizontally">
     <h1 class="display-4 mb-5 noselect">Activating project ...</h1>
     <img class="text-center" src="/images/loading.gif" />
@@ -64,7 +64,7 @@
 </div>
 
 <!-- ACTIVE PROJECT -->
-<!-- ko if: $root.ActiveProject() && $root.OneDasState() !== 5 -->
+<!-- ko if: $root.ActiveProject() && $root.OneDasState() !== OneDasStateEnum.ApplyConfiguration -->
 <!-- ko with: $root.ActiveProject -->
 
 <div id="ActiveProject_Header" class="container">
@@ -253,7 +253,7 @@
                 <div class="card-body">
                     <div class="message-log">
                         <ul class="list-group" data-bind="foreach: $root.ClientMessageLog">
-                            <li class="message-log-list-item" data-bind="text: $data.Prefix + ': ' +$data.Message, fadeVisible: true" />
+                            <li class="message-log-list-item" data-bind="text: $data.Prefix + ': ' + $data.Message, fadeVisible: true" />
                         </ul>
                     </div>
                 </div>

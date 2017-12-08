@@ -622,7 +622,7 @@ class DataGatewayViewModelBase extends PluginViewModelBase {
 class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
     constructor(model, identification, oneDasInputModuleSelector, oneDasOutputModuleSelector) {
         super(model, identification);
-        this.GroupedDataPortSet = ko.observableArray();
+        this.ModuleToDataPortMap = ko.observableArray();
         this.OneDasInputModuleSelector = ko.observable(oneDasInputModuleSelector);
         this.OneDasOutputModuleSelector = ko.observable(oneDasOutputModuleSelector);
         if (this.OneDasInputModuleSelector()) {
@@ -643,12 +643,12 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
     }
     UpdateDataPortSet() {
         let index;
-        let groupedDataPortSet;
-        groupedDataPortSet = [];
+        let moduleToDataPortMap;
+        moduleToDataPortMap = [];
         // inputs
         if (this.OneDasInputModuleSelector()) {
             index = 0;
-            groupedDataPortSet = groupedDataPortSet.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule => {
+            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule => {
                 let group;
                 group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
                 index += oneDasModule.Size();
@@ -658,15 +658,15 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
         // outputs
         if (this.OneDasOutputModuleSelector()) {
             index = 0;
-            groupedDataPortSet = groupedDataPortSet.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule => {
+            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule => {
                 let group;
                 group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
                 index += oneDasModule.Size();
                 return group;
             }));
         }
-        this.GroupedDataPortSet(groupedDataPortSet);
-        this.DataPortSet(MapMany(this.GroupedDataPortSet(), group => group.Members()));
+        this.ModuleToDataPortMap(moduleToDataPortMap);
+        this.DataPortSet(MapMany(this.ModuleToDataPortMap(), group => group.Members()));
     }
     CreateDataPortSet(oneDasModule, index) {
         let prefix;

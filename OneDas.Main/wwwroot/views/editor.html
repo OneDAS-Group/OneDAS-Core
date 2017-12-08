@@ -952,7 +952,7 @@
     </form>
 </script>
 
-<script type="text/html" id="Project_GroupedDataPortSetTemplate">
+<script type="text/html" id="Project_ModuleToDataPortMapTemplate">
     <div class="card my-2">
         <div class="card-header">
             Variables
@@ -961,7 +961,7 @@
             <!-- ko if: DataPortSet().length === 0 -->
             <h5 class="d-block text-center my-5"><small class="text-muted">- no variables available -</small></h5>
             <!-- /ko -->
-            <div data-bind="foreach: GroupedDataPortSet">
+            <div data-bind="foreach: ModuleToDataPortMap">
                 <span data-bind="text: Key"></span>
                 <div data-bind="foreach: Members">
                     <div style="display:inline-block" data-bind="template: { name: 'Project_DataPortTemplate', data: { OriginalData: $data, DraggableCallback: $parents.find(parent =&gt; parent.Draggable).Draggable } }"></div>

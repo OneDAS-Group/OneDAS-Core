@@ -4,6 +4,12 @@
     <Description>Provides a common type system for all OneDAS application parts and plugins.</Description>
     <PackageTags>OneDAS data aquisition measurement plugin</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>

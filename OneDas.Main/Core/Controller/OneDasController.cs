@@ -477,7 +477,7 @@ namespace OneDas.Main.Core
             {
                 this.DisposePlugins();
 
-                throw;
+                throw Bootloader.UnwrapException(ex);
             }
         }
 
@@ -888,7 +888,7 @@ namespace OneDas.Main.Core
 
                         for (int i = 0; i < dataStorage.ElementSize; i++)
                         {
-                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i];
+                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i - 1];
                         }
 
                         break;
@@ -936,7 +936,7 @@ namespace OneDas.Main.Core
 
                         for (int i = 0; i < dataStorage.ElementSize; i++)
                         {
-                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i];
+                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i - 1];
                         }
 
                         break;

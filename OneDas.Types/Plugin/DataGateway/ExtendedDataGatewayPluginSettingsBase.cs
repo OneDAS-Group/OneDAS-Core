@@ -30,7 +30,7 @@ namespace OneDas.Plugin
         public IEnumerable<OneDasModule> OutputModuleSet;
 
         public List<DataPort> DataPortSet { get; protected set; }
-        public Dictionary<OneDasModule, List<DataPort>> ModuleDictionary { get; protected set; }
+        public Dictionary<OneDasModule, List<DataPort>> ModuleToDataPortMap { get; protected set; }
 
         #endregion
 
@@ -42,13 +42,12 @@ namespace OneDas.Plugin
             int indexOutput;
 
             this.DataPortSet = new List<DataPort>();
-            this.ModuleDictionary = new Dictionary<OneDasModule, List<DataPort>>();
 
             // inputs
             indexInput = 0;
             indexOutput = 0;
 
-            this.ModuleDictionary = this.InputModuleSet.Concat(this.OutputModuleSet).ToDictionary(oneDasModule => oneDasModule, oneDasModule =>
+            this.ModuleToDataPortMap = this.InputModuleSet.Concat(this.OutputModuleSet).ToDictionary(oneDasModule => oneDasModule, oneDasModule =>
             {
                 List<DataPort> dataPortSet;
 
@@ -73,7 +72,7 @@ namespace OneDas.Plugin
                 return dataPortSet;
             });
 
-            this.DataPortSet = this.ModuleDictionary.SelectMany(moduleEntry => moduleEntry.Value).ToList();
+            this.DataPortSet = this.ModuleToDataPortMap.SelectMany(moduleEntry => moduleEntry.Value).ToList();
         }
 
         public virtual List<DataPort> CreateDataPortSet(OneDasModule oneDasModule, int index)
@@ -90,7 +89,7 @@ namespace OneDas.Plugin
                     throw new ArgumentOutOfRangeException();
             }
 
-            return Enumerable.Range(0, oneDasModule.Size).Select(i => new DataPort($"{ prefix } { index + i }", oneDasModule.DataType, oneDasModule.DataDirection, Endianness.LittleEndian)).ToList();
+            return Enumerable.Range(0, oneDasModule.Size).Select(i => new DataPort($"{ prefix } { index + i }", oneDasModule.DataType, oneDasModule.DataDirection, oneDasModule.Endianness)).ToList();
         }
 
         public override IEnumerable<DataPort> GetDataPortSet()

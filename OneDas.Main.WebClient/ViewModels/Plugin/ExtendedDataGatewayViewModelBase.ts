@@ -1,6 +1,6 @@
 ﻿abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase
 {
-    public GroupedDataPortSet: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
+    public ModuleToDataPortMap: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
     public OneDasInputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
     public OneDasOutputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
 
@@ -8,7 +8,7 @@
     {
         super(model, identification)
 
-        this.GroupedDataPortSet = ko.observableArray()
+        this.ModuleToDataPortMap = ko.observableArray()
         this.OneDasInputModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasInputModuleSelector)
         this.OneDasOutputModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasOutputModuleSelector)
 
@@ -37,16 +37,16 @@
     public UpdateDataPortSet()
     {
         let index: number
-        let groupedDataPortSet: ObservableGroup<DataPortViewModel>[]
+        let moduleToDataPortMap: ObservableGroup<DataPortViewModel>[]
 
-        groupedDataPortSet = []
+        moduleToDataPortMap = []
 
         // inputs
         if (this.OneDasInputModuleSelector())
         {
             index = 0
 
-            groupedDataPortSet = groupedDataPortSet.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule =>
+            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule =>
             {
                 let group: ObservableGroup<DataPortViewModel>
 
@@ -62,7 +62,7 @@
         {
             index = 0
 
-            groupedDataPortSet = groupedDataPortSet.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule =>
+            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule =>
             {
                 let group: ObservableGroup<DataPortViewModel>
 
@@ -73,8 +73,8 @@
             }))
         }
 
-        this.GroupedDataPortSet(groupedDataPortSet)
-        this.DataPortSet(MapMany(this.GroupedDataPortSet(), group => group.Members()))
+        this.ModuleToDataPortMap(moduleToDataPortMap)
+        this.DataPortSet(MapMany(this.ModuleToDataPortMap(), group => group.Members()))
     }
 
     public CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number)

@@ -69,7 +69,7 @@ namespace OneDas.Main
             configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS");
 
             Directory.CreateDirectory(configurationDirectoryPath);
-            ConfigurationManager<OneDasSettings>.Initialize(configurationDirectoryPath, "oneDassettings.json");
+            ConfigurationManager<OneDasSettings>.Initialize(configurationDirectoryPath, "onedassettings.json");
 
             // base directory path
             if (!Directory.Exists(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath))
@@ -371,7 +371,7 @@ namespace OneDas.Main
 
         public static Exception UnwrapException(Exception exception)
         {
-            if (exception is TargetInvocationException)
+            if (exception is TargetInvocationException || exception is AggregateException)
             {
                 return exception.InnerException;
             }
