@@ -30,6 +30,7 @@
     "./Core/EventDispatcher.ts",
     "./Core/IEvent.ts",
     "./Core/LiveViewPeriodEnum.ts",
+    "./Core/OneDasModuleSelectorModeEnum.ts",
     "./Core/WorkspaceBase.ts",
 
     "./Models/ChannelHubModel.ts",

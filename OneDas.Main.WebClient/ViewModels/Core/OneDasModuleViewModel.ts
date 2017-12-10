@@ -7,6 +7,7 @@
     public MaxSize: KnockoutObservable<number>
     public ErrorMessage: KnockoutObservable<string>
     public HasError: KnockoutComputed<boolean>
+
     public DataTypeSet: KnockoutObservableArray<OneDasDataTypeEnum>
 
     private _onPropertyChanged: EventDispatcher<OneDasModuleViewModel, any>

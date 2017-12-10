@@ -860,84 +860,67 @@
     </div>
 </div>
 
-<script type="text/html" id="Project_OneDasInputModuleSelectorTemplate">
-    <div class="card my-2">
-        <div class="card-header">
-            <!-- ko if: !isFinite(RemainingBytes()) -->
-            <span>Input modules (Rx-PDOs)</span>
-            <!-- /ko -->
-            <!-- ko if: isFinite(RemainingBytes()) -->
-            <span data-bind="text: 'Input modules (Rx-PDOs, ' + RemainingBytes() + ' bytes left)'"></span>
-            <!-- /ko -->
-        </div>
-        <div class="card-body">
-            <!-- ko template: { name: 'Project_OneDasModuleSelectorTemplate' } -->
-            <!-- /ko -->
-        </div>
-    </div>
-</script>
-
-<script type="text/html" id="Project_OneDasOutputModuleSelectorTemplate">
-    <div class="card my-2">
-        <div class="card-header">
-            <!-- ko if: !isFinite(RemainingBytes()) -->
-            <span>Output modules (Tx-PDOs)</span>
-            <!-- /ko -->
-            <!-- ko if: isFinite(RemainingBytes()) -->
-            <span data-bind="text: 'Output modules (Tx-PDOs, ' + RemainingBytes() + ' bytes left)'"></span>
-            <!-- /ko -->
-        </div>
-        <div class="card-body">
-            <!-- ko template: { name: 'Project_OneDasModuleSelectorTemplate' } -->
-            <!-- /ko -->
-        </div>
-    </div>
-</script>
-
 <script type="text/html" id="Project_OneDasModuleSelectorTemplate">
-    <!-- ko template: { name: SettingsTemplateName, data: NewModule } -->
-    <!-- /ko -->
-    <!-- ko if: HasError -->
-    <div class="row mb-1">
-        <div class="col">
-            <span data-bind="text: ErrorMessage()" style="color:red"></span>
+
+    <div class="card my-2">
+        <div class="card-header">
+            <!-- ko if: !isFinite(RemainingBytes()) -->
+                <span>Modules</span>
+            <!-- /ko -->
+            <!-- ko if: isFinite(RemainingBytes()) -->
+                <span data-bind="text: 'Modules (' + RemainingBytes() + ' bytes left)'"></span>
+            <!-- /ko -->
         </div>
-    </div>
-    <!-- /ko -->
-    <form>
-        <div class="form-group">
-            <!-- ko if: ModuleSet().length > 0 -->
-            <div class="list-group">
-                <!-- ko foreach: ModuleSet -->
-                <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteModule">
-                    <span data-bind="text: ToString()"></span>
-                </a>
-                <!-- /ko -->
+        <div class="card-body">
+            <!-- ko template: { name: SettingsTemplateName, data: NewModule } -->
+            <!-- /ko -->
+            <!-- ko if: HasError -->
+            <div class="row mb-1">
+                <div class="col">
+                    <span data-bind="text: ErrorMessage()" style="color:red"></span>
+                </div>
             </div>
             <!-- /ko -->
-            <!-- ko if: ModuleSet().length === 0 -->
-            <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
-            <!-- /ko -->
+            <form>
+                <div class="form-group">
+                    <!-- ko if: ModuleSet().length > 0 -->
+                    <div class="list-group">
+                        <!-- ko foreach: ModuleSet -->
+                        <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteModule, style: { 'border-color': DataDirection() === DataDirectionEnum.Input ? 'green' : 'red' }">
+                            <span data-bind="text: ToString()"></span>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: ModuleSet().length === 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no modules selected -</small></h5>
+                    <!-- /ko -->
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </script>
 
 <script type="text/html" id="Project_OneDasModuleSettingsTemplate">
     <form>
         <div class="form-group">
-            <div class="row">
-                <div class="d-flex col-9">
-                    <div class="w-50 mr-1">
-                        <input type="number" min="1" step="1" class="form-control" data-bind="value: Size, attr: { max: MaxSize }" />
-                    </div>
-                    <div class="w-50 ml-1">
-                        <select class="form-control"
-                                data-bind="options: DataTypeSet,
+            <div class="row no-gutters">
+                <div class="col-3">
+                    <input type="number" min="1" step="1" class="form-control" data-bind="value: Size, attr: { max: MaxSize }" />
+                </div>
+                <div class="col-3">
+                    <select class="form-control"
+                            data-bind="options: DataTypeSet,
                                             optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
                                             value: DataType"></select>
-                    </div>
                 </div>
-                <div class="d-flex col-3">
+                <div class="col-3">
+                    <select class="form-control"
+                            data-bind="options: EnumerationHelper.GetEnumValues('DataDirectionEnum'),
+                                        optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('DataDirectionEnum', x) },
+                                        value: DataDirection"></select>
+                </div>
+                <div class="col-3">
                     <button type="button" class="btn btn-outline-info btn-block" data-bind="click: $parent.AddModule, disable: $parent.HasError">Add</button>
                 </div>
             </div>

@@ -13,8 +13,7 @@ namespace OneDas.Plugin
 
         public ExtendedDataGatewayPluginSettingsBase()
         {
-            this.InputModuleSet = new List<OneDasModule>();
-            this.OutputModuleSet = new List<OneDasModule>();
+            this.ModuleSet = new List<OneDasModule>();
 
             this.UpdateDataPortSet();
         }
@@ -24,10 +23,7 @@ namespace OneDas.Plugin
         #region "Properties"
 
         [DataMember]
-        public IEnumerable<OneDasModule> InputModuleSet;
-
-        [DataMember]
-        public IEnumerable<OneDasModule> OutputModuleSet;
+        public List<OneDasModule> ModuleSet;
 
         public List<DataPort> DataPortSet { get; protected set; }
         public Dictionary<OneDasModule, List<DataPort>> ModuleToDataPortMap { get; protected set; }
@@ -35,6 +31,16 @@ namespace OneDas.Plugin
         #endregion
 
         #region "Methods"
+
+        public List<OneDasModule> GetInputModuleSet()
+        {
+            return this.ModuleSet.Where(module => module.DataDirection == DataDirection.Input).ToList();
+        }
+
+        public List<OneDasModule> GetOutputModuleSet()
+        {
+            return this.ModuleSet.Where(module => module.DataDirection == DataDirection.Input).ToList();
+        }
 
         public virtual void UpdateDataPortSet()
         {
@@ -47,7 +53,7 @@ namespace OneDas.Plugin
             indexInput = 0;
             indexOutput = 0;
 
-            this.ModuleToDataPortMap = this.InputModuleSet.Concat(this.OutputModuleSet).ToDictionary(oneDasModule => oneDasModule, oneDasModule =>
+            this.ModuleToDataPortMap = this.ModuleSet.ToDictionary(oneDasModule => oneDasModule, oneDasModule =>
             {
                 List<DataPort> dataPortSet;
 

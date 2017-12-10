@@ -449,14 +449,20 @@ class OneDasModuleViewModel {
     }
 }
 class OneDasModuleSelectorViewModel {
-    constructor(dataDirection, moduleSet = []) {
+    constructor(oneDasModuleSelectorMode, moduleSet = []) {
         // methods
         this.SetMaxBytes = (value) => {
             this.MaxBytes(value);
-            this.Update();
+            this.InternalUpdate();
+        };
+        this.GetInputModuleSet = () => {
+            return this.ModuleSet().filter(module => module.DataDirection() === DataDirectionEnum.Input);
+        };
+        this.GetOutputModuleSet = () => {
+            return this.ModuleSet().filter(module => module.DataDirection() === DataDirectionEnum.Output);
         };
         this.OnModulePropertyChanged = () => {
-            this.Validate();
+            this.InternalUpdate();
         };
         // commands
         this.AddModule = () => {
@@ -464,15 +470,16 @@ class OneDasModuleSelectorViewModel {
             if (!this.HasError()) {
                 this.ModuleSet.push(this.NewModule());
                 this.InternalCreateNewModule();
-                this.Update();
+                this.InternalUpdate();
                 this._onModuleSetChanged.dispatch(this, this.ModuleSet());
             }
         };
         this.DeleteModule = () => {
             this.ModuleSet.pop();
-            this.Update();
+            this.InternalUpdate();
             this._onModuleSetChanged.dispatch(this, this.ModuleSet());
         };
+        this.OneDasModuleSelectorMode = ko.observable(oneDasModuleSelectorMode);
         this.SettingsTemplateName = ko.observable("Project_OneDasModuleSettingsTemplate");
         this.NewModule = ko.observable();
         this.MaxBytes = ko.observable(Infinity);
@@ -481,34 +488,57 @@ class OneDasModuleSelectorViewModel {
         this.ModuleSet = ko.observableArray(moduleSet);
         this.ErrorMessage = ko.observable("");
         this.HasError = ko.computed(() => this.ErrorMessage().length > 0);
-        this.DataDirection = ko.observable(dataDirection);
         this._onModuleSetChanged = new EventDispatcher();
         this.InternalCreateNewModule();
-        this.Update();
+        this.InternalUpdate();
     }
     get OnModuleSetChanged() {
         return this._onModuleSetChanged;
     }
+    InternalUpdate() {
+        this.Update();
+        this.Validate();
+    }
     Update() {
-        let usedBytes;
+        let moduleSet;
         let remainingBytes;
-        usedBytes = this.ModuleSet().map(oneDasModule => oneDasModule.GetByteCount()).reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-        remainingBytes = this.MaxBytes() - usedBytes;
+        switch (this.NewModule().DataDirection()) {
+            case DataDirectionEnum.Input:
+                moduleSet = this.GetInputModuleSet();
+                break;
+            case DataDirectionEnum.Output:
+                moduleSet = this.GetOutputModuleSet();
+                break;
+        }
+        remainingBytes = this.MaxBytes() - moduleSet.map(oneDasModule => oneDasModule.GetByteCount()).reduce((previousValue, currentValue) => previousValue + currentValue, 0);
         this.RemainingBytes(remainingBytes);
         this.RemainingCount(Math.floor(this.RemainingBytes() / ((this.NewModule().DataType() & 0x0FF) / 8)));
-        this.NewModule().Size(Math.min(1, this.RemainingCount()));
     }
     Validate() {
         this.ErrorMessage("");
         if (this.NewModule().HasError()) {
             this.ErrorMessage("Resolve all remaining module errors before continuing.");
         }
+        if (this.OneDasModuleSelectorMode() === OneDasModuleSelectorModeEnum.InputOnly && this.NewModule().DataDirection() == DataDirectionEnum.Output) {
+            this.ErrorMessage("Only input modules are allowed.");
+        }
+        if (this.OneDasModuleSelectorMode() === OneDasModuleSelectorModeEnum.OutputOnly && this.NewModule().DataDirection() == DataDirectionEnum.Input) {
+            this.ErrorMessage("Only output modules are allowed.");
+        }
         if (isFinite(this.RemainingBytes()) && (this.RemainingBytes() - this.NewModule().GetByteCount() < 0)) {
-            this.ErrorMessage("Size of new module is too big.");
+            this.ErrorMessage("Byte count of new module is too high.");
+        }
+        if (this.RemainingCount() <= 0) {
+            this.ErrorMessage("The maximum number of modules is reached.");
         }
     }
     CreateNewModule() {
-        return new OneDasModuleViewModel(new OneDasModuleModel(OneDasDataTypeEnum.UINT16, this.DataDirection(), EndiannessEnum.LittleEndian, 1));
+        if (this.NewModule()) {
+            return new OneDasModuleViewModel(new OneDasModuleModel(this.NewModule().DataType(), this.NewModule().DataDirection(), this.NewModule().Endianness(), 1));
+        }
+        else {
+            return new OneDasModuleViewModel(new OneDasModuleModel(OneDasDataTypeEnum.UINT16, DataDirectionEnum.Input, EndiannessEnum.LittleEndian, 1));
+        }
     }
     InternalCreateNewModule() {
         if (this.NewModule()) {
@@ -620,18 +650,12 @@ class DataGatewayViewModelBase extends PluginViewModelBase {
     }
 }
 class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
-    constructor(model, identification, oneDasInputModuleSelector, oneDasOutputModuleSelector) {
+    constructor(model, identification, oneDasModuleSelector) {
         super(model, identification);
         this.ModuleToDataPortMap = ko.observableArray();
-        this.OneDasInputModuleSelector = ko.observable(oneDasInputModuleSelector);
-        this.OneDasOutputModuleSelector = ko.observable(oneDasOutputModuleSelector);
-        if (this.OneDasInputModuleSelector()) {
-            this.OneDasInputModuleSelector().OnModuleSetChanged.subscribe((sender, args) => {
-                this.UpdateDataPortSet();
-            });
-        }
-        if (this.OneDasOutputModuleSelector()) {
-            this.OneDasOutputModuleSelector().OnModuleSetChanged.subscribe((sender, args) => {
+        this.OneDasModuleSelector = ko.observable(oneDasModuleSelector);
+        if (this.OneDasModuleSelector()) {
+            this.OneDasModuleSelector().OnModuleSetChanged.subscribe((sender, args) => {
                 this.UpdateDataPortSet();
             });
         }
@@ -646,25 +670,21 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
         let moduleToDataPortMap;
         moduleToDataPortMap = [];
         // inputs
-        if (this.OneDasInputModuleSelector()) {
-            index = 0;
-            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule => {
-                let group;
-                group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
-                index += oneDasModule.Size();
-                return group;
-            }));
-        }
+        index = 0;
+        moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasModuleSelector().ModuleSet().filter(oneDasModule => oneDasModule.DataDirection() === DataDirectionEnum.Input).map(oneDasModule => {
+            let group;
+            group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
+            index += oneDasModule.Size();
+            return group;
+        }));
         // outputs
-        if (this.OneDasOutputModuleSelector()) {
-            index = 0;
-            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule => {
-                let group;
-                group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
-                index += oneDasModule.Size();
-                return group;
-            }));
-        }
+        index = 0;
+        moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasModuleSelector().ModuleSet().filter(oneDasModule => oneDasModule.DataDirection() === DataDirectionEnum.Output).map(oneDasModule => {
+            let group;
+            group = new ObservableGroup(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index));
+            index += oneDasModule.Size();
+            return group;
+        }));
         this.ModuleToDataPortMap(moduleToDataPortMap);
         this.DataPortSet(MapMany(this.ModuleToDataPortMap(), group => group.Members()));
     }
@@ -724,3 +744,9 @@ class PluginIdentificationViewModel {
         this.ViewModelResourceName = pluginIdentificationModel.ViewModelResourceName;
     }
 }
+var OneDasModuleSelectorModeEnum;
+(function (OneDasModuleSelectorModeEnum) {
+    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["Duplex"] = 1] = "Duplex";
+    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["InputOnly"] = 2] = "InputOnly";
+    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["OutputOnly"] = 3] = "OutputOnly";
+})(OneDasModuleSelectorModeEnum || (OneDasModuleSelectorModeEnum = {}));

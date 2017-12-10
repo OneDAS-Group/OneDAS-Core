@@ -28,6 +28,9 @@
         this.ActiveProject = ko.observable<ProjectViewModel>()
 
         // enumeration description
+        EnumerationHelper.Description["DataDirectionEnum_Input"] = "Input"
+        EnumerationHelper.Description["DataDirectionEnum_Output"] = "Output"
+
         EnumerationHelper.Description["FileGranularityEnum_Minute_1"] = "1 file per minute"
         EnumerationHelper.Description["FileGranularityEnum_Minute_10"] = "1 file per 10 minutes"
         EnumerationHelper.Description["FileGranularityEnum_Hour"] = "1 file per hour"

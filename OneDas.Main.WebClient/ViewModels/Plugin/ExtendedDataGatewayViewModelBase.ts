@@ -1,28 +1,18 @@
 ﻿abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase
 {
     public ModuleToDataPortMap: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
-    public OneDasInputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
-    public OneDasOutputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
+    public OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
 
-    constructor(model, identification: PluginIdentificationViewModel, oneDasInputModuleSelector: OneDasModuleSelectorViewModel, oneDasOutputModuleSelector: OneDasModuleSelectorViewModel)
+    constructor(model, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel)
     {
         super(model, identification)
 
         this.ModuleToDataPortMap = ko.observableArray()
-        this.OneDasInputModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasInputModuleSelector)
-        this.OneDasOutputModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasOutputModuleSelector)
+        this.OneDasModuleSelector = ko.observable<OneDasModuleSelectorViewModel>(oneDasModuleSelector)
 
-        if (this.OneDasInputModuleSelector())
+        if (this.OneDasModuleSelector())
         {
-            this.OneDasInputModuleSelector().OnModuleSetChanged.subscribe((sender, args) =>
-            {
-                this.UpdateDataPortSet()
-            })
-        }
-
-        if (this.OneDasOutputModuleSelector())
-        {
-            this.OneDasOutputModuleSelector().OnModuleSetChanged.subscribe((sender, args) =>
+            this.OneDasModuleSelector().OnModuleSetChanged.subscribe((sender, args) =>
             {
                 this.UpdateDataPortSet()
             })
@@ -42,36 +32,30 @@
         moduleToDataPortMap = []
 
         // inputs
-        if (this.OneDasInputModuleSelector())
+        index = 0
+
+        moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasModuleSelector().ModuleSet().filter(oneDasModule => oneDasModule.DataDirection() === DataDirectionEnum.Input).map(oneDasModule =>
         {
-            index = 0
+            let group: ObservableGroup<DataPortViewModel>
 
-            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasInputModuleSelector().ModuleSet().map(oneDasModule =>
-            {
-                let group: ObservableGroup<DataPortViewModel>
+            group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
+            index += oneDasModule.Size();
 
-                group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
-                index += oneDasModule.Size();
-
-                return group
-            }))
-        }
+            return group
+        }))
 
         // outputs
-        if (this.OneDasOutputModuleSelector())
+        index = 0
+
+        moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasModuleSelector().ModuleSet().filter(oneDasModule => oneDasModule.DataDirection() === DataDirectionEnum.Output).map(oneDasModule =>
         {
-            index = 0
+            let group: ObservableGroup<DataPortViewModel>
 
-            moduleToDataPortMap = moduleToDataPortMap.concat(this.OneDasOutputModuleSelector().ModuleSet().map(oneDasModule =>
-            {
-                let group: ObservableGroup<DataPortViewModel>
+            group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
+            index += oneDasModule.Size();
 
-                group = new ObservableGroup<DataPortViewModel>(oneDasModule.ToString(), this.CreateDataPortSet(oneDasModule, index))
-                index += oneDasModule.Size();
-
-                return group
-            }))
-        }
+            return group
+        }))
 
         this.ModuleToDataPortMap(moduleToDataPortMap)
         this.DataPortSet(MapMany(this.ModuleToDataPortMap(), group => group.Members()))

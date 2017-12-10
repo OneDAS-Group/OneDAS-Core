@@ -24,6 +24,7 @@
     "./../Core/ActionResponse.ts",
     "./../Core/EventDispatcher.ts",
     "./../Core/IEvent.ts",
+    "./../Core/OneDasModuleSelectorModeEnum.ts",
 
     "./../Models/ChannelHubModel.ts",
     "./../Models/OneDasModuleModel.ts",

@@ -196,11 +196,14 @@ declare class OneDasModuleSelectorViewModel {
     ModuleSet: KnockoutObservableArray<OneDasModuleViewModel>;
     ErrorMessage: KnockoutObservable<string>;
     HasError: KnockoutComputed<boolean>;
-    DataDirection: KnockoutObservable<DataDirectionEnum>;
+    OneDasModuleSelectorMode: KnockoutObservable<OneDasModuleSelectorModeEnum>;
     private _onModuleSetChanged;
-    constructor(dataDirection: DataDirectionEnum, moduleSet?: OneDasModuleViewModel[]);
+    constructor(oneDasModuleSelectorMode: OneDasModuleSelectorModeEnum, moduleSet?: OneDasModuleViewModel[]);
     readonly OnModuleSetChanged: IEvent<OneDasModuleSelectorViewModel, OneDasModuleViewModel[]>;
     SetMaxBytes: (value: number) => void;
+    GetInputModuleSet: () => OneDasModuleViewModel[];
+    GetOutputModuleSet: () => OneDasModuleViewModel[];
+    private InternalUpdate();
     protected Update(): void;
     protected Validate(): void;
     protected CreateNewModule(): OneDasModuleViewModel;
@@ -255,9 +258,8 @@ declare abstract class DataGatewayViewModelBase extends PluginViewModelBase {
 }
 declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
     ModuleToDataPortMap: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>;
-    OneDasInputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
-    OneDasOutputModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
-    constructor(model: any, identification: PluginIdentificationViewModel, oneDasInputModuleSelector: OneDasModuleSelectorViewModel, oneDasOutputModuleSelector: OneDasModuleSelectorViewModel);
+    OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
+    constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel);
     InitializeAsync(): Promise<void>;
     UpdateDataPortSet(): void;
     CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number): DataPortViewModel[];
@@ -283,4 +285,9 @@ declare class PluginIdentificationViewModel {
     ViewResourceName: string;
     ViewModelResourceName: string;
     constructor(pluginIdentificationModel: any);
+}
+declare enum OneDasModuleSelectorModeEnum {
+    Duplex = 1,
+    InputOnly = 2,
+    OutputOnly = 3,
 }
