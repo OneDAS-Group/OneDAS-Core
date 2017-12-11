@@ -85,6 +85,12 @@ class EventDispatcher {
         }
     }
 }
+var OneDasModuleSelectorModeEnum;
+(function (OneDasModuleSelectorModeEnum) {
+    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["Duplex"] = 1] = "Duplex";
+    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["InputOnly"] = 2] = "InputOnly";
+    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["OutputOnly"] = 3] = "OutputOnly";
+})(OneDasModuleSelectorModeEnum || (OneDasModuleSelectorModeEnum = {}));
 class ChannelHubModel {
     constructor(name, group, oneDasDataType, sampleRate) {
         this.Name = name;
@@ -744,9 +750,3 @@ class PluginIdentificationViewModel {
         this.ViewModelResourceName = pluginIdentificationModel.ViewModelResourceName;
     }
 }
-var OneDasModuleSelectorModeEnum;
-(function (OneDasModuleSelectorModeEnum) {
-    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["Duplex"] = 1] = "Duplex";
-    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["InputOnly"] = 2] = "InputOnly";
-    OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["OutputOnly"] = 3] = "OutputOnly";
-})(OneDasModuleSelectorModeEnum || (OneDasModuleSelectorModeEnum = {}));

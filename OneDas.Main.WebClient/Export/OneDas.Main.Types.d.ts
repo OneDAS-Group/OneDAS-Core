@@ -59,6 +59,11 @@ interface IEvent<TSender, TArgs> {
     subscribe(fn: (sender: TSender, args: TArgs) => void): void;
     unsubscribe(fn: (sender: TSender, args: TArgs) => void): void;
 }
+declare enum OneDasModuleSelectorModeEnum {
+    Duplex = 1,
+    InputOnly = 2,
+    OutputOnly = 3,
+}
 declare class ChannelHubModel {
     Name: string;
     Group: string;
@@ -285,9 +290,4 @@ declare class PluginIdentificationViewModel {
     ViewResourceName: string;
     ViewModelResourceName: string;
     constructor(pluginIdentificationModel: any);
-}
-declare enum OneDasModuleSelectorModeEnum {
-    Duplex = 1,
-    InputOnly = 2,
-    OutputOnly = 3,
 }
