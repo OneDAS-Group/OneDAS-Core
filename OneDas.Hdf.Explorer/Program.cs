@@ -7,7 +7,7 @@ namespace OneDas.Hdf.Explorer
     {
         public static void Main(string[] args)
         {
-            Program.BaseDirectoryPath = @"D:\DATABASE";
+            Program.BaseDirectoryPath = @"M:\DATABASE";
             Directory.CreateDirectory(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "EXPORT"));
             Directory.CreateDirectory(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF Explorer"));
 

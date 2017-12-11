@@ -15,9 +15,9 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="0.1.0-alpha-6514-27973" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="0.1.0-alpha-6514-27986" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="0.1.0-alpha-6514-27969" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="0.1.0-alpha-6554-27892" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="0.1.0-alpha-6554-27876" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="0.1.0-alpha-6554-27886" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
