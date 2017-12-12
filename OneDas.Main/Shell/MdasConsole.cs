@@ -177,6 +177,7 @@ namespace OneDas.Main.Shell
             }
 
         #endregion
+
         }
 
         #endregion
@@ -214,7 +215,7 @@ namespace OneDas.Main.Shell
                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
 
-                Console.Write($"+================================"); this.WriteColored($" OneDAS Server ", ConsoleColor.Cyan); Console.WriteLine($"================================+");
+                Console.Write($"+==============================="); this.WriteColored($" OneDAS Server ", ConsoleColor.Cyan); Console.WriteLine($"===============================+");
                 Console.WriteLine($"|                                                                             |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
