@@ -9,7 +9,8 @@
 	   <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/Apollo3zehn/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
 	   <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/Apollo3zehn/OneDAS-Core</ProjectUrl>
     </PropertyGroup>
-    <BuildTask Input_Major="$(Major)" 
+    <BuildTask Input_PackageId="$(PackageId)"
+	           Input_Major="$(Major)" 
 	           Input_Minor="$(Minor)" 
 	           Input_Revision="$(Revision)" 
 	           Input_VersionSuffix="$(VersionSuffix)"

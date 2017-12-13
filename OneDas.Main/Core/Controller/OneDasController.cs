@@ -76,7 +76,7 @@ namespace OneDas.Main.Core
         private DateTime _lastActivationDateTime;
 
         private Dictionary<SampleRate, IEnumerable<DataStorageContext>> _sampleRateInputDictionary;
-        private Dictionary<SampleRate, IEnumerable<DataStorageContext>> _sampleRateOutputDictionary;
+        private Dictionary<SampleRate, IEnumerable<DataStorageContext>> _sampleRateToDatStorageContextMap;
         private Dictionary<DataGatewayPluginLogicBase, bool> _hasValidDataSet;
 
         // overwritten
@@ -509,7 +509,7 @@ namespace OneDas.Main.Core
             _lastActivationDateTime = DateTime.MinValue;
 
             _sampleRateInputDictionary = new Dictionary<SampleRate, IEnumerable<DataStorageContext>>();
-            _sampleRateOutputDictionary = new Dictionary<SampleRate, IEnumerable<DataStorageContext>>();
+            _sampleRateToDatStorageContextMap = new Dictionary<SampleRate, IEnumerable<DataStorageContext>>();
             _hasValidDataSet = new Dictionary<DataGatewayPluginLogicBase, bool>();
         }
 
@@ -538,7 +538,7 @@ namespace OneDas.Main.Core
         private void Step_2_PrepareBuffers()
         {
             _sampleRateInputDictionary.Clear();
-            _sampleRateOutputDictionary.Clear();
+            _sampleRateToDatStorageContextMap.Clear();
 
             foreach (SampleRate sampleRate in Enum.GetValues(typeof(SampleRate)).Cast<SampleRate>().ToList())
             {
@@ -578,7 +578,7 @@ namespace OneDas.Main.Core
                 });
 
                 _sampleRateInputDictionary.Add(sampleRate, dataStorageContextInputSet);
-                _sampleRateOutputDictionary.Add(sampleRate, dataStorageContextOutputSet);
+                _sampleRateToDatStorageContextMap.Add(sampleRate, dataStorageContextOutputSet);
             }
         }
 
@@ -627,16 +627,15 @@ namespace OneDas.Main.Core
 
         private void Step_4_PrepareIoTimer()
         {
+            TimeSpan interval;
+            TimeSpan timeShift;
+
             _timer_UpdateIo.Stop();
 
-            if (Process.GetCurrentProcess().PriorityClass == ProcessPriorityClass.RealTime)
-            {
-                _timer_UpdateIo.Start(new TimeSpan(0, 0, 0, 0, Convert.ToInt32(1.0 / Settings.Default.NativeSampleRate * 1000.0)), new TimeSpan(0, 0, 0, 0, ConfigurationManager<OneDasSettings>.Settings.OneDasTimerShift), this.UpdateIo, UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
-            }
-            else // use multimedia class scheduler service instead
-            {
-                _timer_UpdateIo.Start(new TimeSpan(0, 0, 0, 0, Convert.ToInt32(1.0 / Settings.Default.NativeSampleRate * 1000.0)), new TimeSpan(0, 0, 0, 0, ConfigurationManager<OneDasSettings>.Settings.OneDasTimerShift), this.UpdateIo);
-            }
+            interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(1.0 / Settings.Default.NativeSampleRate * 1000.0));
+            timeShift = new TimeSpan(0, 0, 0, 0, ConfigurationManager<OneDasSettings>.Settings.OneDasTimerShift);
+
+            _timer_UpdateIo.Start(interval, timeShift, this.UpdateIo, UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
         }
 
         private void PluginLogic_SendReport(object sender, SendReportEventArgs e)
@@ -822,7 +821,7 @@ namespace OneDas.Main.Core
                         }
 
                         // write: channel hub storage --> data port (output)                   // IMPROVE: data will be send in next cycle. maybe LRW is not the best option
-                        foreach (var sampleRateCategory in _sampleRateOutputDictionary)
+                        foreach (var sampleRateCategory in _sampleRateToDatStorageContextMap)
                         {
                             int realChunkIndex;
 
