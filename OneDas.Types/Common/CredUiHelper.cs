@@ -29,10 +29,10 @@ namespace OneDas.Common
             uint authPackage = 0;
             IntPtr authBuffer = IntPtr.Zero;
             uint authBufferSize = 0;
-            IntPtr outAuthBuffer = default(IntPtr);
+            IntPtr outAuthBuffer = default;
             uint outAuthBufferSize = 1000;
             bool save = false;
-            CredUIReturnCodes credUIReturnCode = default(CredUIReturnCodes);
+            CredUIReturnCodes credUIReturnCode = default;
 
             // CredUnPackAuthenticationBuffer / CredUIParseUserName
             StringBuilder domain_2 = new StringBuilder(255);

@@ -540,7 +540,7 @@ namespace OneDas.Hdf.VdsTool
             IList<string> dateTime;
             IList<string> filePathSet;
             hdf_aggregate_function_t[] aggregate_function_set;
-            SampleRate sampleRate = default(SampleRate);
+            SampleRate sampleRate = default;
 
             var campaignInfoSet = new Dictionary<string, CampaignInfo>();
 
@@ -654,7 +654,7 @@ namespace OneDas.Hdf.VdsTool
                                         }
                                     }
 
-                                    if (sampleRate == default(SampleRate))
+                                    if (sampleRate == default)
                                     {
                                         messageLog.WriteLine($"No appropriate data source was found. Skipping variable.");
                                         return;

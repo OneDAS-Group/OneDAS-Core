@@ -238,7 +238,7 @@ namespace OneDas.Hdf.Core
             H5E.auto_t func;
             IntPtr clientData;
 
-            idx = default(ulong);
+            idx = default;
             datasetPathSet = new List<(string Path, string Name)>();
             func = null;
             clientData = IntPtr.Zero;
@@ -254,7 +254,7 @@ namespace OneDas.Hdf.Core
             {
                 long datasetId = -1;
 
-                ulong idx2 = default(ulong);
+                ulong idx2 = default;
                 int level;
 
                 string name;

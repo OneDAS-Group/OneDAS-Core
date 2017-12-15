@@ -26,6 +26,7 @@ namespace OneDas.Plugin
             this.SendReport?.Invoke(sender, e);
         }
 
+        // don't force inherited classes to overwrite this
         protected virtual void FreeManagedResources()
         {
             //

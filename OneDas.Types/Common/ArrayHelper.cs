@@ -8,7 +8,7 @@ namespace OneDas.Common
     {
         public static void ToUnmanagedArray(this Array valueSet, IntPtr targetPtr)
         {
-            IntPtr sourcePtr = default(IntPtr);
+            IntPtr sourcePtr = default;
             int counter = 0;
             int elementTypeSize = 0;
             Type elementType = valueSet.GetType().GetElementType();

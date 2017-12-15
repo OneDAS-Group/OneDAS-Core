@@ -19,8 +19,8 @@ namespace OneDas.Common
         {
             Contract.Requires(optionSet != null);
 
-            ConsoleKeyInfo consoleKeyInfo = default(ConsoleKeyInfo);
-            StringBuilder buffer = default(StringBuilder);
+            ConsoleKeyInfo consoleKeyInfo = default;
+            StringBuilder buffer = default;
             int selectedIndex = 0;
 
             //

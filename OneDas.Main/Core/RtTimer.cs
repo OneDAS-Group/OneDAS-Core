@@ -107,10 +107,10 @@ namespace OneDas.Main.Core
 
         private void TimerLoop()
         {
-            DateTime currentDateTime = default(DateTime);
-            Stopwatch stopwatch = default(Stopwatch);
-            TimeSpan timeSpan_Sleep = default(TimeSpan);
-            TimeSpan timeSpan_Elapsed = default(TimeSpan);
+            DateTime currentDateTime = default;
+            Stopwatch stopwatch = default;
+            TimeSpan timeSpan_Sleep = default;
+            TimeSpan timeSpan_Elapsed = default;
 
             stopwatch = Stopwatch.StartNew();
 

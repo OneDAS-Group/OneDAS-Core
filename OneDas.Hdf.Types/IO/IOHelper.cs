@@ -471,8 +471,8 @@ namespace OneDas.Hdf.IO
             elementTypeSize = 0;
             byteLength = 0;
 
-            valueSetPointer = default(IntPtr);
-            gcHandle = default(GCHandle);
+            valueSetPointer = default;
+            gcHandle = default;
             elementType = typeof(T);
 
             try
@@ -667,7 +667,7 @@ namespace OneDas.Hdf.IO
             return (attributeId, isNew);
         }
 
-        public static (long DatasetId, bool IsNew) OpenOrCreateDataset(long locationId, string datasetPath, long datasetTypeId, ulong chunkLength, ulong chunkCount, IntPtr fillValue = default(IntPtr))
+        public static (long DatasetId, bool IsNew) OpenOrCreateDataset(long locationId, string datasetPath, long datasetTypeId, ulong chunkLength, ulong chunkCount, IntPtr fillValue = default)
         {
             return IOHelper.OpenOrCreateDataset(locationId, datasetPath, datasetTypeId, () =>
             {

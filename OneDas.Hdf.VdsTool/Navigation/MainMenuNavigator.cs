@@ -101,7 +101,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
             bool isEscaped = false;
 
-            DateTime epochStart = default(DateTime);
+            DateTime epochStart = default;
             DateTime epochEnd;
 
             //
@@ -209,7 +209,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
             bool isEscaped = false;
 
-            DateTime epochStart = default(DateTime);
+            DateTime epochStart = default;
             DateTime epochEnd;
 
             //

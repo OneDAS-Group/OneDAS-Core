@@ -25,12 +25,17 @@ namespace OneDas.Plugin
         [DataMember]
         public List<OneDasModule> ModuleSet;
 
-        public List<DataPort> DataPortSet { get; protected set; }
+        protected List<DataPort> DataPortSet { get; set; }
         public Dictionary<OneDasModule, List<DataPort>> ModuleToDataPortMap { get; protected set; }
 
         #endregion
 
         #region "Methods"
+
+        public Dictionary<OneDasModule, List<DataPort>> GetModuleToDataPortMap(DataDirection dataDirection)
+        {
+            return this.ModuleToDataPortMap.Where(moduleEntry => moduleEntry.Key.DataDirection == dataDirection).ToDictionary(moduleEntry => moduleEntry.Key, moduleEntry => moduleEntry.Value);
+        }
 
         public List<OneDasModule> GetInputModuleSet()
         {

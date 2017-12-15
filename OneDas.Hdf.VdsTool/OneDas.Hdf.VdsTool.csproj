@@ -5,6 +5,12 @@
     <OutputType>Exe</OutputType>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="3.20.0" />
     <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha1-6514-26370" />

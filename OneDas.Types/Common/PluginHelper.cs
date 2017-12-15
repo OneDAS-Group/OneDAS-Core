@@ -20,7 +20,7 @@ namespace OneDas.Common
 
             foreach (string dllFilePath in dllFilePathSet)
             {
-                Assembly assembly = default(Assembly);
+                Assembly assembly = default;
 
                 try
                 {
