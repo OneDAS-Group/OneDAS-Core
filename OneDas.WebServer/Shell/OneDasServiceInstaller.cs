@@ -1,11 +1,11 @@
-﻿using System;
-using System.Diagnostics;
+﻿using OneDas.Engine;
+using OneDas.Types.Settings;
+using System;
 using System.ComponentModel;
 using System.Configuration.Install;
+using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
-using OneDas.Properties;
-using OneDas.Engine;
 
 namespace OneDas.WebServer.Shell
 {
@@ -36,7 +36,7 @@ namespace OneDas.WebServer.Shell
             // eventLogInstaller
             EventLogInstaller eventLogInstaller = new EventLogInstaller()
             {
-                Log = Settings.Default.EventLogName,
+                Log = GlobalSettings.EventLogName,
                 Source = ConfigurationManager<OneDasSettings>.Settings.ApplicationName
             };
 

@@ -32,11 +32,13 @@ namespace OneDas.WebServer
         private static Task _task_WebHost;
         private static IWebHost _webhost;
         private static ILoggerFactory _loggerFactory;
-        private static ILogger _logger;
 
         #endregion
 
         #region "Properties"
+
+        public static ILogger SystemLogger { get; private set; }
+        public static ILogger BootLoaderLogger { get; private set; }
 
         public static bool IsElevated { get; private set; }
 
@@ -99,7 +101,8 @@ namespace OneDas.WebServer
             _loggerFactory.AddProvider(new EventLogLoggerProvider(eventLogSettings));
             _loggerFactory.AddProvider(new ClientMessageLoggerProvider());
 
-            _logger = _loggerFactory.CreateLogger("System");
+            Bootloader.SystemLogger = _loggerFactory.CreateLogger("System");
+            Bootloader.BootLoaderLogger = _loggerFactory.CreateLogger("Bootloader");
 
             // exception handling
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -344,7 +347,7 @@ namespace OneDas.WebServer
      
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            _logger.LogCritical(e.ExceptionObject.ToString());
+            Bootloader.SystemLogger.LogCritical(e.ExceptionObject.ToString());
         }
 
         #endregion
@@ -416,7 +419,7 @@ namespace OneDas.WebServer
             {
                 if (_oneDasController != null)
                 {
-                    _logger.LogInformation("shutdown started");
+                    Bootloader.SystemLogger.LogInformation("shutdown started");
 
                     _webhost?.StopAsync();
                     
@@ -427,7 +430,7 @@ namespace OneDas.WebServer
 
                     Bootloader.OneDasController?.Dispose();
 
-                    _logger.LogInformation("shutdown finished");
+                    Bootloader.SystemLogger.LogInformation("shutdown finished");
                 }
             }
 

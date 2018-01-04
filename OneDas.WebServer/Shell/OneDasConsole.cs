@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.Common;
+using OneDas.Engine;
+using OneDas.Engine.Core;
+using OneDas.Infrastructure;
+using OneDas.Types.Settings;
+using System;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.ServiceProcess;
 using System.Threading;
 using System.Timers;
-using OneDas.WebServer.Core;
-using OneDas.Common;
-using OneDas.Infrastructure;
-using OneDas.Properties;
 
 namespace OneDas.WebServer.Shell
 {
@@ -61,7 +63,7 @@ namespace OneDas.WebServer.Shell
 
             _managementServiceClient = new ChannelFactory<IManagementService>(new NetNamedPipeBinding(NetNamedPipeSecurityMode.None), new EndpointAddress(ConfigurationManager<OneDasSettings>.Settings.ManagementServiceBaseAddress + "/pipe")).CreateChannel();
 
-            Bootloader.WriteLogEntry("started in user interactive mode (console)", EventLogEntryType.Information);
+            Bootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
 
         #endregion
 
@@ -326,10 +328,10 @@ namespace OneDas.WebServer.Shell
                     //Console.Write($"{performanceInformation.ClientSetCount,2}");
 
                     Console.SetCursorPosition(33 + offset, 3);
-                    Console.WriteLine($"{Settings.Default.ChunkPeriod,2} s");
+                    Console.WriteLine($"{GlobalSettings.ChunkPeriod,2} s");
 
                     Console.SetCursorPosition(32 + offset, 4);
-                    Console.WriteLine($"{Settings.Default.NativeSampleRate,3} Hz");
+                    Console.WriteLine($"{GlobalSettings.NativeSampleRate,3} Hz");
 
                     Console.SetCursorPosition(30 + offset, 5);
                     Console.Write($"{performanceInformation.LateBy,5:0.0} ms");

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
+using Microsoft.Extensions.Logging;
 
 namespace OneDas.WebServer.Shell
 {
@@ -14,7 +15,7 @@ namespace OneDas.WebServer.Shell
         protected override void OnStarting(string[] args)
         {
             base.OnStarting(args);
-            Bootloader.WriteLogEntry("started in non-interactive mode (service)", EventLogEntryType.Information);
+            Bootloader.SystemLogger.LogInformation("started in non-interactive mode (service)");
         }
 
         protected override void OnStopping()

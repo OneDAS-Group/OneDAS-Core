@@ -33,8 +33,7 @@ namespace OneDas.WebServer.Web
             _updateDataSnapshotTimer.Elapsed += _updateDataSnapshotTimer_Elapsed;
             _updateLiveValueDataTimer.Elapsed += _updateLiveValueDataTimer_Elapsed;
 
-            Bootloader.OneDasController.OneDasEngine.OneDasStateChanged += OneDasController_OneDasStateChanged;
-            Bootloader.SystemMessageReceived += HomeController.Bootloader_ClientMessageReceived;
+            Bootloader.OneDasController.OneDasEngine.OneDasStateChanged += HomeController.OneDasController_OneDasStateChanged;
         }
 
         public HomeController(IHubContext<Broadcaster> hubContext)

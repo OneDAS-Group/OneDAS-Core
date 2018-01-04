@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using OneDas.Common;
 using OneDas.Engine;
 using OneDas.Engine.Serialization;
@@ -97,7 +98,7 @@ namespace OneDas.WebServer.Web
                 {
                     currentFilePath = project.Save(currentFilePath);
 
-                    Bootloader.OnSystemMessageReceived("project file saved");
+                    Bootloader.BootLoaderLogger.LogInformation("project file saved");
                 }
             });
         }
