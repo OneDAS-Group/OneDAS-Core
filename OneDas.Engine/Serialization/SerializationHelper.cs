@@ -67,7 +67,7 @@ namespace OneDas.Engine.Serialization
             return null;
         }
 
-        internal static ProjectDescription GetProjectDescriptonFromFile(string filePath)
+        public static ProjectDescription GetProjectDescriptonFromFile(string filePath)
         {
             return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<ProjectDescription>();
         }

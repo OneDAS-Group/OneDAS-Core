@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Timers;
-using OneDas.Infrastructure;
-using OneDas.WebServer.Core;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using OneDas.Engine.Core;
+using OneDas.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Timers;
 
 namespace OneDas.WebServer.Web
 {
@@ -63,7 +62,7 @@ namespace OneDas.WebServer.Web
             if (Bootloader.OneDasController.OneDasEngine.OneDasState >= OneDasState.Ready)
             {
                 OneDasPerformanceInformation performanceInformation = Bootloader.OneDasController.OneDasEngine.CreatePerformanceInformation();
-                _hubContext.Clients.All.InvokeAsync("SendPerformanceInformation", performanceInformation);
+                _hubContext?.Clients.All.InvokeAsync("SendPerformanceInformation", performanceInformation);
             }
         }
 
@@ -74,7 +73,7 @@ namespace OneDas.WebServer.Web
             if (Bootloader.OneDasController.OneDasEngine.OneDasState >= OneDasState.Ready)
             {
                 dataSnapshot = Bootloader.OneDasController.OneDasEngine.CreateDataSnapshot();
-                _hubContext.Clients.All.InvokeAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
+                _hubContext?.Clients.All.InvokeAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
             }
         }
 
@@ -87,19 +86,19 @@ namespace OneDas.WebServer.Web
                 foreach (var liveViewSubscription in HomeController.LiveViewSubscriptionSet)
                 {
                     dataSnapshot = Bootloader.OneDasController.OneDasEngine.CreateDataSnapshot(liveViewSubscription.Value.ChannelHubSet);
-                    _hubContext.Clients.Client(liveViewSubscription.Key).InvokeAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
+                    _hubContext?.Clients.Client(liveViewSubscription.Key).InvokeAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
                 }
             }
         }
 
         public static void SendClientMessage(string message)
         {
-            _hubContext.Clients.All.InvokeAsync("SendClientMessage", message);
+            _hubContext?.Clients.All.InvokeAsync("SendClientMessage", message);
         }
 
         private static void OneDasController_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)
         {
-            _hubContext.Clients.All.InvokeAsync("SendOneDasState", e.NewState);
+            _hubContext?.Clients.All.InvokeAsync("SendOneDasState", e.NewState);
         }
     }
 }

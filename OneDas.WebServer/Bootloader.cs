@@ -89,21 +89,6 @@ namespace OneDas.WebServer
                 ConfigurationManager<OneDasSettings>.Save();
             }
 
-            // logging
-            _loggerFactory = new LoggerFactory();
-
-            eventLogSettings = new EventLogSettings()
-            {
-                SourceName = ConfigurationManager<OneDasSettings>.Settings.ApplicationName,
-                Filter = (category, logLevel) => category == "System"
-            };
-
-            _loggerFactory.AddProvider(new EventLogLoggerProvider(eventLogSettings));
-            _loggerFactory.AddProvider(new ClientMessageLoggerProvider());
-
-            Bootloader.SystemLogger = _loggerFactory.CreateLogger("System");
-            Bootloader.BootLoaderLogger = _loggerFactory.CreateLogger("Bootloader");
-
             // exception handling
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
@@ -116,6 +101,26 @@ namespace OneDas.WebServer
 
             // ensure AppDomain shadow copying
             Bootloader.EnsureAppDomainShadowCopying();
+
+            // logging
+            _loggerFactory = new LoggerFactory();
+
+            if (Environment.UserInteractive)
+            {
+                eventLogSettings = new EventLogSettings();
+            }
+            else
+            {
+                eventLogSettings = new EventLogSettings() { SourceName = ConfigurationManager<OneDasSettings>.Settings.ApplicationName, };
+            }
+
+            eventLogSettings.Filter = (category, logLevel) => category == "System";
+
+            _loggerFactory.AddProvider(new EventLogLoggerProvider(eventLogSettings));
+            _loggerFactory.AddProvider(new ClientMessageLoggerProvider((category, logLevel) => category != "System"));
+
+            Bootloader.SystemLogger = _loggerFactory.CreateLogger("System");
+            Bootloader.BootLoaderLogger = _loggerFactory.CreateLogger("Bootloader");
 
             // OneDasServiceController
             _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);

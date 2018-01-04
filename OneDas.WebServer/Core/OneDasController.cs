@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OneDas.Engine;
 using OneDas.Engine.Core;
 using OneDas.WebServer.Shell;
 using System;
@@ -18,13 +19,25 @@ namespace OneDas.WebServer.Core
         private ServiceHost _serviceHost_ManagementService;
         private ServiceEndpoint _serviceEndpoint_ManagementService;
 
+        private ILogger _systemLogger;
+
         #endregion
 
         #region "Constructors"
 
         public OneDasController(ILoggerFactory _loggerFactory)
         {
+            _systemLogger = _loggerFactory.CreateLogger("System");
+
             this.OneDasEngine = new OneDasEngine(_loggerFactory);
+
+            NetNamedPipeBinding netNamedPipeBinding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
+
+            _serviceHost_ManagementService = new ServiceHost(this, new Uri(ConfigurationManager<OneDasSettings>.Settings.ManagementServiceBaseAddress));
+            _serviceEndpoint_ManagementService = _serviceHost_ManagementService.AddServiceEndpoint(typeof(IManagementService), netNamedPipeBinding, "pipe");
+            _serviceHost_ManagementService.Open();
+
+            _systemLogger.LogInformation("management service started");
         }
 
         #endregion
