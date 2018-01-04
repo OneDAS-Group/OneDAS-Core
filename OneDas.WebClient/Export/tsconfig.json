@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "outFile": "./OneDas.Main.Types.js",
+    "outFile": "./OneDas.Types.js",
     "declaration": true,
     "typeRoots": [
       "./../../../OneDas-Support/web/node_modules/@types/"
