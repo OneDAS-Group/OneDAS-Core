@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OneDas.Infrastructure;
+using OneDas.Types.Settings;
 
 namespace OneDas.Plugin
 {
@@ -12,7 +13,7 @@ namespace OneDas.Plugin
         {
             this.Guid = channelHub.Guid;
             this.VariableName = channelHub.Name;
-            this.DatasetName = $"{Properties.Settings.Default.NativeSampleRate / (int)channelHub.SampleRate} Hz"; ;
+            this.DatasetName = $"{ GlobalSettings.NativeSampleRate / (int)channelHub.SampleRate } Hz"; ;
             this.Group = channelHub.Group;
             this.OneDasDataType = channelHub.OneDasDataType;
             this.SamplesPerDay = InfrastructureHelper.GetSamplesPerDayFromSampleRate(channelHub.SampleRate);

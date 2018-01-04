@@ -264,7 +264,7 @@ namespace OneDas.Hdf.Explorer.Core
                     var b = H5D.open(sourceFileId, datasetPath + "_status");
                     var a  = H5D.get_type(b);
 
-                    dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<Byte>().ToArray();
+                    dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<byte>().ToArray();
                     dataset = (Array)GeneralHelper.InvokeGenericMethod(typeof(ExtendedDataStorageBase), null, nameof(ExtendedDataStorageBase.ApplyDatasetStatus),
                                                                         BindingFlags.Public | BindingFlags.Static,
                                                                         TypeConversionHelper.GetTypeFromHdfTypeId(typeId),

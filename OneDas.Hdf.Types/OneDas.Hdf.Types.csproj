@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Provides a common type system and helper functions for HDF based OneDAS application parts.</Description>
     <PackageTags>OneDAS data aquisition measurement HDF</PackageTags>
   </PropertyGroup>
@@ -12,7 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke" Version="1.10.1" />
-    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6555-33584" />
+    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6578-23596" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">

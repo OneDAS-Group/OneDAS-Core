@@ -103,12 +103,12 @@ namespace OneDas.Hdf.VdsTool
             vdsFileId = H5F.create(vdsFilePath, H5F.ACC_TRUNC);
             
             // write attribute
-            IOHelper.PrepareAttribute(vdsFileId, "date_time", new string[] { $"{epochStart.ToString("yyyy-MM-ddTHH-mm-ss")}Z" }, new ulong[] { 1 }, true);
+            IOHelper.PrepareAttribute(vdsFileId, "date_time", new string[] { $"{ epochStart.ToString("yyyy-MM-ddTHH-mm-ss") }Z" }, new ulong[] { 1 }, true);
 
             // for each source file
             foreach (string sourceFilePath in sourceFilePathSet)
             {
-                Console.Write($"Processing file {Path.GetFileName(sourceFilePath)} ... ");
+                Console.Write($"Processing file { Path.GetFileName(sourceFilePath) } ... ");
 
                 sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
 
