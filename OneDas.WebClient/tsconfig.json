@@ -3,7 +3,7 @@
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
-    "outFile": "./../OneDas.Main/wwwroot/js/site.js",
+    "outFile": "./../OneDas.WebServer/wwwroot/js/site.js",
     "target": "es6",
     "experimentalDecorators": true,
     "module": "none",

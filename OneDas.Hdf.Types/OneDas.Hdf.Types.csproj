@@ -4,11 +4,10 @@
     <Description>Provides a common type system and helper functions for HDF based OneDAS application parts.</Description>
     <PackageTags>OneDAS data aquisition measurement HDF</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+  <PropertyGroup>
     <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>latest</LangVersion>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke" Version="1.10.1" />

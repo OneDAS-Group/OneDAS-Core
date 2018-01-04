@@ -1,4 +1,12 @@
-﻿using System;
+﻿using HDF.PInvoke;
+using MathNet.Numerics.Statistics;
+using OneDas.Common;
+using OneDas.Hdf.Core;
+using OneDas.Hdf.IO;
+using OneDas.Hdf.VdsTool.Navigation;
+using OneDas.Infrastructure;
+using OneDas.Types.Settings;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,14 +15,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using OneDas.Common;
-using OneDas.Hdf.Core;
-using OneDas.Hdf.IO;
-using OneDas.Hdf.VdsTool.Navigation;
-using OneDas.Infrastructure;
-using OneDas.Properties;
-using HDF.PInvoke;
-using MathNet.Numerics.Statistics;
 
 namespace OneDas.Hdf.VdsTool
 {
@@ -641,7 +641,7 @@ namespace OneDas.Hdf.VdsTool
                                     // find proper data source
                                     foreach (SampleRate testedSampleRate in Enum.GetValues(typeof(SampleRate)))
                                     {
-                                        sourceDatasetName = $"{Settings.Default.NativeSampleRate / (int)testedSampleRate} Hz";
+                                        sourceDatasetName = $"{ GlobalSettings.NativeSampleRate / (int)testedSampleRate } Hz";
 
                                         if (variableInfo.Value.DatasetInfoSet.Where(x => x.Value.Name == sourceDatasetName).Any())
                                         {
@@ -734,7 +734,7 @@ namespace OneDas.Hdf.VdsTool
                             sourceValueSet_status = IOHelper.Read<byte>(sourceDatasetId_status, DataContainerType.Dataset);
                         }
 
-                        chunkCount = sourceValueSet.Count() / (int)period / (int)Settings.Default.NativeSampleRate * (int)sampleRate;
+                        chunkCount = sourceValueSet.Count() / (int)period / (int)GlobalSettings.NativeSampleRate * (int)sampleRate;
 
                         switch (aggregation_function.type)
                         {
@@ -944,11 +944,11 @@ namespace OneDas.Hdf.VdsTool
                             {
                                 if (i == 0)
                                 {
-                                    bitField_and[x] = GenericsHelper<T>.BitOr(bitField_and[x], valueSet[baseIndex + i]);
+                                    bitField_and[x] = GenericBitOr<T>.BitOr(bitField_and[x], valueSet[baseIndex + i]);
                                 }
                                 else
                                 {
-                                    bitField_and[x] = GenericsHelper<T>.BitAnd(bitField_and[x], valueSet[baseIndex + i]);
+                                    bitField_and[x] = GenericBitAnd<T>.BitAnd(bitField_and[x], valueSet[baseIndex + i]);
                                 }
                             }
                         }
@@ -976,7 +976,7 @@ namespace OneDas.Hdf.VdsTool
                             }
                             else
                             {
-                                bitField_or[x] = GenericsHelper<T>.BitOr(bitField_or[x], valueSet[baseIndex + i]);
+                                bitField_or[x] = GenericBitOr<T>.BitOr(bitField_or[x], valueSet[baseIndex + i]);
                             }
                         }
 
