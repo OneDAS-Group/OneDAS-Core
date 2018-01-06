@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Web
 {
-    public class Broadcaster : Hub<IBroadcaster>
+    public class WebClientHub : Hub<IWebClientHub>
     {
         public override Task OnConnectedAsync()
         {
@@ -98,7 +98,7 @@ namespace OneDas.WebServer.Web
                 {
                     currentFilePath = project.Save(currentFilePath);
 
-                    Bootloader.BootLoaderLogger.LogInformation("project file saved");
+                    Bootloader.WebServerLogger.LogInformation("project file saved");
                 }
             });
         }

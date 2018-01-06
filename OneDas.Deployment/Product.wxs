@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <?define OneDasCompanyName = "OneDas Group" ?>
+  
+  <?define OneDasName = "OneDas" ?>
+  <?define OneDasDisplayName = "OneDAS" ?>
+
+  <?define WebServerName = "WebServer" ?>
+  <?define WebServerDisplayName = "WebServer" ?>
+  
   <Product Id="*"
-           Name="OneDAS"
+           Name="$(var.OneDasDisplayName) $(var.WebServerDisplayName)"
            Language="1033"
            Version="$(var.WixVersion)"
-           Manufacturer="OneDAS Group"
+           Manufacturer="$(var.OneDasCompanyName)"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
     <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -22,20 +31,20 @@
       <ComponentGroupRef Id="MainComponents" />
     </Feature>
   </Product>
-
+ 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" Name="Desktop">
-        <Component Id="ApplicationShortcutDesktop" Guid="*">
-          <Shortcut Id="ApplicationDesktopShortcut"
-              Name="OneDAS"
+        <Component Id="ApplicationShortcutDesktopComponent" Guid="*">
+          <Shortcut Id="ApplicationShortcutDesktop"
+              Name="$(var.OneDasDisplayName) $(var.WebServerDisplayName)"
               Description="free open and flexible measurement data aquisuition system with plugin support"
               Target="[INSTALLFOLDER]$(var.WixApplicationName).exe"
               WorkingDirectory="INSTALLFOLDER"/>
           <RemoveFolder Id="DesktopFolder" On="uninstall"/>
           <RegistryValue
               Root="HKCU"
-              Key="Software/OneDAS"
+              Key="Software/$(var.OneDasDisplayName)"
               Name="installed"
               Type="integer"
               Value="1"
@@ -43,8 +52,8 @@
         </Component>
       </Directory>
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="CompanyFolder" Name="OneDAS">
-          <Directory Id="INSTALLFOLDER" Name="WebServer" />
+        <Directory Id="CompanyFolder" Name="$(var.OneDasDisplayName)">
+          <Directory Id="INSTALLFOLDER" Name="$(var.WebServerDisplayName)" />
         </Directory>
       </Directory>
     </Directory>
@@ -53,7 +62,45 @@
   <Fragment>
     <ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
       <ComponentGroupRef Id="OneDasMainComponents" />
-      <ComponentRef Id="ApplicationShortcutDesktop" />
+      <ComponentRef Id="ApplicationShortcutDesktopComponent" />
+      <Component Guid="*">
+        <util:EventSource Log="$(var.OneDasDisplayName)" 
+                          KeyPath="yes" 
+                          Name="$(var.OneDasDisplayName) $(var.WebServerDisplayName)" 
+                          EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR]EventLogMessages.dll"/>
+      </Component>
+      <Component Guid="*">
+        <File Id="ServiceComponentMain" 
+              Source="$(var.WixHarvestPath)\$(var.WixApplicationName).exe" 
+              KeyPath="yes" 
+              Vital="yes" />
+        
+        <ServiceInstall Description="Manage incoming and outgoing measurement data"
+                        DisplayName="$(var.OneDasDisplayName) $(var.WebServerDisplayName)"
+                        ErrorControl="ignore"
+                        Name="$(var.WixApplicationName)"
+                        Start="auto"
+                        Type="ownProcess"
+                        Vital="yes">
+          
+          <ServiceConfig DelayedAutoStart="yes" 
+                         OnInstall="yes" 
+                         OnReinstall ="yes" />
+          
+          <util:ServiceConfig FirstFailureActionType="restart"
+                              SecondFailureActionType="restart" 
+                              ThirdFailureActionType="restart" 
+                              RestartServiceDelayInSeconds="60" 
+                              ResetPeriodInDays="1" />
+        </ServiceInstall>
+        
+        <ServiceControl Id="StartService" 
+                        Start="install" 
+                        Stop="both" 
+                        Remove="uninstall"
+                        Name="$(var.OneDasName).$(var.WebServerName)" 
+                        Wait="yes" />
+      </Component>
     </ComponentGroup>
   </Fragment>
 </Wix>

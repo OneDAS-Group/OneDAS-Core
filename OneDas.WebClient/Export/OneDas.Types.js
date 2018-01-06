@@ -123,11 +123,11 @@ class TransferFunctionModel {
 }
 class ConnectionManager {
     static Initialize(enableLogging) {
-        ConnectionManager.Broadcaster = new signalR.HubConnection('/broadcaster');
+        ConnectionManager.WebClientHub = new signalR.HubConnection('/webclienthub');
     }
 }
-ConnectionManager.InvokeBroadcaster = (methodName, ...args) => __awaiter(this, void 0, void 0, function* () {
-    return yield Promise.resolve(ConnectionManager.Broadcaster.invoke(methodName, ...args));
+ConnectionManager.InvokeWebClientHub = (methodName, ...args) => __awaiter(this, void 0, void 0, function* () {
+    return yield Promise.resolve(ConnectionManager.WebClientHub.invoke(methodName, ...args));
 });
 class EnumerationHelper {
 }
@@ -255,7 +255,7 @@ PluginFactory.CreatePluginViewModelAsync = (pluginType, pluginModel) => __awaite
     let pluginViewModelRaw;
     pluginIdentification = PluginHive.FindPluginIdentification(pluginType, pluginModel.Description.Id);
     if (pluginIdentification) {
-        pluginViewModelRaw = yield ConnectionManager.InvokeBroadcaster("GetPluginStringResource", pluginModel.Description.Id, pluginIdentification.ViewModelResourceName);
+        pluginViewModelRaw = yield ConnectionManager.InvokeWebClientHub("GetPluginStringResource", pluginModel.Description.Id, pluginIdentification.ViewModelResourceName);
         pluginViewModel = new Function(pluginViewModelRaw + "; return ViewModelConstructor")()(pluginModel, pluginIdentification);
         return pluginViewModel;
     }
@@ -615,7 +615,7 @@ class DataPortViewModel {
 class PluginViewModelBase {
     constructor(pluginSettingsModel, pluginIdentification) {
         this.SendActionRequest = (instanceId, methodName, data) => __awaiter(this, void 0, void 0, function* () {
-            return yield ConnectionManager.InvokeBroadcaster("RequestAction", new ActionRequest(this.Description.Id, instanceId, methodName, data));
+            return yield ConnectionManager.InvokeWebClientHub("RequestAction", new ActionRequest(this.Description.Id, instanceId, methodName, data));
         });
         // commands
         this.EnableSettingsMode = () => {

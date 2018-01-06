@@ -16,7 +16,7 @@
 
         try
         {
-            projectDescriptionSet = await ConnectionManager.InvokeBroadcaster('GetProjectDescriptions')
+            projectDescriptionSet = await ConnectionManager.InvokeWebClientHub('GetProjectDescriptions')
             this.ProjectDescriptionSet(projectDescriptionSet.map(projectDescription => new ProjectDescriptionViewModel(projectDescription)))
         }
         catch (e)
@@ -29,7 +29,7 @@
     {
         try
         {
-            await ConnectionManager.InvokeBroadcaster("ActivateProject", projectDescriptionViewModel.ToModel())
+            await ConnectionManager.InvokeWebClientHub("ActivateProject", projectDescriptionViewModel.ToModel())
         }
         catch (e)
         {
@@ -41,7 +41,7 @@
     {
         try
         {
-            await ConnectionManager.InvokeBroadcaster("StartOneDas")
+            await ConnectionManager.InvokeWebClientHub("StartOneDas")
         }
         catch (e)
         {
@@ -53,7 +53,7 @@
     {
         try
         {
-            await ConnectionManager.InvokeBroadcaster("StopOneDas")
+            await ConnectionManager.InvokeWebClientHub("StopOneDas")
         }
         catch (e)
         {

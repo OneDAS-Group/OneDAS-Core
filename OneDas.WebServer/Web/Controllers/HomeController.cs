@@ -16,7 +16,7 @@ namespace OneDas.WebServer.Web
         private static Timer _updateDataSnapshotTimer;
         private static Timer _updateLiveValueDataTimer;
 
-        private static IHubContext<Broadcaster> _hubContext;
+        private static IHubContext<WebClientHub> _hubContext;
 
         static HomeController()
         {
@@ -35,7 +35,7 @@ namespace OneDas.WebServer.Web
             Bootloader.OneDasController.OneDasEngine.OneDasStateChanged += HomeController.OneDasController_OneDasStateChanged;
         }
 
-        public HomeController(IHubContext<Broadcaster> hubContext)
+        public HomeController(IHubContext<WebClientHub> hubContext)
         {
             _hubContext = hubContext;
         }

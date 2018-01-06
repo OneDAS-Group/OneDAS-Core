@@ -13,13 +13,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke" Version="1.10.1" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-alpha2-final" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="0.1.0-alpha-6578-24805" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="0.1.0-alpha-6578-25286" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="0.1.0-alpha-6578-24807" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="0.1.0-alpha-6579-25149" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="0.1.0-alpha-6579-25141" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="0.1.0-alpha-6579-25151" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />

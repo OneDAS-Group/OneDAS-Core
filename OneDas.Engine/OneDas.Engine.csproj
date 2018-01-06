@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6578-23596" />
+    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6579-25008" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using OneDas.Common;
 using OneDas.Infrastructure;
 
@@ -20,7 +21,7 @@ namespace OneDas.Plugin
 
         #region "Constructors"
 
-        public DataWriterPluginLogicBase(DataWriterPluginSettingsBase settings) : base(settings)
+        public DataWriterPluginLogicBase(DataWriterPluginSettingsBase settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
         {
             this.Settings = settings;
             this.ChunkPeriod = TimeSpan.FromMinutes(1);
@@ -160,11 +161,11 @@ namespace OneDas.Plugin
 
                     if (firstChunk == lastChunk)
                     {
-                        this.OnSendReport($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
+                        this.DefaultLogger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
                     }
                     else
                     {
-                        this.OnSendReport($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
+                        this.DefaultLogger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
                     }
                 }
 

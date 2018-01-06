@@ -99,7 +99,7 @@
 
         try
         {
-            projectDescriptionSet = await ConnectionManager.InvokeBroadcaster('GetProjectDescriptions')
+            projectDescriptionSet = await ConnectionManager.InvokeWebClientHub('GetProjectDescriptions')
             this.ProjectDescriptionSet(projectDescriptionSet.map(projectDescription => new ProjectDescriptionViewModel(projectDescription)))
         }
         catch (e)
@@ -114,7 +114,7 @@
 
         try
         {
-            projectModel = await ConnectionManager.InvokeBroadcaster("CreateProject", this.CampaignPrimaryGroup(), this.CampaignSecondaryGroup(), this.CampaignName())
+            projectModel = await ConnectionManager.InvokeWebClientHub("CreateProject", this.CampaignPrimaryGroup(), this.CampaignSecondaryGroup(), this.CampaignName())
 
             this.Project(new ProjectViewModel(projectModel))
 
@@ -141,7 +141,7 @@
         {
             this.Project().Description.CampaignVersion(this.Project().Description.CampaignVersion() + 1)
 
-            await ConnectionManager.InvokeBroadcaster("SaveProject", this.Project().ToModel())
+            await ConnectionManager.InvokeWebClientHub("SaveProject", this.Project().ToModel())
             console.log("OneDAS: project saved")
         }
         catch (e)
@@ -157,7 +157,7 @@
         {
             let projectModel: any
 
-            projectModel = await ConnectionManager.InvokeBroadcaster("OpenProject", projectDescriptionViewModel.ToModel())
+            projectModel = await ConnectionManager.InvokeWebClientHub("OpenProject", projectDescriptionViewModel.ToModel())
             
             this.Project(new ProjectViewModel(projectModel))
 

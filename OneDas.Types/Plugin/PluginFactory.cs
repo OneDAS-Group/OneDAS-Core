@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using OneDas.Common;
 
 namespace OneDas.Plugin
@@ -12,7 +13,7 @@ namespace OneDas.Plugin
             return PluginHive.GetPluginSet<TPluginSettings>().Where(selector).Select(pluginSettings => (TPluginSettings)Activator.CreateInstance(pluginSettings, args)).ToList();
         }
 
-        public static IEnumerable<TPluginLogic> BuildSettingsContainers<TPluginLogic>(IEnumerable<PluginSettingsBase> pluginSettingsSet) where TPluginLogic : PluginLogicBase
+        public static IEnumerable<TPluginLogic> BuildSettingsContainers<TPluginLogic>(IEnumerable<PluginSettingsBase> pluginSettingsSet, ILoggerFactory loggerFactory) where TPluginLogic : PluginLogicBase
         {
             return pluginSettingsSet.ToList().Select(pluginSettings =>
             {
@@ -23,7 +24,7 @@ namespace OneDas.Plugin
                     throw new Exception(ErrorMessage.PluginFactory_NoMatchingTPluginLogicFound);
                 }
 
-                return (TPluginLogic)Activator.CreateInstance(pluginLogicType, pluginSettings);
+                return (TPluginLogic)Activator.CreateInstance(pluginLogicType, pluginSettings, loggerFactory);
             }).ToList();
         }
 

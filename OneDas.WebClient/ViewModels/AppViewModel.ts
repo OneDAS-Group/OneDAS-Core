@@ -149,12 +149,12 @@
         }
 
         // server callbacks
-        ConnectionManager.Broadcaster.on("SendSlimOneDasSettings", oneDasSettingsModel =>
+        ConnectionManager.WebClientHub.on("SendSlimOneDasSettings", oneDasSettingsModel =>
         {
             this.SlimOneDasSettings(new SlimOneDasSettingsViewModel(oneDasSettingsModel))
         })
 
-        ConnectionManager.Broadcaster.on("SendOneDasState", async (oneDasState) =>
+        ConnectionManager.WebClientHub.on("SendOneDasState", async (oneDasState) =>
         {
             this.OneDasState(oneDasState)
 
@@ -168,7 +168,7 @@
                 {
                     let lastError: string
 
-                    lastError = await ConnectionManager.InvokeBroadcaster("GetLastError")
+                    lastError = await ConnectionManager.InvokeWebClientHub("GetLastError")
                     this.LastError(lastError)
                 }
                 catch (e)
@@ -178,17 +178,17 @@
             }
         })
 
-        ConnectionManager.Broadcaster.on("SendActiveProject", projectModel =>
+        ConnectionManager.WebClientHub.on("SendActiveProject", projectModel =>
         {
             this.InitializeProject(projectModel)
         })
 
-        ConnectionManager.Broadcaster.on("SendPerformanceInformation", performanceInformationModel =>
+        ConnectionManager.WebClientHub.on("SendPerformanceInformation", performanceInformationModel =>
         {
             this.PerformanceInformation(new OneDasPerformanceInformationViewModel(performanceInformationModel))
         })
 
-        ConnectionManager.Broadcaster.on("SendDataSnapshot", (dateTime: string, dataSnapshot: any[]) =>
+        ConnectionManager.WebClientHub.on("SendDataSnapshot", (dateTime: string, dataSnapshot: any[]) =>
         {
             if (this.ActiveProject())
             {
@@ -196,7 +196,7 @@
             }
         })
 
-        ConnectionManager.Broadcaster.on("SendClientMessage", clientMessage =>
+        ConnectionManager.WebClientHub.on("SendClientMessage", clientMessage =>
         {
             this.ClientMessageLog.push(new MessageLogEntryViewModel(new Date().toLocaleTimeString('de-DE',
             {
@@ -232,7 +232,7 @@
     {
         try
         {
-            await ConnectionManager.InvokeBroadcaster('AcknowledgeError')
+            await ConnectionManager.InvokeWebClientHub('AcknowledgeError')
         }
         catch (e)
         {
@@ -256,7 +256,7 @@
 
         try
         {
-            await ConnectionManager.InvokeBroadcaster('SaveSlimOneDasSettings', this.SlimOneDasSettings())
+            await ConnectionManager.InvokeWebClientHub('SaveSlimOneDasSettings', this.SlimOneDasSettings())
         }
         catch (e)
         {

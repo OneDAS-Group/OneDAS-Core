@@ -68,7 +68,7 @@ console.log("OneDAS: bootstrap configured")
 ConnectionManager.Initialize(false)
 PluginHive.Initialize()
 
-ConnectionManager.Broadcaster.start().then(async () =>
+ConnectionManager.WebClientHub.start().then(async () =>
 {
     let appModel: any
 
@@ -76,7 +76,7 @@ ConnectionManager.Broadcaster.start().then(async () =>
 
     try
     {
-        appModel = await ConnectionManager.InvokeBroadcaster("GetAppModel")
+        appModel = await ConnectionManager.InvokeWebClientHub("GetAppModel")
         appViewModel(new AppViewModel(appModel))
         console.log("OneDAS: app model received")
 
@@ -98,7 +98,7 @@ ConnectionManager.Broadcaster.start().then(async () =>
                     {
                         pluginIdentification = templateConfig.PluginIdentification
 
-                        ConnectionManager.InvokeBroadcaster("GetPluginStringResource", pluginIdentification.Id, pluginIdentification.ViewResourceName).then(pluginView =>
+                        ConnectionManager.InvokeWebClientHub("GetPluginStringResource", pluginIdentification.Id, pluginIdentification.ViewResourceName).then(pluginView =>
                         {
                             let element: HTMLDivElement
 

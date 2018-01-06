@@ -30,9 +30,14 @@
       <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
       <Name>WixUIExtension</Name>
     </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
   </ItemGroup>
   <ItemGroup>
     <Content Include="license.rtf" />
+    <Content Include="RemoveExe.xslt" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
@@ -43,7 +48,7 @@
   <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateOneDasMetaData">
     <PropertyGroup>
       <WixPackageName>OneDAS</WixPackageName>
-      <WixApplicationName>OneDas</WixApplicationName>
+      <WixApplicationName>OneDas.WebServer</WixApplicationName>
       <WixVersion>$(Major).$(Minor).$(Revision).0</WixVersion>
       <WixConfiguration>Release</WixConfiguration>
       <WixHarvestPath>..\$(WixApplicationName)\bin\$(WixConfiguration)\PublishOutput</WixHarvestPath>
@@ -67,6 +72,7 @@
         <SuppressRegistry>true</SuppressRegistry>
         <SuppressRootDirectory>true</SuppressRootDirectory>
         <ToolPath>$(WixToolPath)</ToolPath>
+        <Transforms>RemoveExe.xslt</Transforms>
       </HarvestDirectory>
     </ItemGroup>
     <!-- <HeatDirectory OutputFile="$(ProjectDir)\ProductInstallFiles.wxs" AutogenerateGuids="true" ComponentGroupName="OneDasMainComponents" Directory="$(WixHarvestPath)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.WixHarvestPath" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" /> -->

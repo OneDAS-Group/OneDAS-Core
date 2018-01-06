@@ -19,7 +19,7 @@
 
     public SendActionRequest = async (instanceId: number, methodName: string, data: any) =>
     {
-        return <ActionResponse> await ConnectionManager.InvokeBroadcaster("RequestAction", new ActionRequest(this.Description.Id, instanceId, methodName, data))
+        return <ActionResponse> await ConnectionManager.InvokeWebClientHub("RequestAction", new ActionRequest(this.Description.Id, instanceId, methodName, data))
     }
 
     public ExtendModel(model: any)

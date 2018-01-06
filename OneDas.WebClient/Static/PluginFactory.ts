@@ -10,7 +10,7 @@
 
         if (pluginIdentification)
         {
-            pluginViewModelRaw = await ConnectionManager.InvokeBroadcaster("GetPluginStringResource", pluginModel.Description.Id, pluginIdentification.ViewModelResourceName)
+            pluginViewModelRaw = await ConnectionManager.InvokeWebClientHub("GetPluginStringResource", pluginModel.Description.Id, pluginIdentification.ViewModelResourceName)
             pluginViewModel = <PluginViewModelBase>new Function(pluginViewModelRaw + "; return ViewModelConstructor")()(pluginModel, pluginIdentification)
 
             return pluginViewModel

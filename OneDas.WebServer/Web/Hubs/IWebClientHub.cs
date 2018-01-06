@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Web
 {
-    public interface IBroadcaster
+    public interface IWebClientHub
     {
         Task SendSlimOneDasSettings(SlimOneDasSettings slimOneDasSettings);
         Task SendOneDasState(OneDasState oneDasState);

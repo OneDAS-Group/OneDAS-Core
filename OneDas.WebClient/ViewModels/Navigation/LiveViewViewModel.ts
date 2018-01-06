@@ -30,7 +30,7 @@
             this.ReinitializeCharts(false, false)
         })
 
-        ConnectionManager.Broadcaster.on("SendLiveViewData", (subscriptionId: number, dateTime: string, dataSnapshot: any[]) =>
+        ConnectionManager.WebClientHub.on("SendLiveViewData", (subscriptionId: number, dateTime: string, dataSnapshot: any[]) =>
         {
             let index: number
 
@@ -117,7 +117,7 @@
 
         try
         {
-            this._subscriptionId = await ConnectionManager.InvokeBroadcaster("UpdateLiveViewSubscription", this.SelectedChannelHubSet().map(channelHub => channelHub.Guid))
+            this._subscriptionId = await ConnectionManager.InvokeWebClientHub("UpdateLiveViewSubscription", this.SelectedChannelHubSet().map(channelHub => channelHub.Guid))
         }
         catch (e)
         {

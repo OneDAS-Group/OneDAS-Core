@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using OneDas.Common;
 using OneDas.Engine;
 using OneDas.Engine.Core;
@@ -6,9 +7,9 @@ using OneDas.Infrastructure;
 using OneDas.Types.Settings;
 using System;
 using System.Diagnostics;
-using System.ServiceModel;
 using System.ServiceProcess;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace OneDas.WebServer.Shell
@@ -21,7 +22,7 @@ namespace OneDas.WebServer.Shell
         private object _syncLock_UpdateConsole;
 
         private SafeNativeMethods.HandlerRoutine _handlerRoutine;
-        private IManagementService _managementServiceClient;
+        private HubConnection _consoleHubClient;
 
         private bool _isConnected = false;
 
@@ -37,23 +38,14 @@ namespace OneDas.WebServer.Shell
             Console.SetWindowSize(80, 25);
             Console.CursorVisible = false;
 
+            _syncLock_UpdateConsole = new object();
             _handlerRoutine = new SafeNativeMethods.HandlerRoutine(ConsoleCtrlCallback);
 
             SafeNativeMethods.SetConsoleCtrlHandler(_handlerRoutine, true);
 
-            _timer_UpdateConsole = new System.Timers.Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
-            {
-                AutoReset = true,
-                Enabled = true
-            };
-
-            _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
-            _syncLock_UpdateConsole = new object();
-
             Console.Write("initialization (standard) ... ");
 
-        #region "to serve or not to serve?"
-
+            // to serve or not to serve?
             Console.Title = "OneDAS Server";
 
             if (Bootloader.OneDasController == null)
@@ -61,85 +53,40 @@ namespace OneDas.WebServer.Shell
                 Console.Title += " (remote control)";
             }
 
-            _managementServiceClient = new ChannelFactory<IManagementService>(new NetNamedPipeBinding(NetNamedPipeSecurityMode.None), new EndpointAddress(ConfigurationManager<OneDasSettings>.Settings.ManagementServiceBaseAddress + "/pipe")).CreateChannel();
+            // SignalR
+            this.CreateNewConnection();
+
+            // timer
+            _timer_UpdateConsole = new System.Timers.Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
+            {
+                AutoReset = true,
+                Enabled = true
+            };
+
+            _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
 
             Bootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
 
-        #endregion
-
-        #region "Loop / wait for user input"
-
+            // wait for user input (loop)
             this.ResetConsole();
 
             while (true)
             {
-                ConsoleKey consoleKey = Console.ReadKey(true).Key;
+                ConsoleKey consoleKey;
 
-                lock (_syncLock_UpdateConsole)
+                consoleKey = Console.ReadKey(true).Key;
+
+                try
                 {
-                    try
+                    lock (_syncLock_UpdateConsole)
                     {
                         switch (consoleKey)
                         {
-                            case ConsoleKey.B:
-
-                                // boost process priority
-                                Console.WriteLine("Do you want to boost the process priority to realtime? (Y)es (N)o.");
-
-                                if (Console.ReadKey(true).Key == ConsoleKey.Y)
-                                {
-                                    _managementServiceClient.BoostProcessPriority();
-                                }
-
-                                this.ResetConsole();
-
-                                break;
-
                             case ConsoleKey.D:
 
                                 // debug
-                                _managementServiceClient.ToggleDebugOutput();
+                                _consoleHubClient.InvokeAsync("ToggleDebugOutput").Wait();
 
-                                break;
-
-                            case ConsoleKey.S:
-
-                                // service
-                                if (Bootloader.GetOneDasServiceStatus() > 0)
-                                {
-                                    Console.Write("Do you want to ");
-                                    this.WriteColored("(u)ninstall", ConsoleColor.Red);
-                                    Console.WriteLine(", (r)estart or (s)top the OneDAS server Windows service?");
-
-                                    consoleKey = Console.ReadKey(true).Key;
-
-                                    switch (consoleKey)
-                                    {
-                                        case ConsoleKey.U:
-                                            Bootloader.UninstallOneDasService();
-                                            Bootloader.Shutdown(true, 0);
-                                            break;
-                                        case ConsoleKey.R:
-                                            _managementServiceClient.Shutdown(true);
-                                            break;
-                                        case ConsoleKey.S:
-                                            _managementServiceClient.Shutdown(false);
-                                            break;
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Do you want to install the OneDAS server Windows service? (Y)es (N)o");
-
-                                    if (Console.ReadKey(true).Key == ConsoleKey.Y)
-                                    {
-                                        Bootloader.OneDasController?.Dispose(); // to allow new service to startup properly 'Improve, see also Bootloader.Shutdown
-                                        Bootloader.InstallOneDasService();
-                                        Bootloader.Shutdown(true, 0);
-                                    }
-                                }
-
-                                this.ResetConsole();
                                 break;
 
                             case ConsoleKey.R:
@@ -171,15 +118,12 @@ namespace OneDas.WebServer.Shell
                                 break;
                         }
                     }
-                    catch
-                    {
-                        _managementServiceClient = new ChannelFactory<IManagementService>(new NetNamedPipeBinding(NetNamedPipeSecurityMode.None), new EndpointAddress(ConfigurationManager<OneDasSettings>.Settings.ManagementServiceBaseAddress + "/pipe")).CreateChannel();
-                    }
+                }
+                catch (Exception)
+                {
+                    _consoleHubClient = this.CreateNewConnection();
                 }
             }
-
-        #endregion
-
         }
 
         #endregion
@@ -228,7 +172,7 @@ namespace OneDas.WebServer.Shell
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                                                             |");
                 Console.WriteLine($"+=============================================================================+");
-                this.WriteColoredLine($"(b)oost process priority    (d)ebug output    (s)ervice    (r)estart    (e)xit", ConsoleColor.Cyan);
+                this.WriteColoredLine($"(d)ebug output                         (r)estart                         (e)xit", ConsoleColor.Cyan);
 
                 // text
                 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -280,14 +224,16 @@ namespace OneDas.WebServer.Shell
             }
         }
 
-        private void UpdateConsole()
+        private async void UpdateConsole()
         {
-            lock (_syncLock_UpdateConsole)
-            {
-                try
-                {
-                    OneDasPerformanceInformation performanceInformation = _managementServiceClient.CreatePerformanceInformation();
+            OneDasPerformanceInformation performanceInformation;
 
+            try
+            {
+                performanceInformation = await _consoleHubClient.InvokeAsync<OneDasPerformanceInformation>("GetPerformanceInformation");
+
+                lock (_syncLock_UpdateConsole)
+                {
                     int offset = 39;
 
                     if (!_isConnected)
@@ -347,12 +293,14 @@ namespace OneDas.WebServer.Shell
 
                     Console.SetCursorPosition(0, 13);
                 }
-                catch
-                {
-                    _isConnected = false;
-                    this.ResetConsole();
-                    _managementServiceClient = new ChannelFactory<IManagementService>(new NetNamedPipeBinding(NetNamedPipeSecurityMode.None), new EndpointAddress(ConfigurationManager<OneDasSettings>.Settings.ManagementServiceBaseAddress + "/pipe")).CreateChannel();
-                }
+            }
+            catch (Exception)
+            {
+                _isConnected = false;
+
+                this.ResetConsole();
+
+                _consoleHubClient = this.CreateNewConnection();
             }
         }
 
@@ -367,6 +315,34 @@ namespace OneDas.WebServer.Shell
                     break;
                 default:
                     return;
+            }
+        }
+
+        private HubConnection BuildHubConnection()
+        {
+            return new HubConnectionBuilder()
+                 .WithUrl("http://localhost:32768/consolehub")
+                 .Build();
+        }
+
+        private HubConnection CreateNewConnection()
+        {
+            HubConnection hubConnection;
+
+            while (true)
+            {
+                hubConnection = this.BuildHubConnection();
+
+                try
+                {
+                    hubConnection.StartAsync().Wait();
+                }
+                catch (Exception)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+
+                return hubConnection;
             }
         }
 

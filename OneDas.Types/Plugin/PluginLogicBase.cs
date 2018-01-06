@@ -1,30 +1,22 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Diagnostics.Contracts;
 
 namespace OneDas.Plugin
 {
     public abstract class PluginLogicBase : IDisposable 
     {
-        public event EventHandler<SendReportEventArgs> SendReport;
-
-        public PluginLogicBase(PluginSettingsBase settings)
+        public PluginLogicBase(PluginSettingsBase settings, ILoggerFactory loggerFactory)
         {
             Contract.Requires(settings != null);
+            Contract.Requires(loggerFactory != null);
 
+            this.DefaultLogger = loggerFactory.CreateLogger($"{ settings.Description.Id } ({ settings.Description.InstanceId })");
             this.Settings = settings;
         }
 
-        public PluginSettingsBase Settings { get; private set; }
-
-        protected virtual void OnSendReport(string message)
-        {
-            this.SendReport?.Invoke(this, new SendReportEventArgs($"{ this.Settings.Description.Id } ({ this.Settings.Description.InstanceId })", message));
-        }
-
-        protected virtual void OnSendReport(object sender, SendReportEventArgs e)
-        {
-            this.SendReport?.Invoke(sender, e);
-        }
+        public ILogger DefaultLogger { get; }
+        public PluginSettingsBase Settings { get; }
 
         // don't force inherited classes to overwrite this
         protected virtual void FreeManagedResources()
@@ -56,7 +48,7 @@ namespace OneDas.Plugin
             }
         }
 
-         ~PluginLogicBase()
+        ~PluginLogicBase()
         {
             this.Dispose(false);
         }

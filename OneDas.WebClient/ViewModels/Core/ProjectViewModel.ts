@@ -553,7 +553,7 @@
         {
             lastInstanceId = Math.max(...this.DataGatewaySet().map(dataGateway => dataGateway.Description.InstanceId))
 
-            pluginModel = await ConnectionManager.InvokeBroadcaster('CreateDataGatewaySettings', item.Name)
+            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataGatewaySettings', item.Name)
             pluginModel.Description.InstanceId = this.DataGatewaySet().length > 0 ? lastInstanceId + 1 : 1
             pluginViewModel = <DataGatewayViewModelBase>await PluginFactory.CreatePluginViewModelAsync("DataGateway", pluginModel)
 
@@ -577,7 +577,7 @@
         {
             lastInstanceId = Math.max(...this.DataWriterSet().map(dataWriter => dataWriter.Description.InstanceId))
 
-            pluginModel = await ConnectionManager.InvokeBroadcaster('CreateDataWriterSettings', item.Name)
+            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataWriterSettings', item.Name)
             pluginModel.Description.InstanceId = this.DataWriterSet().length > 0 ? lastInstanceId + 1 : 1
             pluginViewModel = <DataWriterViewModelBase>await PluginFactory.CreatePluginViewModelAsync("DataWriter", pluginModel)
 

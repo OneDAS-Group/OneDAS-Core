@@ -64,7 +64,8 @@ namespace OneDas.WebServer.Web
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<Broadcaster>("broadcaster");
+                routes.MapHub<WebClientHub>("webclienthub");
+                routes.MapHub<ConsoleHub>("consolehub");
             });
 
             app.UseMvc(routes =>

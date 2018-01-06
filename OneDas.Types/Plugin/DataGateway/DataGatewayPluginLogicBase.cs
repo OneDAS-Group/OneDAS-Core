@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Diagnostics;
 
 namespace OneDas.Plugin
 {
     public abstract class DataGatewayPluginLogicBase : PluginLogicBase
     {
-        public DataGatewayPluginLogicBase(DataGatewayPluginSettingsBase settings) : base(settings)
+        public DataGatewayPluginLogicBase(DataGatewayPluginSettingsBase settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
         {
             this.Settings = settings;
         }

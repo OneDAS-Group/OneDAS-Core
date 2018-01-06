@@ -92,9 +92,9 @@ declare class TransferFunctionModel {
     constructor(dateTime: string, type: string, option: string, argument: string);
 }
 declare class ConnectionManager {
-    static Broadcaster: any;
+    static WebClientHub: any;
     static Initialize(enableLogging: boolean): void;
-    static InvokeBroadcaster: (methodName: string, ...args: any[]) => Promise<any>;
+    static InvokeWebClientHub: (methodName: string, ...args: any[]) => Promise<any>;
 }
 declare class EnumerationHelper {
     static Description: {

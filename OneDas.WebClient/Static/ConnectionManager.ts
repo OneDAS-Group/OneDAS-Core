@@ -1,14 +1,14 @@
 ﻿class ConnectionManager
 {
-    public static Broadcaster: any // improve: use typings
+    public static WebClientHub: any // improve: use typings
 
     public static Initialize(enableLogging: boolean)
     {
-        ConnectionManager.Broadcaster = new signalR.HubConnection('/broadcaster');
+        ConnectionManager.WebClientHub = new signalR.HubConnection('/webclienthub');
     }
 
-    public static InvokeBroadcaster = async(methodName: string, ...args: any[]) =>
+    public static InvokeWebClientHub = async(methodName: string, ...args: any[]) =>
     {
-        return await Promise.resolve(ConnectionManager.Broadcaster.invoke(methodName, ...args))
+        return await Promise.resolve(ConnectionManager.WebClientHub.invoke(methodName, ...args))
     }
 }

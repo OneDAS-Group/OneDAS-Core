@@ -23,10 +23,13 @@ namespace OneDas.WebServer.Logging
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            Task.Run(() =>
+            if (this.IsEnabled(logLevel))
             {
-                HomeController.SendClientMessage(formatter(state, exception));
-            });
+                Task.Run(() =>
+                {
+                    HomeController.SendClientMessage($"{ _categoryName }: { formatter(state, exception) }");
+                });
+            }  
         }
 
         public bool IsEnabled(LogLevel logLevel)

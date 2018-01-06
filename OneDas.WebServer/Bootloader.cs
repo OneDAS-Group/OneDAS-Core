@@ -2,15 +2,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using OneDas.Common;
-using OneDas.Engine;
 using OneDas.WebServer.Core;
 using OneDas.WebServer.Logging;
 using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Configuration.Install;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -38,7 +35,7 @@ namespace OneDas.WebServer
         #region "Properties"
 
         public static ILogger SystemLogger { get; private set; }
-        public static ILogger BootLoaderLogger { get; private set; }
+        public static ILogger WebServerLogger { get; private set; }
 
         public static bool IsElevated { get; private set; }
 
@@ -65,6 +62,7 @@ namespace OneDas.WebServer
             configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS");
 
             Directory.CreateDirectory(configurationDirectoryPath);
+
             ConfigurationManager<OneDasSettings>.Initialize(configurationDirectoryPath, "onedassettings.json");
 
             // base directory path
@@ -90,7 +88,7 @@ namespace OneDas.WebServer
             }
 
             // exception handling
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += Bootloader.CurrentDomain_UnhandledException;
 
             // privileges check
             WindowsPrincipal windowsPrincipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
@@ -111,7 +109,9 @@ namespace OneDas.WebServer
             }
             else
             {
-                eventLogSettings = new EventLogSettings() { SourceName = ConfigurationManager<OneDasSettings>.Settings.ApplicationName, };
+                eventLogSettings = new EventLogSettings() {
+                    LogName = ConfigurationManager<OneDasSettings>.Settings.EventLogName,
+                    SourceName = ConfigurationManager<OneDasSettings>.Settings.ApplicationName };
             }
 
             eventLogSettings.Filter = (category, logLevel) => category == "System";
@@ -120,7 +120,7 @@ namespace OneDas.WebServer
             _loggerFactory.AddProvider(new ClientMessageLoggerProvider((category, logLevel) => category != "System"));
 
             Bootloader.SystemLogger = _loggerFactory.CreateLogger("System");
-            Bootloader.BootLoaderLogger = _loggerFactory.CreateLogger("Bootloader");
+            Bootloader.WebServerLogger = _loggerFactory.CreateLogger("WebServer");
 
             // OneDasServiceController
             _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);
@@ -164,32 +164,6 @@ namespace OneDas.WebServer
         {
             Contract.Requires(commandLineArgumentSet != null);
 
-            if (commandLineArgumentSet.Contains("-REALTIME"))
-            {
-                Bootloader.BoostProcessPriority();
-                Environment.Exit(0);
-            }
-            else if (commandLineArgumentSet.Contains("-INSTALLSERVICE"))
-            {
-                Bootloader.InstallOneDasService();
-                Environment.Exit(0);
-            }
-            else if (commandLineArgumentSet.Contains("-UNINSTALLSERVICE"))
-            {
-                Bootloader.UninstallOneDasService();
-                Environment.Exit(0);
-            }
-            else if (commandLineArgumentSet.Contains("-RESTARTSERVICE"))
-            {
-                Bootloader.RestartOneDasService();
-                Environment.Exit(0);
-            }
-            else if (commandLineArgumentSet.Contains("-STOPSERVICE"))
-            {
-                Bootloader.StopOneDasService();
-                Environment.Exit(0);
-            }
-
             if (!commandLineArgumentSet.Contains("-ALLOWSINGELTON"))
             {
                 if (!(Environment.UserInteractive && Bootloader.GetOneDasServiceStatus() > 0))
@@ -227,7 +201,7 @@ namespace OneDas.WebServer
                     ShadowCopyDirectories = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "plugin"),
                     ShadowCopyFiles = "true"
                 };
-               
+
                 appDomain = AppDomain.CreateDomain("ShadowCopyTest", AppDomain.CurrentDomain.Evidence, appDomainSetup);
                 appDomain.ExecuteAssembly(assemblyFilePath);
                 AppDomain.Unload(appDomain);
@@ -252,98 +226,6 @@ namespace OneDas.WebServer
             {
                 return 0;
             }
-        }
-
-        #endregion
-
-        #region "Process priority (elevated)"
-
-        public static void BoostProcessPriority()
-        {
-            if (Process.GetCurrentProcess().PriorityClass != ProcessPriorityClass.RealTime)
-            {
-                CredUiHelper.ExecuteAsElevatedUser("-REALTIME", "OneDAS server process priority shall be set to realtime but the current user cannot be elevated. Please provide credentials to set the requested process priority.", () => Bootloader.InternalBoostProcessPriority());
-            }
-        }
-
-        private static void InternalBoostProcessPriority()
-        {
-            Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).ToList().ForEach(x => x.PriorityClass = ProcessPriorityClass.RealTime);
-        }
-
-        #endregion
-
-        #region "Service (elevated)"
-
-        public static void InstallOneDasService()
-        {
-            CredUiHelper.ExecuteAsElevatedUser("-INSTALLSERVICE", "OneDAS server shall be installed as Windows service but the current user cannot be elevated. Please provide credentials to finish the installation.", () => Bootloader.InternalInstallOneDasService());
-            _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);
-        }
-
-        private static void InternalInstallOneDasService()
-        {
-            using (AssemblyInstaller assemblyInstaller = new AssemblyInstaller(Assembly.GetExecutingAssembly(), null))
-            {
-                Hashtable savedState = new Hashtable();
-
-                assemblyInstaller.UseNewContext = true;
-
-                try
-                {
-                    assemblyInstaller.Install(savedState);
-                    assemblyInstaller.Commit(savedState);
-                }
-                catch
-                {
-                    assemblyInstaller.Rollback(savedState);
-                }
-            }
-        }
-
-        public static void UninstallOneDasService()
-        {
-            CredUiHelper.ExecuteAsElevatedUser("-UNINSTALLSERVICE", "OneDAS server shall be uninstalled as Windows service but the current user cannot be elevated. Please provide credentials to finish the deinstallation.", () => Bootloader.InternalUninstallOneDasService());
-            _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);
-        }
-
-        private static void InternalUninstallOneDasService()
-        {
-            using (AssemblyInstaller assemblyInstaller = new AssemblyInstaller(Assembly.GetExecutingAssembly(), null))
-            {
-                Hashtable savedState = new Hashtable();
-
-                assemblyInstaller.UseNewContext = true;
-
-                try
-                {
-                    assemblyInstaller.Uninstall(savedState);
-                }
-                catch
-                {
-                    assemblyInstaller.Rollback(savedState);
-                }
-            }
-        }
-
-        private static void RestartOneDasService()
-        {
-            CredUiHelper.ExecuteAsElevatedUser("-RESTARTSERVICE", "OneDAS server Windows service shall be restarted but the current user cannot be elevated. Please provide credentials to finish the installation.", () => Bootloader.InternalRestartOneDasService());
-        }
-
-        private static void InternalRestartOneDasService()
-        {
-            Process.Start("cmd.exe", $@"/C net stop ""{_oneDasServiceController.ServiceName}""&net start ""{_oneDasServiceController.ServiceName}""");
-        }
-
-        private static void StopOneDasService()
-        {
-            CredUiHelper.ExecuteAsElevatedUser("-STOPSERVICE", "OneDAS server Windows service shall be stopped but the current user cannot be elevated. Please provide credentials to finish the installation.", () => Bootloader.InternalStopOneDasService());
-        }
-
-        private static void InternalStopOneDasService()
-        {
-            Process.Start("cmd.exe", $@"/C net stop ""{_oneDasServiceController.ServiceName}""");
         }
 
         #endregion
@@ -385,31 +267,17 @@ namespace OneDas.WebServer
 
             if (restart)
             {
-                if (Environment.UserInteractive)
+                ProcessStartInfo processStartInfo = new ProcessStartInfo
                 {
-                    ProcessStartInfo processStartInfo = new ProcessStartInfo
-                    {
-                        Arguments = "-ALLOWSINGELTON",
-                        FileName = Assembly.GetExecutingAssembly().Location
-                    };
+                    Arguments = "-ALLOWSINGELTON",
+                    FileName = Assembly.GetExecutingAssembly().Location
+                };
 
-                    Process process = new Process { StartInfo = processStartInfo };
-                    process.Start();
-                }
-                else
-                {
-                    Bootloader.RestartOneDasService();
-                }
+                Process process = new Process { StartInfo = processStartInfo };
+                process.Start();
             }
 
-            if (Environment.UserInteractive)
-            {
-                Environment.Exit(returnCode);
-            }
-            else
-            {
-                Bootloader.StopOneDasService();
-            }
+            Environment.Exit(returnCode);
         }
 
         #endregion
