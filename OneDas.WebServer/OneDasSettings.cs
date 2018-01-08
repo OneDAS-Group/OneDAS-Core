@@ -11,8 +11,11 @@
 
             this.AdGroupName = "Benutzer";
             this.ApplicationName = "OneDAS WebServer";
+            this.ApplicationDisplayName = "OneDas.WebServer";
             this.EventLogName = "OneDAS";
+            this.EventLogSourceName = this.ApplicationName;
             this.MutexName = "{fcacd9a4-dc61-4179-b92c-e11538aaf85b}";
+            this.ServiceName = this.ApplicationDisplayName;
         }
 
         // unset, mutable
@@ -29,7 +32,10 @@
         // preset, immutable
         public string AdGroupName { get; private set; }
         public string ApplicationName { get; private set; }
+        public string ApplicationDisplayName { get; private set; }
         public string EventLogName { get; private set; }
+        public string EventLogSourceName { get; private set; }
         public string MutexName { get; private set; }
+        public string ServiceName { get; private set; }
     }
 }

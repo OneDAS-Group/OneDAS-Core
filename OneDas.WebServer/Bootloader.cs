@@ -26,7 +26,6 @@ namespace OneDas.WebServer
         private static OneDasController _oneDasController;
         private static OneDasConsole _oneDasConsole;
         private static ServiceController _oneDasServiceController;
-        private static Task _task_WebHost;
         private static IWebHost _webhost;
         private static ILoggerFactory _loggerFactory;
 
@@ -111,7 +110,7 @@ namespace OneDas.WebServer
             {
                 eventLogSettings = new EventLogSettings() {
                     LogName = ConfigurationManager<OneDasSettings>.Settings.EventLogName,
-                    SourceName = ConfigurationManager<OneDasSettings>.Settings.ApplicationName };
+                    SourceName = ConfigurationManager<OneDasSettings>.Settings.EventLogSourceName };
             }
 
             eventLogSettings.Filter = (category, logLevel) => category == "System";
@@ -123,7 +122,10 @@ namespace OneDas.WebServer
             Bootloader.WebServerLogger = _loggerFactory.CreateLogger("WebServer");
 
             // OneDasServiceController
-            _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);
+            _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(serviceController =>
+            {
+                return serviceController.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ServiceName;
+            });
 
             // OneDasConsole or OneDasService
             if (Environment.UserInteractive)
@@ -134,7 +136,7 @@ namespace OneDas.WebServer
 
                     Bootloader.CreateWebHost();
 
-                    _task_WebHost = Task.Run(() =>
+                    Task.Run(() =>
                     {
                         using (IWebHost webHost = _webhost)
                         {
@@ -153,7 +155,7 @@ namespace OneDas.WebServer
 
                 Bootloader.CreateWebHost();
 
-                using (OneDasService oneDasService = new OneDasService(ConfigurationManager<OneDasSettings>.Settings.ApplicationName, _webhost))
+                using (OneDasService oneDasService = new OneDasService(ConfigurationManager<OneDasSettings>.Settings.ServiceName, _webhost))
                 {
                     ServiceBase.Run(oneDasService);
                 }
@@ -214,7 +216,7 @@ namespace OneDas.WebServer
         {
             if (_oneDasServiceController == null)
             {
-                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ApplicationName);
+                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<OneDasSettings>.Settings.ServiceName);
             }
 
             if (_oneDasServiceController != null)
@@ -294,13 +296,8 @@ namespace OneDas.WebServer
                 {
                     Bootloader.SystemLogger.LogInformation("shutdown started");
 
-                    _webhost?.StopAsync();
+                    await _webhost?.StopAsync();
                     
-                    if (Environment.UserInteractive)
-                    {
-                        await _task_WebHost;
-                    }
-
                     Bootloader.OneDasController?.Dispose();
 
                     Bootloader.SystemLogger.LogInformation("shutdown finished");

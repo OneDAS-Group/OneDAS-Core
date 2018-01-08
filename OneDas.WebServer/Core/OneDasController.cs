@@ -11,19 +11,11 @@ namespace OneDas.WebServer.Core
 {
     public partial class OneDasController : IDisposable
     {
-        #region "Fields"
-
-        private ILogger _systemLogger;
-
-        #endregion
-
         #region "Constructors"
 
-        public OneDasController(ILoggerFactory _loggerFactory)
+        public OneDasController(ILoggerFactory loggerFactory)
         {
-            _systemLogger = _loggerFactory.CreateLogger("System");
-
-            this.OneDasEngine = new OneDasEngine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, _loggerFactory);
+            this.OneDasEngine = new OneDasEngine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, loggerFactory);
 
             if (ConfigurationManager<OneDasSettings>.Settings.IsAutostartEnabled && File.Exists(ConfigurationManager<OneDasSettings>.Settings.CurrentProjectFilePath))
             {
@@ -40,8 +32,6 @@ namespace OneDas.WebServer.Core
                     }
                 });
             }
-
-            _systemLogger.LogInformation("management service started");
         }
 
         #endregion

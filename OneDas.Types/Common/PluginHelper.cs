@@ -21,14 +21,20 @@ namespace OneDas.Common
             foreach (string dllFilePath in dllFilePathSet)
             {
                 Assembly assembly = default;
+                FileVersionInfo fileVersionInfo;
 
                 try
                 {
-                    productVersion = new Version(FileVersionInfo.GetVersionInfo(dllFilePath).FileVersion);
+                    fileVersionInfo = FileVersionInfo.GetVersionInfo(dllFilePath);
 
-                    if (productVersion.CompareTo(minimumVersion) > 0)
+                    if (!string.IsNullOrEmpty(fileVersionInfo.FileVersion))
                     {
-                        assembly = Assembly.Load(AssemblyName.GetAssemblyName(dllFilePath));
+                        productVersion = new Version(fileVersionInfo.FileVersion);
+
+                        if (productVersion.CompareTo(minimumVersion) > 0)
+                        {
+                            assembly = Assembly.Load(AssemblyName.GetAssemblyName(dllFilePath));
+                        }
                     }
                 }
                 catch (Exception)

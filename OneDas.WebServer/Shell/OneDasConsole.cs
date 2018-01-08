@@ -54,7 +54,7 @@ namespace OneDas.WebServer.Shell
             }
 
             // SignalR
-            this.CreateNewConnection();
+            _consoleHubClient = this.GetNewConnection();
 
             // timer
             _timer_UpdateConsole = new System.Timers.Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
@@ -121,7 +121,7 @@ namespace OneDas.WebServer.Shell
                 }
                 catch (Exception)
                 {
-                    _consoleHubClient = this.CreateNewConnection();
+                    _consoleHubClient = this.GetNewConnection();
                 }
             }
         }
@@ -294,13 +294,13 @@ namespace OneDas.WebServer.Shell
                     Console.SetCursorPosition(0, 13);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _isConnected = false;
 
                 this.ResetConsole();
 
-                _consoleHubClient = this.CreateNewConnection();
+                _consoleHubClient = this.GetNewConnection();
             }
         }
 
@@ -325,7 +325,7 @@ namespace OneDas.WebServer.Shell
                  .Build();
         }
 
-        private HubConnection CreateNewConnection()
+        private HubConnection GetNewConnection()
         {
             HubConnection hubConnection;
 

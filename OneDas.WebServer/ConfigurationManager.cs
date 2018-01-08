@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using OneDas.Engine.Serialization;
 using System;
 using System.IO;
@@ -38,7 +39,10 @@ namespace OneDas.WebServer
         {
             using (StreamWriter streamWriter = new StreamWriter(Path.Combine(_configurationDirectoryPath, _configurationFileName)))
             {
-                SerializationHelper.JsonSerializer.Serialize(streamWriter, ConfigurationManager<T>.Settings);
+                string rawJson;
+
+                rawJson = JsonConvert.SerializeObject(ConfigurationManager<T>.Settings, Formatting.Indented, SerializationHelper.CreateDefaultSerializationSettings());
+                new JsonTextWriter(streamWriter).WriteRaw(rawJson);
             }
         }
     }
