@@ -305,11 +305,11 @@ namespace OneDas.Hdf.IO
                         throw new NotSupportedException();
                 }
 
-                if (object.ReferenceEquals(elementType, typeof(string)))
+                if (elementType == typeof(string))
                 {
                     elementTypeSize = Marshal.SizeOf<IntPtr>();
                 }
-                else if (object.ReferenceEquals(elementType, typeof(bool)))
+                else if (elementType == typeof(bool))
                 {
                     elementTypeSize = Marshal.SizeOf<byte>();
                 }
@@ -366,7 +366,7 @@ namespace OneDas.Hdf.IO
 
                     gcHandle.Free();
                 }
-                else if (object.ReferenceEquals(elementType, typeof(string)))
+                else if (elementType == typeof(string))
                 {
                     IntPtr[] intPtrSet;
 
@@ -479,11 +479,11 @@ namespace OneDas.Hdf.IO
             {
                 typeId = TypeConversionHelper.GetHdfTypeIdFromType(elementType);
 
-                if (object.ReferenceEquals(elementType, typeof(string)))
+                if (elementType == typeof(string))
                 {
                     elementTypeSize = Marshal.SizeOf<IntPtr>();
                 }
-                else if (object.ReferenceEquals(elementType, typeof(bool)))
+                else if (elementType == typeof(bool))
                 {
                     elementTypeSize = Marshal.SizeOf<byte>();
                 }
@@ -499,7 +499,7 @@ namespace OneDas.Hdf.IO
                     gcHandle = GCHandle.Alloc(valueSet, GCHandleType.Pinned);
                     valueSetPointer = gcHandle.AddrOfPinnedObject();
                 }
-                else if (object.ReferenceEquals(elementType, typeof(string)))
+                else if (elementType == typeof(string))
                 {
                     IntPtr[] intPtrSet = valueSet.Cast<string>().Select(x => Marshal.StringToHGlobalAnsi(x)).ToArray();
 

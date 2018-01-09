@@ -107,7 +107,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                 case ConsoleKey.D1:
 
-                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex].GetType().IsAssignableFrom(typeof(CampaignInfo)))
+                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex] is CampaignInfo)
                     {
                         _vdsGroupId = H5G.open(_vdsLocationId, _currentList[this.SelectedIndex].Name);
                         new CampaignNavigator(_vdsGroupId, _vdsMetaFileId, _currentList[this.SelectedIndex].Name);
@@ -119,7 +119,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                 case ConsoleKey.D2:
 
-                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex].GetType().IsAssignableFrom(typeof(VariableInfo)))
+                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex] is VariableInfo)
                     {
                         VariableInfo variableInfo;
 
@@ -134,7 +134,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                 case ConsoleKey.D3:
 
-                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex].GetType().IsAssignableFrom(typeof(VariableInfo)))
+                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex] is VariableInfo)
                     {
                         _vdsGroupId = H5G.open(_vdsLocationId, _currentList[this.SelectedIndex].Name);
                         new AggregateFunctionNavigator(_vdsGroupId, _vdsMetaFileId, GeneralHelper.CombinePath(_currentPath, _currentList[this.SelectedIndex].Name));
@@ -146,7 +146,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                 case ConsoleKey.D:
 
-                    if (_currentList[this.SelectedIndex].GetType().IsAssignableFrom(typeof(CampaignInfo)))
+                    if (_currentList[this.SelectedIndex] is CampaignInfo)
                     {
                         this.WriteCampaignDocumentation((CampaignInfo)_currentList[this.SelectedIndex]);
                         this.OnRedraw();

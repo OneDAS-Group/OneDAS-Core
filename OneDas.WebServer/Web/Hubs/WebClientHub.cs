@@ -213,7 +213,7 @@ namespace OneDas.WebServer.Web
                 }
                 catch (Exception ex)
                 {
-                    if (ex.GetType() == typeof(BroadcasterException))
+                    if (ex is BroadcasterException)
                     {
                         throw;
                     }

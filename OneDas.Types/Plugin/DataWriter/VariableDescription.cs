@@ -24,7 +24,7 @@ namespace OneDas.Plugin
 
         public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType oneDasDataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
         {
-            if (!dataStorageType.IsSubclassOf(typeof(DataStorageBase)))
+            if (!dataStorageType is DataStorageBase)
             {
                 throw new ArgumentException(ErrorMessage.VariableDescription_TypeNotSubclassOfDataStorage);
             }

@@ -140,51 +140,51 @@ namespace OneDas.Hdf.Core
             
             elementType = type.IsArray ? type.GetElementType() : type;
 
-            if (object.ReferenceEquals(elementType, typeof(bool)))
+            if (elementType == typeof(bool))
             {
                 return H5T.NATIVE_UINT8;
             }
-            else if (object.ReferenceEquals(elementType, typeof(Byte)))
+            else if (elementType == typeof(Byte))
             {
                 return H5T.NATIVE_UINT8;
             }
-            else if (object.ReferenceEquals(elementType, typeof(SByte)))
+            else if (elementType == typeof(SByte))
             {
                 return H5T.NATIVE_INT8;
             }
-            else if (object.ReferenceEquals(elementType, typeof(UInt16)))
+            else if (elementType == typeof(UInt16))
             {
                 return H5T.NATIVE_UINT16;
             }
-            else if (object.ReferenceEquals(elementType, typeof(Int16)))
+            else if (elementType == typeof(Int16))
             {
                 return H5T.NATIVE_INT16;
             }
-            else if (object.ReferenceEquals(elementType, typeof(UInt32)))
+            else if (elementType == typeof(UInt32))
             {
                 return H5T.NATIVE_UINT32;
             }
-            else if (object.ReferenceEquals(elementType, typeof(Int32)))
+            else if (elementType == typeof(Int32))
             {
                 return H5T.NATIVE_INT32;
             }
-            else if (object.ReferenceEquals(elementType, typeof(UInt64)))
+            else if (elementType == typeof(UInt64))
             {
                 return H5T.NATIVE_UINT64;
             }
-            else if (object.ReferenceEquals(elementType, typeof(Int64)))
+            else if (elementType == typeof(Int64))
             {
                 return H5T.NATIVE_INT64;
             }
-            else if (object.ReferenceEquals(elementType, typeof(Single)))
+            else if (elementType == typeof(Single))
             {
                 return H5T.NATIVE_FLOAT;
             }
-            else if (object.ReferenceEquals(elementType, typeof(Double)))
+            else if (elementType == typeof(Double))
             {
                 return H5T.NATIVE_DOUBLE;
             }
-            else if (object.ReferenceEquals(elementType, typeof(string)) || object.ReferenceEquals(elementType, typeof(IntPtr)))
+            else if (elementType == typeof(string) || elementType == typeof(IntPtr))
             {
                 long typeId = 0;
 
