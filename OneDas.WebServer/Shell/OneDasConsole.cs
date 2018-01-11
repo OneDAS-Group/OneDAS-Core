@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using OneDas.Common;
-using OneDas.Engine;
 using OneDas.Engine.Core;
 using OneDas.Infrastructure;
-using OneDas.Types.Settings;
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace OneDas.WebServer.Shell
@@ -30,7 +27,7 @@ namespace OneDas.WebServer.Shell
 
         #region "Contructors"
 
-        public OneDasConsole()
+        public OneDasConsole(bool isDedicated)
         {
             WindowHelper.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
             Thread.CurrentThread.Name = "Main thread";
@@ -48,7 +45,7 @@ namespace OneDas.WebServer.Shell
             // to serve or not to serve?
             Console.Title = "OneDAS Server";
 
-            if (Bootloader.OneDasController == null)
+            if (!isDedicated)
             {
                 Console.Title += " (remote control)";
             }
@@ -65,8 +62,14 @@ namespace OneDas.WebServer.Shell
 
             _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
 
-            Bootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
+            Bootloader.SystemLogger.LogInformation("started in user interactive mode (console)");        }
 
+        #endregion
+
+        #region "Methods"
+
+        public void Run()
+        {
             // wait for user input (loop)
             this.ResetConsole();
 
@@ -89,20 +92,6 @@ namespace OneDas.WebServer.Shell
 
                                 break;
 
-                            case ConsoleKey.R:
-
-                                // restart
-                                Console.WriteLine("Do you want to restart the application? (Y)es (N)o.");
-
-                                if (Console.ReadKey(true).Key == ConsoleKey.Y)
-                                {
-                                    Bootloader.Shutdown(true, 0);
-                                }
-
-                                this.ResetConsole();
-
-                                break;
-
                             case ConsoleKey.E:
 
                                 // exit
@@ -110,7 +99,7 @@ namespace OneDas.WebServer.Shell
 
                                 if (Console.ReadKey(true).Key == ConsoleKey.Y)
                                 {
-                                    Bootloader.Shutdown(false, 0);
+                                    Bootloader.Shutdown(0);
                                 }
 
                                 this.ResetConsole();
@@ -125,10 +114,6 @@ namespace OneDas.WebServer.Shell
                 }
             }
         }
-
-        #endregion
-
-        #region "Methods"
 
         private void WriteColoredLine(string text, ConsoleColor color)
         {
@@ -172,7 +157,7 @@ namespace OneDas.WebServer.Shell
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                                                             |");
                 Console.WriteLine($"+=============================================================================+");
-                this.WriteColoredLine($"(d)ebug output                         (r)estart                         (e)xit", ConsoleColor.Cyan);
+                this.WriteColoredLine($"(d)ebug output                                                          (e)xit", ConsoleColor.Cyan);
 
                 // text
                 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -224,7 +209,7 @@ namespace OneDas.WebServer.Shell
             }
         }
 
-        private async void UpdateConsole()
+        private async void Update()
         {
             OneDasPerformanceInformation performanceInformation;
 
@@ -244,7 +229,7 @@ namespace OneDas.WebServer.Shell
 
                     // text
                     Console.SetCursorPosition(7, 2);
-                    Console.Write($"{ConfigurationManager<OneDasSettings>.Settings.OneDasName,30}");
+                    Console.Write($"{ConfigurationManager<WebServerOptions>.Options.OneDasName,30}");
 
                     Console.SetCursorPosition(19, 3);
 
@@ -274,10 +259,10 @@ namespace OneDas.WebServer.Shell
                     //Console.Write($"{performanceInformation.ClientSetCount,2}");
 
                     Console.SetCursorPosition(33 + offset, 3);
-                    Console.WriteLine($"{GlobalSettings.ChunkPeriod,2} s");
+                    // empty
 
                     Console.SetCursorPosition(32 + offset, 4);
-                    Console.WriteLine($"{GlobalSettings.NativeSampleRate,3} Hz");
+                    // empty
 
                     Console.SetCursorPosition(30 + offset, 5);
                     Console.Write($"{performanceInformation.LateBy,5:0.0} ms");
@@ -294,7 +279,7 @@ namespace OneDas.WebServer.Shell
                     Console.SetCursorPosition(0, 13);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _isConnected = false;
 
@@ -311,7 +296,7 @@ namespace OneDas.WebServer.Shell
                 case CtrlType.CTRL_CLOSE_EVENT:
                 case CtrlType.CTRL_BREAK_EVENT:
                 case CtrlType.CTRL_SHUTDOWN_EVENT:
-                    Bootloader.Shutdown(false, 0);
+                    Bootloader.Shutdown(0);
                     break;
                 default:
                     return;
@@ -352,7 +337,7 @@ namespace OneDas.WebServer.Shell
 
         private void _timer_UpdateConsole_Elapsed(object sender, ElapsedEventArgs e)
         {
-            this.UpdateConsole();
+            this.Update();
         }
 
         #endregion

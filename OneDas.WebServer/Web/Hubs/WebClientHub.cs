@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using OneDas.Common;
-using OneDas.Engine;
+using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
@@ -19,6 +18,15 @@ namespace OneDas.WebServer.Web
 {
     public class WebClientHub : Hub<IWebClientHub>
     {
+        private PluginManager _pluginManager;
+        private OneDasEngine _oneDasEngine;
+
+        public WebClientHub(PluginManager pluginManager, OneDasEngine oneDasEngine)
+        {
+            _pluginManager = pluginManager;
+            _oneDasEngine = oneDasEngine;
+        }
+
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();
@@ -36,33 +44,33 @@ namespace OneDas.WebServer.Web
 
         public void StartOneDas()
         {
-            Bootloader.OneDasController.OneDasEngine.OneDasState = OneDasState.Run;
+            _oneDasEngine.OneDasState = OneDasState.Run;
         }
 
         public void StopOneDas()
         {
-            Bootloader.OneDasController.OneDasEngine.OneDasState = OneDasState.Ready;
+            _oneDasEngine.OneDasState = OneDasState.Ready;
         }
 
         public void AcknowledgeError()
         {
-            Bootloader.OneDasController.OneDasEngine.OneDasState = OneDasState.Initialization;
-            Bootloader.OneDasController.OneDasEngine.OneDasState = OneDasState.Unconfigured;
+            _oneDasEngine.OneDasState = OneDasState.Initialization;
+            _oneDasEngine.OneDasState = OneDasState.Unconfigured;
         }
 
         public Task<string> GetLastError()
         {
-            return Task.Run(() => Bootloader.OneDasController.OneDasEngine.LastError);
+            return Task.Run(() => _oneDasEngine.LastError);
         }
 
         public Task SaveSlimOneDasSettings(SlimOneDasSettings slimOneDasSettings)
         {
             return Task.Run(() =>
             {
-                ConfigurationManager<OneDasSettings>.Settings.OneDasName = slimOneDasSettings.OneDasName;
-                ConfigurationManager<OneDasSettings>.Settings.AspBaseUrl = slimOneDasSettings.AspBaseUrl;
-                ConfigurationManager<OneDasSettings>.Settings.NewBaseDirectoryPath = slimOneDasSettings.BaseDirectoryPath;
-                ConfigurationManager<OneDasSettings>.Save();
+                ConfigurationManager<WebServerOptions>.Options.OneDasName = slimOneDasSettings.OneDasName;
+                ConfigurationManager<WebServerOptions>.Options.AspBaseUrl = slimOneDasSettings.AspBaseUrl;
+                ConfigurationManager<WebServerOptions>.Options.NewBaseDirectoryPath = slimOneDasSettings.BaseDirectoryPath;
+                ConfigurationManager<WebServerOptions>.Save();
 
                 this.Clients.All.SendSlimOneDasSettings(slimOneDasSettings);
             });
@@ -79,7 +87,7 @@ namespace OneDas.WebServer.Web
 
             project.Validate();
 
-            directoryPath = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "project");
+            directoryPath = Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "project");
             fileName = $"{project.Description.CampaignPrimaryGroup}_{project.Description.CampaignSecondaryGroup}_{project.Description.CampaignName}_{project.Description.Guid.ToString()}.json";
             currentFilePath = Path.Combine(directoryPath, fileName);
 
@@ -89,7 +97,7 @@ namespace OneDas.WebServer.Web
                 {
                     if (File.Exists(currentFilePath))
                     {
-                        newFilePath = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "backup", $"{ DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss") }_{ fileName }");
+                        newFilePath = Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "backup", $"{ DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss") }_{ fileName }");
 
                         File.Copy(currentFilePath, newFilePath, true);
                     }
@@ -98,7 +106,7 @@ namespace OneDas.WebServer.Web
                 {
                     currentFilePath = project.Save(currentFilePath);
 
-                    Bootloader.WebServerLogger.LogInformation("project file saved");
+                    //Bootloader.WebServerLogger.LogInformation("project file saved");
                 }
             });
         }
@@ -113,13 +121,13 @@ namespace OneDas.WebServer.Web
                 projectDescription.Validate();
 
                 // Improve: Make more flexible, renaming of file is impossible like that
-                filePath = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "project", $"{projectDescription.CampaignPrimaryGroup}_{projectDescription.CampaignSecondaryGroup}_{projectDescription.CampaignName}_{projectDescription.Guid}.json");
+                filePath = Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "project", $"{projectDescription.CampaignPrimaryGroup}_{projectDescription.CampaignSecondaryGroup}_{projectDescription.CampaignName}_{projectDescription.Guid}.json");
                 project = ProjectSerializationHelper.Load(filePath);
 
-                ConfigurationManager<OneDasSettings>.Settings.CurrentProjectFilePath = filePath;
-                ConfigurationManager<OneDasSettings>.Save();
+                ConfigurationManager<WebServerOptions>.Options.CurrentProjectFilePath = filePath;
+                ConfigurationManager<WebServerOptions>.Save();
 
-                Bootloader.OneDasController.OneDasEngine.ActivateProject(project, 2);
+                _oneDasEngine.ActivateProject(project, 2);
 
                 this.Clients.All.SendActiveProject(project);
             });
@@ -134,7 +142,7 @@ namespace OneDas.WebServer.Web
             {
                 try
                 {
-                    channelHubSet = channelHubGuidSet.Select(channelHubGuid => Bootloader.OneDasController.OneDasEngine.Project.ActiveChannelHubSet.First(channelHub => channelHub.Guid == channelHubGuid)).ToList();
+                    channelHubSet = channelHubGuidSet.Select(channelHubGuid => _oneDasEngine.Project.ActiveChannelHubSet.First(channelHub => channelHub.Guid == channelHubGuid)).ToList();
                 }
                 catch (Exception)
                 {
@@ -156,7 +164,7 @@ namespace OneDas.WebServer.Web
                 Type type;
                 Assembly assembly;
 
-                typeSet = PluginHive.GetPluginCategorySet<PluginSettingsBase>().ToList();
+                typeSet = _pluginManager.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
                 type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
                 assembly = type?.Assembly;
                 resourceName = $"{ assembly.GetName().Name }.{ resourceName }";
@@ -191,10 +199,10 @@ namespace OneDas.WebServer.Web
             {
                 try
                 {
-                    string basePath = Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "plugin");
+                    string basePath = Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "plugin");
                     string filePath = Path.GetFullPath(Path.Combine(basePath, pluginType, relativePath));
 
-                    if (filePath.StartsWith(Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "plugin")))
+                    if (filePath.StartsWith(Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "plugin")))
                     {
                         if (File.Exists(filePath))
                         {
@@ -232,7 +240,7 @@ namespace OneDas.WebServer.Web
                 IEnumerable<string> filePathSet;
                 IList<ProjectDescription> projectDescriptionSet;
 
-                filePathSet = Directory.GetFiles(Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "project"), "*.json");
+                filePathSet = Directory.GetFiles(Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "project"), "*.json");
                 projectDescriptionSet = new List<ProjectDescription>();
 
                 foreach (string filePath in filePathSet)
@@ -256,7 +264,7 @@ namespace OneDas.WebServer.Web
             return Task.Run(() =>
             {
                 // Improve: Make more flexible, renaming of file is impossible like that
-                Project project = ProjectSerializationHelper.Load(Path.Combine(ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath, "project", $"{projectDescription.CampaignPrimaryGroup}_{projectDescription.CampaignSecondaryGroup}_{projectDescription.CampaignName}_{projectDescription.Guid}.json"));
+                Project project = ProjectSerializationHelper.Load(Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "project", $"{projectDescription.CampaignPrimaryGroup}_{projectDescription.CampaignSecondaryGroup}_{projectDescription.CampaignName}_{projectDescription.Guid}.json"));
 
                 return project;
             });
@@ -268,7 +276,7 @@ namespace OneDas.WebServer.Web
             {
                 List<Type> typeSet;
 
-                typeSet = PluginHive.GetPluginCategorySet<PluginSettingsBase>().ToList();
+                typeSet = _pluginManager.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
                 actionRequest.Validate();
 
                 if (actionRequest.InstanceId > 0)
@@ -317,7 +325,7 @@ namespace OneDas.WebServer.Web
             IList<PluginIdentificationAttribute> dataGatewayPluginIdentificationSet;
             IList<PluginIdentificationAttribute> dataWriterPluginIdentificationSet;
 
-            dataGatewayPluginIdentificationSet = PluginHive.GetPluginSet<DataGatewayPluginSettingsBase>().Select(dataGatewaySettingsType =>
+            dataGatewayPluginIdentificationSet = _pluginManager.Get<DataGatewayPluginSettingsBase>().Select(dataGatewaySettingsType =>
             {
                 PluginIdentificationAttribute pluginIdentificationAttribute;
 
@@ -327,7 +335,7 @@ namespace OneDas.WebServer.Web
                 return pluginIdentificationAttribute;
             }).ToList();
 
-            dataWriterPluginIdentificationSet = PluginHive.GetPluginSet<DataWriterPluginSettingsBase>().Select(dataWriterSettingsType =>
+            dataWriterPluginIdentificationSet = _pluginManager.Get<DataWriterPluginSettingsBase>().Select(dataWriterSettingsType =>
             {
                 PluginIdentificationAttribute pluginIdentificationAttribute;
 
@@ -340,17 +348,17 @@ namespace OneDas.WebServer.Web
             return Task.Run(() =>
             {
                 return new AppModel(
-                    activeProject: Bootloader.OneDasController.OneDasEngine.Project,
+                    activeProject: _oneDasEngine.Project,
                     clientSet: new List<string>() { "Horst", "Köhler" },
                     dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
-                    lastError: Bootloader.OneDasController.OneDasEngine.LastError,
-                    oneDasState: Bootloader.OneDasController.OneDasEngine.OneDasState,
+                    lastError: _oneDasEngine.LastError,
+                    oneDasState: _oneDasEngine.OneDasState,
                     slimOneDasSettings: new SlimOneDasSettings
                     {
-                        OneDasName = ConfigurationManager<OneDasSettings>.Settings.OneDasName,
-                        AspBaseUrl = ConfigurationManager<OneDasSettings>.Settings.AspBaseUrl,
-                        BaseDirectoryPath = ConfigurationManager<OneDasSettings>.Settings.BaseDirectoryPath
+                        OneDasName = ConfigurationManager<WebServerOptions>.Options.OneDasName,
+                        AspBaseUrl = ConfigurationManager<WebServerOptions>.Options.AspBaseUrl,
+                        BaseDirectoryPath = ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath
                     });
             });
         }
@@ -359,9 +367,23 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return new Project(campaignPrimaryGroup, campaignSecondaryGroup, configurationName,
-                                    PluginFactory.BuildDefaultSettings<DataGatewayPluginSettingsBase>(type => type.GetFirstAttribute<PluginIdentificationAttribute>().Id == "EtherCAT"),
-                                    PluginFactory.BuildDefaultSettings<DataWriterPluginSettingsBase>(type => type.GetFirstAttribute<PluginIdentificationAttribute>().Id == "HDF"));
+                IList<DataGatewayPluginSettingsBase> dataGatewayPluginSettingsSet;
+                IList<DataWriterPluginSettingsBase> dataWriterPluginSettingsSet;
+
+                dataGatewayPluginSettingsSet = _pluginManager.Get<DataGatewayPluginSettingsBase>().
+                        Where(pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "EtherCAT").
+                        Select(pluginSettingsType => _pluginManager.BuildSettings<DataGatewayPluginSettingsBase>(pluginSettingsType)).ToList();
+
+                dataWriterPluginSettingsSet = _pluginManager.Get<DataWriterPluginSettingsBase>().
+                        Where(pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "HDF").
+                        Select(pluginSettingsType => _pluginManager.BuildSettings<DataWriterPluginSettingsBase>(pluginSettingsType)).ToList();
+
+                return new Project(
+                    campaignPrimaryGroup, 
+                    campaignSecondaryGroup, 
+                    configurationName,
+                    dataGatewayPluginSettingsSet,
+                    dataWriterPluginSettingsSet);
             });
         }
 
@@ -369,7 +391,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return PluginFactory.BuildSettings<DataGatewayPluginSettingsBase>(pluginName);
+                return _pluginManager.BuildSettings<DataGatewayPluginSettingsBase>(pluginName);
             });
         }
 
@@ -377,7 +399,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return PluginFactory.BuildSettings<DataWriterPluginSettingsBase>(pluginName);
+                return _pluginManager.BuildSettings<DataWriterPluginSettingsBase>(pluginName);
             });
         }
     }

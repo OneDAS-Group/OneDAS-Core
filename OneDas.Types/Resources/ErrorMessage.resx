@@ -150,10 +150,10 @@
   <data name="Project_ChannelHubNotUnqiue" xml:space="preserve">
     <value>The channel set is invalid: A channel must be unique.</value>
   </data>
-  <data name="PluginFactory_NoMatchingTPluginLogicFound" xml:space="preserve">
+  <data name="PluginManager_NoMatchingTPluginLogicFound" xml:space="preserve">
     <value>No matching TPluginLogic was found.</value>
   </data>
-  <data name="PluginFactory_NoMatchingTPluginSettingsFound" xml:space="preserve">
+  <data name="PluginManager_NoMatchingTPluginSettingsFound" xml:space="preserve">
     <value>No matching TPluginSettings was found.</value>
   </data>
   <data name="PluginSettingsBase_PluginContextAttributeNotDefined" xml:space="preserve">
@@ -194,5 +194,8 @@
   </data>
   <data name="DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
     <value>The MaximumDatasetAge is must be between zero and 10000.</value>
+  </data>
+  <data name="PluginManager_TypeNotInheritedFromTPluginSettings" xml:space="preserve">
+    <value>The provided 'pluginSettingsType' is not assignable to an instance of TPluginSettings.</value>
   </data>
 </root>

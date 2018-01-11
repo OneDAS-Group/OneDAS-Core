@@ -1,8 +1,8 @@
 ﻿namespace OneDas.WebServer
 {
-    public class OneDasSettings
+    public class WebServerOptions
     {
-        public OneDasSettings()
+        public WebServerOptions()
         {
             this.AspBaseUrl = "http://127.0.0.1:32768";
             this.IsAnonymousAuthenticationEnabled = false;

@@ -135,18 +135,27 @@ namespace OneDas {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginLogic was found. ähnelt.
         /// </summary>
-        internal static string PluginFactory_NoMatchingTPluginLogicFound {
+        internal static string PluginManager_NoMatchingTPluginLogicFound {
             get {
-                return ResourceManager.GetString("PluginFactory_NoMatchingTPluginLogicFound", resourceCulture);
+                return ResourceManager.GetString("PluginManager_NoMatchingTPluginLogicFound", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginSettings was found. ähnelt.
         /// </summary>
-        internal static string PluginFactory_NoMatchingTPluginSettingsFound {
+        internal static string PluginManager_NoMatchingTPluginSettingsFound {
             get {
-                return ResourceManager.GetString("PluginFactory_NoMatchingTPluginSettingsFound", resourceCulture);
+                return ResourceManager.GetString("PluginManager_NoMatchingTPluginSettingsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided &apos;pluginSettingsType&apos; is not assignable to an instance of TPluginSettings. ähnelt.
+        /// </summary>
+        internal static string PluginManager_TypeNotInheritedFromTPluginSettings {
+            get {
+                return ResourceManager.GetString("PluginManager_TypeNotInheritedFromTPluginSettings", resourceCulture);
             }
         }
         

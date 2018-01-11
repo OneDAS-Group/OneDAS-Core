@@ -11,7 +11,7 @@ namespace OneDas.WebServer
         private static string _configurationDirectoryPath;
         private static string _configurationFileName;
 
-        public static T Settings { get; private set; }
+        public static T Options { get; private set; }
 
         public static void Initialize(string configurationDirectoryPath, string configurationFileName)
         {
@@ -32,7 +32,7 @@ namespace OneDas.WebServer
                 }
             }
 
-            ConfigurationManager<T>.Settings = configurationBuilder.Build().Get<T>();
+            ConfigurationManager<T>.Options = configurationBuilder.Build().Get<T>();
         }
 
         public static void Save()
@@ -41,7 +41,7 @@ namespace OneDas.WebServer
             {
                 string rawJson;
 
-                rawJson = JsonConvert.SerializeObject(ConfigurationManager<T>.Settings, Formatting.Indented, SerializationHelper.CreateDefaultSerializationSettings());
+                rawJson = JsonConvert.SerializeObject(ConfigurationManager<T>.Options, Formatting.Indented, SerializationHelper.CreateDefaultSerializationSettings());
                 new JsonTextWriter(streamWriter).WriteRaw(rawJson);
             }
         }

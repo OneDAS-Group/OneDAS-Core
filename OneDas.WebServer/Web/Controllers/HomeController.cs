@@ -18,26 +18,32 @@ namespace OneDas.WebServer.Web
 
         private static IHubContext<WebClientHub> _hubContext;
 
+        private static OneDasEngine _oneDasEngine;
+
         static HomeController()
         {
             HomeController.LiveViewSubscriptionSet = new Dictionary<string, (int SubscriptionId, IList<ChannelHub> ChannelHubSet)>();
 
             _nextSubscriptionId = 1;
-
-            _updatePerfInfoTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
-            _updateDataSnapshotTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
-            _updateLiveValueDataTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromMilliseconds(200).TotalMilliseconds };
-
-            _updatePerfInfoTimer.Elapsed += _updatePerfInfoTimer_Elapsed;
-            _updateDataSnapshotTimer.Elapsed += _updateDataSnapshotTimer_Elapsed;
-            _updateLiveValueDataTimer.Elapsed += _updateLiveValueDataTimer_Elapsed;
-
-            Bootloader.OneDasController.OneDasEngine.OneDasStateChanged += HomeController.OneDasController_OneDasStateChanged;
         }
 
-        public HomeController(IHubContext<WebClientHub> hubContext)
+        public HomeController(IHubContext<WebClientHub> hubContext, OneDasEngine oneDasEngine)
         {
             _hubContext = hubContext;
+
+            if (_oneDasEngine == null)
+            {
+                _oneDasEngine = oneDasEngine;
+                _oneDasEngine.OneDasStateChanged += HomeController.OneDasEngine_OneDasStateChanged;
+
+                _updatePerfInfoTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
+                _updateDataSnapshotTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
+                _updateLiveValueDataTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromMilliseconds(200).TotalMilliseconds };
+
+                _updatePerfInfoTimer.Elapsed += _updatePerfInfoTimer_Elapsed;
+                _updateDataSnapshotTimer.Elapsed += _updateDataSnapshotTimer_Elapsed;
+                _updateLiveValueDataTimer.Elapsed += _updateLiveValueDataTimer_Elapsed;
+            }
         }
 
         public static Dictionary<string, (int SubscriptionId, IList<ChannelHub> ChannelHubSet)> LiveViewSubscriptionSet { get; private set; }
@@ -59,9 +65,9 @@ namespace OneDas.WebServer.Web
 
         private static void _updatePerfInfoTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (Bootloader.OneDasController.OneDasEngine.OneDasState >= OneDasState.Ready)
+            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
-                OneDasPerformanceInformation performanceInformation = Bootloader.OneDasController.OneDasEngine.CreatePerformanceInformation();
+                OneDasPerformanceInformation performanceInformation = _oneDasEngine.CreatePerformanceInformation();
                 _hubContext?.Clients.All.InvokeAsync("SendPerformanceInformation", performanceInformation);
             }
         }
@@ -70,9 +76,9 @@ namespace OneDas.WebServer.Web
         {
             IEnumerable<object> dataSnapshot;
 
-            if (Bootloader.OneDasController.OneDasEngine.OneDasState >= OneDasState.Ready)
+            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
-                dataSnapshot = Bootloader.OneDasController.OneDasEngine.CreateDataSnapshot();
+                dataSnapshot = _oneDasEngine.CreateDataSnapshot();
                 _hubContext?.Clients.All.InvokeAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
             }
         }
@@ -81,11 +87,11 @@ namespace OneDas.WebServer.Web
         {
             IEnumerable<object> dataSnapshot;
 
-            if (Bootloader.OneDasController.OneDasEngine.OneDasState >= OneDasState.Ready)
+            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
                 foreach (var liveViewSubscription in HomeController.LiveViewSubscriptionSet)
                 {
-                    dataSnapshot = Bootloader.OneDasController.OneDasEngine.CreateDataSnapshot(liveViewSubscription.Value.ChannelHubSet);
+                    dataSnapshot = _oneDasEngine.CreateDataSnapshot(liveViewSubscription.Value.ChannelHubSet);
                     _hubContext?.Clients.Client(liveViewSubscription.Key).InvokeAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
                 }
             }
@@ -96,7 +102,7 @@ namespace OneDas.WebServer.Web
             _hubContext?.Clients.All.InvokeAsync("SendClientMessage", message);
         }
 
-        private static void OneDasController_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)
+        private static void OneDasEngine_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)
         {
             _hubContext?.Clients.All.InvokeAsync("SendOneDasState", e.NewState);
         }

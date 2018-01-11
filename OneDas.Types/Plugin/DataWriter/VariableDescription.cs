@@ -1,7 +1,6 @@
-﻿using System;
+﻿using OneDas.Infrastructure;
+using System;
 using System.Collections.Generic;
-using OneDas.Infrastructure;
-using OneDas.Types.Settings;
 
 namespace OneDas.Plugin
 {
@@ -13,7 +12,7 @@ namespace OneDas.Plugin
         {
             this.Guid = channelHub.Guid;
             this.VariableName = channelHub.Name;
-            this.DatasetName = $"{ GlobalSettings.NativeSampleRate / (int)channelHub.SampleRate } Hz"; ;
+            this.DatasetName = $"{ 100 / (int)channelHub.SampleRate } Hz"; // Improve remove magic number!
             this.Group = channelHub.Group;
             this.OneDasDataType = channelHub.OneDasDataType;
             this.SamplesPerDay = InfrastructureHelper.GetSamplesPerDayFromSampleRate(channelHub.SampleRate);
@@ -24,7 +23,7 @@ namespace OneDas.Plugin
 
         public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType oneDasDataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
         {
-            if (!dataStorageType is DataStorageBase)
+            if (!(dataStorageType == typeof(DataStorageBase)))
             {
                 throw new ArgumentException(ErrorMessage.VariableDescription_TypeNotSubclassOfDataStorage);
             }

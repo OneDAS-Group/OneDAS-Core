@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OneDas.Common;
 using OneDas.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OneDas.Plugin
 {
@@ -17,16 +17,20 @@ namespace OneDas.Plugin
         private Dictionary<ulong, List<int>> _samplesPerDayDictionary;
         private Dictionary<ulong, List<VariableDescription>> _variableDescriptionDictionary;
 
+        private ILogger _logger;
+
         #endregion
 
         #region "Constructors"
 
-        public DataWriterPluginLogicBase(DataWriterPluginSettingsBase settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
+        public DataWriterPluginLogicBase(DataWriterPluginSettingsBase settings, ILoggerFactory loggerFactory) : base(settings)
         {
             this.Settings = settings;
             this.ChunkPeriod = TimeSpan.FromMinutes(1);
             this.ChunkCount = (ulong)((int)settings.FileGranularity / this.ChunkPeriod.TotalSeconds);
             this.FormatVersion = this.GetType().GetFirstAttribute<DataWriterFormatVersionAttribute>().FormatVersion;
+
+            _logger = loggerFactory.CreateLogger(this.DisplayName);
         }
 
         #endregion
@@ -161,11 +165,11 @@ namespace OneDas.Plugin
 
                     if (firstChunk == lastChunk)
                     {
-                        this.DefaultLogger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
+                        _logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
                     }
                     else
                     {
-                        this.DefaultLogger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
+                        _logger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
                     }
                 }
 

@@ -1,21 +1,21 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Diagnostics.Contracts;
 
 namespace OneDas.Plugin
 {
     public abstract class PluginLogicBase : IDisposable 
     {
-        public PluginLogicBase(PluginSettingsBase settings, ILoggerFactory loggerFactory)
+        public PluginLogicBase(PluginSettingsBase settings)
         {
             Contract.Requires(settings != null);
-            Contract.Requires(loggerFactory != null);
 
-            this.DefaultLogger = loggerFactory.CreateLogger($"{ settings.Description.Id } ({ settings.Description.InstanceId })");
             this.Settings = settings;
+
+            this.DisplayName = $"{ settings.Description.Id } ({ settings.Description.InstanceId })";
         }
 
-        public ILogger DefaultLogger { get; }
+        public string DisplayName { get; }
+
         public PluginSettingsBase Settings { get; }
 
         // don't force inherited classes to overwrite this

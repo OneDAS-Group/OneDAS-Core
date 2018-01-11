@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OneDas.Engine.Serialization;
 
@@ -43,17 +42,13 @@ namespace OneDas.WebServer.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseResponseCompression();
 
             if (env.IsDevelopment())
             {
-                //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-                //loggerFactory.AddDebug();
-
                 app.UseDeveloperExceptionPage();
-                //app.UseBrowserLink();
             }
             else
             {

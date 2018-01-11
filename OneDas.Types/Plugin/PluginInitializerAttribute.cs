@@ -8,10 +8,10 @@ namespace OneDas.Plugin
     {
         public PluginInitializerAttribute(Type type, string methodName)
         {
-            this.InitializerAction = () => type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static).Invoke(null, null);
+            this.InitializerAction = serviceProvider => type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { serviceProvider });
         }
 
-        public Action InitializerAction { get; private set; }
+        public Action<IServiceProvider> InitializerAction { get; private set; }
     }
 }
 

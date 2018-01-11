@@ -19,8 +19,7 @@
 			   
 	           Input_Authors="$(Authors)"
 	           Input_Company="$(Company)"
-	           Input_Copyright="$(Copyright)"
-	           Input_Product="$(Product)">
+	           Input_Copyright="$(Copyright)">
       <Output TaskParameter="Version" PropertyName="Version" />
       <Output TaskParameter="PackageVersion" PropertyName="PackageVersion" />
       <Output TaskParameter="Authors" PropertyName="Authors" />

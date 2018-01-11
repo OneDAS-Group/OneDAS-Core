@@ -11,8 +11,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="3.20.0" />
-    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6579-25033" />
-    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6579-25008" />
+    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6585-29977" />
+    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6585-29950" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">

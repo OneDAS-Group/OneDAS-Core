@@ -1,9 +1,8 @@
-﻿using System;
+﻿using OneDas.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
-using OneDas.Infrastructure;
 
 namespace OneDas.Plugin
 {
@@ -11,7 +10,7 @@ namespace OneDas.Plugin
     {
         #region "Constructors"
 
-        public ExtendedDataGatewayPluginLogicBase(ExtendedDataGatewayPluginSettingsBase settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
+        public ExtendedDataGatewayPluginLogicBase(ExtendedDataGatewayPluginSettingsBase settings) : base(settings)
         {
             this.Settings = settings;
         }
