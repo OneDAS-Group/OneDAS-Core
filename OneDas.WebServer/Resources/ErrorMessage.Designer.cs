@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas.WebServer {
+namespace OneDas.Main {
     using System;
     
     
@@ -115,24 +115,6 @@ namespace OneDas.WebServer {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die No PluginActionRequestAttribute was found on the the specified plugin. ähnelt.
-        /// </summary>
-        internal static string Broadcaster_MissingPluginActionRequestAttribute {
-            get {
-                return ResourceManager.GetString("Broadcaster_MissingPluginActionRequestAttribute", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
-        /// </summary>
-        internal static string Broadcaster_PluginNotFound {
-            get {
-                return ResourceManager.GetString("Broadcaster_PluginNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The configured slave aliases are not unique. ähnelt.
         /// </summary>
         internal static string CsaReader_CsaNotUnique {
@@ -147,6 +129,15 @@ namespace OneDas.WebServer {
         internal static string CsaReader_CsaReadingTimeout {
             get {
                 return ResourceManager.GetString("CsaReader_CsaReadingTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The OleMessageFilterBehavior attribute only works for synchronous method invocations. ähnelt.
+        /// </summary>
+        internal static string OleMessageFilterBehaviorAttribute_OnlySynchronousMethodsAllowed {
+            get {
+                return ResourceManager.GetString("OleMessageFilterBehaviorAttribute_OnlySynchronousMethodsAllowed", resourceCulture);
             }
         }
         
@@ -192,15 +183,6 @@ namespace OneDas.WebServer {
         internal static string OneDasManager_SystemFaultedAcknowledgeFirst {
             get {
                 return ResourceManager.GetString("OneDasManager_SystemFaultedAcknowledgeFirst", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The OleMessageFilterBehavior attribute only works for synchronous method invocations. ähnelt.
-        /// </summary>
-        internal static string OleMessageFilterBehaviorAttribute_OnlySynchronousMethodsAllowed {
-            get {
-                return ResourceManager.GetString("OleMessageFilterBehaviorAttribute_OnlySynchronousMethodsAllowed", resourceCulture);
             }
         }
         

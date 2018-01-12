@@ -70,11 +70,29 @@ namespace OneDas.Engine {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No PluginActionRequestAttribute was found on the the specified plugin. ähnelt.
+        /// </summary>
+        internal static string OneDasEngine_MissingPluginActionRequestAttribute {
+            get {
+                return ResourceManager.GetString("OneDasEngine_MissingPluginActionRequestAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die OneDAS state must be ready or run to get a data snapshot. ähnelt.
         /// </summary>
         internal static string OneDasEngine_OneDasStateNotGreaterEqualReady {
             get {
                 return ResourceManager.GetString("OneDasEngine_OneDasStateNotGreaterEqualReady", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
+        /// </summary>
+        internal static string OneDasEngine_PluginNotFound {
+            get {
+                return ResourceManager.GetString("OneDasEngine_PluginNotFound", resourceCulture);
             }
         }
         

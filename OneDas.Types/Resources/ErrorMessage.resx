@@ -198,4 +198,10 @@
   <data name="PluginManager_TypeNotInheritedFromTPluginSettings" xml:space="preserve">
     <value>The provided 'pluginSettingsType' is not assignable to an instance of TPluginSettings.</value>
   </data>
+  <data name="PluginManager_NoPluginSupporterAttributeFound" xml:space="preserve">
+    <value>Could not find any PluginSupporterAttribute.</value>
+  </data>
+  <data name="PluginManager_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
+    <value>The specified type does not implement the interface IPluginSupporter.</value>
+  </data>
 </root>

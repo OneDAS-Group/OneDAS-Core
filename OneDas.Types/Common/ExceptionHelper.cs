@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace OneDas.Types.Common
+namespace OneDas.Common
 {
     public static class ExceptionHelper
     {

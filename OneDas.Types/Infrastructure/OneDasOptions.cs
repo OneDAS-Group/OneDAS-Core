@@ -7,13 +7,19 @@ namespace OneDas.Infrastructure
     {
         public OneDasOptions()
         {
-            this.BaseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "OneDAS");
             this.NativeSampleRate = 100;
             this.ChunkPeriod = 60;
+            this.ProductName = "OneDAS";
+
+            this.BaseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), this.ProductName);
         }
 
-        public string BaseDirectoryPath { get; set; }
         public uint NativeSampleRate { get; }
+
         public uint ChunkPeriod { get; }
+
+        public string ProductName { get; }
+
+        public string BaseDirectoryPath { get; set; }
     }
 }

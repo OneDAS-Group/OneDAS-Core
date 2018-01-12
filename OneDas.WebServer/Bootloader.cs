@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
@@ -30,9 +32,11 @@ namespace OneDas.WebServer
 
         private static OneDasEngine _oneDasEngine;
         private static ServiceController _oneDasServiceController;
+        private static WebServerOptions _webServerOptions;
         private static IWebHost _webhost;
         private static IServiceCollection _serviceCollection;
         private static IServiceProvider _serviceProvider;
+        private static IConfigurationRoot _configurationRoot;
 
         #endregion
 
@@ -46,6 +50,7 @@ namespace OneDas.WebServer
 
         public static void Main(string[] args)
         {
+            IConfigurationBuilder configurationBuilder;
             string configurationDirectoryPath;
 
             // configuration
@@ -53,28 +58,33 @@ namespace OneDas.WebServer
 
             Directory.CreateDirectory(configurationDirectoryPath);
 
-            ConfigurationManager<WebServerOptions>.Initialize(configurationDirectoryPath, "onedassettings.json");
+            configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.SetBasePath(configurationDirectoryPath);
+            configurationBuilder.AddJsonFile("onedassettings.json");
+
+            _configurationRoot = configurationBuilder.Build();
+            _webServerOptions = _configurationRoot.Get<WebServerOptions>();
 
             // base directory path
-            if (!Directory.Exists(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath))
+            if (!Directory.Exists(_webServerOptions.BaseDirectoryPath))
             {
-                ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath = configurationDirectoryPath;
+                _webServerOptions.BaseDirectoryPath = configurationDirectoryPath;
             }
 
             try
             {
-                if (!string.Equals(Path.GetFullPath(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath), Path.GetFullPath(ConfigurationManager<WebServerOptions>.Options.NewBaseDirectoryPath), StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(Path.GetFullPath(_webServerOptions.BaseDirectoryPath), Path.GetFullPath(_webServerOptions.NewBaseDirectoryPath), StringComparison.OrdinalIgnoreCase))
                 {
-                    ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath = ConfigurationManager<WebServerOptions>.Options.NewBaseDirectoryPath;
+                    _webServerOptions.BaseDirectoryPath = _webServerOptions.NewBaseDirectoryPath;
                 }
             }
             catch
             {
-                ConfigurationManager<WebServerOptions>.Options.NewBaseDirectoryPath = ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath;
+                _webServerOptions.NewBaseDirectoryPath = _webServerOptions.BaseDirectoryPath;
             }
             finally
             {
-                ConfigurationManager<WebServerOptions>.Save();
+                _webServerOptions.Save();
             }
 
             // exception handling
@@ -98,7 +108,7 @@ namespace OneDas.WebServer
             // OneDasServiceController
             _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(serviceController =>
             {
-                return serviceController.ServiceName == ConfigurationManager<WebServerOptions>.Options.ServiceName;
+                return serviceController.ServiceName == _webServerOptions.ServiceName;
             });
 
             // OneDasConsole or OneDasService
@@ -128,29 +138,26 @@ namespace OneDas.WebServer
             }
             else
             {
-                ConfigurationManager<WebServerOptions>.Options.IsAutostartEnabled = true;
+                _webServerOptions.IsAutostartEnabled = true;
 
                 _webhost = Bootloader.CreateWebHost();
                 _oneDasEngine = _serviceProvider.GetRequiredService<OneDasEngine>();
 
                 Bootloader.KickStartOneDasEngine();
 
-                using (OneDasService oneDasService = new OneDasService(ConfigurationManager<WebServerOptions>.Options.ServiceName, _webhost))
-                {
-                    ServiceBase.Run(oneDasService);
-                }
+                _webhost.RunAsService();
             }
         }
 
         private static void KickStartOneDasEngine()
         {
-            if (ConfigurationManager<WebServerOptions>.Options.IsAutostartEnabled && File.Exists(ConfigurationManager<WebServerOptions>.Options.CurrentProjectFilePath))
+            if (_webServerOptions.IsAutostartEnabled && File.Exists(_webServerOptions.CurrentProjectFilePath))
             {
                 Task.Run(() =>
                 {
                     try
                     {
-                        _oneDasEngine.ActivateProject(ProjectSerializationHelper.Load(ConfigurationManager<WebServerOptions>.Options.CurrentProjectFilePath), 4);
+                        _oneDasEngine.ActivateProject(ProjectSerializationHelper.Load(_webServerOptions.CurrentProjectFilePath), 4);
                         _oneDasEngine.OneDasState = OneDasState.Run;
                     }
                     catch (Exception ex)
@@ -169,7 +176,7 @@ namespace OneDas.WebServer
             {
                 if (!(Environment.UserInteractive && Bootloader.GetOneDasServiceStatus() > 0))
                 {
-                    if (!SingeltonHelper.EnsureSingeltonInstance(new Guid(ConfigurationManager<WebServerOptions>.Options.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
+                    if (!SingeltonHelper.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
                     {
                         Environment.Exit(0);
                     }
@@ -192,14 +199,14 @@ namespace OneDas.WebServer
                 assemblyFilePath = Assembly.GetExecutingAssembly().Location;
                 directoryPath = Path.GetDirectoryName(assemblyFilePath);
 
-                cacheFilePath = Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, ".cache");
+                cacheFilePath = Path.Combine(_webServerOptions.BaseDirectoryPath, ".cache");
                 configFilePath = $"{ assemblyFilePath }.config";
 
                 appDomainSetup = new AppDomainSetup()
                 {
                     CachePath = cacheFilePath,
                     ConfigurationFile = configFilePath,
-                    ShadowCopyDirectories = Path.Combine(ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath, "plugin"),
+                    ShadowCopyDirectories = Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"),
                     ShadowCopyFiles = "true"
                 };
 
@@ -215,7 +222,7 @@ namespace OneDas.WebServer
         {
             if (_oneDasServiceController == null)
             {
-                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == ConfigurationManager<WebServerOptions>.Options.ServiceName);
+                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == _webServerOptions.ServiceName);
             }
 
             if (_oneDasServiceController != null)
@@ -236,6 +243,9 @@ namespace OneDas.WebServer
                 EventLogSettings eventLogSettings;
                 ClientMessageLoggerProvider clientMessageLoggerProvider;
 
+                // WebServerOptions
+                serviceCollection.Configure<WebServerOptions>(_configurationRoot);
+
                 // event log
                 if (Environment.UserInteractive)
                 {
@@ -245,8 +255,8 @@ namespace OneDas.WebServer
                 {
                     eventLogSettings = new EventLogSettings()
                     {
-                        LogName = ConfigurationManager<WebServerOptions>.Options.EventLogName,
-                        SourceName = ConfigurationManager<WebServerOptions>.Options.EventLogSourceName
+                        LogName = _webServerOptions.EventLogName,
+                        SourceName = _webServerOptions.EventLogSourceName
                     };
                 }
 
@@ -262,7 +272,7 @@ namespace OneDas.WebServer
 
             serviceCollection.AddOneDas(oneDasOptions =>
             {
-                oneDasOptions.BaseDirectoryPath = ConfigurationManager<WebServerOptions>.Options.BaseDirectoryPath;
+                oneDasOptions.BaseDirectoryPath = _webServerOptions.BaseDirectoryPath;
             });
 
             serviceCollection.AddSingleton<OneDasConsole>(serviceProvider => new OneDasConsole(Bootloader.GetOneDasServiceStatus() == 0));
@@ -293,7 +303,7 @@ namespace OneDas.WebServer
             webHost = new WebHostBuilder()
                 .ConfigureServices(serviceCollection => Bootloader.ConfigureServices(serviceCollection))
                 .UseKestrel()
-                .UseUrls(ConfigurationManager<WebServerOptions>.Options.AspBaseUrl)
+                .UseUrls(_webServerOptions.AspBaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();

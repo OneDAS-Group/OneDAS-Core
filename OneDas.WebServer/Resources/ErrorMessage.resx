@@ -135,12 +135,6 @@
   <data name="Broadcaster_ChannelHubNotFound" xml:space="preserve">
     <value>The requested channel is inactive or not available in the project.</value>
   </data>
-  <data name="Broadcaster_MissingPluginActionRequestAttribute" xml:space="preserve">
-    <value>No PluginActionRequestAttribute was found on the the specified plugin.</value>
-  </data>
-  <data name="Broadcaster_PluginNotFound" xml:space="preserve">
-    <value>The specified plugin was not found.</value>
-  </data>
   <data name="CsaReader_CsaNotUnique" xml:space="preserve">
     <value>The configured slave aliases are not unique.</value>
   </data>

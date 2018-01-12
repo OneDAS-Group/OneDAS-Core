@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OneDas.Common;
 using OneDas.Engine.Core;
 using OneDas.Infrastructure;
@@ -20,6 +21,7 @@ namespace OneDas.WebServer.Shell
 
         private SafeNativeMethods.HandlerRoutine _handlerRoutine;
         private HubConnection _consoleHubClient;
+        private WebServerOptions _webServerOptions;
 
         private bool _isConnected = false;
 
@@ -27,8 +29,10 @@ namespace OneDas.WebServer.Shell
 
         #region "Contructors"
 
-        public OneDasConsole(bool isDedicated)
+        public OneDasConsole(bool isDedicated, IOptions<WebServerOptions> options)
         {
+            _webServerOptions = options.Value;
+
             WindowHelper.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
             Thread.CurrentThread.Name = "Main thread";
 
@@ -229,7 +233,7 @@ namespace OneDas.WebServer.Shell
 
                     // text
                     Console.SetCursorPosition(7, 2);
-                    Console.Write($"{ConfigurationManager<WebServerOptions>.Options.OneDasName,30}");
+                    // empty
 
                     Console.SetCursorPosition(19, 3);
 
@@ -256,7 +260,7 @@ namespace OneDas.WebServer.Shell
 
                     // numbers
                     Console.SetCursorPosition(33 + offset, 2);
-                    //Console.Write($"{performanceInformation.ClientSetCount,2}");
+                    // empty
 
                     Console.SetCursorPosition(33 + offset, 3);
                     // empty
@@ -306,7 +310,7 @@ namespace OneDas.WebServer.Shell
         private HubConnection BuildHubConnection()
         {
             return new HubConnectionBuilder()
-                 .WithUrl("http://localhost:32768/consolehub")
+                 .WithUrl(_webServerOptions.AspBaseUrl + _webServerOptions.ConsoleHubName)
                  .Build();
         }
 

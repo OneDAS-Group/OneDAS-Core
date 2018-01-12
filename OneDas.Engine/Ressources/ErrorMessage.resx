@@ -120,8 +120,14 @@
   <data name="OneDasEngine_DirectoryNameInvalid" xml:space="preserve">
     <value>The directory contains none or invalid characters.</value>
   </data>
+  <data name="OneDasEngine_MissingPluginActionRequestAttribute" xml:space="preserve">
+    <value>No PluginActionRequestAttribute was found on the the specified plugin.</value>
+  </data>
   <data name="OneDasEngine_OneDasStateNotGreaterEqualReady" xml:space="preserve">
     <value>OneDAS state must be ready or run to get a data snapshot.</value>
+  </data>
+  <data name="OneDasEngine_PluginNotFound" xml:space="preserve">
+    <value>The specified plugin was not found.</value>
   </data>
   <data name="OneDasEngine_ReferenceClockNotMonotonouslyRising" xml:space="preserve">
     <value>The reference clock is not monotonously rising.</value>

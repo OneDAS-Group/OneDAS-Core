@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using OneDas.Common;
+using OneDas.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OneDas.Infrastructure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using OneDas.Types.Common;
 
 namespace OneDas.Engine.Serialization
 {
@@ -26,17 +26,16 @@ namespace OneDas.Engine.Serialization
                    
                     finalVersion = Project.FormatVersion;
 
-                    //  cancellation criteria matched
-                    if (formatVersion >= finalVersion)
+                    if (formatVersion <= 1)
+                    {
+                        ProjectSerializationHelper.Upgrade_1(jObject);
+                        formatVersion = 2;
+                    }
+                    else if (formatVersion <= finalVersion)
                     {
                         jObject["Description"]["FormatVersion"] = formatVersion;
 
                         return;
-                    }
-                    else if (formatVersion >= 1)
-                    {
-                        ProjectSerializationHelper.Upgrade_1(jObject);
-                        formatVersion = 2;
                     }
                     else
                     {

@@ -151,6 +151,24 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any PluginSupporterAttribute. ähnelt.
+        /// </summary>
+        internal static string PluginManager_NoPluginSupporterAttributeFound {
+            get {
+                return ResourceManager.GetString("PluginManager_NoPluginSupporterAttributeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IPluginSupporter. ähnelt.
+        /// </summary>
+        internal static string PluginManager_TypeDoesNotImplementIPluginSupporter {
+            get {
+                return ResourceManager.GetString("PluginManager_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The provided &apos;pluginSettingsType&apos; is not assignable to an instance of TPluginSettings. ähnelt.
         /// </summary>
         internal static string PluginManager_TypeNotInheritedFromTPluginSettings {

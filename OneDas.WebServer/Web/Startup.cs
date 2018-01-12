@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OneDas.Engine.Serialization;
 
@@ -42,8 +43,12 @@ namespace OneDas.WebServer.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<WebServerOptions> options)
         {
+            WebServerOptions webServerOptions;
+
+            webServerOptions = options.Value;
+
             app.UseResponseCompression();
 
             if (env.IsDevelopment())
@@ -59,8 +64,8 @@ namespace OneDas.WebServer.Web
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<WebClientHub>("webclienthub");
-                routes.MapHub<ConsoleHub>("consolehub");
+                routes.MapHub<WebClientHub>(webServerOptions.WebClientHubName);
+                routes.MapHub<ConsoleHub>(webServerOptions.ConsoleHubName);
             });
 
             app.UseMvc(routes =>
