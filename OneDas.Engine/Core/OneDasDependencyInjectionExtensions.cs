@@ -1,4 +1,5 @@
 ﻿using OneDas.Engine.Core;
+using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
 using System;
@@ -16,7 +17,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             serviceCollection.Configure(configure);
 
-            serviceCollection.AddSingleton<PluginManager>();
+            serviceCollection.AddSingleton<IOneDasProjectSerializer>(new OneDasProjectSerializer());
+            serviceCollection.AddSingleton<PluginProvider>();
             serviceCollection.AddSingleton<OneDasEngine>();
         }
     }

@@ -88,15 +88,6 @@ namespace OneDas.Engine {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
-        /// </summary>
-        internal static string OneDasEngine_PluginNotFound {
-            get {
-                return ResourceManager.GetString("OneDasEngine_PluginNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The reference clock is not monotonously rising. ähnelt.
         /// </summary>
         internal static string OneDasEngine_ReferenceClockNotMonotonouslyRising {

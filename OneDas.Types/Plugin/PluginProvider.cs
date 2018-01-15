@@ -10,18 +10,18 @@ using System.Reflection;
 
 namespace OneDas.Plugin
 {
-    public class PluginManager
+    public class PluginProvider
     {
         private IServiceProvider _serviceProvider;
         private Dictionary<Type, IEnumerable<Type>> _pluginDictionary;
         private static HashSet<Assembly> _assemblySet;
 
-        static PluginManager()
+        static PluginProvider()
         {
             _assemblySet = new HashSet<Assembly>();
         }
 
-        public PluginManager(IServiceProvider serviceProvider)
+        public PluginProvider(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
 
@@ -175,12 +175,12 @@ namespace OneDas.Plugin
 
             if (pluginSupporterType == null)
             {
-                throw new OneDasException(ErrorMessage.PluginManager_NoPluginSupporterAttributeFound);
+                throw new OneDasException(ErrorMessage.PluginProvider_NoPluginSupporterAttributeFound);
             }
 
             if (typeof(IPluginSupporter).IsAssignableFrom(pluginSupporterType))
             {
-                throw new OneDasException(ErrorMessage.PluginManager_TypeDoesNotImplementIPluginSupporter);
+                throw new OneDasException(ErrorMessage.PluginProvider_TypeDoesNotImplementIPluginSupporter);
             }
 
             return (IPluginSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType, args);
@@ -195,7 +195,7 @@ namespace OneDas.Plugin
 
             if (!typeof(TPluginSettings).IsAssignableFrom(pluginSettingsType))
             {
-                throw new OneDasException(ErrorMessage.PluginManager_TypeNotInheritedFromTPluginSettings);
+                throw new OneDasException(ErrorMessage.PluginProvider_TypeNotInheritedFromTPluginSettings);
             }
 
             return (TPluginSettings)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSettingsType, args);
@@ -211,7 +211,7 @@ namespace OneDas.Plugin
 
             if (pluginSettingsType == null)
             {
-                throw new OneDasException(ErrorMessage.PluginManager_NoMatchingTPluginSettingsFound);
+                throw new OneDasException(ErrorMessage.PluginProvider_NoMatchingTPluginSettingsFound);
             }
 
             return (TPluginSettings)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSettingsType, args);
@@ -225,10 +225,73 @@ namespace OneDas.Plugin
 
             if (pluginLogicType == null)
             {
-                throw new OneDasException(ErrorMessage.PluginManager_NoMatchingTPluginLogicFound);
+                throw new OneDasException(ErrorMessage.PluginProvider_NoMatchingTPluginLogicFound);
             }
 
             return (TPluginLogic)ActivatorUtilities.CreateInstance(_serviceProvider, pluginLogicType, pluginSettings, args);
+        }
+
+        #endregion
+
+        #region "Helper"
+
+        public ActionResponse HandleActionRequest(ActionRequest actionRequest)
+        {
+            List<Type> typeSet;
+            Type pluginSettingsType;
+            ActionResponse actionResponse;
+            IPluginSupporter pluginSupporter;
+
+            typeSet = this.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
+            actionRequest.Validate();
+
+            pluginSettingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == actionRequest.PluginId);
+
+            if (pluginSettingsType != null)
+            {
+                pluginSupporter = this.BuildSupporter(pluginSettingsType);
+                actionResponse = pluginSupporter.HandleActionRequest(actionRequest);
+            }
+            else
+            {
+                throw new Exception(ErrorMessage.PluginProvider_PluginNotFound);
+            }
+
+            return actionResponse;
+        }
+
+        public string GetStringResource(string pluginId, string resourceName)
+        {
+            List<Type> typeSet;
+            Type type;
+            Assembly assembly;
+
+            typeSet = this.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
+            type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
+            assembly = type?.Assembly;
+            resourceName = $"{ assembly.GetName().Name }.{ resourceName }";
+
+            if (assembly != null)
+            {
+                using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    if (resourceStream != null)
+                    {
+                        using (StreamReader reader = new StreamReader(resourceStream))
+                        {
+                            return reader.ReadToEnd();
+                        }
+                    }
+                    else
+                    {
+                        throw new OneDasException($"The requested resource of plugin ID = '{ pluginId }' and name = '{ resourceName }' could not be found.");
+                    }
+                }
+            }
+            else
+            {
+                throw new OneDasException($"The requested plugin with ID = '{ pluginId }' could not be found.");
+            }
         }
 
         #endregion

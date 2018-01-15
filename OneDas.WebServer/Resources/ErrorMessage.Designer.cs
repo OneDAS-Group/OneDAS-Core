@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas.Main {
+namespace OneDas.WebServer {
     using System;
     
     

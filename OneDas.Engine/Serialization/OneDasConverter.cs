@@ -13,7 +13,7 @@ namespace OneDas.Engine.Serialization
 
         static OneDasConverter()
         {
-            _assemblySet = new HashSet<Assembly>(PluginManager.AssemblySet);
+            _assemblySet = new HashSet<Assembly>(PluginProvider.AssemblySet);
             _assemblySet.Add(Assembly.GetExecutingAssembly());
             _assemblySet.Add(typeof(Project).Assembly);
 

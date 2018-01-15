@@ -52,7 +52,7 @@ namespace OneDas.Engine.Core
         private ILogger _systemLogger;
         private ILogger _oneDasEngineLogger;
 
-        PluginManager _pluginManager;
+        PluginProvider _pluginProvider;
         OneDasOptions _oneDasOptions;
 
         // reset required	
@@ -95,12 +95,12 @@ namespace OneDas.Engine.Core
 
         #region "Constructors"
 
-        public OneDasEngine(PluginManager pluginManager, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasEngine(PluginProvider pluginProvider, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             Version minimumVersion;
             string pluginDirectoryPath;
 
-            _pluginManager = pluginManager;
+            _pluginProvider = pluginProvider;
             _oneDasOptions = options.Value;
 
             // state
@@ -119,8 +119,8 @@ namespace OneDas.Engine.Core
             minimumVersion = new Version(new Version(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion).Major, 0, 0, 0);
             pluginDirectoryPath = Path.Combine(_oneDasOptions.BaseDirectoryPath, "plugin");
 
-            pluginManager.ScanAssemblies<DataGatewayPluginLogicBase, DataGatewayPluginSettingsBase>(Path.Combine(pluginDirectoryPath, "DataGateway"), _oneDasOptions.ProductName, minimumVersion);
-            pluginManager.ScanAssemblies<DataWriterPluginLogicBase, DataWriterPluginSettingsBase>(Path.Combine(pluginDirectoryPath, "DataWriter"), _oneDasOptions.ProductName, minimumVersion);
+            pluginProvider.ScanAssemblies<DataGatewayPluginLogicBase, DataGatewayPluginSettingsBase>(Path.Combine(pluginDirectoryPath, "DataGateway"), _oneDasOptions.ProductName, minimumVersion);
+            pluginProvider.ScanAssemblies<DataWriterPluginLogicBase, DataWriterPluginSettingsBase>(Path.Combine(pluginDirectoryPath, "DataWriter"), _oneDasOptions.ProductName, minimumVersion);
 
             // logging
             _systemLogger = loggerFactory.CreateLogger("System");
@@ -319,65 +319,6 @@ namespace OneDas.Engine.Core
             }
         }
 
-        public ActionResponse HandleActionRequest(ActionRequest actionRequest)
-        {
-            List<Type> typeSet;
-            Type pluginSettingsType;
-            ActionResponse actionResponse;
-            IPluginSupporter pluginSupporter;
-
-            typeSet = _pluginManager.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
-            actionRequest.Validate();
-
-            pluginSettingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == actionRequest.PluginId);
-
-            if (pluginSettingsType != null)
-            {
-                pluginSupporter = _pluginManager.BuildSupporter(pluginSettingsType);
-                actionResponse = pluginSupporter.HandleActionRequest(actionRequest, SerializationHelper.Deserialize);
-            }
-            else
-            {
-                throw new Exception(ErrorMessage.OneDasEngine_PluginNotFound);
-            }
-
-            return actionResponse;
-        }
-
-        public string GetStringResource(string pluginId, string resourceName)
-        {
-            List<Type> typeSet;
-            Type type;
-            Assembly assembly;
-
-            typeSet = _pluginManager.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
-            type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
-            assembly = type?.Assembly;
-            resourceName = $"{ assembly.GetName().Name }.{ resourceName }";
-
-            if (assembly != null)
-            {
-                using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
-                {
-                    if (resourceStream != null)
-                    {
-                        using (StreamReader reader = new StreamReader(resourceStream))
-                        {
-                            return reader.ReadToEnd();
-                        }
-                    }
-                    else
-                    {
-                        throw new OneDasException($"The requested resource of plugin ID = '{ pluginId }' and name = '{ resourceName }' could not be found.");
-                    }
-                }
-            }
-            else
-            {
-                throw new OneDasException($"The requested plugin with ID = '{ pluginId }' could not be found.");
-            }
-        }
-
         private object ReadSnapshotData(ChannelHub channelHub, int currentStorageIndex, long currentChunkIndex)
         {
             int realChunkIndex;
@@ -573,7 +514,7 @@ namespace OneDas.Engine.Core
 
         private void Step_1_PrepareDataGateway()
         {
-            _dataGatewaySet = _project.DataGatewaySettingsSet.Select(settings => _pluginManager.BuildSettingsContainer<DataGatewayPluginLogicBase>(settings)).ToList();
+            _dataGatewaySet = _project.DataGatewaySettingsSet.Select(settings => _pluginProvider.BuildSettingsContainer<DataGatewayPluginLogicBase>(settings)).ToList();
             _referenceClock = _dataGatewaySet.FirstOrDefault(x => x is IReferenceClock) as IReferenceClock;
 
             if (_referenceClock == null)
@@ -640,7 +581,7 @@ namespace OneDas.Engine.Core
             DateTime currentDateTime;
             IList<CustomMetadataEntry> customMetadataEntrySet;
 
-            _dataWriterSet = _project.DataWriterSettingsSet.Select(settings => _pluginManager.BuildSettingsContainer<DataWriterPluginLogicBase>(settings)).ToList();
+            _dataWriterSet = _project.DataWriterSettingsSet.Select(settings => _pluginProvider.BuildSettingsContainer<DataWriterPluginLogicBase>(settings)).ToList();
 
             customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS", CustomMetadataEntryLevel.File));

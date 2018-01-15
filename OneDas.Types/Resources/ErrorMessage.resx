@@ -150,10 +150,10 @@
   <data name="Project_ChannelHubNotUnqiue" xml:space="preserve">
     <value>The channel set is invalid: A channel must be unique.</value>
   </data>
-  <data name="PluginManager_NoMatchingTPluginLogicFound" xml:space="preserve">
+  <data name="PluginProvider_NoMatchingTPluginLogicFound" xml:space="preserve">
     <value>No matching TPluginLogic was found.</value>
   </data>
-  <data name="PluginManager_NoMatchingTPluginSettingsFound" xml:space="preserve">
+  <data name="PluginProvider_NoMatchingTPluginSettingsFound" xml:space="preserve">
     <value>No matching TPluginSettings was found.</value>
   </data>
   <data name="PluginSettingsBase_PluginContextAttributeNotDefined" xml:space="preserve">
@@ -195,13 +195,16 @@
   <data name="DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
     <value>The MaximumDatasetAge is must be between zero and 10000.</value>
   </data>
-  <data name="PluginManager_TypeNotInheritedFromTPluginSettings" xml:space="preserve">
+  <data name="PluginProvider_TypeNotInheritedFromTPluginSettings" xml:space="preserve">
     <value>The provided 'pluginSettingsType' is not assignable to an instance of TPluginSettings.</value>
   </data>
-  <data name="PluginManager_NoPluginSupporterAttributeFound" xml:space="preserve">
+  <data name="PluginProvider_NoPluginSupporterAttributeFound" xml:space="preserve">
     <value>Could not find any PluginSupporterAttribute.</value>
   </data>
-  <data name="PluginManager_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
+  <data name="PluginProvider_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
     <value>The specified type does not implement the interface IPluginSupporter.</value>
+  </data>
+  <data name="PluginProvider_PluginNotFound" xml:space="preserve">
+    <value>The specified plugin was not found.</value>
   </data>
 </root>

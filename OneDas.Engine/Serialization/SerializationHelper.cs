@@ -1,13 +1,11 @@
-﻿using System;
-using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDas.Infrastructure;
+using System;
+using System.IO;
 
 namespace OneDas.Engine.Serialization
 {
-    public delegate object DeserializationDelegate(object jObject, Type type);
-
     public static class SerializationHelper
     {
         private static JsonSerializer _jsonSerializer;
@@ -67,7 +65,7 @@ namespace OneDas.Engine.Serialization
             return null;
         }
 
-        public static ProjectDescription GetProjectDescriptonFromFile(string filePath)
+        public static ProjectDescription GetProjectDescriptionFromFile(string filePath)
         {
             return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<ProjectDescription>();
         }
