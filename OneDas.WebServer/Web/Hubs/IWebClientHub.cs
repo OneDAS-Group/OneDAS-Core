@@ -8,7 +8,7 @@ namespace OneDas.WebServer.Web
 {
     public interface IWebClientHub
     {
-        Task SendSlimOneDasSettings(SlimOneDasSettings slimOneDasSettings);
+        Task SendWebServerOptionsLight(WebServerOptionsLight webServerOptionsLight);
         Task SendOneDasState(OneDasState oneDasState);
         Task SendActiveProject(Project project);
         Task SendPerformanceInformation(OneDasPerformanceInformation performanceInformation);

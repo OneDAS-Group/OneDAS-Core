@@ -1,19 +1,20 @@
 ﻿using Newtonsoft.Json;
 using OneDas.Engine.Serialization;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace OneDas.WebServer
 {
+    [DataContract]
     public class WebServerOptions
     {
         public WebServerOptions()
         {
+            // preset, mutable
             this.AspBaseUrl = "http://127.0.0.1:32768";
-            this.IsAnonymousAuthenticationEnabled = false;
-            this.IsAutostartEnabled = false;
             this.OneDasName = "Prototype";
 
-            this.AdGroupName = "Benutzer";
+            // preset, immutable
             this.ApplicationName = "OneDAS WebServer";
             this.ApplicationDisplayName = "OneDas.WebServer";
             this.ConsoleHubName = "consolehub";
@@ -25,18 +26,21 @@ namespace OneDas.WebServer
         }
         
         // unset, mutable
+        [DataMember]
         public string BaseDirectoryPath { get; set; }
+        [DataMember]
         public string CurrentProjectFilePath { get; set; }
+        [DataMember]
         public string NewBaseDirectoryPath { get; set; }
 
         // preset, mutable
+        [DataMember]
         public string AspBaseUrl { get; set; }
-        public bool IsAnonymousAuthenticationEnabled { get; set; }
-        public bool IsAutostartEnabled { get; set; }
+
+        [DataMember]
         public string OneDasName { get; set; }
 
         // preset, immutable
-        public string AdGroupName { get; private set; }
         public string ApplicationName { get; private set; }
         public string ApplicationDisplayName { get; private set; }
         public string ConsoleHubName { get; private set; }
@@ -46,13 +50,13 @@ namespace OneDas.WebServer
         public string ServiceName { get; private set; }
         public string WebClientHubName { get; private set; }
 
-        public void Save()
+        public void Save(string directoryPath)
         {
-            using (StreamWriter streamWriter = new StreamWriter(Path.Combine(this.BaseDirectoryPath, "onedassettings.json")))
+            using (StreamWriter streamWriter = new StreamWriter(Path.Combine(directoryPath, "onedassettings.json")))
             {
                 string rawJson;
 
-                rawJson = JsonConvert.SerializeObject(this, Formatting.Indented, SerializationHelper.CreateDefaultSerializationSettings());
+                rawJson = JsonConvert.SerializeObject(this, Formatting.Indented);
                 new JsonTextWriter(streamWriter).WriteRaw(rawJson);
             }
         }

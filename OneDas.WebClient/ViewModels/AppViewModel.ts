@@ -5,14 +5,14 @@
     public ActiveProject: KnockoutObservable<ProjectViewModel>
     public ClientSet: KnockoutObservableArray<string>
     public OneDasState: KnockoutObservable<number>
-    public SlimOneDasSettings: KnockoutObservable<SlimOneDasSettingsViewModel>
+    public WebServerOptionsLight: KnockoutObservable<WebServerOptionsLightViewModel>
     public ClientMessageLog: KnockoutObservableArray<MessageLogEntryViewModel>
     public LastError: KnockoutObservable<string>
     public PerformanceInformation: KnockoutObservable<OneDasPerformanceInformationViewModel>
 
-    public NewSlimOneDasSettingsOneDasName: KnockoutObservable<string>
-    public NewSlimOneDasSettingsAspBaseUrl: KnockoutObservable<string>
-    public NewSlimOneDasSettingsBaseDirectoryPath: KnockoutObservable<string>
+    public NewWebServerOptionsLightOneDasName: KnockoutObservable<string>
+    public NewWebServerOptionsLightAspBaseUrl: KnockoutObservable<string>
+    public NewWebServerOptionsLightBaseDirectoryPath: KnockoutObservable<string>
 
     constructor(appModel: any)
     {
@@ -21,9 +21,9 @@
         this.ClientMessageLog = ko.observableArray<MessageLogEntryViewModel>()
         this.PerformanceInformation = ko.observable<OneDasPerformanceInformationViewModel>()
 
-        this.NewSlimOneDasSettingsOneDasName = ko.observable<string>()
-        this.NewSlimOneDasSettingsAspBaseUrl = ko.observable<string>()
-        this.NewSlimOneDasSettingsBaseDirectoryPath = ko.observable<string>()
+        this.NewWebServerOptionsLightOneDasName = ko.observable<string>()
+        this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
+        this.NewWebServerOptionsLightBaseDirectoryPath = ko.observable<string>()
 
         this.ActiveProject = ko.observable<ProjectViewModel>()
 
@@ -59,7 +59,7 @@
         this.ClientSet = ko.observableArray<string>(appModel.ClientSet)
         this.LastError = ko.observable<string>(appModel.LastError)
         this.OneDasState(appModel.OneDasState)
-        this.SlimOneDasSettings = ko.observable(new SlimOneDasSettingsViewModel(appModel.SlimOneDasSettings))
+        this.WebServerOptionsLight = ko.observable(new WebServerOptionsLightViewModel(appModel.WebServerOptionsLight))
 
         this.WorkspaceSet.push(new StartViewModel(this.ActiveProject))
         this.WorkspaceSet.push(new ControlViewModel(this.ActiveProject))
@@ -149,9 +149,9 @@
         }
 
         // server callbacks
-        ConnectionManager.WebClientHub.on("SendSlimOneDasSettings", oneDasSettingsModel =>
+        ConnectionManager.WebClientHub.on("SendWebServerOptionsLight", oneDasSettingsModel =>
         {
-            this.SlimOneDasSettings(new SlimOneDasSettingsViewModel(oneDasSettingsModel))
+            this.WebServerOptionsLight(new WebServerOptionsLightViewModel(oneDasSettingsModel))
         })
 
         ConnectionManager.WebClientHub.on("SendOneDasState", async (oneDasState) =>
@@ -240,23 +240,23 @@
         }
     }
 
-    public UpdateNewSlimOneDasSettings = () =>
+    public UpdateNewWebServerOptionsLight = () =>
     {
-        this.NewSlimOneDasSettingsOneDasName(this.SlimOneDasSettings().OneDasName)
-        this.NewSlimOneDasSettingsAspBaseUrl(this.SlimOneDasSettings().AspBaseUrl)
-        this.NewSlimOneDasSettingsBaseDirectoryPath(this.SlimOneDasSettings().BaseDirectoryPath)
+        this.NewWebServerOptionsLightOneDasName(this.WebServerOptionsLight().OneDasName)
+        this.NewWebServerOptionsLightAspBaseUrl(this.WebServerOptionsLight().AspBaseUrl)
+        this.NewWebServerOptionsLightBaseDirectoryPath(this.WebServerOptionsLight().BaseDirectoryPath)
     }
 
-    public SaveSlimOneDasSettings = async () =>
+    public SaveWebServerOptionsLight = async () =>
     {
         // improve! find better solution in combination with validation
-        this.SlimOneDasSettings().OneDasName = this.NewSlimOneDasSettingsOneDasName()
-        this.SlimOneDasSettings().AspBaseUrl = this.NewSlimOneDasSettingsAspBaseUrl()
-        this.SlimOneDasSettings().BaseDirectoryPath = this.NewSlimOneDasSettingsBaseDirectoryPath()
+        this.WebServerOptionsLight().OneDasName = this.NewWebServerOptionsLightOneDasName()
+        this.WebServerOptionsLight().AspBaseUrl = this.NewWebServerOptionsLightAspBaseUrl()
+        this.WebServerOptionsLight().BaseDirectoryPath = this.NewWebServerOptionsLightBaseDirectoryPath()
 
         try
         {
-            await ConnectionManager.InvokeWebClientHub('SaveSlimOneDasSettings', this.SlimOneDasSettings())
+            await ConnectionManager.InvokeWebClientHub('SaveWebServerOptionsLight', this.WebServerOptionsLight())
         }
         catch (e)
         {

@@ -45,7 +45,7 @@
     "./Static/PluginHive.ts",
 
     "./ViewModels/Core/ChannelHubViewModel.ts",
-    "./ViewModels/Core/SlimOneDasSettingsViewModel.ts",
+    "./ViewModels/Core/WebServerOptionsLightViewModel.ts",
     "./ViewModels/Core/OneDasPerformanceInformationViewModel.ts",
     "./ViewModels/Core/MessageLogEntryViewModel.ts",
     "./ViewModels/Core/MultiMappingEditorViewModel.ts",

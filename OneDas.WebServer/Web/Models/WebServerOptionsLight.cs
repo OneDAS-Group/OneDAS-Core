@@ -1,6 +1,6 @@
 ﻿namespace OneDas.WebServer.Web
 {
-    public class SlimOneDasSettings
+    public class WebServerOptionsLight
     {
         public string OneDasName;
         public string AspBaseUrl;

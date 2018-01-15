@@ -27,9 +27,9 @@ namespace OneDas.WebServer.Web
         private ILogger _webServerLogger;
         private IOneDasProjectSerializer _oneDasProjectSerializer;
 
-        public WebClientHub(PluginProvider pluginManager, OneDasEngine oneDasEngine, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
+        public WebClientHub(PluginProvider pluginProvider, OneDasEngine oneDasEngine, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
         {
-            _pluginProvider = pluginManager;
+            _pluginProvider = pluginProvider;
             _oneDasEngine = oneDasEngine;
             _webServerOptions = options.Value;
             _webServerLogger = loggerFactory.CreateLogger("WebServer");
@@ -71,16 +71,16 @@ namespace OneDas.WebServer.Web
             return Task.Run(() => _oneDasEngine.LastError);
         }
 
-        public Task SaveSlimOneDasSettings(SlimOneDasSettings slimOneDasSettings)
+        public Task SaveWebServerOptionsLight(WebServerOptionsLight webServerOptionsLight)
         {
             return Task.Run(() =>
             {
-                _webServerOptions.OneDasName = slimOneDasSettings.OneDasName;
-                _webServerOptions.AspBaseUrl = slimOneDasSettings.AspBaseUrl;
-                _webServerOptions.NewBaseDirectoryPath = slimOneDasSettings.BaseDirectoryPath;
-                _webServerOptions.Save();
+                _webServerOptions.OneDasName = webServerOptionsLight.OneDasName;
+                _webServerOptions.AspBaseUrl = webServerOptionsLight.AspBaseUrl;
+                _webServerOptions.NewBaseDirectoryPath = webServerOptionsLight.BaseDirectoryPath;
+                _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
 
-                this.Clients.All.SendSlimOneDasSettings(slimOneDasSettings);
+                this.Clients.All.SendWebServerOptionsLight(webServerOptionsLight);
             });
         }
 
@@ -132,7 +132,7 @@ namespace OneDas.WebServer.Web
                 project = _oneDasProjectSerializer.Load(filePath);
 
                 _webServerOptions.CurrentProjectFilePath = filePath;
-                _webServerOptions.Save();
+                _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
 
                 _oneDasEngine.ActivateProject(project, 2);
 
@@ -247,7 +247,7 @@ namespace OneDas.WebServer.Web
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
                     lastError: _oneDasEngine.LastError,
                     oneDasState: _oneDasEngine.OneDasState,
-                    slimOneDasSettings: new SlimOneDasSettings
+                    webServerOptionsLight: new WebServerOptionsLight
                     {
                         OneDasName = _webServerOptions.OneDasName,
                         AspBaseUrl = _webServerOptions.AspBaseUrl,

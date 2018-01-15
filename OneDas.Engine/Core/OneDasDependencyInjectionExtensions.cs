@@ -17,7 +17,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             serviceCollection.Configure(configure);
 
-            serviceCollection.AddSingleton<IOneDasProjectSerializer>(new OneDasProjectSerializer());
+            serviceCollection.AddSingleton(typeof(IOneDasSerializer), typeof(OneDasSerializer));
+            serviceCollection.AddSingleton(typeof(IOneDasProjectSerializer), typeof(OneDasProjectSerializer));
             serviceCollection.AddSingleton<PluginProvider>();
             serviceCollection.AddSingleton<OneDasEngine>();
         }

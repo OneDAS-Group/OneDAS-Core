@@ -29,7 +29,7 @@ namespace OneDas.WebServer.Shell
 
         #region "Contructors"
 
-        public OneDasConsole(bool isDedicated, IOptions<WebServerOptions> options)
+        public OneDasConsole(IOptions<WebServerOptions> options)
         {
             _webServerOptions = options.Value;
 
@@ -46,14 +46,6 @@ namespace OneDas.WebServer.Shell
 
             Console.Write("initialization (standard) ... ");
 
-            // to serve or not to serve?
-            Console.Title = "OneDAS Server";
-
-            if (!isDedicated)
-            {
-                Console.Title += " (remote control)";
-            }
-
             // SignalR
             _consoleHubClient = this.GetNewConnection();
 
@@ -66,14 +58,22 @@ namespace OneDas.WebServer.Shell
 
             _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
 
-            Bootloader.SystemLogger.LogInformation("started in user interactive mode (console)");        }
+            BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");        }
 
         #endregion
 
         #region "Methods"
 
-        public void Run()
+        public void Run(bool isHosting)
         {
+            // to serve or not to serve?
+            Console.Title = "OneDAS Server";
+
+            if (!isHosting)
+            {
+                Console.Title += " (remote control)";
+            }
+
             // wait for user input (loop)
             this.ResetConsole();
 
@@ -103,7 +103,7 @@ namespace OneDas.WebServer.Shell
 
                                 if (Console.ReadKey(true).Key == ConsoleKey.Y)
                                 {
-                                    Bootloader.Shutdown(0);
+                                    BasicBootloader.Shutdown(0);
                                 }
 
                                 this.ResetConsole();
@@ -254,7 +254,7 @@ namespace OneDas.WebServer.Shell
                     this.WriteColored($"{performanceInformation.IsDebugOutputEnabled,5}", performanceInformation.IsDebugOutputEnabled ? ConsoleColor.Red : ConsoleColor.White);
 
                     Console.SetCursorPosition(22, 6);
-                    ServiceControllerStatus oneDasServiceStatus = Bootloader.GetOneDasServiceStatus();
+                    ServiceControllerStatus oneDasServiceStatus = BasicBootloader.GetOneDasServiceStatus();
                     string text = oneDasServiceStatus == 0 ? "NotFound" : oneDasServiceStatus.ToString();
                     this.WriteColored($"{text,15}", oneDasServiceStatus == ServiceControllerStatus.Running ? ConsoleColor.White : ConsoleColor.Red);
 
@@ -300,7 +300,7 @@ namespace OneDas.WebServer.Shell
                 case CtrlType.CTRL_CLOSE_EVENT:
                 case CtrlType.CTRL_BREAK_EVENT:
                 case CtrlType.CTRL_SHUTDOWN_EVENT:
-                    Bootloader.Shutdown(0);
+                    BasicBootloader.Shutdown(0);
                     break;
                 default:
                     return;
@@ -310,7 +310,7 @@ namespace OneDas.WebServer.Shell
         private HubConnection BuildHubConnection()
         {
             return new HubConnectionBuilder()
-                 .WithUrl(_webServerOptions.AspBaseUrl + _webServerOptions.ConsoleHubName)
+                 .WithUrl($"{ _webServerOptions.AspBaseUrl }/{ _webServerOptions.ConsoleHubName }")
                  .Build();
         }
 

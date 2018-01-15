@@ -6,7 +6,7 @@ using System.IO;
 
 namespace OneDas.Engine.Serialization
 {
-    public static class SerializationHelper
+    internal static class SerializationHelper
     {
         private static JsonSerializer _jsonSerializer;
 
@@ -25,11 +25,6 @@ namespace OneDas.Engine.Serialization
             {
                 _jsonSerializer = value;
             }
-        }
-
-        public static object Deserialize(object input, Type type)
-        {
-            return ((JObject)input).ToObject(type, SerializationHelper.JsonSerializer);
         }
 
         public static JsonSerializerSettings CreateDefaultSerializationSettings()
@@ -63,11 +58,6 @@ namespace OneDas.Engine.Serialization
             }
 
             return null;
-        }
-
-        public static ProjectDescription GetProjectDescriptionFromFile(string filePath)
-        {
-            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<ProjectDescription>();
         }
     }
 }

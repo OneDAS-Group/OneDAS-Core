@@ -14,13 +14,13 @@ namespace OneDas.WebServer.Shell
         protected override void OnStarting(string[] args)
         {
             base.OnStarting(args);
-            Bootloader.SystemLogger.LogInformation("started in non-interactive mode (service)");
+            BasicBootloader.SystemLogger.LogInformation("started in non-interactive mode (service)");
         }
 
         protected override void OnStopping()
         {
             base.OnStopping();
-            Bootloader.Dispose();
+            BasicBootloader.Shutdown();
         }
 
         protected override void OnCustomCommand(int command)
@@ -31,7 +31,7 @@ namespace OneDas.WebServer.Shell
         protected override void OnShutdown()
         {
             base.OnShutdown();
-            Bootloader.Dispose();
+            BasicBootloader.Shutdown();
         }
     }
 }

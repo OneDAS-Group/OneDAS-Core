@@ -110,7 +110,6 @@ namespace OneDas.Engine.Core
             Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "backup"));
             Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "data"));
             Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "debug"));
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "packages"));
             Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "plugin", "DataGateway"));
             Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "plugin", "DataWriter"));
             Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "project"));

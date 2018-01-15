@@ -4,26 +4,24 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 
 namespace OneDas.WebServer.Web
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                            .SetBasePath(env.ContentRootPath)
-                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                            .AddEnvironmentVariables();
+        OneDasEngine _oneDasEngine;
 
-            this.Configuration = builder.Build();
+        public Startup(IConfiguration configuration, OneDasEngine oneDasEngine)
+        {
+            this.Configuration = configuration;
+
+            _oneDasEngine = oneDasEngine;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
@@ -42,7 +40,6 @@ namespace OneDas.WebServer.Web
             services.AddResponseCompression();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<WebServerOptions> options)
         {
             WebServerOptions webServerOptions;

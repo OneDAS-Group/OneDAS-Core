@@ -11,6 +11,7 @@
         /// <param name="message">The description of the configuration validation exception.</param>
         public ValidationException(string message) : base(message)
         {
+            //
         }
     }
 }

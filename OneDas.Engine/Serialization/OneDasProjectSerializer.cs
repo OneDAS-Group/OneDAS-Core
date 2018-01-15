@@ -11,6 +11,13 @@ namespace OneDas.Engine.Serialization
 {
     public class OneDasProjectSerializer : IOneDasProjectSerializer
     {
+        IOneDasSerializer _oneDasSerializer;
+
+        public OneDasProjectSerializer(IOneDasSerializer oneDasSerializer)
+        {
+            _oneDasSerializer = oneDasSerializer;
+        }
+
         public void Save(Project project, string filePath)
         {
             string directoryPath;
@@ -25,9 +32,12 @@ namespace OneDas.Engine.Serialization
             using (StreamWriter streamWriter = new StreamWriter(filePath))
             {
                 string rawJson;
+                JsonTextWriter jsonTextWriter;
 
-                rawJson = JsonConvert.SerializeObject(project, Formatting.Indented, SerializationHelper.CreateDefaultSerializationSettings());
-                new JsonTextWriter(streamWriter).WriteRaw(rawJson);
+                rawJson = _oneDasSerializer.Serialize(project);
+
+                jsonTextWriter = new JsonTextWriter(streamWriter);
+                jsonTextWriter.WriteRaw(rawJson);
             }
         }
 
@@ -42,7 +52,7 @@ namespace OneDas.Engine.Serialization
 
             try
             {
-                project = jObject.ToObject<Project>(SerializationHelper.JsonSerializer);
+                project = _oneDasSerializer.Deserialize<Project>(jObject.ToString());
                 project.Validate();
 
                 return project;

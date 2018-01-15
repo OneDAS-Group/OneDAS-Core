@@ -6,7 +6,7 @@ namespace OneDas.WebServer.Web
 {
     public class AppModel
     {
-        public AppModel(Project activeProject, IEnumerable<string> clientSet, IEnumerable<PluginIdentificationAttribute> dataGatewayPluginIdentificationSet, IEnumerable<PluginIdentificationAttribute> dataWriterPluginIdentificationSet, string lastError, OneDasState oneDasState, SlimOneDasSettings slimOneDasSettings)
+        public AppModel(Project activeProject, IEnumerable<string> clientSet, IEnumerable<PluginIdentificationAttribute> dataGatewayPluginIdentificationSet, IEnumerable<PluginIdentificationAttribute> dataWriterPluginIdentificationSet, string lastError, OneDasState oneDasState, WebServerOptionsLight webServerOptionsLight)
         {
             this.ActiveProject = activeProject;
             this.ClientSet = clientSet;
@@ -14,7 +14,7 @@ namespace OneDas.WebServer.Web
             this.DataWriterPluginIdentificationSet = dataWriterPluginIdentificationSet;
             this.LastError = lastError;
             this.OneDasState = oneDasState;
-            this.SlimOneDasSettings = slimOneDasSettings;
+            this.WebServerOptionsLight = webServerOptionsLight;
         }
 
         public readonly Project ActiveProject;
@@ -23,6 +23,6 @@ namespace OneDas.WebServer.Web
         public readonly IEnumerable<PluginIdentificationAttribute> DataWriterPluginIdentificationSet;
         public readonly string LastError;
         public readonly OneDasState OneDasState;
-        public readonly SlimOneDasSettings SlimOneDasSettings;
+        public readonly WebServerOptionsLight WebServerOptionsLight;
     }
 }
