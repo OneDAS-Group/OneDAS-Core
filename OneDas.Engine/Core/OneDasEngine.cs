@@ -285,6 +285,22 @@ namespace OneDas.Engine.Core
 
         #region "Methods"
 
+        public void Start()
+        {
+            this.OneDasState = OneDasState.Run;
+        }
+
+        public void Stop()
+        {
+            this.OneDasState = OneDasState.Run;
+        }
+
+        public void AcknowledgeError()
+        {
+            this.OneDasState = OneDasState.Initialization;
+            this.OneDasState = OneDasState.Unconfigured;
+        }
+
         public OneDasPerformanceInformation CreatePerformanceInformation()
         {
             return new OneDasPerformanceInformation(this.OneDasState, Process.GetCurrentProcess().PriorityClass,

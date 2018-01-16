@@ -106,15 +106,6 @@ namespace OneDas.WebServer {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The requested channel is inactive or not available in the project. ähnelt.
-        /// </summary>
-        internal static string Broadcaster_ChannelHubNotFound {
-            get {
-                return ResourceManager.GetString("Broadcaster_ChannelHubNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The configured slave aliases are not unique. ähnelt.
         /// </summary>
         internal static string CsaReader_CsaNotUnique {
@@ -228,6 +219,24 @@ namespace OneDas.WebServer {
         internal static string RemoteControlService_OneDasConfigurationNullReference {
             get {
                 return ResourceManager.GetString("RemoteControlService_OneDasConfigurationNullReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified base directory path is invalid. ähnelt.
+        /// </summary>
+        internal static string WebClientHub_BaseDirectoryPathIsInvalid {
+            get {
+                return ResourceManager.GetString("WebClientHub_BaseDirectoryPathIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The requested channel is inactive or not available in the project. ähnelt.
+        /// </summary>
+        internal static string WebClientHub_ChannelHubNotFound {
+            get {
+                return ResourceManager.GetString("WebClientHub_ChannelHubNotFound", resourceCulture);
             }
         }
     }

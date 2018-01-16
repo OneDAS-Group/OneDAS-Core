@@ -12,9 +12,15 @@ namespace OneDas.Plugin
 {
     public class PluginProvider
     {
+        #region "Fields"
+
         private IServiceProvider _serviceProvider;
         private Dictionary<Type, IEnumerable<Type>> _pluginDictionary;
         private static HashSet<Assembly> _assemblySet;
+
+        #endregion
+
+        #region "Constructors"
 
         static PluginProvider()
         {
@@ -27,6 +33,8 @@ namespace OneDas.Plugin
 
             _pluginDictionary = new Dictionary<Type, IEnumerable<Type>>();
         }
+
+        #endregion
 
         #region "Hive"
 
@@ -77,7 +85,7 @@ namespace OneDas.Plugin
 
                     if (fileVersionInfo.ProductName == productName && productVersion.CompareTo(minimumVersion) >= 0)
                     {
-                        assembly = Assembly.Load(AssemblyName.GetAssemblyName(filePath));
+                        assembly = Assembly.LoadFrom(filePath);
                     }
                 }
             }
@@ -88,10 +96,7 @@ namespace OneDas.Plugin
 
             if (assembly != null)
             {
-                if (!_assemblySet.Contains(assembly))
-                {
-                    _assemblySet.Add(assembly);
-                }
+                _assemblySet.Add(assembly);
 
                 return assembly.ExportedTypes.ToList();
             }
@@ -127,6 +132,13 @@ namespace OneDas.Plugin
 
         public void AddRange<T>(IEnumerable<Type> pluginTypeSet)
         {
+            // initialize
+            pluginTypeSet.ToList().ForEach(pluginType =>
+            {
+                this.TryBuildSupporter(pluginType)?.Initialize();
+            });
+
+            // add
             if (_pluginDictionary.ContainsKey(typeof(T)))
             {
                 List<Type> newTypeSet;
@@ -162,7 +174,7 @@ namespace OneDas.Plugin
 
         #region "Factory"
 
-        public IPluginSupporter BuildSupporter(Type pluginSettingsType, params object[] args)
+        public IPluginSupporter BuildSupporter(Type pluginSettingsType)
         {
             Type pluginSupporterType;
 
@@ -178,12 +190,36 @@ namespace OneDas.Plugin
                 throw new OneDasException(ErrorMessage.PluginProvider_NoPluginSupporterAttributeFound);
             }
 
-            if (typeof(IPluginSupporter).IsAssignableFrom(pluginSupporterType))
+            if (!typeof(IPluginSupporter).IsAssignableFrom(pluginSupporterType))
             {
                 throw new OneDasException(ErrorMessage.PluginProvider_TypeDoesNotImplementIPluginSupporter);
             }
 
-            return (IPluginSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType, args);
+            return (IPluginSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType);
+        }
+
+        public IPluginSupporter TryBuildSupporter(Type pluginSettingsType)
+        {
+            Type pluginSupporterType;
+
+            if (pluginSettingsType == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            pluginSupporterType = pluginSettingsType.GetFirstAttribute<PluginSupporterAttribute>()?.Type;
+
+            if (pluginSupporterType == null)
+            {
+                return null;
+            }
+
+            if (!typeof(IPluginSupporter).IsAssignableFrom(pluginSupporterType))
+            {
+                return null;
+            }
+
+            return (IPluginSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType);
         }
 
         public TPluginSettings BuildSettings<TPluginSettings>(Type pluginSettingsType, params object[] args) where TPluginSettings : PluginSettingsBase
@@ -198,7 +234,7 @@ namespace OneDas.Plugin
                 throw new OneDasException(ErrorMessage.PluginProvider_TypeNotInheritedFromTPluginSettings);
             }
 
-            return (TPluginSettings)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSettingsType, args);
+            return (TPluginSettings)Activator.CreateInstance(pluginSettingsType, args);
         }
 
         public TPluginSettings BuildSettings<TPluginSettings>(string pluginName, params object[] args) where TPluginSettings : PluginSettingsBase
@@ -214,13 +250,15 @@ namespace OneDas.Plugin
                 throw new OneDasException(ErrorMessage.PluginProvider_NoMatchingTPluginSettingsFound);
             }
 
-            return (TPluginSettings)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSettingsType, args);
+            return (TPluginSettings)Activator.CreateInstance(pluginSettingsType, args);
         }
 
         public TPluginLogic BuildSettingsContainer<TPluginLogic>(PluginSettingsBase pluginSettings, params object[] args) where TPluginLogic : PluginLogicBase
         {
             Type pluginLogicType;
+            object[] argsExtended;
 
+            argsExtended = args.Concat(new object[] { pluginSettings }).ToArray();
             pluginLogicType = pluginSettings.GetType().GetFirstAttribute<PluginContextAttribute>().PluginLogic;
 
             if (pluginLogicType == null)
@@ -228,7 +266,7 @@ namespace OneDas.Plugin
                 throw new OneDasException(ErrorMessage.PluginProvider_NoMatchingTPluginLogicFound);
             }
 
-            return (TPluginLogic)ActivatorUtilities.CreateInstance(_serviceProvider, pluginLogicType, pluginSettings, args);
+            return (TPluginLogic)ActivatorUtilities.CreateInstance(_serviceProvider, pluginLogicType, argsExtended);
         }
 
         #endregion

@@ -10,6 +10,11 @@ namespace OneDas.WebServer
     {
         public WebServerOptions()
         {
+            // unset, mutable
+            this.BaseDirectoryPath = string.Empty;
+            this.CurrentProjectFilePath = string.Empty;
+            this.NewBaseDirectoryPath = string.Empty;
+
             // preset, mutable
             this.AspBaseUrl = "http://127.0.0.1:32768";
             this.OneDasName = "Prototype";

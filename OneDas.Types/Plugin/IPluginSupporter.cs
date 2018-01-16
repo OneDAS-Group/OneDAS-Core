@@ -1,10 +1,9 @@
-﻿using OneDas.Plugin;
-using System;
-
-namespace OneDas.Plugin
+﻿namespace OneDas.Plugin
 {
     public interface IPluginSupporter
     {
+        void Initialize();
+
         ActionResponse HandleActionRequest(ActionRequest actionRequest);
     }
 }

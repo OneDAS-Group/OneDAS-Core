@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using OneDas.Common;
+using OneDas.Infrastructure;
 
 namespace OneDas.Plugin
 {

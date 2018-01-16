@@ -138,6 +138,7 @@ namespace OneDas.WebServer
                 // add logger
                 loggingBuilder.AddEventLog(eventLogSettings);
                 loggingBuilder.AddProvider(clientMessageLoggerProvider);
+                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
             });
 
             // OneDAS Engine

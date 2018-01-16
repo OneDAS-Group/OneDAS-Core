@@ -39,38 +39,33 @@ namespace OneDas.WebServer
 
             Directory.CreateDirectory(configurationDirectoryPath);
 
-            if (!File.Exists(Path.Combine(configurationDirectoryPath, configurationFileName)))
-            {
-                File.WriteAllText(Path.Combine(configurationDirectoryPath, configurationFileName), "{ Dummy: 0 }");
-            }
-
             configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: false, reloadOnChange: true);
-
+            configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
             configurationRoot = configurationBuilder.Build();
+
             _webServerOptions = configurationRoot.Get<WebServerOptions>();
 
-            // base directory path
+            if (_webServerOptions == null)
+            {
+                _webServerOptions = new WebServerOptions();
+                configurationRoot.Bind(_webServerOptions);
+            }
+
             if (!Directory.Exists(_webServerOptions.BaseDirectoryPath))
             {
                 _webServerOptions.BaseDirectoryPath = configurationDirectoryPath;
             }
 
-            try
-            {
-                if (!string.Equals(Path.GetFullPath(_webServerOptions.BaseDirectoryPath), Path.GetFullPath(_webServerOptions.NewBaseDirectoryPath), StringComparison.OrdinalIgnoreCase))
-                {
-                    _webServerOptions.BaseDirectoryPath = _webServerOptions.NewBaseDirectoryPath;
-                }
-            }
-            catch
+            if (string.IsNullOrWhiteSpace(_webServerOptions.NewBaseDirectoryPath))
             {
                 _webServerOptions.NewBaseDirectoryPath = _webServerOptions.BaseDirectoryPath;
             }
-            finally
+            else if (!string.Equals(_webServerOptions.BaseDirectoryPath, _webServerOptions.NewBaseDirectoryPath, StringComparison.OrdinalIgnoreCase))
             {
-                _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
+                _webServerOptions.BaseDirectoryPath = _webServerOptions.NewBaseDirectoryPath;
             }
+
+            _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
 
             // parse command line
             BasicBootloader.ParseCommandLineArgumentSet(args);

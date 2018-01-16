@@ -45,8 +45,14 @@ namespace OneDas.WebServer.Shell
             SafeNativeMethods.SetConsoleCtrlHandler(_handlerRoutine, true);
 
             Console.Write("initialization (standard) ... ");
+            BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");        }
 
-            // SignalR
+        #endregion
+
+        #region "Methods"
+
+        public void Run(bool isHosting)
+        {
             _consoleHubClient = this.GetNewConnection();
 
             // timer
@@ -58,14 +64,6 @@ namespace OneDas.WebServer.Shell
 
             _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
 
-            BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");        }
-
-        #endregion
-
-        #region "Methods"
-
-        public void Run(bool isHosting)
-        {
             // to serve or not to serve?
             Console.Title = "OneDAS Server";
 
@@ -325,14 +323,16 @@ namespace OneDas.WebServer.Shell
                 try
                 {
                     hubConnection.StartAsync().Wait();
+
+                    break;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
-
-                return hubConnection;
             }
+
+            return hubConnection;
         }
 
         #endregion

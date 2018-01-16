@@ -31,6 +31,12 @@ namespace OneDas.Plugin
         {
             base.Validate();
 
+            // IMPROVE: implement general frame rate divider setting
+            //if (this.FrameRateDivider < 1 || FrameRateDivider > oneDasOptions.NativeSampleRate)
+            //{
+            //    throw new ValidationException(ErrorMessage.UdpModel_FrameRateDividerInvalid);
+            //}
+
             if (this.MaximumDatasetAge < 0 || this.MaximumDatasetAge > 10000)
             {
                 throw new ValidationException(ErrorMessage.DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid);

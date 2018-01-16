@@ -11,7 +11,7 @@ namespace OneDas.Infrastructure
             this.ChunkPeriod = 60;
             this.ProductName = "OneDAS";
 
-            this.BaseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), this.ProductName);
+            this.BaseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), this.ProductName);
         }
 
         public uint NativeSampleRate { get; }

@@ -73,8 +73,18 @@ namespace OneDas.WebServer.Web
 
         public Task SaveWebServerOptionsLight(WebServerOptionsLight webServerOptionsLight)
         {
+            Uri uri;
+            Boolean isValidUri;
+
             return Task.Run(() =>
             {
+                isValidUri = Uri.TryCreate(webServerOptionsLight.BaseDirectoryPath, UriKind.Absolute, out uri);
+
+                if (!(isValidUri && uri.IsLoopback && !uri.IsFile))
+                {
+                    throw new Exception(ErrorMessage.WebClientHub_BaseDirectoryPathIsInvalid);
+                }
+
                 _webServerOptions.OneDasName = webServerOptionsLight.OneDasName;
                 _webServerOptions.AspBaseUrl = webServerOptionsLight.AspBaseUrl;
                 _webServerOptions.NewBaseDirectoryPath = webServerOptionsLight.BaseDirectoryPath;
@@ -153,7 +163,7 @@ namespace OneDas.WebServer.Web
                 }
                 catch (Exception)
                 {
-                    throw new Exception(ErrorMessage.Broadcaster_ChannelHubNotFound);
+                    throw new Exception(ErrorMessage.WebClientHub_ChannelHubNotFound);
                 }
 
                 subscriptionId = HomeController.GetNextSubscriptionId();
