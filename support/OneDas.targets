@@ -7,8 +7,8 @@
 	   <Minor Condition="$(Minor) == ''">1</Minor>
 	   <Revision Condition="$(Revision) == ''">0</Revision>
 	   <VersionSuffix Condition="$(VersionSuffix) == ''">alpha</VersionSuffix>
-	   <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/Apollo3zehn/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
-	   <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/Apollo3zehn/OneDAS-Core</ProjectUrl>
+	   <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
+	   <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</ProjectUrl>
     </PropertyGroup>
     <BuildTask Input_PackageId="$(PackageId)"
 	           Input_Major="$(Major)" 
