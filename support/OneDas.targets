@@ -1,5 +1,6 @@
 <Project InitialTargets="CreateOneDasMetaData">
-  <UsingTask TaskName="BuildTask" AssemblyFile="$(ProjectDir)\..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
+  <Import Project="$(ProjectDir)..\..\OneDAS-Support\build\OneDas.targets" />
+  <UsingTask TaskName="BuildTask" AssemblyFile="$(ProjectDir)..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
   <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
     <PropertyGroup>
 	   <Major Condition="$(Major) == ''">0</Major>
@@ -32,9 +33,5 @@
       <Output TaskParameter="Product" PropertyName="Product" />
       <Output TaskParameter="RepositoryUrl" PropertyName="RepositoryUrl" />
     </BuildTask>
-  </Target>
-  <Target Name="PushTarget" AfterTargets="Pack" Condition="'$(Configuration)'=='Release'">
-    <Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
-    <Exec Command="dotnet nuget push &quot;$(TargetDir)..\*.nupkg&quot; --source https://www.myget.org/F/onedas/api/v3/index.json" />
   </Target>
 </Project>
