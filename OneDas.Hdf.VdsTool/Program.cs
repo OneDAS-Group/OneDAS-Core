@@ -5,7 +5,6 @@ using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
-using OneDas.Types.Settings;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -641,7 +640,7 @@ namespace OneDas.Hdf.VdsTool
                                     // find proper data source
                                     foreach (SampleRate testedSampleRate in Enum.GetValues(typeof(SampleRate)))
                                     {
-                                        sourceDatasetName = $"{ GlobalSettings.NativeSampleRate / (int)testedSampleRate } Hz";
+                                        sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz"; // improve: remove magic number
 
                                         if (variableInfo.Value.DatasetInfoSet.Where(x => x.Value.Name == sourceDatasetName).Any())
                                         {
@@ -734,7 +733,7 @@ namespace OneDas.Hdf.VdsTool
                             sourceValueSet_status = IOHelper.Read<byte>(sourceDatasetId_status, DataContainerType.Dataset);
                         }
 
-                        chunkCount = sourceValueSet.Count() / (int)period / (int)GlobalSettings.NativeSampleRate * (int)sampleRate;
+                        chunkCount = sourceValueSet.Count() / (int)period / 100 * (int)sampleRate; // Improve: remove magic number
 
                         switch (aggregation_function.type)
                         {

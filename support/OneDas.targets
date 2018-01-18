@@ -33,4 +33,8 @@
       <Output TaskParameter="RepositoryUrl" PropertyName="RepositoryUrl" />
     </BuildTask>
   </Target>
+  <Target Name="PushTarget" AfterTargets="Pack" Condition="'$(Configuration)'=='Release'">
+    <Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
+    <Exec Command="dotnet nuget push &quot;$(TargetDir)..\*.nupkg&quot; --source https://www.myget.org/F/onedas/api/v3/index.json" />
+  </Target>
 </Project>
