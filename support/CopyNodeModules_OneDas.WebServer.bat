@@ -1,4 +1,4 @@
-set "targetDirectory=.\..\OneDas.Main\wwwroot\lib"
+set "targetDirectory=.\..\OneDas.WebServer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set "sourceDirectory=.\..\..\OneDAS-Support\web\node_modules"
