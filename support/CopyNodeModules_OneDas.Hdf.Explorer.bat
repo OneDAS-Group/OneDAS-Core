@@ -24,5 +24,3 @@ set list=%list%;moment\moment.js
 for %%a in (%list%) do ( 
      xcopy /s /y "%sourceDirectory%\%%a" "%targetDirectory%\%%a*"
 )
-
-pause

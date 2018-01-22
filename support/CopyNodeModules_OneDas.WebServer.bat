@@ -8,7 +8,6 @@ set list=%list%;bootstrap\dist
 set list=%list%;chart.js\dist
 set list=%list%;font-awesome\css
 set list=%list%;font-awesome\fonts
-set list=%list%;historyjs\scripts
 set list=%list%;jquery\dist
 set list=%list%;knockout\build
 set list=%list%;mathjs\dist
@@ -25,5 +24,3 @@ set list=%list%;pagerjs\pager.js
 for %%a in (%list%) do ( 
      xcopy /s /y "%sourceDirectory%\%%a" "%targetDirectory%\%%a*"
 )
-
-pause

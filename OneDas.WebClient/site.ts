@@ -84,8 +84,7 @@ ConnectionManager.WebClientHub.start().then(async () =>
         pager.extendWithPage(appViewModel())
         pager.Href5.hash = ""
         pager.useHTML5history = true
-        pager.Href5.history = History
-        console.log("OneDAS: pager configured")
+        console.log("OneDAS: pagerjs configured (1/2)")
 
         // knockout
         componentLoader =
@@ -259,11 +258,28 @@ ConnectionManager.WebClientHub.start().then(async () =>
         }
 
         ko.applyBindings(appViewModel)
-        console.log("OneDAS: ko configured")
+        console.log("OneDAS: Knockout configured")
+
+        // history
+        var pushState = window.history.pushState;
+
+        window.history.pushState = function (state, title, url)
+        {
+            pushState.apply(history, [state, title, url]);
+            dispatchEvent(new PopStateEvent('popstate', { state: state }));
+        };
+
+        window.onpopstate = function (event)
+        {
+            pager.goTo(window.location.pathname.substr(1));
+        };
+
+        console.log("OneDAS: HTML5 history configured")
 
         // pager
-        pager.startHistoryJs()
-        console.log("OneDAS: pager started")
+        pager.Href5.history = window.history
+        pager.goTo(window.location.pathname.substr(1));
+        console.log("OneDAS: pagerjs configured (2/2)")
     }
     catch (e)
     {

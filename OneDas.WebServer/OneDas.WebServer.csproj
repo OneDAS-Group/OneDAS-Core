@@ -24,6 +24,11 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneDAS.WebClient\OneDAS.WebClient.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -37,8 +42,5 @@
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="CompileWebClient" BeforeTargets="BeforeBuild">
-    <Exec Command="dotnet build ..\OneDas.WebClient\OneDas.WebClient.csproj" />
-  </Target>
   <Import Project="$(ProjectDir)..\support\OneDas.targets" />
 </Project>
