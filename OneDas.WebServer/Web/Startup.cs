@@ -11,13 +11,9 @@ namespace OneDas.WebServer.Web
 {
     public class Startup
     {
-        OneDasEngine _oneDasEngine;
-
-        public Startup(IConfiguration configuration, OneDasEngine oneDasEngine)
+        public Startup(IConfiguration configuration)
         {
             this.Configuration = configuration;
-
-            _oneDasEngine = oneDasEngine;
         }
 
         public IConfiguration Configuration { get; }
