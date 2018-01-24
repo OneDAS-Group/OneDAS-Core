@@ -40,7 +40,7 @@ namespace OneDas.WebServer
             if (isHosting)
             {
                 _webhost = this.CreateWebHost();
-                _serviceProvider = _serviceCollection.BuildServiceProvider();
+                _serviceProvider = _webhost.Services;
                 _oneDasEngine = _serviceProvider.GetRequiredService<OneDasEngine>();
             }
             else

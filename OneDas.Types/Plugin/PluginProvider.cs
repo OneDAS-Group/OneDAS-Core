@@ -38,24 +38,24 @@ namespace OneDas.Plugin
 
         #region "Hive"
 
-        public void ScanAssembly<TPluginLogicBase, TPluginSettinsBase>(string filePath, string productName, Version minimumVersion)
+        public void ScanAssembly<TPluginLogicBase, TPluginSettingsBase>(string filePath, string productName, Version minimumVersion)
         {
             List<Type> pluginTypeSet;
 
             pluginTypeSet = this.LoadAssemby(filePath, productName, minimumVersion);
 
             this.AddRange<TPluginLogicBase>(pluginTypeSet.Where(pluginType => typeof(TPluginLogicBase).IsAssignableFrom(pluginType)).ToList());
-            this.AddRange<TPluginSettinsBase>(pluginTypeSet.Where(pluginType => typeof(TPluginSettinsBase).IsAssignableFrom(pluginType)).ToList());
+            this.AddRange<TPluginSettingsBase>(pluginTypeSet.Where(pluginType => typeof(TPluginSettingsBase).IsAssignableFrom(pluginType)).ToList());
         }
 
-        public void ScanAssemblies<TPluginLogicBase, TPluginSettinsBase>(string directoryPath, string productName, Version minimumVersion)
+        public void ScanAssemblies<TPluginLogicBase, TPluginSettingsBase>(string directoryPath, string productName, Version minimumVersion)
         {
             List<Type> pluginTypeSet;
 
             pluginTypeSet = this.LoadAssemblies(directoryPath, productName, minimumVersion);
 
             this.AddRange<TPluginLogicBase>(pluginTypeSet.Where(pluginType => typeof(TPluginLogicBase).IsAssignableFrom(pluginType)).ToList());
-            this.AddRange<TPluginSettinsBase>(pluginTypeSet.Where(pluginType => typeof(TPluginSettinsBase).IsAssignableFrom(pluginType)).ToList());
+            this.AddRange<TPluginSettingsBase>(pluginTypeSet.Where(pluginType => typeof(TPluginSettingsBase).IsAssignableFrom(pluginType)).ToList());
         }
 
         public List<Type> LoadAssemblies(string directoryPath, string productName, Version minimumVersion)
