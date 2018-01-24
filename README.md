@@ -29,12 +29,9 @@ install_packages.bat
 
 :: Core
 cd %rootFolder%\%projectName%-Core\support
-CopyNodeModules_OneDas.Hdf.Explorer.bat
-CopyNodeModules_OneDas.WebServer.bat
+init_solution.bat
 
 :: Ethercat
-cd %rootFolder%\%projectName%-Ethercat
-git -C "%projectName%-Ethercat" submodule update --init --recursive
-cd .\support
-CMakeSOEM.bat
+cd %rootFolder%\%projectName%-Ethercat\support
+init_solution.bat
 ```
