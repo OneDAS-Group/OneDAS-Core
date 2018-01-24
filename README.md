@@ -12,7 +12,7 @@ The documentation is hosted on [onedas.readthedocs.io](https://onedas.readthedoc
 * **optional**: WiX Toolset (to open .wixproj and to build .msi packages)
   * WiX Toolset build tools v3.11 (http://wixtoolset.org/releases/)
   * WiX Toolset Visual Studio 2017 Extension (http://wixtoolset.org/releases/)"
-* **optional**: CMake (for EtherCAT plugin)
+* **optional**: CMake (for EtherCAT solution)
   * CMake (https://cmake.org/download/)
 
 ### Initialization
