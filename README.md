@@ -38,13 +38,13 @@ git clone "%origin%/%projectName%-Support"
 
 :: Support
 cd %rootFolder%\%projectName%-Support\web
-install_packages.bat
+call install_packages.bat
 
 :: Core
 cd %rootFolder%\%projectName%-Core\support
-init_solution.bat
+call init_solution.bat
 
 :: Ethercat
 cd %rootFolder%\%projectName%-Ethercat\support
-init_solution.bat
+call init_solution.bat
 ```
