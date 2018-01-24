@@ -9,10 +9,10 @@ The documentation is hosted on [onedas.readthedocs.io](https://onedas.readthedoc
 * up-to-date browser, old browsers do not work
 * Git for Windows (https://git-scm.com/download/win)
 * node.js (https://nodejs.org/en/)
-* optional: WiX Toolset (to open Mdas.Deployment.wixproj and to build .msi packages)
+* **optional**: WiX Toolset (to open .wixproj and to build .msi packages)
   * WiX Toolset build tools v3.11 (http://wixtoolset.org/releases/)
   * WiX Toolset Visual Studio 2017 Extension (http://wixtoolset.org/releases/)"
-* optional: CMake (for EtherCAT plugin)
+* **optional**: CMake (for EtherCAT plugin)
   * CMake (https://cmake.org/download/)
 
 ### Initialization
