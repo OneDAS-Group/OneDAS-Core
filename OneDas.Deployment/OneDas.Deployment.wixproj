@@ -9,9 +9,7 @@
     <OutputName>OneDas</OutputName>
     <OutputType>Package</OutputType>
     <Name>OneDas.Deployment</Name>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+	<OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
@@ -19,10 +17,6 @@
     <SuppressPdbOutput>True</SuppressPdbOutput>
     <SuppressSpecificWarnings>
     </SuppressSpecificWarnings>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Product.wxs" />
@@ -40,7 +34,6 @@
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
     </WixExtension>
-
   </ItemGroup>
   <ItemGroup>
     <Content Include="license.rtf" />

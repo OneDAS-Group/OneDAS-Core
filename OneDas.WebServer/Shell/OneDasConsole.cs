@@ -326,7 +326,7 @@ namespace OneDas.WebServer.Shell
 
                     break;
                 }
-                catch (Exception ex)
+                catch
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }

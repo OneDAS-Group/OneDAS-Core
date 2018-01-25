@@ -67,8 +67,20 @@ namespace OneDas.WebServer
 
             _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
 
-            // parse command line
-            BasicBootloader.ParseCommandLineArgumentSet(args);
+            // determine startup mode
+            if (Environment.UserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0)
+            {
+                isHosting = false;
+            }
+            else
+            {
+                if (!SingeltonHelper.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
+                {
+                    Environment.Exit(0);
+                }
+
+                isHosting = true;
+            }
 
             // ensure AppDomain shadow copying
             BasicBootloader.EnsureAppDomainShadowCopying();
@@ -79,8 +91,7 @@ namespace OneDas.WebServer
                 return serviceController.ServiceName == _webServerOptions.ServiceName;
             });
 
-            // create advances boot loader
-            isHosting = BasicBootloader.GetOneDasServiceStatus() == 0;
+            // create advanced boot loader
             _advancedBootloader = new AdvancedBootloader(isHosting, _webServerOptions, configurationRoot);
 
             // logging
@@ -91,22 +102,6 @@ namespace OneDas.WebServer
 
             // run
             _advancedBootloader.Run();
-        }
-
-        private static void ParseCommandLineArgumentSet(IList<string> commandLineArgumentSet)
-        {
-            Contract.Requires(commandLineArgumentSet != null);
-
-            if (!commandLineArgumentSet.Contains("-ALLOWSINGELTON"))
-            {
-                if (!(Environment.UserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0))
-                {
-                    if (!SingeltonHelper.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
-                    {
-                        Environment.Exit(0);
-                    }
-                }
-            }
         }
 
         private static void EnsureAppDomainShadowCopying()

@@ -1,4 +1,5 @@
 ﻿using HDF.PInvoke;
+using Microsoft.Extensions.Logging;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
@@ -98,21 +99,21 @@ namespace OneDas.Hdf.Explorer.Core
                 case FileFormat.CSV:
 
                     settings = new CsvModel(fileGranularity);
-                    dataWriter = new CsvWriter((CsvModel)settings);
+                    dataWriter = new CsvWriter((CsvModel)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.GAM:
 
                     settings = new GamModel(fileGranularity);
-                    dataWriter = new GamWriter((GamModel)settings);
+                    dataWriter = new GamWriter((GamModel)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.MAT73:
 
                     settings = new Mat73Model(fileGranularity);
-                    dataWriter = new Mat73Writer((Mat73Model)settings);
+                    dataWriter = new Mat73Writer((Mat73Model)settings, new LoggerFactory());
 
                     break;
 

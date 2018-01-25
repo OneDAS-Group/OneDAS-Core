@@ -38,11 +38,11 @@ namespace OneDas.Plugin
 
         #region "Hive"
 
-        public void ScanAssembly<TPluginLogicBase, TPluginSettingsBase>(string filePath, string productName, Version minimumVersion)
+        public void ScanAssembly<TPluginLogicBase, TPluginSettingsBase>(string filePath)
         {
             List<Type> pluginTypeSet;
 
-            pluginTypeSet = this.LoadAssemby(filePath, productName, minimumVersion);
+            pluginTypeSet = this.LoadAssemby(filePath);
 
             this.AddRange<TPluginLogicBase>(pluginTypeSet.Where(pluginType => typeof(TPluginLogicBase).IsAssignableFrom(pluginType)).ToList());
             this.AddRange<TPluginSettingsBase>(pluginTypeSet.Where(pluginType => typeof(TPluginSettingsBase).IsAssignableFrom(pluginType)).ToList());
@@ -64,46 +64,17 @@ namespace OneDas.Plugin
 
             dllFilePathSet = Directory.GetFiles(directoryPath, "*.dll", SearchOption.AllDirectories).ToList();
 
-            return dllFilePathSet.SelectMany(filePath => this.LoadAssemby(filePath, productName, minimumVersion)).ToList();
+            return dllFilePathSet.Where(filePath => this.CheckAssembly(filePath, productName, minimumVersion)).SelectMany(filePath => this.LoadAssemby(filePath)).ToList();
         }
 
-        public List<Type> LoadAssemby(string filePath, string productName, Version minimumVersion)
+        public List<Type> LoadAssemby(string filePath)
         {
-            Version productVersion;
             Assembly assembly;
-            FileVersionInfo fileVersionInfo;
 
-            assembly = default;
+            assembly = Assembly.LoadFrom(filePath);
+            _assemblySet.Add(assembly);
 
-            try
-            {
-                fileVersionInfo = FileVersionInfo.GetVersionInfo(filePath);
-
-                if (!string.IsNullOrEmpty(fileVersionInfo.FileVersion))
-                {
-                    productVersion = new Version(fileVersionInfo.FileVersion);
-
-                    if (fileVersionInfo.ProductName == productName && productVersion.CompareTo(minimumVersion) >= 0)
-                    {
-                        assembly = Assembly.LoadFrom(filePath);
-                    }
-                }
-            }
-            catch
-            {
-                return new List<Type>();
-            }
-
-            if (assembly != null)
-            {
-                _assemblySet.Add(assembly);
-
-                return assembly.ExportedTypes.ToList();
-            }
-            else
-            {
-                return new List<Type>();
-            }
+            return assembly.ExportedTypes.ToList();
         }
 
         public IEnumerable<Type> GetPluginsByBaseClass<TBaseClass>()
@@ -160,6 +131,26 @@ namespace OneDas.Plugin
             {
                 _pluginDictionary.Clear();
             }
+        }
+
+        private bool CheckAssembly(string filePath, string productName, Version minimumVersion)
+        {
+            Version productVersion;
+            FileVersionInfo fileVersionInfo;
+
+            fileVersionInfo = FileVersionInfo.GetVersionInfo(filePath);
+
+            if (!string.IsNullOrEmpty(fileVersionInfo.FileVersion))
+            {
+                productVersion = new Version(fileVersionInfo.FileVersion);
+
+                if (fileVersionInfo.ProductName == productName && productVersion.CompareTo(minimumVersion) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static IEnumerable<Assembly> AssemblySet

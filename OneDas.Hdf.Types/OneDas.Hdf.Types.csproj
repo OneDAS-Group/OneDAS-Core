@@ -12,7 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke" Version="1.10.1" />
-    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6590-27607" />
+    <PackageReference Include="OneDas.Types" Version="0.1.0-alpha-6599-19546" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
