@@ -80,7 +80,7 @@ namespace OneDas.WebServer.Web
             {
                 isValidUri = Uri.TryCreate(webServerOptionsLight.BaseDirectoryPath, UriKind.Absolute, out uri);
 
-                if (!(isValidUri && uri.IsLoopback && !Directory.Exists(webServerOptionsLight.BaseDirectoryPath)))
+                if (!(isValidUri && uri.IsLoopback && Directory.Exists(webServerOptionsLight.BaseDirectoryPath)))
                 {
                     throw new Exception(ErrorMessage.WebClientHub_BaseDirectoryPathIsInvalid);
                 }
