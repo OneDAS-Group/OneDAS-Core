@@ -220,7 +220,7 @@ namespace OneDas.Engine.Core
             object[] argsExtended;
 
             argsExtended = args.Concat(new object[] { pluginSettings }).ToArray();
-            pluginLogicType = pluginSettings.GetType().GetFirstAttribute<PluginContextAttribute>().PluginLogic;
+            pluginLogicType = pluginSettings.GetType().GetFirstAttribute<PluginContextAttribute>()?.PluginLogic;
 
             if (pluginLogicType == null)
             {
