@@ -8,11 +8,10 @@ namespace OneDas.Engine.Core
     {
         #region "Contructors"
 
-        public OneDasPerformanceInformation(OneDasState oneDasState, ProcessPriorityClass processPriorityClass, bool isDebugOutputEnabled, double lateBy, double cycleTime, double timerDrift, float cpuTime, int upTime)
+        public OneDasPerformanceInformation(OneDasState oneDasState, ProcessPriorityClass processPriorityClass, double lateBy, double cycleTime, double timerDrift, float cpuTime, int upTime)
         {
             this.OneDasState = oneDasState;
             this.ProcessPriorityClass = processPriorityClass;
-            this.IsDebugOutputEnabled = isDebugOutputEnabled;
             this.LateBy = lateBy;
             this.CycleTime = cycleTime;
             this.TimerDrift = timerDrift;
@@ -25,7 +24,6 @@ namespace OneDas.Engine.Core
         #region "Properties"
 
         public OneDasState OneDasState { get; set; }
-        public bool IsDebugOutputEnabled { get; set; }
         public ProcessPriorityClass ProcessPriorityClass { get; set; }
         public double LateBy { get; set; }
         public double CycleTime { get; set; }

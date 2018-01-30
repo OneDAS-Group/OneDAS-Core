@@ -150,12 +150,6 @@
   <data name="Project_ChannelHubNotUnqiue" xml:space="preserve">
     <value>The channel set is invalid: A channel must be unique.</value>
   </data>
-  <data name="PluginProvider_NoMatchingTPluginLogicFound" xml:space="preserve">
-    <value>No matching TPluginLogic was found.</value>
-  </data>
-  <data name="PluginProvider_NoMatchingTPluginSettingsFound" xml:space="preserve">
-    <value>No matching TPluginSettings was found.</value>
-  </data>
   <data name="PluginSettingsBase_PluginContextAttributeNotDefined" xml:space="preserve">
     <value>PluginContextAttribute is not defined.</value>
   </data>
@@ -194,17 +188,5 @@
   </data>
   <data name="DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
     <value>The MaximumDatasetAge is must be between zero and 10000.</value>
-  </data>
-  <data name="PluginProvider_TypeNotInheritedFromTPluginSettings" xml:space="preserve">
-    <value>The provided 'pluginSettingsType' is not assignable to an instance of TPluginSettings.</value>
-  </data>
-  <data name="PluginProvider_NoPluginSupporterAttributeFound" xml:space="preserve">
-    <value>Could not find any PluginSupporterAttribute.</value>
-  </data>
-  <data name="PluginProvider_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
-    <value>The specified type does not implement the interface IPluginSupporter.</value>
-  </data>
-  <data name="PluginProvider_PluginNotFound" xml:space="preserve">
-    <value>The specified plugin was not found.</value>
   </data>
 </root>

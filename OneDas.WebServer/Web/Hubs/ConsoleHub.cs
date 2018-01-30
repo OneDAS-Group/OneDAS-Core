@@ -20,13 +20,5 @@ namespace OneDas.WebServer.Web
                 return _oneDasEngine.CreatePerformanceInformation();
             });
         }
-
-        public Task ToggleDebugOutput()
-        {
-            return Task.Run(() =>
-            {
-                _oneDasEngine.IsDebugOutputEnabled = !_oneDasEngine.IsDebugOutputEnabled;
-            });
-        }
     }
 }

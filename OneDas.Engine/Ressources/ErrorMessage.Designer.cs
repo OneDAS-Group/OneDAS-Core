@@ -106,6 +106,60 @@ namespace OneDas.Engine {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginLogic was found. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_NoMatchingTPluginLogicFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_NoMatchingTPluginLogicFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginSettings was found. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_NoMatchingTPluginSettingsFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_NoMatchingTPluginSettingsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any PluginSupporterAttribute. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_NoPluginSupporterAttributeFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_NoPluginSupporterAttributeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_PluginNotFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_PluginNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IPluginSupporter. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_TypeDoesNotImplementIPluginSupporter {
+            get {
+                return ResourceManager.GetString("PluginProvider_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided &apos;pluginSettingsType&apos; is not assignable to an instance of TPluginSettings. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_TypeNotInheritedFromTPluginSettings {
+            get {
+                return ResourceManager.GetString("PluginProvider_TypeNotInheritedFromTPluginSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die An error occured load the project. ähnelt.
         /// </summary>
         internal static string ProjectUpgrader_ErrorLoadingProject {

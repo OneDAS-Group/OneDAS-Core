@@ -9,26 +9,25 @@ namespace OneDas.Engine.Serialization
 {
     public class OneDasConverter : JsonConverter
     {
-        private static HashSet<Assembly> _assemblySet;
+        public static HashSet<Assembly> AssemblySet;
 
         static OneDasConverter()
         {
-            _assemblySet = new HashSet<Assembly>(PluginProvider.AssemblySet);
-            _assemblySet.Add(Assembly.GetExecutingAssembly());
-            _assemblySet.Add(typeof(Project).Assembly);
+            OneDasConverter.AssemblySet.Add(Assembly.GetExecutingAssembly());
+            OneDasConverter.AssemblySet.Add(typeof(Project).Assembly);
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (assembly.FullName.Contains("OneDAS"))
                 {
-                    _assemblySet.Add(assembly);
+                    OneDasConverter.AssemblySet.Add(assembly);
                 }
             } 
         }
 
         public override bool CanConvert(Type objectType)
         {
-            return !objectType.IsPrimitive && !objectType.IsArray && _assemblySet.Contains(objectType.Assembly);
+            return !objectType.IsPrimitive && !objectType.IsArray && OneDasConverter.AssemblySet.Contains(objectType.Assembly);
         }
  
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

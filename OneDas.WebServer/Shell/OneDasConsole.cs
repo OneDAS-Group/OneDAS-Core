@@ -87,13 +87,6 @@ namespace OneDas.WebServer.Shell
                     {
                         switch (consoleKey)
                         {
-                            case ConsoleKey.D:
-
-                                // debug
-                                _consoleHubClient.InvokeAsync("ToggleDebugOutput").Wait();
-
-                                break;
-
                             case ConsoleKey.E:
 
                                 // exit
@@ -173,9 +166,6 @@ namespace OneDas.WebServer.Shell
                 Console.SetCursorPosition(2, 4);
                 Console.Write("Process priority:");
 
-                Console.SetCursorPosition(2, 5);
-                Console.Write("Debug information:");
-
                 Console.SetCursorPosition(2, 6);
                 Console.Write("Windows service:");
 
@@ -249,7 +239,7 @@ namespace OneDas.WebServer.Shell
                     this.WriteColored($"{performanceInformation.ProcessPriorityClass,11}", performanceInformation.ProcessPriorityClass == ProcessPriorityClass.RealTime ? ConsoleColor.White : ConsoleColor.Red);
 
                     Console.SetCursorPosition(32, 5);
-                    this.WriteColored($"{performanceInformation.IsDebugOutputEnabled,5}", performanceInformation.IsDebugOutputEnabled ? ConsoleColor.Red : ConsoleColor.White);
+                    // empty
 
                     Console.SetCursorPosition(22, 6);
                     ServiceControllerStatus oneDasServiceStatus = BasicBootloader.GetOneDasServiceStatus();

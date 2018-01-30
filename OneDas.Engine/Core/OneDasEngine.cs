@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Common;
-using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
 using System;
@@ -10,7 +9,6 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,14 +43,13 @@ namespace OneDas.Engine.Core
         private Thread _storageThread;
         private AutoResetEvent _storageAutoResetEvent;
         private CancellationTokenSource _storageCancellationTokenSource;
-        private System.Timers.Timer _timer_UpdateDebugInformation;
 
         private TimeSpan _chunkPeriod;
 
         private ILogger _systemLogger;
         private ILogger _oneDasEngineLogger;
 
-        PluginProvider _pluginProvider;
+        IPluginProvider _pluginProvider;
         OneDasOptions _oneDasOptions;
 
         // reset required	
@@ -95,39 +92,19 @@ namespace OneDas.Engine.Core
 
         #region "Constructors"
 
-        public OneDasEngine(PluginProvider pluginProvider, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasEngine(IPluginProvider pluginProvider, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
-            Version minimumVersion;
-            string pluginDirectoryPath;
-
             _pluginProvider = pluginProvider;
             _oneDasOptions = options.Value;
 
             // state
             _oneDasState = OneDasState.Initialization;
 
-            Directory.CreateDirectory(_oneDasOptions.BaseDirectoryPath);
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "backup"));
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "data"));
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "debug"));
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "plugin", "DataGateway"));
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "plugin", "DataWriter"));
-            Directory.CreateDirectory(Path.Combine(_oneDasOptions.BaseDirectoryPath, "project"));
-
-            // load plugins
-            minimumVersion = new Version(new Version(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion).Major, 0, 0, 0);
-            pluginDirectoryPath = Path.Combine(_oneDasOptions.BaseDirectoryPath, "plugin");
-
-            pluginProvider.ScanAssemblies<DataGatewayPluginLogicBase, DataGatewayPluginSettingsBase>(Path.Combine(pluginDirectoryPath, "DataGateway"), _oneDasOptions.ProductName, minimumVersion);
-            pluginProvider.ScanAssemblies<DataWriterPluginLogicBase, DataWriterPluginSettingsBase>(Path.Combine(pluginDirectoryPath, "DataWriter"), _oneDasOptions.ProductName, minimumVersion);
-
             // logging
             _systemLogger = loggerFactory.CreateLogger("System");
             _oneDasEngineLogger = loggerFactory.CreateLogger("Engine");
 
             // 
-            this.IsDebugOutputEnabled = false;
-
             _baseFrequency_To_DateTime = Convert.ToInt64(10000000L / _oneDasOptions.NativeSampleRate);
             _timer_UpdateIo = new RtTimer();
             _executionState = SafeNativeMethods.SetThreadExecutionState(ExecutionState.CONTINUOUS | ExecutionState.SYSTEM_REQUIRED);
@@ -142,14 +119,6 @@ namespace OneDas.Engine.Core
 
             _storageAutoResetEvent = new AutoResetEvent(false);
             _storageCancellationTokenSource = new CancellationTokenSource();
-
-            _timer_UpdateDebugInformation = new System.Timers.Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
-            {
-                AutoReset = true,
-                Enabled = true
-            };
-
-            _timer_UpdateDebugInformation.Elapsed += OnTimerUpdateDebugInformationElapsed;
 
             //_performanceCounter_Cpu = New PerformanceCounter("Processor", "% Processor Time", "_Total")
             _chunkPeriod = new TimeSpan(0, 0, (int)_oneDasOptions.ChunkPeriod);
@@ -169,8 +138,6 @@ namespace OneDas.Engine.Core
         #endregion
 
         #region "Properties"
-
-        public bool IsDebugOutputEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the last error that occured in the OneDAS server.
@@ -292,7 +259,7 @@ namespace OneDas.Engine.Core
 
         public void Stop()
         {
-            this.OneDasState = OneDasState.Run;
+            this.OneDasState = OneDasState.Ready;
         }
 
         public void AcknowledgeError()
@@ -304,7 +271,6 @@ namespace OneDas.Engine.Core
         public OneDasPerformanceInformation CreatePerformanceInformation()
         {
             return new OneDasPerformanceInformation(this.OneDasState, Process.GetCurrentProcess().PriorityClass,
-                this.IsDebugOutputEnabled,
                 _lateBy,
                 _cycleTime,
                 _timerDrift,
@@ -378,44 +344,6 @@ namespace OneDas.Engine.Core
         {
             _dataGatewaySet?.ForEach(dataGateway => dataGateway.Dispose());
             _dataWriterSet?.ForEach(dataWriter => dataWriter.Dispose());
-        }
-
-        #endregion
-
-        #region "Debug"
-
-        private void UpdateDebugInformation()
-        {
-            _cpuTime = float.NaN;
-            // _performanceCounter_Cpu.NextValue()
-
-            if (this.IsDebugOutputEnabled && this.OneDasState == OneDasState.Run)
-            {
-                this.WriteDebugOutput();
-            }
-        }
-
-        private void WriteDebugOutput()
-        {
-            string debugOutputFilePath = Path.Combine(_oneDasOptions.BaseDirectoryPath, "debug", "Debug.csv");
-
-            if (!File.Exists(debugOutputFilePath))
-            {
-                File.WriteAllText(debugOutputFilePath, $"DateTime;Late by;Cycle time;Processor Time;Timer drift\n-;ms;ms;%;µs\n");
-            }
-            else
-            {
-                File.AppendAllText(debugOutputFilePath, $"{ DateTime.UtcNow };{_lateBy,4:0.0};{_cycleTime,4:0.0};{_cpuTime,3:0};{Convert.ToInt64(_timerDrift / 1000),7}\n");
-            }
-        }
-
-        #endregion
-
-        #region "Callbacks"
-
-        private void OnTimerUpdateDebugInformationElapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            this.UpdateDebugInformation();
         }
 
         #endregion
@@ -529,7 +457,7 @@ namespace OneDas.Engine.Core
 
         private void Step_1_PrepareDataGateway()
         {
-            _dataGatewaySet = _project.DataGatewaySettingsSet.Select(settings => _pluginProvider.BuildSettingsContainer<DataGatewayPluginLogicBase>(settings)).ToList();
+            _dataGatewaySet = _project.DataGatewaySettingsSet.Select(settings => _pluginProvider.BuildContainer<DataGatewayPluginLogicBase>(settings)).ToList();
             _referenceClock = _dataGatewaySet.FirstOrDefault(x => x is IReferenceClock) as IReferenceClock;
 
             if (_referenceClock == null)
@@ -596,7 +524,7 @@ namespace OneDas.Engine.Core
             DateTime currentDateTime;
             IList<CustomMetadataEntry> customMetadataEntrySet;
 
-            _dataWriterSet = _project.DataWriterSettingsSet.Select(settings => _pluginProvider.BuildSettingsContainer<DataWriterPluginLogicBase>(settings)).ToList();
+            _dataWriterSet = _project.DataWriterSettingsSet.Select(settings => _pluginProvider.BuildContainer<DataWriterPluginLogicBase>(settings)).ToList();
 
             customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS", CustomMetadataEntryLevel.File));
@@ -613,7 +541,7 @@ namespace OneDas.Engine.Core
                     throw new Exception(ErrorMessage.OneDasEngine_DirectoryNameInvalid);
                 }
 
-                baseDirectoryPath = Path.Combine(_oneDasOptions.BaseDirectoryPath, "data", $"{ this.Project.Description.CampaignPrimaryGroup }_{ this.Project.Description.CampaignSecondaryGroup }_{ this.Project.Description.CampaignName }_V{ this.Project.Description.CampaignVersion }_{ this.Project.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
+                baseDirectoryPath = Path.Combine(_oneDasOptions.DataDirectoryPath, $"{ this.Project.Description.CampaignPrimaryGroup }_{ this.Project.Description.CampaignSecondaryGroup }_{ this.Project.Description.CampaignName }_V{ this.Project.Description.CampaignVersion }_{ this.Project.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
 
                 Directory.CreateDirectory(baseDirectoryPath);
 

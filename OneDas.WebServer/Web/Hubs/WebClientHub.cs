@@ -3,31 +3,28 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Common;
 using OneDas.Engine.Core;
-using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
-using OneDas.WebServer.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Web
 {
     public class WebClientHub : Hub<IWebClientHub>
     {
-        private PluginProvider _pluginProvider;
+        private IPluginProvider _pluginProvider;
         private OneDasEngine _oneDasEngine;
         private WebServerOptions _webServerOptions;
 
         private ILogger _webServerLogger;
         private IOneDasProjectSerializer _oneDasProjectSerializer;
 
-        public WebClientHub(PluginProvider pluginProvider, OneDasEngine oneDasEngine, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
+        public WebClientHub(IPluginProvider pluginProvider, OneDasEngine oneDasEngine, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
         {
             _pluginProvider = pluginProvider;
             _oneDasEngine = oneDasEngine;
@@ -275,11 +272,11 @@ namespace OneDas.WebServer.Web
 
                 dataGatewayPluginSettingsSet = _pluginProvider.Get<DataGatewayPluginSettingsBase>().
                         Where(pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "EtherCAT").
-                        Select(pluginSettingsType => _pluginProvider.BuildSettings<DataGatewayPluginSettingsBase>(pluginSettingsType)).ToList();
+                        Select(pluginSettingsType => (DataGatewayPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
 
                 dataWriterPluginSettingsSet = _pluginProvider.Get<DataWriterPluginSettingsBase>().
                         Where(pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "HDF").
-                        Select(pluginSettingsType => _pluginProvider.BuildSettings<DataWriterPluginSettingsBase>(pluginSettingsType)).ToList();
+                        Select(pluginSettingsType => (DataWriterPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
 
                 return new Project(
                     campaignPrimaryGroup, 
@@ -294,7 +291,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return _pluginProvider.BuildSettings<DataGatewayPluginSettingsBase>(pluginName);
+                return (DataGatewayPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get<DataGatewayPluginSettingsBase>(pluginName));
             });
         }
 
@@ -302,7 +299,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return _pluginProvider.BuildSettings<DataWriterPluginSettingsBase>(pluginName);
+                return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get<DataWriterPluginSettingsBase>(pluginName));
             });
         }
     }

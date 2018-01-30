@@ -6,11 +6,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using OneDas.Engine.Core;
 using OneDas.Infrastructure;
+using OneDas.Plugin;
 using OneDas.WebServer.Logging;
 using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OneDas.WebServer
@@ -22,6 +25,7 @@ namespace OneDas.WebServer
         private bool _isHosting;
         private OneDasEngine _oneDasEngine;
         private WebServerOptions _webServerOptions;
+        private PluginProvider _pluginProvider;
         private IWebHost _webhost;
         private IConfiguration _configuration;
         private IServiceProvider _serviceProvider;
@@ -33,6 +37,8 @@ namespace OneDas.WebServer
 
         public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration)
         {
+            Version minimumVersion;
+
             _isHosting = isHosting;
             _webServerOptions = webServerOptions;
             _configuration = configuration;
@@ -41,6 +47,22 @@ namespace OneDas.WebServer
             {
                 _webhost = this.CreateWebHost();
                 _serviceProvider = _webhost.Services;
+                _pluginProvider = _serviceProvider.GetRequiredService<PluginProvider>();
+
+                // create directories
+                Directory.CreateDirectory(_webServerOptions.BaseDirectoryPath);
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "backup"));
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "data"));
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"));
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "project"));
+
+                // load plugins
+                minimumVersion = new Version(new Version(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion).Major, 0, 0, 0);
+
+                _pluginProvider = _serviceProvider.GetRequiredService<PluginProvider>();
+                _pluginProvider.ScanAssemblies(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"), _webServerOptions.OneDasName, minimumVersion);
+
+                // create engine
                 _oneDasEngine = _serviceProvider.GetRequiredService<OneDasEngine>();
             }
             else
@@ -143,7 +165,7 @@ namespace OneDas.WebServer
             // OneDAS Engine
             serviceCollection.AddOneDas(oneDasOptions =>
             {
-                oneDasOptions.BaseDirectoryPath = _webServerOptions.BaseDirectoryPath;
+                oneDasOptions.DataDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "data");
             });
 
             // OneDasConsole
@@ -163,7 +185,7 @@ namespace OneDas.WebServer
                     try
                     {
                         oneDasEngine.ActivateProject(oneDasProjectSerializer.Load(_webServerOptions.CurrentProjectFilePath), 4);
-                        oneDasEngine.OneDasState = OneDasState.Run;
+                        oneDasEngine.Start();
                     }
                     catch (Exception ex)
                     {
