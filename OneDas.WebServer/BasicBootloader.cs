@@ -3,9 +3,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using OneDas.Common;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -85,13 +83,7 @@ namespace OneDas.WebServer
             // ensure AppDomain shadow copying
             BasicBootloader.EnsureAppDomainShadowCopying();
 
-            // OneDasServiceController
-            _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(serviceController =>
-            {
-                return serviceController.ServiceName == _webServerOptions.ServiceName;
-            });
-
-            // create advanced boot loader
+            // create advanced bootloader
             _advancedBootloader = new AdvancedBootloader(isHosting, _webServerOptions, configurationRoot);
 
             // logging

@@ -13,8 +13,10 @@ namespace OneDas.Engine.Serialization
 
         static OneDasConverter()
         {
+            OneDasConverter.AssemblySet = new HashSet<Assembly>();
+
             OneDasConverter.AssemblySet.Add(Assembly.GetExecutingAssembly());
-            OneDasConverter.AssemblySet.Add(typeof(Project).Assembly);
+            OneDasConverter.AssemblySet.Add(typeof(OneDasProject).Assembly);
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {

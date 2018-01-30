@@ -4,9 +4,9 @@ using System.Runtime.Serialization;
 namespace OneDas.Infrastructure
 {
     [DataContract]
-    public class ProjectDescription
+    public class OneDasProjectDescription
     {
-        public ProjectDescription(int formatVersion, int campaignVersion, Guid guid, string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName)
+        public OneDasProjectDescription(int formatVersion, int campaignVersion, Guid guid, string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName)
         {
             this.FormatVersion = formatVersion;
             this.CampaignVersion = campaignVersion;

@@ -22,7 +22,7 @@ namespace OneDas.WebServer.Web
         private WebServerOptions _webServerOptions;
 
         private ILogger _webServerLogger;
-        private IOneDasProjectSerializer _oneDasProjectSerializer;
+        private IOneDasProjectSerializer _projectSerializer;
 
         public WebClientHub(IPluginProvider pluginProvider, OneDasEngine oneDasEngine, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
         {
@@ -30,7 +30,7 @@ namespace OneDas.WebServer.Web
             _oneDasEngine = oneDasEngine;
             _webServerOptions = options.Value;
             _webServerLogger = loggerFactory.CreateLogger("WebServer");
-            _oneDasProjectSerializer = oneDasProjectSerializer;
+            _projectSerializer = oneDasProjectSerializer;
         }
 
         public override Task OnConnectedAsync()
@@ -91,21 +91,21 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task SaveProject(Project project)
+        public Task SaveProject(OneDasProjectSettings projectSettings)
         {
             string fileName;
             string directoryPath;
             string currentFilePath;
             string newFilePath;
 
-            Contract.Requires(project != null);
+            Contract.Requires(projectSettings != null);
 
             return Task.Run(() =>
             {
-                project.Validate();
+                projectSettings.Validate();
 
                 directoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "project");
-                fileName = $"{project.Description.CampaignPrimaryGroup}_{project.Description.CampaignSecondaryGroup}_{project.Description.CampaignName}_{project.Description.Guid.ToString()}.json";
+                fileName = $"{projectSettings.Description.CampaignPrimaryGroup}_{projectSettings.Description.CampaignSecondaryGroup}_{projectSettings.Description.CampaignName}_{projectSettings.Description.Guid.ToString()}.json";
                 currentFilePath = Path.Combine(directoryPath, fileName);
 
                 try
@@ -119,16 +119,16 @@ namespace OneDas.WebServer.Web
                 }
                 finally
                 {
-                    _oneDasProjectSerializer.Save(project, currentFilePath);
+                    _projectSerializer.Save(projectSettings, currentFilePath);
                     _webServerLogger.LogInformation("project file saved");
                 }
             });
         }
 
-        public Task ActivateProject(ProjectDescription projectDescription)
+        public Task ActivateProject(OneDasProjectDescription projectDescription)
         {
             string filePath;
-            Project project;
+            OneDasProjectSettings projectSettings;
 
             return Task.Run(() =>
             {
@@ -136,14 +136,14 @@ namespace OneDas.WebServer.Web
 
                 // Improve: Make more flexible, renaming of file is impossible like that
                 filePath = Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json");
-                project = _oneDasProjectSerializer.Load(filePath);
+                projectSettings = _projectSerializer.Load(filePath);
 
                 _webServerOptions.CurrentProjectFilePath = filePath;
                 _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
 
-                _oneDasEngine.ActivateProject(project, 2);
+                _oneDasEngine.ActivateProject(projectSettings, 2);
 
-                this.Clients.All.SendActiveProject(project);
+                this.Clients.All.SendActiveProject(projectSettings);
             });
         }
 
@@ -178,21 +178,21 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<IEnumerable<ProjectDescription>> GetProjectDescriptions()
+        public Task<IEnumerable<OneDasProjectDescription>> GetProjectDescriptions()
         {
             return Task.Run(() =>
             {
                 IEnumerable<string> filePathSet;
-                IList<ProjectDescription> projectDescriptionSet;
+                IList<OneDasProjectDescription> projectDescriptionSet;
 
                 filePathSet = Directory.GetFiles(Path.Combine(_webServerOptions.BaseDirectoryPath, "project"), "*.json");
-                projectDescriptionSet = new List<ProjectDescription>();
+                projectDescriptionSet = new List<OneDasProjectDescription>();
 
                 foreach (string filePath in filePathSet)
                 {
                     try
                     {
-                        projectDescriptionSet.Add(_oneDasProjectSerializer.GetProjectDescriptionFromFile(filePath));
+                        projectDescriptionSet.Add(_projectSerializer.GetProjectDescriptionFromFile(filePath));
                     }
                     catch (Exception)
                     {
@@ -200,18 +200,18 @@ namespace OneDas.WebServer.Web
                     }
                 }
 
-                return (IEnumerable<ProjectDescription>)projectDescriptionSet;
+                return (IEnumerable<OneDasProjectDescription>)projectDescriptionSet;
             });
         }
 
-        public Task<Project> OpenProject(ProjectDescription projectDescription)
+        public Task<OneDasProjectSettings> OpenProject(OneDasProjectDescription projectDescription)
         {
             return Task.Run(() =>
             {
                 // Improve: Make more flexible, renaming of file is impossible like that
-                Project project = _oneDasProjectSerializer.Load(Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json"));
+                OneDasProjectSettings projectSettings = _projectSerializer.Load(Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json"));
 
-                return project;
+                return projectSettings;
             });
         }
 
@@ -227,29 +227,29 @@ namespace OneDas.WebServer.Web
 
             dataGatewayPluginIdentificationSet = _pluginProvider.Get<DataGatewayPluginSettingsBase>().Select(dataGatewaySettingsType =>
             {
-                PluginIdentificationAttribute pluginIdentificationAttribute;
+                PluginIdentificationAttribute attribute;
 
-                pluginIdentificationAttribute = dataGatewaySettingsType.GetFirstAttribute<PluginIdentificationAttribute>();
-                pluginIdentificationAttribute.ProductVersion = FileVersionInfo.GetVersionInfo(dataGatewaySettingsType.Assembly.Location).ProductVersion;
+                attribute = dataGatewaySettingsType.GetFirstAttribute<PluginIdentificationAttribute>();
+                attribute.ProductVersion = FileVersionInfo.GetVersionInfo(dataGatewaySettingsType.Assembly.Location).ProductVersion;
 
-                return pluginIdentificationAttribute;
+                return attribute;
             }).ToList();
 
             dataWriterPluginIdentificationSet = _pluginProvider.Get<DataWriterPluginSettingsBase>().Select(dataWriterSettingsType =>
             {
-                PluginIdentificationAttribute pluginIdentificationAttribute;
+                PluginIdentificationAttribute attribute;
 
-                pluginIdentificationAttribute = dataWriterSettingsType.GetFirstAttribute<PluginIdentificationAttribute>();
-                pluginIdentificationAttribute.ProductVersion = FileVersionInfo.GetVersionInfo(dataWriterSettingsType.Assembly.Location).ProductVersion;
+                attribute = dataWriterSettingsType.GetFirstAttribute<PluginIdentificationAttribute>();
+                attribute.ProductVersion = FileVersionInfo.GetVersionInfo(dataWriterSettingsType.Assembly.Location).ProductVersion;
 
-                return pluginIdentificationAttribute;
+                return attribute;
             }).ToList();
 
             return Task.Run(() =>
             {
                 return new AppModel(
-                    activeProject: _oneDasEngine.Project,
-                    clientSet: new List<string>() { "Horst", "Köhler" },
+                    activeProjectSettings: _oneDasEngine.Project.Settings,
+                    clientSet: new List<string>() { },
                     dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
                     lastError: _oneDasEngine.LastError,
@@ -263,22 +263,22 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<Project> CreateProject(string campaignPrimaryGroup, string campaignSecondaryGroup, string configurationName)
+        public Task<OneDasProjectSettings> CreateProject(string campaignPrimaryGroup, string campaignSecondaryGroup, string configurationName)
         {
             return Task.Run(() =>
             {
                 IList<DataGatewayPluginSettingsBase> dataGatewayPluginSettingsSet;
                 IList<DataWriterPluginSettingsBase> dataWriterPluginSettingsSet;
 
-                dataGatewayPluginSettingsSet = _pluginProvider.Get<DataGatewayPluginSettingsBase>().
-                        Where(pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "EtherCAT").
+                dataGatewayPluginSettingsSet = Enumerable.
+                        Where(_pluginProvider.Get<DataGatewayPluginSettingsBase>(), pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "EtherCAT").
                         Select(pluginSettingsType => (DataGatewayPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
 
-                dataWriterPluginSettingsSet = _pluginProvider.Get<DataWriterPluginSettingsBase>().
-                        Where(pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "HDF").
+                dataWriterPluginSettingsSet = Enumerable.
+                        Where(_pluginProvider.Get<DataWriterPluginSettingsBase>(), pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "HDF").
                         Select(pluginSettingsType => (DataWriterPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
 
-                return new Project(
+                return new OneDasProjectSettings(
                     campaignPrimaryGroup, 
                     campaignSecondaryGroup, 
                     configurationName,
@@ -291,7 +291,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return (DataGatewayPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get<DataGatewayPluginSettingsBase>(pluginName));
+                return (DataGatewayPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get(pluginName));
             });
         }
 
@@ -299,7 +299,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get<DataWriterPluginSettingsBase>(pluginName));
+                return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get(pluginName));
             });
         }
     }

@@ -17,7 +17,7 @@ namespace OneDas.Engine.Core
         #region "Fields"
 
         private IServiceProvider _serviceProvider;
-        private Dictionary<Type, HashSet<Type>> _pluginDictionary;
+        private HashSet<Type> _pluginSet;
 
         #endregion
 
@@ -27,7 +27,7 @@ namespace OneDas.Engine.Core
         {
             _serviceProvider = serviceProvider;
 
-            _pluginDictionary = new Dictionary<Type, HashSet<Type>>();
+            _pluginSet = new HashSet<Type>();
         }
 
         #endregion
@@ -69,77 +69,41 @@ namespace OneDas.Engine.Core
             return assembly.ExportedTypes.ToList();
         }
 
-        public IEnumerable<Type> GetPluginsByBaseClass<TBaseClass>()
+        public Type Get(string pluginId)
         {
-            return _pluginDictionary.Where(entry => typeof(TBaseClass).IsAssignableFrom(entry.Key)).SelectMany(entry => entry.Value).ToList();
+            return _pluginSet.FirstOrDefault(type => type.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
         }
 
-        public IEnumerable<Type> Get<TPluginSettings>()
+        public IEnumerable<Type> Get<TPluginBase>()
         {
-            HashSet<Type> pluginSet;
+            return _pluginSet.Where(type => type.IsSubclassOf(typeof(TPluginBase))).ToList();
+        }
 
-            if (_pluginDictionary.TryGetValue(typeof(TPluginSettings), out pluginSet))
+        public void Add(Type pluginType)
+        {
+            this.AddRange(new List<Type> { pluginType });
+        }
+
+        public void AddRange(IEnumerable<Type> pluginTypeSet)
+        {
+            pluginTypeSet.ToList().ForEach(pluginType =>
             {
-                return pluginSet;
-            }
-            else
-            {
-                return new HashSet<Type>();
-            }
+                _pluginSet.Add(pluginType);
+            });
         }
 
-        public Type Get<TPluginSettings>(string pluginId)
+        public void Clear()
         {
-            return this.Get<TPluginSettings>().ToList().FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
-        }
-
-        public void Add<T>(Type pluginType)
-        {
-            this.Add(typeof(T), pluginType);
-        }
-
-        public void Add(Type baseType, Type pluginType)
-        {
-            this.AddRange(baseType, new List<Type> { pluginType });
-        }
-
-        public void AddRange<T>(IEnumerable<Type> pluginTypeSet)
-        {
-            this.AddRange(typeof(T), pluginTypeSet);
-        }
-
-        public void AddRange(Type baseType, IEnumerable<Type> pluginTypeSet)
-        {
-            if (_pluginDictionary.ContainsKey(baseType))
-            {
-                pluginTypeSet.ToList().ForEach(type => _pluginDictionary[baseType].Add(type));
-            }
-            else
-            {
-                _pluginDictionary[baseType] = new HashSet<Type>(pluginTypeSet);
-            }
-        }
-
-        public void Clear<T>()
-        {
-            if (_pluginDictionary.ContainsKey(typeof(T)))
-            {
-                _pluginDictionary.Clear();
-            }
+            _pluginSet.Clear();
         }
 
         private void InternalScanAssembly(List<Type> typeSet)
         {
             List<Type> pluginConcreteTypeSet;
-            HashSet<Type> pluginBaseTypeSet;
 
             pluginConcreteTypeSet = typeSet.Where(type => type.IsClass && !type.IsAbstract && (type.IsSubclassOf(typeof(PluginSettingsBase)) || type.IsSubclassOf(typeof(PluginLogicBase)))).ToList();
-            pluginBaseTypeSet = new HashSet<Type>(pluginConcreteTypeSet.Select(type => type.BaseType));
 
-            pluginBaseTypeSet.ToList().ForEach(baseType =>
-            {
-                this.AddRange(baseType, pluginConcreteTypeSet.Where(pluginType => pluginType.BaseType == baseType));
-            });
+            this.AddRange(pluginConcreteTypeSet);
         }
 
         private bool CheckAssembly(string filePath, string productName, Version minimumVersion)
@@ -214,7 +178,7 @@ namespace OneDas.Engine.Core
             return (IPluginSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType);
         }
 
-        public TPluginLogic BuildContainer<TPluginLogic>(PluginSettingsBase pluginSettings, params object[] args) where TPluginLogic : PluginLogicBase
+        public TPluginLogic BuildLogic<TPluginLogic>(PluginSettingsBase pluginSettings, params object[] args) where TPluginLogic : PluginLogicBase
         {
             Type pluginLogicType;
             object[] argsExtended;
@@ -241,7 +205,7 @@ namespace OneDas.Engine.Core
             ActionResponse actionResponse;
             IPluginSupporter pluginSupporter;
 
-            typeSet = this.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
+            typeSet = this.Get<PluginSettingsBase>().ToList();
             actionRequest.Validate();
 
             pluginSettingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == actionRequest.PluginId);
@@ -265,7 +229,7 @@ namespace OneDas.Engine.Core
             Type type;
             Assembly assembly;
 
-            typeSet = this.GetPluginsByBaseClass<PluginSettingsBase>().ToList();
+            typeSet = this.Get<PluginSettingsBase>().ToList();
             type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
             assembly = type?.Assembly;
             resourceName = $"{ assembly.GetName().Name }.{ resourceName }";

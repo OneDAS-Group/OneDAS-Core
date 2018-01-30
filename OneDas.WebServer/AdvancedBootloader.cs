@@ -25,7 +25,7 @@ namespace OneDas.WebServer
         private bool _isHosting;
         private OneDasEngine _oneDasEngine;
         private WebServerOptions _webServerOptions;
-        private PluginProvider _pluginProvider;
+        private IPluginProvider _pluginProvider;
         private IWebHost _webhost;
         private IConfiguration _configuration;
         private IServiceProvider _serviceProvider;
@@ -47,7 +47,7 @@ namespace OneDas.WebServer
             {
                 _webhost = this.CreateWebHost();
                 _serviceProvider = _webhost.Services;
-                _pluginProvider = _serviceProvider.GetRequiredService<PluginProvider>();
+                _pluginProvider = _serviceProvider.GetRequiredService<IPluginProvider>();
 
                 // create directories
                 Directory.CreateDirectory(_webServerOptions.BaseDirectoryPath);
@@ -59,8 +59,8 @@ namespace OneDas.WebServer
                 // load plugins
                 minimumVersion = new Version(new Version(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion).Major, 0, 0, 0);
 
-                _pluginProvider = _serviceProvider.GetRequiredService<PluginProvider>();
-                _pluginProvider.ScanAssemblies(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"), _webServerOptions.OneDasName, minimumVersion);
+                _pluginProvider = _serviceProvider.GetRequiredService<IPluginProvider>();
+                _pluginProvider.ScanAssemblies(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"), "OneDAS", minimumVersion);
 
                 // create engine
                 _oneDasEngine = _serviceProvider.GetRequiredService<OneDasEngine>();

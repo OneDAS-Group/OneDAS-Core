@@ -2,10 +2,10 @@
 {
     public interface IOneDasProjectSerializer
     {
-        void Save(Project project, string filePath);
+        void Save(OneDasProjectSettings projectSettings, string filePath);
 
-        Project Load(string filePath);
+        OneDasProjectSettings Load(string filePath);
 
-        ProjectDescription GetProjectDescriptionFromFile(string filePath);
+        OneDasProjectDescription GetProjectDescriptionFromFile(string filePath);
     }
 }

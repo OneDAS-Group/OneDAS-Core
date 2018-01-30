@@ -1,5 +1,4 @@
 ﻿using OneDas.Infrastructure;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace OneDas.Plugin
@@ -24,8 +23,6 @@ namespace OneDas.Plugin
         #endregion
 
         #region "Methods"
-
-        public abstract IEnumerable<DataPort> GetDataPortSet();
 
         public override void Validate()
         {

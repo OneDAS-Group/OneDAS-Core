@@ -10,7 +10,7 @@ namespace OneDas.Plugin
     {
         private string errorDescription;
 
-        public DataWriterContext(string systemName, string dataDirectoryPath, ProjectDescription projectDescription, IList<CustomMetadataEntry> customMetadataEntrySet)
+        public DataWriterContext(string systemName, string dataDirectoryPath, OneDasProjectDescription projectDescription, IList<CustomMetadataEntry> customMetadataEntrySet)
         {
             Contract.Requires(customMetadataEntrySet != null);
 
@@ -30,7 +30,7 @@ namespace OneDas.Plugin
 
         public string SystemName { get; private set; }
         public string DataDirectoryPath { get; private set; }
-        public ProjectDescription ProjectDescription { get; private set; }
+        public OneDasProjectDescription ProjectDescription { get; private set; }
         public IList<CustomMetadataEntry> CustomMetadataEntrySet { get; private set; }
     }
 }

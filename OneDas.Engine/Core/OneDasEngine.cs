@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Common;
 using OneDas.Infrastructure;
@@ -46,10 +47,10 @@ namespace OneDas.Engine.Core
 
         private TimeSpan _chunkPeriod;
 
+        private IServiceProvider _serviceProvider;
         private ILogger _systemLogger;
         private ILogger _oneDasEngineLogger;
 
-        IPluginProvider _pluginProvider;
         OneDasOptions _oneDasOptions;
 
         // reset required	
@@ -81,10 +82,7 @@ namespace OneDas.Engine.Core
         private Dictionary<DataGatewayPluginLogicBase, bool> _hasValidDataSet;
 
         // overwritten
-        private Project _project;
         private Exception _exception;
-        private List<DataGatewayPluginLogicBase> _dataGatewaySet;
-        private List<DataWriterPluginLogicBase> _dataWriterSet;
         private IList<List<DataStorageBase>> _dataStorageSet;
         private IReferenceClock _referenceClock;
 
@@ -92,9 +90,9 @@ namespace OneDas.Engine.Core
 
         #region "Constructors"
 
-        public OneDasEngine(IPluginProvider pluginProvider, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasEngine(IServiceProvider serviceProvider, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
-            _pluginProvider = pluginProvider;
+            _serviceProvider = serviceProvider;
             _oneDasOptions = options.Value;
 
             // state
@@ -240,13 +238,7 @@ namespace OneDas.Engine.Core
             }
         }
 
-        public Project Project
-        {
-            get
-            {
-                return _project;
-            }
-        }
+        public OneDasProject Project { get; private set; }
 
         #endregion
 
@@ -340,18 +332,14 @@ namespace OneDas.Engine.Core
             Task.Run(() => this.OneDasStateChanged?.Invoke(this, new OneDasStateChangedEventArgs(oldState, newState)));
         }
 
-        private void DisposePlugins()
-        {
-            _dataGatewaySet?.ForEach(dataGateway => dataGateway.Dispose());
-            _dataWriterSet?.ForEach(dataWriter => dataWriter.Dispose());
-        }
-
         #endregion
 
         #region "Exception handling"
 
         public void HandleException(Exception exception)
         {
+            this.Project?.Dispose();
+
             exception = ExceptionHelper.UnwrapException(exception);
 
             this.LastError = exception.Message;
@@ -364,11 +352,12 @@ namespace OneDas.Engine.Core
 
         #region "Configuration"
 
-        public void ActivateProject(Project project, int retryCount)
+        public void ActivateProject(OneDasProjectSettings projectSettings, int retryCount)
         {
-            Contract.Requires(project != null);
+            Contract.Requires(projectSettings != null);
 
-            _project = project;
+            this.Project?.Dispose();
+            this.Project = ActivatorUtilities.CreateInstance<OneDasProject>(_serviceProvider, projectSettings);
 
             this.OneDasState = OneDasState.ApplyConfiguration;
 
@@ -417,7 +406,7 @@ namespace OneDas.Engine.Core
             }
             catch (Exception ex)
             {
-                this.DisposePlugins();
+                this.Project?.Dispose();
 
                 throw ExceptionHelper.UnwrapException(ex);
             }
@@ -425,8 +414,6 @@ namespace OneDas.Engine.Core
 
         private void Step_0_Reset()
         {
-            this.DisposePlugins();
-
             _timerDrift = 0;
 
             _chunkIndex = 0;
@@ -457,8 +444,7 @@ namespace OneDas.Engine.Core
 
         private void Step_1_PrepareDataGateway()
         {
-            _dataGatewaySet = _project.DataGatewaySettingsSet.Select(settings => _pluginProvider.BuildContainer<DataGatewayPluginLogicBase>(settings)).ToList();
-            _referenceClock = _dataGatewaySet.FirstOrDefault(x => x is IReferenceClock) as IReferenceClock;
+            _referenceClock = this.Project.DataGatewaySet.FirstOrDefault(x => x is IReferenceClock) as IReferenceClock;
 
             if (_referenceClock == null)
             {
@@ -469,7 +455,7 @@ namespace OneDas.Engine.Core
                 _oneDasEngineLogger.LogInformation($"reference clock is { ((PluginLogicBase)_referenceClock).Settings.Description.Id } ({ ((PluginLogicBase)_referenceClock).Settings.Description.InstanceId })");
             }
 
-            _dataGatewaySet.AsParallel().ForAll(dataGateway => dataGateway.Configure());
+            this.Project.DataGatewaySet.AsParallel().ForAll(dataGateway => dataGateway.Configure());
         }
 
         private void Step_2_PrepareBuffers()
@@ -486,7 +472,7 @@ namespace OneDas.Engine.Core
                 dataStorageContextInputSet = new List<DataStorageContext>();
                 dataStorageContextOutputSet = new List<DataStorageContext>();
 
-                channelHubSet = _project.ChannelHubSet.Where(channelHub => channelHub.SampleRate == sampleRate && (channelHub.AssociatedDataInput != null || channelHub.AssociatedDataOutputSet.Any())).ToList();
+                channelHubSet = this.Project.Settings.ChannelHubSet.Where(channelHub => channelHub.SampleRate == sampleRate && (channelHub.AssociatedDataInput != null || channelHub.AssociatedDataOutputSet.Any())).ToList();
 
                 channelHubSet.ForEach(channelHub =>
                 {
@@ -501,14 +487,14 @@ namespace OneDas.Engine.Core
                     // input
                     if (channelHub.AssociatedDataInput != null)
                     {
-                        dataGateway = _dataGatewaySet.First(y => y.Settings == channelHub.AssociatedDataInput.AssociatedDataGateway);
+                        dataGateway = this.Project.DataGatewaySet.First(y => y == channelHub.AssociatedDataInput.AssociatedDataGateway);
                         dataStorageContextInputSet.Add(new DataStorageContext(channelHub, dataGateway, channelHub.AssociatedDataInput));
                     }
 
                     // output
                     dataStorageContextOutputSet.AddRange(channelHub.AssociatedDataOutputSet.Select(dataOutput =>
                     {
-                        dataGateway = _dataGatewaySet.First(y => y.Settings == dataOutput.AssociatedDataGateway);
+                        dataGateway = this.Project.DataGatewaySet.First(y => y == dataOutput.AssociatedDataGateway);
 
                         return new DataStorageContext(channelHub, dataGateway, dataOutput);
                     }));
@@ -524,14 +510,12 @@ namespace OneDas.Engine.Core
             DateTime currentDateTime;
             IList<CustomMetadataEntry> customMetadataEntrySet;
 
-            _dataWriterSet = _project.DataWriterSettingsSet.Select(settings => _pluginProvider.BuildContainer<DataWriterPluginLogicBase>(settings)).ToList();
-
             customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS", CustomMetadataEntryLevel.File));
 
             currentDateTime = DateTime.UtcNow;
 
-            _dataWriterSet.ToList().ForEach(dataWriter =>
+            this.Project.DataWriterSet.ForEach(dataWriter =>
             {
                 string baseDirectoryPath;
 
@@ -541,13 +525,13 @@ namespace OneDas.Engine.Core
                     throw new Exception(ErrorMessage.OneDasEngine_DirectoryNameInvalid);
                 }
 
-                baseDirectoryPath = Path.Combine(_oneDasOptions.DataDirectoryPath, $"{ this.Project.Description.CampaignPrimaryGroup }_{ this.Project.Description.CampaignSecondaryGroup }_{ this.Project.Description.CampaignName }_V{ this.Project.Description.CampaignVersion }_{ this.Project.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
+                baseDirectoryPath = Path.Combine(_oneDasOptions.DataDirectoryPath, $"{ this.Project.Settings.Description.CampaignPrimaryGroup }_{ this.Project.Settings.Description.CampaignSecondaryGroup }_{ this.Project.Settings.Description.CampaignName }_V{ this.Project.Settings.Description.CampaignVersion }_{ this.Project.Settings.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
 
                 Directory.CreateDirectory(baseDirectoryPath);
 
                 dataWriter.Initialize(
                     currentDateTime,
-                    new DataWriterContext("OneDAS", baseDirectoryPath, _project.Description, customMetadataEntrySet),
+                    new DataWriterContext("OneDAS", baseDirectoryPath, this.Project.Settings.Description, customMetadataEntrySet),
                     this.Project.ActiveChannelHubSet.Select(channelHub => new VariableDescription(channelHub)).ToList()
                 );
             });
@@ -594,7 +578,6 @@ namespace OneDas.Engine.Core
 
             if (_exception != null)
             {
-                this.DisposePlugins();
                 this.HandleException(_exception);
                 _exception = null;
             }
@@ -679,7 +662,7 @@ namespace OneDas.Engine.Core
                             throw new Exception(ErrorMessage.OneDasEngine_ReferenceClockNotMonotonouslyRising);
                         }
 
-                        _dataGatewaySet.ForEach(dataGateway => // update IO of all remaining data-gateways
+                        this.Project.DataGatewaySet.ForEach(dataGateway => // update IO of all remaining data-gateways
                         {
                             if (dataGateway != _referenceClock)
                             {
@@ -719,7 +702,7 @@ namespace OneDas.Engine.Core
 
                             realChunkIndex = _chunkIndex / (int)sampleRateCategory.Key;
 
-                            foreach (DataGatewayPluginLogicBase dataGateway in _dataGatewaySet)
+                            foreach (DataGatewayPluginLogicBase dataGateway in this.Project.DataGatewaySet)
                             {
                                 int referencePeriod;
 
@@ -771,7 +754,6 @@ namespace OneDas.Engine.Core
                     }
                     catch (Exception ex)
                     {
-                        this.DisposePlugins();
                         this.HandleException(ex);
                     }
                 }
@@ -902,7 +884,7 @@ namespace OneDas.Engine.Core
                         break;
                     }
 
-                    _dataWriterSet.ToList().AsParallel().ForAll(dataWriter =>
+                    this.Project.DataWriterSet.AsParallel().ForAll(dataWriter =>
                     {
                         dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataStorageSet[_cachedDataStorageIndex]);
                     });
@@ -944,7 +926,7 @@ namespace OneDas.Engine.Core
                     _storageAutoResetEvent.Set();
                     _storageThread?.Join();
 
-                    this.DisposePlugins();
+                    this.Project?.Dispose();
                 }
             }
 

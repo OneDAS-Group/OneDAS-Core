@@ -13,6 +13,8 @@ namespace OneDas.Plugin
         public ExtendedDataGatewayPluginLogicBase(ExtendedDataGatewayPluginSettingsBase settings) : base(settings)
         {
             this.Settings = settings;
+
+            this.UpdateDataPortSet();
         }
 
         #endregion
@@ -24,15 +26,25 @@ namespace OneDas.Plugin
         protected byte[] InputBuffer { get; private set; }
         protected byte[] OutputBuffer { get; private set; }
 
+        protected List<DataPort> DataPortSet { get; set; }
+        protected Dictionary<OneDasModule, List<DataPort>> ModuleToDataPortMap { get; private set; }
+
         protected GCHandle InputBufferHandle { get; private set; }
         protected GCHandle OutputBufferHandle { get; private set; }
 
         #endregion
 
+        #region "Methods"
+
         public override void Configure()
         {
-            (this.InputBuffer, this.InputBufferHandle) = this.PrepareBuffer(this.Settings.GetModuleToDataPortMap(DataDirection.Input), DataDirection.Input);
-            (this.OutputBuffer, this.OutputBufferHandle) = this.PrepareBuffer(this.Settings.GetModuleToDataPortMap(DataDirection.Output), DataDirection.Output);
+            (this.InputBuffer, this.InputBufferHandle) = this.PrepareBuffer(this.GetModuleToDataPortMap(DataDirection.Input), DataDirection.Input);
+            (this.OutputBuffer, this.OutputBufferHandle) = this.PrepareBuffer(this.GetModuleToDataPortMap(DataDirection.Output), DataDirection.Output);
+        }
+
+        public override IEnumerable<DataPort> GetDataPortSet()
+        {
+            return this.DataPortSet;
         }
 
         protected virtual (byte[] Buffer, GCHandle BufferHandle) PrepareBuffer(Dictionary<OneDasModule, List<DataPort>> moduleToDataPortMap, DataDirection dataDirection)
@@ -84,6 +96,62 @@ namespace OneDas.Plugin
             return (new byte[size], 0);
         }
 
+        protected virtual void UpdateDataPortSet()
+        {
+            int indexInput;
+            int indexOutput;
+
+            this.DataPortSet = new List<DataPort>();
+
+            // inputs
+            indexInput = 0;
+            indexOutput = 0;
+
+            this.ModuleToDataPortMap = this.Settings.ModuleSet.ToDictionary(oneDasModule => oneDasModule, oneDasModule =>
+            {
+                List<DataPort> dataPortSet;
+
+                switch (oneDasModule.DataDirection)
+                {
+                    case DataDirection.Input:
+
+                        dataPortSet = this.CreateDataPortSet(oneDasModule, indexInput);
+                        indexInput += oneDasModule.Size;
+                        break;
+
+                    case DataDirection.Output:
+
+                        dataPortSet = this.CreateDataPortSet(oneDasModule, indexOutput);
+                        indexOutput += oneDasModule.Size;
+                        break;
+
+                    default:
+                        throw new ArgumentException();
+                }
+
+                return dataPortSet;
+            });
+
+            this.DataPortSet = ModuleToDataPortMap.SelectMany(moduleEntry => moduleEntry.Value).ToList();
+        }
+
+        protected virtual List<DataPort> CreateDataPortSet(OneDasModule oneDasModule, int index)
+        {
+            string prefix;
+
+            switch (oneDasModule.DataDirection)
+            {
+                case DataDirection.Input:
+                    prefix = "Input"; break;
+                case DataDirection.Output:
+                    prefix = "Output"; break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return Enumerable.Range(0, oneDasModule.Size).Select(i => new DataPort($"{ prefix } { index + i }", oneDasModule.DataType, oneDasModule.DataDirection, oneDasModule.Endianness)).ToList();
+        }
+
         protected override void FreeUnmanagedResources()
         {
             if (this.InputBufferHandle.IsAllocated)
@@ -96,5 +164,12 @@ namespace OneDas.Plugin
                 this.OutputBufferHandle.Free();
             }
         }
+
+        private Dictionary<OneDasModule, List<DataPort>> GetModuleToDataPortMap(DataDirection dataDirection)
+        {
+            return ModuleToDataPortMap.Where(moduleEntry => moduleEntry.Key.DataDirection == dataDirection).ToDictionary(moduleEntry => moduleEntry.Key, moduleEntry => moduleEntry.Value);
+        }
+
+        #endregion
     }
 }

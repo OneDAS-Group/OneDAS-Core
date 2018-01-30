@@ -10,7 +10,7 @@ namespace OneDas.WebServer.Web
     {
         Task SendWebServerOptionsLight(WebServerOptionsLight webServerOptionsLight);
         Task SendOneDasState(OneDasState oneDasState);
-        Task SendActiveProject(Project project);
+        Task SendActiveProject(OneDasProjectSettings projectSettings);
         Task SendPerformanceInformation(OneDasPerformanceInformation performanceInformation);
         Task SendDataSnapshot(DateTime dateTime, IEnumerable<object> dataSnapshot);
         Task SendLiveViewData(int subscriptionId, DateTime dateTime, IEnumerable<object> dataSnapshot);

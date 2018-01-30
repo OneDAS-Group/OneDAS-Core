@@ -22,21 +22,15 @@ namespace OneDas.Plugin
 
         List<Type> LoadAssemby(string filePath);
 
-        IEnumerable<Type> GetPluginsByBaseClass<TBaseClass>();
+        Type Get(string pluginId);
 
-        IEnumerable<Type> Get<T>();
+        IEnumerable<Type> Get<TPluginBase>();
 
-        Type Get<TPluginSettings>(string pluginId);
+        void Add(Type pluginType);
 
-        void Add<T>(Type pluginType);
+        void AddRange(IEnumerable<Type> pluginTypeSet);
 
-        void Add(Type baseType, Type pluginType);
-
-        void AddRange<T>(IEnumerable<Type> pluginTypeSet);
-
-        void AddRange(Type baseType, IEnumerable<Type> pluginTypeSet);
-
-        void Clear<T>();
+        void Clear();
 
         #endregion
 
@@ -46,7 +40,7 @@ namespace OneDas.Plugin
 
         IPluginSupporter TryBuildSupporter(Type pluginSettingsType);
 
-        TPluginLogic BuildContainer<TPluginLogic>(PluginSettingsBase pluginSettings, params object[] args) where TPluginLogic : PluginLogicBase;
+        TPluginLogic BuildLogic<TPluginLogic>(PluginSettingsBase pluginSettings, params object[] args) where TPluginLogic : PluginLogicBase;
 
         #endregion
 

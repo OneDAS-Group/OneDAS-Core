@@ -18,7 +18,7 @@ namespace OneDas.Engine.Serialization
             _oneDasSerializer = oneDasSerializer;
         }
 
-        public void Save(Project project, string filePath)
+        public void Save(OneDasProjectSettings projectSettings, string filePath)
         {
             string directoryPath;
 
@@ -34,17 +34,17 @@ namespace OneDas.Engine.Serialization
                 string rawJson;
                 JsonTextWriter jsonTextWriter;
 
-                rawJson = _oneDasSerializer.Serialize(project);
+                rawJson = _oneDasSerializer.Serialize(projectSettings);
 
                 jsonTextWriter = new JsonTextWriter(streamWriter);
                 jsonTextWriter.WriteRaw(rawJson);
             }
         }
 
-        public Project Load(string filePath)
+        public OneDasProjectSettings Load(string filePath)
         {
             JObject jObject;
-            Project project;
+            OneDasProjectSettings projectSettings;
 
             jObject = JObject.Parse(File.ReadAllText(filePath));
 
@@ -52,10 +52,10 @@ namespace OneDas.Engine.Serialization
 
             try
             {
-                project = _oneDasSerializer.Deserialize<Project>(jObject.ToString());
-                project.Validate();
+                projectSettings = _oneDasSerializer.Deserialize<OneDasProjectSettings>(jObject.ToString());
+                projectSettings.Validate();
 
-                return project;
+                return projectSettings;
             }
             catch (Exception ex)
             {
@@ -63,9 +63,9 @@ namespace OneDas.Engine.Serialization
             }
         }
 
-        public ProjectDescription GetProjectDescriptionFromFile(string filePath)
+        public OneDasProjectDescription GetProjectDescriptionFromFile(string filePath)
         {
-            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<ProjectDescription>();
+            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<OneDasProjectDescription>();
         }
 
         private void Upgrade(JObject jObject)
@@ -80,7 +80,7 @@ namespace OneDas.Engine.Serialization
                 {
                     int finalVersion;
 
-                    finalVersion = Project.FormatVersion;
+                    finalVersion = OneDasProjectSettings.FormatVersion;
 
                     if (formatVersion <= 1)
                     {

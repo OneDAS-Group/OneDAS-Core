@@ -7,26 +7,26 @@ using System.Runtime.Serialization;
 namespace OneDas.Infrastructure
 {
     [DataContract]
-    public class Project
+    public class OneDasProjectSettings
     {
         #region "Constructors"
 
-        static Project()
+        static OneDasProjectSettings()
         {
-            Project.FormatVersion = 1; // first version
-            Project.FormatVersion = 2; // 11.08.2017 (unit_set, transfer_function_set)
+            OneDasProjectSettings.FormatVersion = 1; // first version
+            OneDasProjectSettings.FormatVersion = 2; // 11.08.2017 (unit_set, transfer_function_set)
         }
 
-        public Project(string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName): this(campaignPrimaryGroup, campaignSecondaryGroup, campaignName, new List<DataGatewayPluginSettingsBase>(), new List<DataWriterPluginSettingsBase>())
+        public OneDasProjectSettings(string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName): this(campaignPrimaryGroup, campaignSecondaryGroup, campaignName, new List<DataGatewayPluginSettingsBase>(), new List<DataWriterPluginSettingsBase>())
         {
             //
         }  
 
-        public Project(string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName, IEnumerable<DataGatewayPluginSettingsBase> dataGatewaySettingsSet, IEnumerable<DataWriterPluginSettingsBase> dataWriterSettingsSet)
+        public OneDasProjectSettings(string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName, IEnumerable<DataGatewayPluginSettingsBase> dataGatewaySettingsSet, IEnumerable<DataWriterPluginSettingsBase> dataWriterSettingsSet)
         {
             int nextId;
             
-            this.Description = new ProjectDescription(Project.FormatVersion, 0, Guid.NewGuid(), campaignPrimaryGroup, campaignSecondaryGroup, campaignName);
+            this.Description = new OneDasProjectDescription(OneDasProjectSettings.FormatVersion, 0, Guid.NewGuid(), campaignPrimaryGroup, campaignSecondaryGroup, campaignName);
             this.ChannelHubSet = new List<ChannelHub>();
 
             this.DataGatewaySettingsSet = dataGatewaySettingsSet;
@@ -46,18 +46,16 @@ namespace OneDas.Infrastructure
         public static int FormatVersion { get; private set; }
 
         [DataMember]
-        public ProjectDescription Description { get; set; }
+        public OneDasProjectDescription Description { get; set; }
 
         [DataMember]
-        public IList<ChannelHub> ChannelHubSet { get; private set; }
+        public List<ChannelHub> ChannelHubSet { get; private set; }
 
         [DataMember]
         public IEnumerable<DataGatewayPluginSettingsBase> DataGatewaySettingsSet { get; private set; }
 
         [DataMember]
         public IEnumerable<DataWriterPluginSettingsBase> DataWriterSettingsSet { get; private set; }
-
-        public IList<ChannelHub> ActiveChannelHubSet { get; private set; }
 
         #endregion
 
@@ -121,67 +119,6 @@ namespace OneDas.Infrastructure
             }
 
             this.DataWriterSettingsSet.ToList().ForEach(dataWriterSettings => dataWriterSettings.Validate());
-        }
-
-        private void Initialize()
-        {
-            IEnumerable<DataPort> dataPortSet;
-            IDictionary<DataPort, string> dataPortIdMap;
-
-            // assign correct data-gateway instances to all data ports
-            this.DataGatewaySettingsSet.ToList().ForEach(dataGateway =>
-            {
-                dataGateway.GetDataPortSet().ToList().ForEach(dataPort =>
-                {
-                    dataPort.AssociatedDataGateway = dataGateway;
-                });
-            });
-
-            // UpdateMapping()
-            dataPortSet = this.DataGatewaySettingsSet.SelectMany(x => x.GetDataPortSet()).ToList();
-            dataPortIdMap = dataPortSet.ToDictionary(x => x, x => x.ToUniqueIdentifier());
-
-            this.ChannelHubSet.ToList().ForEach(channelHub =>
-            {
-                string inputId = channelHub.AssociatedDataInputId;
-
-                if (!string.IsNullOrWhiteSpace(inputId))
-                {
-                    DataPort foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == inputId);
-
-                    if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub))
-                    {
-                        channelHub.SetAssociation(foundDataPort);
-                    }
-                }
-
-                foreach (string outputId in channelHub.AssociatedDataOutputIdSet)
-                {
-                    DataPort foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == outputId);
-
-                    if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub))
-                    {
-                        channelHub.SetAssociation(foundDataPort);
-                    }
-                }
-            });
-
-            this.ActiveChannelHubSet = this.ChannelHubSet.Where(channelHub => channelHub.AssociatedDataInput != null).ToList();
-        }
-
-        private bool IsAssociationAllowed(DataPort dataPort, ChannelHub channelHub)
-        {
-            return InfrastructureHelper.GetBitLength(dataPort.OneDasDataType, true) == InfrastructureHelper.GetBitLength(channelHub.OneDasDataType, true);
-        }
-
-        #endregion
-
-        #region "Serialization"
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext streamingContext)
-        {
-            this.Initialize();
         }
 
         #endregion
