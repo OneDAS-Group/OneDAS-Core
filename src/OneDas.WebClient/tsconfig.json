@@ -8,14 +8,14 @@
     "experimentalDecorators": true,
     "module": "none",
     "typeRoots": [
-      "./../../OneDas-Support/web/node_modules/@types/"
+      "./../../../OneDas-Support/web/node_modules/@types/"
     ]
   },
   "exclude": [
     "wwwroot"
   ],
   "files": [
-    "./../../OneDas-Support/web/typings/global.d.ts",
+    "./../../../OneDas-Support/web/typings/global.d.ts",
 
     "./OneDas.Types/DataDirectionEnum.ts",
     "./OneDas.Types/EndiannessEnum.ts",
