@@ -1,6 +1,6 @@
 <Project InitialTargets="CreateOneDasMetaData">
-  <Import Project="$(ProjectDir)..\..\OneDAS-Support\build\OneDas.targets" />
-  <UsingTask TaskName="BuildTask" AssemblyFile="$(ProjectDir)..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
+  <Import Project=".\..\..\OneDAS-Support\build\OneDas.targets" />
+  <UsingTask TaskName="BuildTask" AssemblyFile=".\..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
   <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
     <PropertyGroup>
 	   <Major Condition="$(Major) == ''">0</Major>

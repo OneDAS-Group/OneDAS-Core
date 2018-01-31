@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj", "{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "src\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj", "{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Explorer", "OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj", "{FC88C425-009A-40CB-8C99-72DA49C82386}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Explorer", "src\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj", "{FC88C425-009A-40CB-8C99-72DA49C82386}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types", "OneDas.Types\OneDas.Types.csproj", "{97552492-EDC6-4F26-B2F6-7690B11EF1B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types", "src\OneDas.Types\OneDas.Types.csproj", "{97552492-EDC6-4F26-B2F6-7690B11EF1B0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Types", "OneDas.Hdf.Types\OneDas.Hdf.Types.csproj", "{016F5C76-9BCE-48C1-8936-AF1E869F58C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Types", "src\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj", "{016F5C76-9BCE-48C1-8936-AF1E869F58C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC5F24C-EF86-424F-AC3E-79FF0E343684}"
 	ProjectSection(SolutionItems) = preProject
@@ -17,13 +17,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Engine", "OneDas.Engine\OneDas.Engine.csproj", "{DC7E940F-EFD3-435B-B49A-AD72A751782B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Engine", "src\OneDas.Engine\OneDas.Engine.csproj", "{DC7E940F-EFD3-435B-B49A-AD72A751782B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebServer", "OneDas.WebServer\OneDas.WebServer.csproj", "{BA4AACDD-8F38-45F5-85F1-094FE9DFE12A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebServer", "src\OneDas.WebServer\OneDas.WebServer.csproj", "{BA4AACDD-8F38-45F5-85F1-094FE9DFE12A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebClient", "OneDas.WebClient\OneDas.WebClient.csproj", "{9089076A-052E-47BA-8634-AAE9FC77D572}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebClient", "src\OneDas.WebClient\OneDas.WebClient.csproj", "{9089076A-052E-47BA-8634-AAE9FC77D572}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Deployment", "OneDas.Deployment\OneDas.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Deployment", "src\OneDas.Deployment\OneDas.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

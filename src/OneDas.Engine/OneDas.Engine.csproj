@@ -35,7 +35,5 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-
-  <Import Project="$(ProjectDir)..\support\OneDas.targets" />
-
+  
 </Project>

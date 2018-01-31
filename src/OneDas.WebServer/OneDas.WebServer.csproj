@@ -45,5 +45,4 @@
   <ItemGroup>
     <Folder Include="wwwroot\js\" />
   </ItemGroup>
-  <Import Project="$(ProjectDir)..\support\OneDas.targets" />
 </Project>

@@ -33,5 +33,4 @@
       <EmbeddedFiles Include="@(Compile) " />
     </ItemGroup>
   </Target>
-  <Import Project="$(ProjectDir)..\support\OneDas.targets" />
 </Project>
