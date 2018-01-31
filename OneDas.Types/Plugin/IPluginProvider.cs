@@ -1,12 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using OneDas.Common;
-using OneDas.Infrastructure;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace OneDas.Plugin
 {

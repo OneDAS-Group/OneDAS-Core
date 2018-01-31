@@ -14,14 +14,14 @@ namespace OneDas.Plugin
             this.VariableName = channelHub.Name;
             this.DatasetName = $"{ 100 / (int)channelHub.SampleRate } Hz"; // Improve remove magic number!
             this.Group = channelHub.Group;
-            this.OneDasDataType = channelHub.DataType;
+            this.DataType = channelHub.DataType;
             this.SamplesPerDay = InfrastructureHelper.GetSamplesPerDayFromSampleRate(channelHub.SampleRate);
             this.Unit = channelHub.Unit;
             this.TransferFunctionSet = channelHub.TransferFunctionSet;
             this.DataStorageType = typeof(ExtendedDataStorageBase);
         }
 
-        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType oneDasDataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
+        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
         {
             if (!(dataStorageType == typeof(DataStorageBase)))
             {
@@ -32,7 +32,7 @@ namespace OneDas.Plugin
             this.VariableName = variableName;
             this.DatasetName = datasetName;
             this.Group = group;
-            this.OneDasDataType = oneDasDataType;
+            this.DataType = dataType;
             this.SamplesPerDay = samplesPerDay;
             this.Unit = unit;
             this.TransferFunctionSet = transferFunctionSet;
@@ -47,7 +47,7 @@ namespace OneDas.Plugin
         public string VariableName { get; private set; }
         public string DatasetName { get; private set; }
         public string Group { get; private set; }
-        public OneDasDataType OneDasDataType { get; private set; }
+        public OneDasDataType DataType { get; private set; }
         public ulong SamplesPerDay { get; private set; }
         public string Unit { get; private set; }
         public List<TransferFunction> TransferFunctionSet { get; private set; }
