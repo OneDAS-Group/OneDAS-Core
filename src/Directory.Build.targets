@@ -3,12 +3,12 @@
   <UsingTask TaskName="BuildTask" AssemblyFile=".\..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
   <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
     <PropertyGroup>
-	   <Major Condition="$(Major) == ''">0</Major>
-	   <Minor Condition="$(Minor) == ''">1</Minor>
-	   <Revision Condition="$(Revision) == ''">0</Revision>
-	   <VersionSuffix Condition="$(VersionSuffix) == ''">alpha</VersionSuffix>
-	   <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
-	   <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</ProjectUrl>
+      <Major Condition="$(Major) == ''">0</Major>
+	  <Minor Condition="$(Minor) == ''">1</Minor>
+	  <Revision Condition="$(Revision) == ''">0</Revision>
+	  <VersionSuffix Condition="$(VersionSuffix) == ''">alpha</VersionSuffix>
+	  <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
+	  <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</ProjectUrl>
     </PropertyGroup>
     <BuildTask Input_PackageId="$(PackageId)"
 	           Input_Major="$(Major)" 
