@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "src\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj", "{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2}"
 EndProject
@@ -13,6 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Types", "src\One
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC5F24C-EF86-424F-AC3E-79FF0E343684}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		init_solution.bat = init_solution.bat
+		LICENSE.md = LICENSE.md
 		Nuget.Config = Nuget.Config
 		README.md = README.md
 	EndProjectSection
@@ -24,6 +27,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebClient", "src\OneDas.WebClient\OneDas.WebClient.csproj", "{9089076A-052E-47BA-8634-AAE9FC77D572}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Deployment", "src\OneDas.Deployment\OneDas.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{542D946C-E4D9-4A6A-99FD-6C1B940A81F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6767CF64-F8E3-450B-AE8E-0255642FD753}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3DBD52E4-26F8-413F-A954-2BE86E572F3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +139,16 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{FC88C425-009A-40CB-8C99-72DA49C82386} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{97552492-EDC6-4F26-B2F6-7690B11EF1B0} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{016F5C76-9BCE-48C1-8936-AF1E869F58C5} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{DC7E940F-EFD3-435B-B49A-AD72A751782B} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{BA4AACDD-8F38-45F5-85F1-094FE9DFE12A} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{9089076A-052E-47BA-8634-AAE9FC77D572} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{A30FFE93-A205-48E6-880B-B8DC17E12AF8} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F998BD6D-3E2B-4AA0-A7A4-FD84100C45A4}
