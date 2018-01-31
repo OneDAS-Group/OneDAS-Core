@@ -52,6 +52,7 @@ namespace OneDas.WebServer
                 // create directories
                 Directory.CreateDirectory(_webServerOptions.BaseDirectoryPath);
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "backup"));
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "config"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "data"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "project"));
@@ -166,6 +167,7 @@ namespace OneDas.WebServer
             serviceCollection.AddOneDas(oneDasOptions =>
             {
                 oneDasOptions.DataDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "data");
+                oneDasOptions.ConfigurationDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "config");
             });
 
             // OneDasConsole

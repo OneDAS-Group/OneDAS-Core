@@ -356,9 +356,6 @@ namespace OneDas.Engine.Core
         {
             Contract.Requires(projectSettings != null);
 
-            this.Project?.Dispose();
-            this.Project = ActivatorUtilities.CreateInstance<OneDasProject>(_serviceProvider, projectSettings);
-
             this.OneDasState = OneDasState.ApplyConfiguration;
 
             for (int i = 0; i <= retryCount - 1; i++)
@@ -374,7 +371,11 @@ namespace OneDas.Engine.Core
 
                 try
                 {
+                    this.Project?.Dispose();
+                    this.Project = ActivatorUtilities.CreateInstance<OneDasProject>(_serviceProvider, projectSettings);
+
                     this.InternalActivateProject();
+
                     break;
                 }
                 catch (Exception)
@@ -481,7 +482,7 @@ namespace OneDas.Engine.Core
                     DataGatewayPluginLogicBase dataGateway;
 
                     length = Convert.ToInt32(_oneDasOptions.NativeSampleRate / Convert.ToInt32(sampleRate) * _oneDasOptions.ChunkPeriod);
-                    type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { InfrastructureHelper.GetTypeFromOneDasDataType(channelHub.OneDasDataType) });
+                    type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { InfrastructureHelper.GetTypeFromOneDasDataType(channelHub.DataType) });
                     channelHub.AssociatedDataStorageSet = Enumerable.Range(0, STORAGE_COUNT).Select(x => (ExtendedDataStorageBase)Activator.CreateInstance(type, length)).ToList();
 
                     // input
@@ -772,7 +773,7 @@ namespace OneDas.Engine.Core
 
             dataStorage.WriteStatus(index, status);
 
-            if (dataPort.OneDasDataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
+            if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
             {
                 bool value;
 
@@ -816,7 +817,7 @@ namespace OneDas.Engine.Core
             sourcePtr = (byte*)dataStorage.GetDataPointer(index).ToPointer();
             targetPtr = (byte*)dataPort.DataPtr.ToPointer();
 
-            if (dataPort.OneDasDataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
+            if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
             {
                 if (*(bool*)sourcePtr)
                 {

@@ -14,7 +14,7 @@ namespace OneDas.Plugin
             this.VariableName = channelHub.Name;
             this.DatasetName = $"{ 100 / (int)channelHub.SampleRate } Hz"; // Improve remove magic number!
             this.Group = channelHub.Group;
-            this.OneDasDataType = channelHub.OneDasDataType;
+            this.OneDasDataType = channelHub.DataType;
             this.SamplesPerDay = InfrastructureHelper.GetSamplesPerDayFromSampleRate(channelHub.SampleRate);
             this.Unit = channelHub.Unit;
             this.TransferFunctionSet = channelHub.TransferFunctionSet;

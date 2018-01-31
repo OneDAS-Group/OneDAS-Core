@@ -20,9 +20,9 @@ namespace OneDas.Plugin
         // properties
         [DataMember]
         public string Name { get; private set; }
-        public OneDasDataType DataType { get; }
+
         [DataMember]
-        public OneDasDataType OneDasDataType { get; private set; }
+        public OneDasDataType DataType { get; private set; }
 
         [DataMember]
         public DataDirection DataDirection { get; private set; }

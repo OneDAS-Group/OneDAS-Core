@@ -2,7 +2,7 @@
 {
     public Name: KnockoutObservable<string>
     public Group: KnockoutObservable<string>
-    public readonly OneDasDataType: KnockoutObservable<OneDasDataTypeEnum>
+    public readonly DataType: KnockoutObservable<OneDasDataTypeEnum>
     public readonly SampleRate: KnockoutObservable<SampleRateEnum>
     public readonly Guid: string
     public readonly CreationDateTime: string
@@ -22,7 +22,7 @@
     {
         this.Name = ko.observable<string>(channelHubModel.Name)
         this.Group = ko.observable<string>(channelHubModel.Group)
-        this.OneDasDataType = ko.observable<OneDasDataTypeEnum>(channelHubModel.OneDasDataType)
+        this.DataType = ko.observable<OneDasDataTypeEnum>(channelHubModel.DataType)
         this.SampleRate = ko.observable<SampleRateEnum>(channelHubModel.SampleRate)
         this.Guid = channelHubModel.Guid
         this.CreationDateTime = channelHubModel.CreationDateTime
@@ -59,7 +59,7 @@
 
     public IsAssociationAllowed(dataPort: DataPortViewModel)
     {
-        return (dataPort.OneDasDataType & 0xff) == (this.OneDasDataType() & 0xff)
+        return (dataPort.DataType & 0xff) == (this.DataType() & 0xff)
     }
 
     public UpdateAssociation = (dataPort: DataPortViewModel) =>
@@ -179,7 +179,7 @@
         return {
             Name: <string>this.Name(),
             Group: <string>this.Group(),
-            OneDasDataType: <OneDasDataTypeEnum>this.OneDasDataType(),
+            DataType: <OneDasDataTypeEnum>this.DataType(),
             SampleRate: <SampleRateEnum>this.SampleRate(),
             Guid: <string>this.Guid,
             CreationDateTime: <string>this.CreationDateTime,

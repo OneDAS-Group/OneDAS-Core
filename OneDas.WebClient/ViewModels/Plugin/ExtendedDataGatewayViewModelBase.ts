@@ -80,7 +80,7 @@
         {
             return {
                 Name: <string>prefix + " " + (index + i),
-                OneDasDataType: <OneDasDataTypeEnum>oneDasModule.DataType(),
+                DataType: <OneDasDataTypeEnum>oneDasModule.DataType(),
                 DataDirection: <DataDirectionEnum>oneDasModule.DataDirection()
             }
         }).map(dataPortModel => new DataPortViewModel(dataPortModel, this))

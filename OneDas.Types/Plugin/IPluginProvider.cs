@@ -22,7 +22,9 @@ namespace OneDas.Plugin
 
         List<Type> LoadAssemby(string filePath);
 
-        Type Get(string pluginId);
+        Type GetSettings(string pluginId);
+
+        Type GetLogic(string pluginId);
 
         IEnumerable<Type> Get<TPluginBase>();
 

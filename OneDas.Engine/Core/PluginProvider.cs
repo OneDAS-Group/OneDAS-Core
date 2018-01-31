@@ -69,9 +69,14 @@ namespace OneDas.Engine.Core
             return assembly.ExportedTypes.ToList();
         }
 
-        public Type Get(string pluginId)
+        public Type GetSettings(string pluginId)
         {
-            return _pluginSet.FirstOrDefault(type => type.GetFirstAttribute<PluginIdentificationAttribute>().Id == pluginId);
+            return _pluginSet.FirstOrDefault(type => type.GetFirstAttribute<PluginIdentificationAttribute>()?.Id == pluginId);
+        }
+
+        public Type GetLogic(string pluginId)
+        {
+            return this.GetSettings(pluginId)?.GetFirstAttribute<PluginContextAttribute>().PluginLogic;
         }
 
         public IEnumerable<Type> Get<TPluginBase>()
@@ -88,6 +93,12 @@ namespace OneDas.Engine.Core
         {
             pluginTypeSet.ToList().ForEach(pluginType =>
             {
+                // create IPluginSupporter and call Initialize once
+                if (!_pluginSet.Contains(pluginType))
+                {
+                    this.TryBuildSupporter(pluginType)?.Initialize();
+                }
+
                 _pluginSet.Add(pluginType);
             });
         }

@@ -97,9 +97,9 @@ namespace OneDas.WebServer.Web
             }
         }
 
-        public static void SendClientMessage(string message)
+        public static void SendMessage(string message)
         {
-            _hubContext?.Clients.All.InvokeAsync("SendClientMessage", message);
+            _hubContext?.Clients.All.InvokeAsync("SendMessage", message);
         }
 
         private static void OneDasEngine_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)

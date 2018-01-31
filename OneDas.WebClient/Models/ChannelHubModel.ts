@@ -2,7 +2,7 @@
 {
     public Name: string
     public Group: string
-    public OneDasDataType: OneDasDataTypeEnum
+    public DataType: OneDasDataTypeEnum
     public SampleRate: SampleRateEnum
     public Guid: string
     public CreationDateTime: string
@@ -12,11 +12,11 @@
     public SerializerDataInputId: string
     public SerializerDataOutputIdSet: string[]
 
-    constructor(name: string, group: string, oneDasDataType: OneDasDataTypeEnum, sampleRate: SampleRateEnum)
+    constructor(name: string, group: string, dataType: OneDasDataTypeEnum, sampleRate: SampleRateEnum)
     {
         this.Name = name;
         this.Group = group;
-        this.OneDasDataType = oneDasDataType;
+        this.DataType = dataType;
         this.SampleRate = sampleRate;
         this.Guid = Guid.NewGuid()
         this.CreationDateTime = new Date().toISOString()

@@ -179,13 +179,13 @@
                                     <!-- ko if: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()).length > 0 && DataSnapshot().length > 0 -->
                                         <!-- ko foreach: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()) -->
                                             <tr data-toggle="tooltip" data-placement="left"
-                                                data-bind="attr: { title: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', OneDasDataType()) + ' / ' + 100 / SampleRate() + ' Hz' }">
+                                                data-bind="attr: { title: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType()) + ' / ' + 100 / SampleRate() + ' Hz' }">
                                                 <th class="table-row-condensed"><small data-bind="text: $index() + 1"></small></th>
                                                 <td class="table-row-condensed"><small data-bind="text: Name"></small></td>
-                                                <!-- ko if: OneDasDataType() === OneDasDataTypeEnum.BOOLEAN -->
+                                                <!-- ko if: DataType() === OneDasDataTypeEnum.BOOLEAN -->
                                                     <td class="table-row-condensed text-right"><small data-bind="text: $parent.DataSnapshot()[$index()]"></small></td>
                                                 <!-- /ko -->
-                                                <!-- ko if: OneDasDataType() !== OneDasDataTypeEnum.BOOLEAN -->
+                                                <!-- ko if: DataType() !== OneDasDataTypeEnum.BOOLEAN -->
                                                     <td class="table-row-condensed text-right"><small data-bind="text: GetTransformedValue($parent.DataSnapshot()[$index()]).toFixed(2)"></small></td>
                                                 <!-- /ko -->
                                                 <td class="table-row-condensed"><small data-bind="text: Unit"></small></td>

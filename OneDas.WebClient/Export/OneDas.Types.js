@@ -92,10 +92,10 @@ var OneDasModuleSelectorModeEnum;
     OneDasModuleSelectorModeEnum[OneDasModuleSelectorModeEnum["OutputOnly"] = 3] = "OutputOnly";
 })(OneDasModuleSelectorModeEnum || (OneDasModuleSelectorModeEnum = {}));
 class ChannelHubModel {
-    constructor(name, group, oneDasDataType, sampleRate) {
+    constructor(name, group, dataType, sampleRate) {
         this.Name = name;
         this.Group = group;
-        this.OneDasDataType = oneDasDataType;
+        this.DataType = dataType;
         this.SampleRate = sampleRate;
         this.Guid = Guid.NewGuid();
         this.CreationDateTime = new Date().toISOString();
@@ -319,7 +319,7 @@ class ChannelHubViewModel {
         };
         this.Name = ko.observable(channelHubModel.Name);
         this.Group = ko.observable(channelHubModel.Group);
-        this.OneDasDataType = ko.observable(channelHubModel.OneDasDataType);
+        this.DataType = ko.observable(channelHubModel.DataType);
         this.SampleRate = ko.observable(channelHubModel.SampleRate);
         this.Guid = channelHubModel.Guid;
         this.CreationDateTime = channelHubModel.CreationDateTime;
@@ -334,7 +334,7 @@ class ChannelHubViewModel {
         this.EvaluatedTransferFunctionSet = [];
     }
     IsAssociationAllowed(dataPort) {
-        return (dataPort.OneDasDataType & 0xff) == (this.OneDasDataType() & 0xff);
+        return (dataPort.DataType & 0xff) == (this.DataType() & 0xff);
     }
     SetAssociation(dataPort) {
         dataPort.AssociatedChannelHubSet.push(this);
@@ -387,7 +387,7 @@ class ChannelHubViewModel {
         return {
             Name: this.Name(),
             Group: this.Group(),
-            OneDasDataType: this.OneDasDataType(),
+            DataType: this.DataType(),
             SampleRate: this.SampleRate(),
             Guid: this.Guid,
             CreationDateTime: this.CreationDateTime,
@@ -570,7 +570,7 @@ class DataPortViewModel {
     // constructors
     constructor(dataPortModel, associatedDataGateway) {
         this.Name = ko.observable(dataPortModel.Name);
-        this.OneDasDataType = dataPortModel.OneDasDataType;
+        this.DataType = dataPortModel.DataType;
         this.DataDirection = dataPortModel.DataDirection;
         this.Endianness = dataPortModel.Endianness;
         this.IsSelected = ko.observable(false);
@@ -578,10 +578,10 @@ class DataPortViewModel {
         this.AssociatedDataGateway = associatedDataGateway;
         this.LiveDescription = ko.computed(() => {
             let result;
-            result = "<div class='text-left'>" + this.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.OneDasDataType) + "</div>";
+            result = "<div class='text-left'>" + this.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.DataType) + "</div>";
             if (this.AssociatedChannelHubSet().length > 0) {
                 this.AssociatedChannelHubSet().forEach(channelHub => {
-                    result += "</br ><div class='text-left'>" + channelHub.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', channelHub.OneDasDataType()) + "</div>";
+                    result += "</br ><div class='text-left'>" + channelHub.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', channelHub.DataType()) + "</div>";
                 });
             }
             return result;
@@ -600,7 +600,7 @@ class DataPortViewModel {
     ToModel() {
         let model = {
             Name: this.Name(),
-            OneDasDataType: this.OneDasDataType,
+            DataType: this.DataType,
             DataDirection: this.DataDirection
         };
         this.ExtendModel(model);
@@ -707,7 +707,7 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
         return Array.from(new Array(oneDasModule.Size()), (x, i) => {
             return {
                 Name: prefix + " " + (index + i),
-                OneDasDataType: oneDasModule.DataType(),
+                DataType: oneDasModule.DataType(),
                 DataDirection: oneDasModule.DataDirection()
             };
         }).map(dataPortModel => new DataPortViewModel(dataPortModel, this));

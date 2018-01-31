@@ -399,7 +399,7 @@
                                data-bind="event: { contextmenu: $parents[1].ShowContextMenu }, callFunction: $parents[1].Dropable">
                                 <div class="d-flex">
                                     <small class="mb-1 mr-auto" data-bind="text: Name"></small>
-                                    <small data-bind="text: 100 / SampleRate() + ' Hz' + ' / ' + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', OneDasDataType())"></small>
+                                    <small data-bind="text: 100 / SampleRate() + ' Hz' + ' / ' + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></small>
                                 </div>
                                 <div class="d-flex" style="font-size:0.6em;">
                                     <div class="w-50">
@@ -440,7 +440,7 @@
                                 <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
                                     <th class="table-row-condensed" data-bind="text: $index"></th>
                                     <td class="table-row-condensed" data-bind="text: Name"></td>
-                                    <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', OneDasDataType())"></td>
+                                    <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></td>
                                 </tr>
                                 <!-- /ko -->
                             </tbody>
@@ -525,7 +525,7 @@
                         <select class="form-control"
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                           value: NewChannelSelectedOneDasDataType"></select>
+                                           value: NewChannelSelectedDataType"></select>
                     </div>
                     <div class="form-group">
                         <label class="form-control-label">Sample rate:</label>

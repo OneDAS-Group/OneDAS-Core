@@ -67,7 +67,7 @@ declare enum OneDasModuleSelectorModeEnum {
 declare class ChannelHubModel {
     Name: string;
     Group: string;
-    OneDasDataType: OneDasDataTypeEnum;
+    DataType: OneDasDataTypeEnum;
     SampleRate: SampleRateEnum;
     Guid: string;
     CreationDateTime: string;
@@ -75,7 +75,7 @@ declare class ChannelHubModel {
     TransferFunctionSet: any[];
     SerializerDataInputId: string;
     SerializerDataOutputIdSet: string[];
-    constructor(name: string, group: string, oneDasDataType: OneDasDataTypeEnum, sampleRate: SampleRateEnum);
+    constructor(name: string, group: string, dataType: OneDasDataTypeEnum, sampleRate: SampleRateEnum);
 }
 declare class OneDasModuleModel {
     DataType: OneDasDataTypeEnum;
@@ -132,7 +132,7 @@ declare class PluginHive {
 declare class ChannelHubViewModel {
     Name: KnockoutObservable<string>;
     Group: KnockoutObservable<string>;
-    readonly OneDasDataType: KnockoutObservable<OneDasDataTypeEnum>;
+    readonly DataType: KnockoutObservable<OneDasDataTypeEnum>;
     readonly SampleRate: KnockoutObservable<SampleRateEnum>;
     readonly Guid: string;
     readonly CreationDateTime: string;
@@ -158,7 +158,7 @@ declare class ChannelHubViewModel {
     ToModel(): {
         Name: string;
         Group: string;
-        OneDasDataType: OneDasDataTypeEnum;
+        DataType: OneDasDataTypeEnum;
         SampleRate: SampleRateEnum;
         Guid: string;
         CreationDateTime: string;
@@ -227,7 +227,7 @@ declare class TransferFunctionViewModel {
 }
 declare class DataPortViewModel {
     Name: KnockoutObservable<string>;
-    readonly OneDasDataType: OneDasDataTypeEnum;
+    readonly DataType: OneDasDataTypeEnum;
     readonly DataDirection: DataDirectionEnum;
     readonly Endianness: EndiannessEnum;
     IsSelected: KnockoutObservable<boolean>;

@@ -90,7 +90,7 @@ namespace OneDas.Infrastructure
 
         private bool IsAssociationAllowed(DataPort dataPort, ChannelHub channelHub)
         {
-            return InfrastructureHelper.GetBitLength(dataPort.OneDasDataType, true) == InfrastructureHelper.GetBitLength(channelHub.OneDasDataType, true);
+            return InfrastructureHelper.GetBitLength(dataPort.DataType, true) == InfrastructureHelper.GetBitLength(channelHub.DataType, true);
         }
 
         #endregion

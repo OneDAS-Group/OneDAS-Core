@@ -35,7 +35,7 @@ namespace OneDas.Infrastructure
         public string Group { get; private set; }
 
         [DataMember]
-        public OneDasDataType OneDasDataType { get; private set; }
+        public OneDasDataType DataType { get; private set; }
 
         [DataMember]
         public SampleRate SampleRate { get; private set; }

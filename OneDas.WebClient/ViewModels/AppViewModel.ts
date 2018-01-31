@@ -196,7 +196,7 @@
             }
         })
 
-        ConnectionManager.WebClientHub.on("SendClientMessage", clientMessage =>
+        ConnectionManager.WebClientHub.on("SendMessage", clientMessage =>
         {
             this.ClientMessageLog.push(new MessageLogEntryViewModel(new Date().toLocaleTimeString('de-DE',
             {

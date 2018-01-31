@@ -99,7 +99,7 @@ namespace OneDas.Infrastructure
             }
 
             // -> data type matching
-            if (!channelHubSet.TrueForAll(x => InfrastructureHelper.GetBitLength(x.OneDasDataType, true) == InfrastructureHelper.GetBitLength(x.AssociatedDataInput.OneDasDataType, true)))
+            if (!channelHubSet.TrueForAll(x => InfrastructureHelper.GetBitLength(x.DataType, true) == InfrastructureHelper.GetBitLength(x.AssociatedDataInput.DataType, true)))
             {
                 throw new ValidationException(ErrorMessage.Project_DataTypeMismatch);
             }

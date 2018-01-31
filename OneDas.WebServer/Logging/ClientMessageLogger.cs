@@ -27,7 +27,7 @@ namespace OneDas.WebServer.Logging
             {
                 Task.Run(() =>
                 {
-                    HomeController.SendClientMessage($"{ _categoryName }: { formatter(state, exception) }");
+                    HomeController.SendMessage($"{ _categoryName }: { formatter(state, exception) }");
                 });
             }  
         }

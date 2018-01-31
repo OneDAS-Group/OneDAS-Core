@@ -13,7 +13,7 @@
     // new channel
     public NewChannelName: KnockoutObservable<string>
     public NewChannelGroup: KnockoutObservable<string>
-    public NewChannelSelectedOneDasDataType: KnockoutObservable<OneDasDataTypeEnum>
+    public NewChannelSelectedDataType: KnockoutObservable<OneDasDataTypeEnum>
     public NewChannelSelectedSampleRate: KnockoutObservable<SampleRateEnum>
 
     // new channel validation
@@ -62,7 +62,7 @@
 
         this.NewChannelName = ko.observable<string>("")
         this.NewChannelGroup = ko.observable<string>("Default")
-        this.NewChannelSelectedOneDasDataType = ko.observable<OneDasDataTypeEnum>(OneDasDataTypeEnum.INT16)
+        this.NewChannelSelectedDataType = ko.observable<OneDasDataTypeEnum>(OneDasDataTypeEnum.INT16)
         this.NewChannelSelectedSampleRate = ko.observable<SampleRateEnum>(SampleRateEnum.SampleRate_1)
 
         this.NewChannelCheckError = ko.observable(true)
@@ -514,7 +514,7 @@
     {
         this.EditChannelDummyChannel().Name(this.SelectedChannelHub().Name())
         this.EditChannelDummyChannel().Group(this.SelectedChannelHub().Group())
-        this.EditChannelDummyChannel().OneDasDataType(this.SelectedChannelHub().OneDasDataType())
+        this.EditChannelDummyChannel().DataType(this.SelectedChannelHub().DataType())
         this.EditChannelDummyChannel().SampleRate(this.SelectedChannelHub().SampleRate())
     }
 
@@ -529,7 +529,7 @@
     {
         this.ChannelHubSet.push(...this.NewChannelName().split("\n").map(channelName =>
         {
-            return new ChannelHubViewModel(new ChannelHubModel(channelName, this.NewChannelGroup(), this.NewChannelSelectedOneDasDataType(), this.NewChannelSelectedSampleRate()))
+            return new ChannelHubViewModel(new ChannelHubModel(channelName, this.NewChannelGroup(), this.NewChannelSelectedDataType(), this.NewChannelSelectedSampleRate()))
         }))
 
         this.NewChannelCheckError(false)

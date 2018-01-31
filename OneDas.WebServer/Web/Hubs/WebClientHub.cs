@@ -206,10 +206,12 @@ namespace OneDas.WebServer.Web
 
         public Task<OneDasProjectSettings> OpenProject(OneDasProjectDescription projectDescription)
         {
+            // Improve: Make more flexible, renaming of file is impossible like that
             return Task.Run(() =>
             {
-                // Improve: Make more flexible, renaming of file is impossible like that
-                OneDasProjectSettings projectSettings = _projectSerializer.Load(Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json"));
+                OneDasProjectSettings projectSettings;
+
+                projectSettings = _projectSerializer.Load(Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json"));
 
                 return projectSettings;
             });
@@ -248,7 +250,7 @@ namespace OneDas.WebServer.Web
             return Task.Run(() =>
             {
                 return new AppModel(
-                    activeProjectSettings: _oneDasEngine.Project.Settings,
+                    activeProjectSettings: _oneDasEngine.Project?.Settings,
                     clientSet: new List<string>() { },
                     dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
@@ -291,7 +293,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return (DataGatewayPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get(pluginName));
+                return (DataGatewayPluginSettingsBase)Activator.CreateInstance(_pluginProvider.GetSettings(pluginName));
             });
         }
 
@@ -299,7 +301,7 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.Get(pluginName));
+                return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.GetSettings(pluginName));
             });
         }
     }

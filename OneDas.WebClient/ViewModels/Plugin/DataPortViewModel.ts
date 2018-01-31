@@ -2,7 +2,7 @@
 {
     // fields
     public Name: KnockoutObservable<string>
-    public readonly OneDasDataType: OneDasDataTypeEnum
+    public readonly DataType: OneDasDataTypeEnum
     public readonly DataDirection: DataDirectionEnum
     public readonly Endianness: EndiannessEnum
 
@@ -15,7 +15,7 @@
     constructor(dataPortModel: any, associatedDataGateway: DataGatewayViewModelBase)
     {
         this.Name = ko.observable(dataPortModel.Name)
-        this.OneDasDataType = dataPortModel.OneDasDataType
+        this.DataType = dataPortModel.DataType
         this.DataDirection = dataPortModel.DataDirection
         this.Endianness = dataPortModel.Endianness
 
@@ -27,13 +27,13 @@
         {
             let result: string
 
-            result = "<div class='text-left'>" + this.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.OneDasDataType) + "</div>"
+            result = "<div class='text-left'>" + this.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', this.DataType) + "</div>"
 
             if (this.AssociatedChannelHubSet().length > 0)
             {
                 this.AssociatedChannelHubSet().forEach(channelHub =>
                 {
-                    result += "</br ><div class='text-left'>" + channelHub.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', channelHub.OneDasDataType()) + "</div>"
+                    result += "</br ><div class='text-left'>" + channelHub.Name() + "</div><div class='text-left'>" + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', channelHub.DataType()) + "</div>"
                 })
             }
 
@@ -61,7 +61,7 @@
     {
         let model: any = {
             Name: <string>this.Name(),
-            OneDasDataType: <OneDasDataTypeEnum>this.OneDasDataType,
+            DataType: <OneDasDataTypeEnum>this.DataType,
             DataDirection: <DataDirectionEnum>this.DataDirection
         }
 

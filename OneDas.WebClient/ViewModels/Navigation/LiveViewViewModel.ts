@@ -41,7 +41,7 @@
             {
                 this.SelectedChartContextSet().forEach(chartContext =>
                 {
-                    if (chartContext.ChannelHub.OneDasDataType() === OneDasDataTypeEnum.BOOLEAN)
+                    if (chartContext.ChannelHub.DataType() === OneDasDataTypeEnum.BOOLEAN)
                     {
                         //chartContext.ValueSet.push({ x: dateTime, y: dataSnapshot[index] ? 1 : 0 })
                         ///////////////////////////
