@@ -41,10 +41,10 @@ cd %rootFolder%\%projectName%-Support\web
 call install_packages.bat
 
 :: Core
-cd %rootFolder%\%projectName%-Core\support
+cd %rootFolder%\%projectName%-Core
 call init_solution.bat
 
 :: Ethercat
-cd %rootFolder%\%projectName%-Ethercat\support
+cd %rootFolder%\%projectName%-Ethercat
 call init_solution.bat
 ```
