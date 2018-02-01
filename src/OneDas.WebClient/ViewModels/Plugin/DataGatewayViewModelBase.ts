@@ -1,4 +1,6 @@
-﻿abstract class DataGatewayViewModelBase extends PluginViewModelBase
+﻿/// <reference path="PluginViewModelBase.ts"/>
+
+abstract class DataGatewayViewModelBase extends PluginViewModelBase
 {
     public readonly MaximumDatasetAge: KnockoutObservable<number>
     public readonly DataPortSet: KnockoutObservableArray<DataPortViewModel>

@@ -1,4 +1,6 @@
-﻿class DatasetInfoViewModel extends HdfElementViewModelBase
+﻿/// <reference path="HdfElementViewModelBase.ts"/>
+
+class DatasetInfoViewModel extends HdfElementViewModelBase
 {
     public IsSelected: KnockoutObservable<boolean>
     public IsVisible: KnockoutObservable<boolean>

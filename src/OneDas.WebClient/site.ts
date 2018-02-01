@@ -1,4 +1,7 @@
-﻿declare var pager: any
+﻿/// <reference path="Static/ConnectionManager.ts"/>
+/// <reference path="Static/PluginHive.ts"/>
+
+declare var pager: any
 declare var _ko: any
 
 let appViewModel: KnockoutObservable<AppViewModel> = ko.observable<AppViewModel>()

@@ -1,11 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var DataDirectionEnum;
 (function (DataDirectionEnum) {
     DataDirectionEnum[DataDirectionEnum["Input"] = 1] = "Input";
@@ -121,6 +113,14 @@ class TransferFunctionModel {
         this.Argument = argument;
     }
 }
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class ConnectionManager {
     static Initialize(enableLogging) {
         ConnectionManager.WebClientHub = new signalR.HubConnection('/webclienthub');
@@ -644,6 +644,7 @@ class PluginViewModelBase {
         return model;
     }
 }
+/// <reference path="PluginViewModelBase.ts"/>
 class DataGatewayViewModelBase extends PluginViewModelBase {
     constructor(model, identification) {
         super(model, identification);
@@ -713,6 +714,7 @@ class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
         }).map(dataPortModel => new DataPortViewModel(dataPortModel, this));
     }
 }
+/// <reference path="PluginViewModelBase.ts"/>
 class DataWriterViewModelBase extends PluginViewModelBase {
     constructor(model, identification) {
         super(model, identification);

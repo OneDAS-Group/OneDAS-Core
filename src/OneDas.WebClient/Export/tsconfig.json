@@ -1,11 +1,8 @@
 {
+  "extends": "./../../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "es6",
     "outFile": "./OneDas.Types.js",
-    "declaration": true,
-    "typeRoots": [
-      "./../../../../OneDas-Support/web/node_modules/@types/"
-    ]
+    "declaration": true
   },
   "exclude": [
     "wwwroot"
@@ -49,6 +46,5 @@
     "./../ViewModels/Plugin/DataWriterViewModelBase.ts",
     "./../ViewModels/Plugin/PluginDescriptionViewModel.ts",
     "./../ViewModels/Plugin/PluginIdentificationViewModel.ts"
-  ],
-  "compileOnSave": true
+  ]
 }

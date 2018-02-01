@@ -1,4 +1,6 @@
-﻿class CampaignInfoViewModel extends HdfElementViewModelBase
+﻿/// <reference path="HdfElementViewModelBase.ts"/>
+
+class CampaignInfoViewModel extends HdfElementViewModelBase
 {
     public readonly VariableInfoSet: VariableInfoViewModel[]
     public readonly GroupedVariableInfoSet: ObservableGroup<VariableInfoViewModel>[]

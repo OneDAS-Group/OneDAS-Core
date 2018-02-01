@@ -1,4 +1,6 @@
-﻿abstract class DataWriterViewModelBase extends PluginViewModelBase
+﻿/// <reference path="PluginViewModelBase.ts"/>
+
+abstract class DataWriterViewModelBase extends PluginViewModelBase
 {
     public readonly FileGranularity: KnockoutObservable<FileGranularityEnum>
 
