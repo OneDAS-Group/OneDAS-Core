@@ -1,4 +1,5 @@
-﻿using OneDas.Engine.Core;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
@@ -17,6 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             serviceCollection.Configure(configure);
 
+            serviceCollection.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
             serviceCollection.AddSingleton(typeof(IOneDasSerializer), typeof(OneDasSerializer));
             serviceCollection.AddSingleton(typeof(IOneDasProjectSerializer), typeof(OneDasProjectSerializer));
             serviceCollection.AddSingleton(typeof(IPluginProvider), typeof(PluginProvider));
