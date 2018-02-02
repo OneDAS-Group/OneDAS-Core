@@ -223,7 +223,7 @@ namespace OneDas.Engine.Core
 
                 if (!isTransitionValid)
                 {
-                    throw new Exception($"The requested transition from state { this.OneDasState } to state { value } is invalid.");
+                    throw new Exception($"invalid transition from state { this.OneDasState } to state { value }");
                 }
 
                 if (value != OneDasState.Error)
@@ -231,7 +231,7 @@ namespace OneDas.Engine.Core
                     this.LastError = string.Empty;
                 }
 
-                _systemLogger.LogInformation($"Performed transition from state { _oneDasState.ToString() } to state { value.ToString() }.");
+                _systemLogger.LogInformation($"transition from state { _oneDasState.ToString() } to state { value.ToString() }");
 
                 this.OnOneDasStateChanged(_oneDasState, value);
                 _oneDasState = value;
@@ -311,7 +311,6 @@ namespace OneDas.Engine.Core
         private void GcNotification_GcOccured(int generation)
         {
             _oneDasEngineLogger.LogInformation($"garbage collection ({ generation }. generation)");
-            Trace.WriteLine($"Garbage collection ({ generation }. generation).");
         }
 
         private void OnOneDasStateChanged(OneDasState oldState, OneDasState newState)
@@ -352,17 +351,22 @@ namespace OneDas.Engine.Core
 
         #region "Configuration"
 
+        public void ActivateProject(OneDasProjectSettings projectSettings)
+        {
+            this.ActivateProject(projectSettings, 0);
+        }
+
         public void ActivateProject(OneDasProjectSettings projectSettings, int retryCount)
         {
             Contract.Requires(projectSettings != null);
 
             this.OneDasState = OneDasState.ApplyConfiguration;
 
-            for (int i = 0; i <= retryCount - 1; i++)
+            for (int i = 0; i <= retryCount; i++)
             {
                 if (i == 0)
                 {
-                    _systemLogger.LogInformation($"starting engine (attempt {0 + 1})");
+                    _systemLogger.LogInformation($"starting engine");
                 }
                 else
                 {
@@ -449,7 +453,7 @@ namespace OneDas.Engine.Core
 
             if (_referenceClock == null)
             {
-                _oneDasEngineLogger.LogInformation("no reference clock found (fallback to default clock)");
+                _oneDasEngineLogger.LogWarning("no reference clock found (fallback to default clock)");
             }
             else
             {
@@ -592,17 +596,17 @@ namespace OneDas.Engine.Core
                         // statistics
                         if (_chunkIndex % _oneDasOptions.NativeSampleRate == 0)
                         {
-                            Trace.WriteLine($"max cycle time: {_maxCycleTime:0.00} ms / max late by: {_maxLateBy:0.00} ms");
+                            _systemLogger.LogDebug($"max cycle time: {_maxCycleTime:0.00} ms / max late by: {_maxLateBy:0.00} ms");
 
                             if (_timerLateCounter == _oneDasOptions.NativeSampleRate)
                             {
-                                _oneDasEngineLogger.LogInformation($"timer late by > { _ratedCycleTime_Ms } ms");
+                                _oneDasEngineLogger.LogWarning($"timer late by > { _ratedCycleTime_Ms } ms");
                                 _timerLateCounter = 0;
                             }
 
                             if (_cycleTimeTooLongCounter == _oneDasOptions.NativeSampleRate)
                             {
-                                _oneDasEngineLogger.LogInformation($"cycle time > { _ratedCycleTime_Ms } ms");
+                                _oneDasEngineLogger.LogWarning($"cycle time > { _ratedCycleTime_Ms } ms");
                                 _cycleTimeTooLongCounter = 0;
                             }
 

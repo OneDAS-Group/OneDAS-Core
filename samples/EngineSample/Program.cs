@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OneDas.Engine.Core;
 using OneDas.Infrastructure;
 using System;
@@ -9,9 +10,7 @@ namespace EngineSample
     {
         /* improvements:
          * - settings.ChannelHubSet.Add(new ChannelHub()); // improve ChannelHub constructor
-         * - remove Trace.WriteLine
-         * - is retryCount counted correctly?
-         * - reduce OneDasEngine dependencies
+         * - reduce OneDasEngine dependencies (e.g. JSON.NET)
          */
 
         static void Main(string[] args)
@@ -24,7 +23,7 @@ namespace EngineSample
             var engine = provider.GetRequiredService<OneDasEngine>();
             var settings = new OneDasProjectSettings("OneDAS", "Engine", "Example");
 
-            engine.ActivateProject(settings, 1);
+            engine.ActivateProject(settings);
             engine.Start();
 
             Console.ReadKey();
@@ -33,6 +32,12 @@ namespace EngineSample
         static void ConfigureServices(IServiceCollection services)
         {
             services.AddOneDas();
+
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.SetMinimumLevel(LogLevel.Debug);
+                loggingBuilder.AddConsole();
+            });  
         }
     }
 }
