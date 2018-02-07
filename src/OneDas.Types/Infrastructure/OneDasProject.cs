@@ -7,14 +7,20 @@ namespace OneDas.Infrastructure
 {
     public class OneDasProject
     {
+        #region "Fields"
+
+        OneDasProjectSettings _settings;
+
+        #endregion
+
         #region "Constructors"
 
-        public OneDasProject(IPluginProvider pluginProvider, OneDasProjectSettings projectSettings)
+        public OneDasProject(IPluginProvider pluginProvider, OneDasProjectSettings settings)
         {
-            this.Settings = projectSettings;
+            _settings = settings;
 
-            this.DataGatewaySet = this.Settings.DataGatewaySettingsSet.Select(settings => pluginProvider.BuildLogic<DataGatewayPluginLogicBase>(settings)).ToList();
-            this.DataWriterSet = this.Settings.DataWriterSettingsSet.Select(settings => pluginProvider.BuildLogic<DataWriterPluginLogicBase>(settings)).ToList();
+            this.DataGatewaySet = this.Settings.DataGatewaySettingsSet.Select(pluginSettings => pluginProvider.BuildLogic<DataGatewayPluginLogicBase>(pluginSettings)).ToList();
+            this.DataWriterSet = this.Settings.DataWriterSettingsSet.Select(pluginSettings => pluginProvider.BuildLogic<DataWriterPluginLogicBase>(pluginSettings)).ToList();
 
             this.UpdateMapping();
         }
@@ -29,7 +35,13 @@ namespace OneDas.Infrastructure
 
         public List<ChannelHub> ActiveChannelHubSet { get; private set; }
 
-        public OneDasProjectSettings Settings { get; private set; }
+        public OneDasProjectSettings Settings
+        {
+            get
+            {
+                return _settings.Clone();
+            }
+        }
 
         #endregion
 

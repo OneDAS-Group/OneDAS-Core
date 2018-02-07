@@ -61,6 +61,11 @@ namespace OneDas.Infrastructure
 
         #region "Methods"
 
+        public OneDasProjectSettings Clone()
+        {
+            return (OneDasProjectSettings)this.MemberwiseClone();
+        }
+
         public void Validate()
         {
             IEnumerable<Guid> guidSet;
