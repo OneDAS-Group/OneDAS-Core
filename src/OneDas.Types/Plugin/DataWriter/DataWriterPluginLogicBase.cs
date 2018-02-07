@@ -197,6 +197,7 @@ namespace OneDas.Plugin
 
         protected virtual void OnInitialize()
         {
+            //
         }
 
         /// <summary>

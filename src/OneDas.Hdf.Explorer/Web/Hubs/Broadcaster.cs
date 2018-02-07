@@ -139,7 +139,7 @@ namespace OneDas.Hdf.Explorer.Web
                 }
 
                 // zip file
-                zipFilePath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddThh-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString().Substring(0, 8) }.zip");
+                zipFilePath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddTHH-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString().Substring(0, 8) }.zip");
 
                 // sampleRate
                 sampleRate = sampleRateDescription.ToSampleRate();

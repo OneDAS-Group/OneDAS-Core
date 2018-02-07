@@ -150,7 +150,7 @@ namespace OneDas.Hdf.Explorer.Core
             }
 
             // write zip archive entries
-            filePathSet = Directory.GetFiles(directoryPath);
+            filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
             currentFile = 0;
             fileCount = filePathSet.Count();
 
@@ -252,6 +252,8 @@ namespace OneDas.Hdf.Explorer.Core
             Array dataset;
             Array dataset_status;
 
+            ExtendedDataStorageBase extendedDataStorage;
+
             dataset = IOHelper.ReadDataset(sourceFileId, datasetPath, start, stride, block, count);
 
             // apply status (only if native dataset)
@@ -261,27 +263,22 @@ namespace OneDas.Hdf.Explorer.Core
                 {
                     datasetId = H5D.open(sourceFileId, datasetPath);
                     typeId = H5D.get_type(datasetId);
-
-                    var b = H5D.open(sourceFileId, datasetPath + "_status");
-                    var a  = H5D.get_type(b);
-
                     dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<byte>().ToArray();
-                    dataset = (Array)GeneralHelper.InvokeGenericMethod(typeof(ExtendedDataStorageBase), null, nameof(ExtendedDataStorageBase.ApplyDatasetStatus),
-                                                                        BindingFlags.Public | BindingFlags.Static,
-                                                                        TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                                        new object[] { dataset, dataset_status });
+                    extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId)), dataset, dataset_status);
+                    dataset_status = null;
                 }
                 finally
                 {
                     H5D.close(datasetId);
                     H5T.close(typeId);
                 }
+
+                return extendedDataStorage.ToSimpleDataStorage();
             }
-
-            // clean up
-            dataset_status = null;
-
-            return new SimpleDataStorage(dataset.Cast<double>().ToArray());
+            else
+            {
+                return new SimpleDataStorage(dataset.Cast<double>().ToArray());
+            }
         }
 
         private void CleanUp()
