@@ -361,31 +361,33 @@
             </div>
             <div class="card-body">
                 <!-- ko ifnot: MultiMappingEditor -->
-                    <form class="form-group">
-                        <div class="input-group mb-2">
-                            <div class="input-group-addon url"
-                                 data-bind="click: ResetSearch">
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend url"
+                             data-bind="click: ResetSearch">
+                            <div class="input-group-text">
                                 <!-- ko if: SearchString().length > 0 -->
-                                <strong>X</strong>
+                                    <strong>X</strong>
                                 <!-- /ko -->
                                 <!-- ko ifnot: SearchString().length > 0 -->
-                                <span class="fa fa-search fa-fix"></span>
+                                    <span class="fa fa-search fa-fix"></span>
                                 <!-- /ko -->
                             </div>
-                            <input type="text"
-                                   class="form-control"
-                                   placeholder="Search ..."
-                                   data-bind="textInput: SearchString">
-                            <div class="input-group-addon url"
-                                 data-toggle="modal"
-                                 data-target="#Project_NewChannelModal"
-                                 data-backdrop="static">
+                        </div>
+                        <input type="text"
+                                class="form-control"
+                                placeholder="Search ..."
+                                data-bind="textInput: SearchString">
+                        <div class="input-group-append url"
+                             data-toggle="modal"
+                             data-target="#Project_NewChannelModal"
+                             data-backdrop="static">
+                            <div class="input-group-text">
                                 <span class="fa fa-plus fa-fix"
                                       data-toggle="tooltip"
                                       data-title="create new channel"></span>
                             </div>
                         </div>
-                    </form>
+                    </div>
                     <!-- ko if: ChannelHubSet().length === 0 -->
                     <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
                     <!-- /ko -->
@@ -738,7 +740,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button"
-                        class="btn btn-default"
+                        class="btn btn-secondary"
                         data-dismiss="modal"
                         role="button">
                     Cancel
@@ -813,7 +815,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button"
-                        class="btn btn-default"
+                        class="btn btn-secondary"
                         data-dismiss="modal"
                         role="button">
                     Cancel
@@ -843,7 +845,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button"
-                        class="btn btn-default"
+                        class="btn btn-secondary"
                         data-dismiss="modal"
                         role="button">
                     Cancel
@@ -1029,24 +1031,21 @@
 <script type="text/html" id="Project_PluginTemplate_DataWriter">
     <!--ko if: IsInSettingsMode -->
     <form>
+        <!-- ko with: Description -->
         <div class="form-check">
-            <!-- ko with: Description -->
-            <div class="form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" type="checkbox" value=""
-                           data-bind="checked: IsEnabled">
-                    Enable Plugin
-                </label>
-            </div>
-            <!-- /ko -->
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" value=""
+                       data-bind="checked: IsEnabled">
+                Enable Plugin
+            </label>
         </div>
+        <!-- /ko -->
         <div class="form-group">
             <label class="form-control-label">File granularity:</label>
             <select class="form-control"
                     data-bind="options: EnumerationHelper.GetEnumValues('FileGranularityEnum'),
                                 optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('FileGranularityEnum', x) },
-                                value: FileGranularity">
-            </select>
+                                value: FileGranularity"></select>
         </div>
     </form>
     <!-- /ko -->

@@ -6,10 +6,11 @@
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <TargetFramework>net47</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="3.20.0" />
-    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6605-28886" />
+    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6613-26951" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">

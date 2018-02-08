@@ -127,21 +127,21 @@ namespace OneDas.Hdf.VdsTool
             //foreach (var variableInfo in variableInfoSet)
             //{
             //    Console.WriteLine(variableInfo.Key);
-            //    Console.WriteLine($"\tVariableNameSet:{variableInfo.Value.VariableNameSet.Count}");
-            //    Console.WriteLine($"\tDatasetInfoSet: {variableInfo.Value.DatasetInfoSet.Count}");
+            //    Console.WriteLine($"\tVariableNameSet:{ variableInfo.Value.VariableNameSet.Count }");
+            //    Console.WriteLine($"\tDatasetInfoSet: { variableInfo.Value.DatasetInfoSet.Count }");
 
             //    foreach (var datasetInfo in variableInfo.Value.DatasetInfoSet)
             //    {
-            //        Console.WriteLine($"\t\t{datasetInfo.Key}");
-            //        Console.WriteLine($"\t\t\tLength: {datasetInfo.Value.Length}");
-            //        Console.WriteLine($"\t\t\tSourceFileInfoSet: {datasetInfo.Value.SourceFileInfoSet.Count}");
+            //        Console.WriteLine($"\t\t{ datasetInfo.Key }");
+            //        Console.WriteLine($"\t\t\tLength: { datasetInfo.Value.Length }");
+            //        Console.WriteLine($"\t\t\tSourceFileInfoSet: { datasetInfo.Value.SourceFileInfoSet.Count }");
             //    }
             //}
 
             // campaign
             foreach (var campaignInfo in campaignInfoSet)
             {
-                Console.WriteLine($"\n{campaignInfo.Key}");
+                Console.WriteLine($"\n{ campaignInfo.Key }");
 
                 vdsGroupPath = campaignInfo.Key;
                 vdsCampaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, vdsGroupPath).GroupId;
@@ -167,8 +167,8 @@ namespace OneDas.Hdf.VdsTool
                     // dataset
                     foreach (var datasetInfo in variableInfo.Value.DatasetInfoSet)
                     {
-                        Console.WriteLine($"\t\t{datasetInfo.Key}");
-                        Program.MergeDatasets(vdsVariableGroupId, $"{vdsGroupPath}/{variableInfo.Key}", epochStart, epochEnd, datasetInfo.Value, true);
+                        Console.WriteLine($"\t\t{ datasetInfo.Key }");
+                        Program.MergeDatasets(vdsVariableGroupId, $"{ vdsGroupPath }/{ variableInfo.Key }", epochStart, epochEnd, datasetInfo.Value, true);
                     }
 
                     // flush data - necessary to avoid AccessViolationException at H5F.close()
@@ -228,11 +228,11 @@ namespace OneDas.Hdf.VdsTool
 
                 if (start + stride > vdsLength)
                 {
-                    throw new Exception($"start + stride = {start + stride} > {vdsLength}");
+                    throw new Exception($"start + stride = { start + stride } > { vdsLength }");
                 }
 
                 result = H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
-                result = H5P.set_virtual(propertyId, spaceId, sourceFilePath, $"{groupPath}/{datasetName}", sourceSpaceId);
+                result = H5P.set_virtual(propertyId, spaceId, sourceFilePath, $"{ groupPath }/{ datasetName }", sourceSpaceId);
                 
                 // clean up
                 H5S.close(sourceSpaceId);
