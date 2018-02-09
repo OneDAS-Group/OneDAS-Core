@@ -1,7 +1,8 @@
-﻿class ProjectViewModel
+﻿class OneDasProjectViewModel
 {
     // settings
-    public Description: ProjectDescriptionViewModel
+    public FormatVersion: number
+    public Description: OneDasCampaignDescriptionViewModel
     public ChannelHubSet: KnockoutObservableArray<ChannelHubViewModel>
     public GroupedChannelHubSet: KnockoutObservableArray<ObservableGroup<ChannelHubViewModel>>
     public DataGatewaySet: KnockoutObservableArray<DataGatewayViewModelBase>
@@ -52,7 +53,8 @@
     {
         let promiseSet: Promise<any>[]
 
-        this.Description = new ProjectDescriptionViewModel(projectModel.Description)
+        this.FormatVersion = projectModel.FormatVersion
+        this.Description = new OneDasCampaignDescriptionViewModel(projectModel.Description)
         this.ChannelHubSet = ko.observableArray<ChannelHubViewModel>(projectModel.ChannelHubSet.map(x => new ChannelHubViewModel(x)))
         this.GroupedChannelHubSet = ko.observableArray(ObservableGroupBy(this.ChannelHubSet(), x => x.Name(), x => x.Group(), ""))
         this.DataGatewaySet = ko.observableArray<DataGatewayViewModelBase>()
@@ -90,7 +92,7 @@
         this.SelectedDataWriter = ko.observable<DataWriterViewModelBase>()
         this.SelectedPlugin = ko.observable<PluginViewModelBase>()
         this.CurrentTitle = ko.observable<string>()
-        this.IsFullEditingEnabled = ko.observable<boolean>(this.Description.CampaignVersion() === 0);
+        this.IsFullEditingEnabled = ko.observable<boolean>(this.Description.Version() === 0);
 
         // Multi-Mapping
         this.SelectedDataGateway.subscribe(newValue =>
@@ -311,6 +313,7 @@
         let model: any
 
         model = {
+            FormatVersion: <number>this.FormatVersion,
             Description: <any>this.Description.ToModel(),
             ChannelHubSet: <any[]>this.ChannelHubSet().map(x => x.ToModel()),
             DataGatewaySettingsSet: <any[]>this.DataGatewaySet().map(x => x.ToModel()),
@@ -553,7 +556,7 @@
         {
             lastInstanceId = Math.max(...this.DataGatewaySet().map(dataGateway => dataGateway.Description.InstanceId))
 
-            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataGatewaySettings', item.Name)
+            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataGatewaySettings', item.Id)
             pluginModel.Description.InstanceId = this.DataGatewaySet().length > 0 ? lastInstanceId + 1 : 1
             pluginViewModel = <DataGatewayViewModelBase>await PluginFactory.CreatePluginViewModelAsync("DataGateway", pluginModel)
 
@@ -577,7 +580,7 @@
         {
             lastInstanceId = Math.max(...this.DataWriterSet().map(dataWriter => dataWriter.Description.InstanceId))
 
-            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataWriterSettings', item.Name)
+            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataWriterSettings', item.Id)
             pluginModel.Description.InstanceId = this.DataWriterSet().length > 0 ? lastInstanceId + 1 : 1
             pluginViewModel = <DataWriterViewModelBase>await PluginFactory.CreatePluginViewModelAsync("DataWriter", pluginModel)
 

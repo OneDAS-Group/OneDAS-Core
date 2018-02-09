@@ -131,7 +131,7 @@ namespace OneDas.Hdf.Explorer.Core
 
             // initialize data writer
             campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
-            dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasProjectDescription(0, 0, Guid.Empty, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
+            dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(0, 0, Guid.Empty, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
             dataWriter.Initialize(zipSettings.DateTimeBegin, dataWriterContext, variableDescriptionSet);
 
             // create temp files

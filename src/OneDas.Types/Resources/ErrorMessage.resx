@@ -117,50 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Project_CampaignNameInvalid" xml:space="preserve">
-    <value>The campaign name is invalid.</value>
-  </data>
-  <data name="Project_DataTypeMismatch" xml:space="preserve">
-    <value>The EcSlaveInfo-Channel-Mapping is invalid: The data types are not matching.</value>
-  </data>
-  <data name="Project_ChannelHubNameInvalid" xml:space="preserve">
-    <value>One or more channel names are invalid</value>
-  </data>
-  <data name="Project_InvalidCharacters" xml:space="preserve">
-    <value>Use A-Z, a-z, 0-9 or _.</value>
-  </data>
-  <data name="Project_InvalidLeadingCharacter" xml:space="preserve">
-    <value>Use A-Z or a-z as first character.</value>
-  </data>
-  <data name="Project_NameEmpty" xml:space="preserve">
-    <value>The name must not be empty.</value>
-  </data>
-  <data name="Project_CampaignPrimaryGroupInvalid" xml:space="preserve">
-    <value>The 1st level group name is invalid.</value>
-  </data>
-  <data name="Project_CampaignSecondaryGroupInvalid" xml:space="preserve">
-    <value>The 2nd level group name is invalid.</value>
-  </data>
   <data name="DataStorage_LengthNonNegative" xml:space="preserve">
     <value>Length must be non-negative.</value>
   </data>
   <data name="DataStorage_ParameterTNonPrimitive" xml:space="preserve">
     <value>The type of the generic parameter T must be primitive.</value>
   </data>
-  <data name="Project_ChannelHubNotUnqiue" xml:space="preserve">
-    <value>The channel set is invalid: A channel must be unique.</value>
-  </data>
   <data name="PluginSettingsBase_PluginContextAttributeNotDefined" xml:space="preserve">
     <value>PluginContextAttribute is not defined.</value>
   </data>
   <data name="PluginSettingsBase_PluginDescriptionAttributeNotDefined" xml:space="preserve">
     <value>PluginDescriptionAttribute is not defined.</value>
-  </data>
-  <data name="Project_DataGatewaySettingsIdNotUnique" xml:space="preserve">
-    <value>The data gateway settings IDs are not unique.</value>
-  </data>
-  <data name="Project_DataWriterSettingsIdNotUnique" xml:space="preserve">
-    <value>The data writer settings IDs are not unique.</value>
   </data>
   <data name="DataStorage_ArrayLengthMismatch" xml:space="preserve">
     <value>Array lengths are not matching.</value>
@@ -174,10 +141,10 @@
   <data name="DataWriterPluginLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
     <value>The requested period has already been written before.</value>
   </data>
-  <data name="ProjectDescription_InvalidFormatVersion" xml:space="preserve">
+  <data name="OneDasCampaignDescription_InvalidFormatVersion" xml:space="preserve">
     <value>The format version must be equal or greater zero.</value>
   </data>
-  <data name="ProjectDescription_InvalidCampaignVersion" xml:space="preserve">
+  <data name="OneDasCampaignDescription_InvalidVersion" xml:space="preserve">
     <value>The campaign version must be equal or greater zero.</value>
   </data>
   <data name="ActionRequest_InstanceIdInvalid" xml:space="preserve">
@@ -188,5 +155,26 @@
   </data>
   <data name="DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
     <value>The MaximumDatasetAge is must be between zero and 10000.</value>
+  </data>
+  <data name="PluginProvider_NoMatchingTPluginLogicFound" xml:space="preserve">
+    <value>No matching TPluginLogic was found.</value>
+  </data>
+  <data name="PluginProvider_NoPluginSupporterAttributeFound" xml:space="preserve">
+    <value>Could not find any PluginSupporterAttribute.</value>
+  </data>
+  <data name="PluginProvider_PluginNotFound" xml:space="preserve">
+    <value>The specified plugin was not found.</value>
+  </data>
+  <data name="PluginProvider_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
+    <value>The specified type does not implement the interface IPluginSupporter.</value>
+  </data>
+  <data name="InfrastructureHelper_InvalidCharacters" xml:space="preserve">
+    <value>Use A-Z, a-z, 0-9 or _.</value>
+  </data>
+  <data name="InfrastructureHelper_InvalidLeadingCharacter" xml:space="preserve">
+    <value>Use A-Z or a-z as first character.</value>
+  </data>
+  <data name="InfrastructureHelper_NameEmpty" xml:space="preserve">
+    <value>The name must not be empty.</value>
   </data>
 </root>

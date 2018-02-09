@@ -2,7 +2,7 @@
 {
     public WorkspaceSet: KnockoutObservableArray<WorkspaceBase>
     public ReducedWorkspaceSet: KnockoutObservableArray<WorkspaceBase>
-    public ActiveProject: KnockoutObservable<ProjectViewModel>
+    public ActiveProject: KnockoutObservable<OneDasProjectViewModel>
     public ClientSet: KnockoutObservableArray<string>
     public OneDasState: KnockoutObservable<number>
     public WebServerOptionsLight: KnockoutObservable<WebServerOptionsLightViewModel>
@@ -25,7 +25,7 @@
         this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
         this.NewWebServerOptionsLightBaseDirectoryPath = ko.observable<string>()
 
-        this.ActiveProject = ko.observable<ProjectViewModel>()
+        this.ActiveProject = ko.observable<OneDasProjectViewModel>()
 
         // enumeration description
         EnumerationHelper.Description["DataDirectionEnum_Input"] = "Input"
@@ -216,9 +216,9 @@
     // methods
     public InitializeProject = async (projectModel) =>
     {
-        let project: ProjectViewModel
+        let project: OneDasProjectViewModel
 
-        project = new ProjectViewModel(projectModel)
+        project = new OneDasProjectViewModel(projectModel)
         
         await project.InitializeAsync(projectModel.DataGatewaySettingsSet, projectModel.DataWriterSettingsSet)
 

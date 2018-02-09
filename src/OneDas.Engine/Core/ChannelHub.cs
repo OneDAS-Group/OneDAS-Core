@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
+using OneDas.Infrastructure;
 using OneDas.Plugin;
 
-namespace OneDas.Infrastructure
+namespace OneDas.Engine.Core
 {
     [DataContract]
     public class ChannelHub

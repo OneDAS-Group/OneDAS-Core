@@ -152,15 +152,15 @@ namespace OneDas.Infrastructure
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                errorDescription = ErrorMessage.Project_NameEmpty;
+                errorDescription = ErrorMessage.InfrastructureHelper_NameEmpty;
             }
             else if (Regex.IsMatch(value, "[^A-Za-z0-9_]"))
             {
-                errorDescription = ErrorMessage.Project_InvalidCharacters;
+                errorDescription = ErrorMessage.InfrastructureHelper_InvalidCharacters;
             }
             else if (Regex.IsMatch(value, "^[0-9_]"))
             {
-                errorDescription = ErrorMessage.Project_InvalidLeadingCharacter;
+                errorDescription = ErrorMessage.InfrastructureHelper_InvalidLeadingCharacter;
             }
             else
             {

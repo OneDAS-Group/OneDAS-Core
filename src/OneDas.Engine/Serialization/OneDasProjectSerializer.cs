@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDas.Common;
+using OneDas.Engine.Core;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -63,9 +64,9 @@ namespace OneDas.Engine.Serialization
             }
         }
 
-        public OneDasProjectDescription GetProjectDescriptionFromFile(string filePath)
+        public OneDasCampaignDescription GetCampaignDescriptionFromFile(string filePath)
         {
-            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<OneDasProjectDescription>();
+            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<OneDasCampaignDescription>();
         }
 
         private void Upgrade(JObject jObject)
@@ -74,13 +75,13 @@ namespace OneDas.Engine.Serialization
             {
                 int formatVersion;
 
-                formatVersion = jObject["Description"]["FormatVersion"].Value<int>();
+                formatVersion = jObject["FormatVersion"].Value<int>();
 
                 while (true)
                 {
                     int finalVersion;
 
-                    finalVersion = OneDasProjectSettings.FormatVersion;
+                    finalVersion = OneDasProjectSettings.CurrentFormatVersion;
 
                     if (formatVersion <= 1)
                     {
@@ -89,19 +90,19 @@ namespace OneDas.Engine.Serialization
                     }
                     else if (formatVersion <= finalVersion)
                     {
-                        jObject["Description"]["FormatVersion"] = formatVersion;
+                        jObject["FormatVersion"] = formatVersion;
 
                         return;
                     }
                     else
                     {
-                        throw new Exception(ErrorMessage.ProjectUpgrader_InvalidProjectVersion);
+                        throw new Exception(ErrorMessage.OneDasProjectSerializer_InvalidProjectVersion);
                     }
                 }
             }
             catch (Exception)
             {
-                throw new Exception(ErrorMessage.ProjectUpgrader_ErrorLoadingProject);
+                throw new Exception(ErrorMessage.OneDasProjectSerializer_ErrorLoadingProject);
             }
         }
 

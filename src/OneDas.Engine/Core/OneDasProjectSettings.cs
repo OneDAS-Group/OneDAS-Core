@@ -1,10 +1,11 @@
-﻿using OneDas.Plugin;
+﻿using OneDas.Infrastructure;
+using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace OneDas.Infrastructure
+namespace OneDas.Engine.Core
 {
     [DataContract]
     public class OneDasProjectSettings
@@ -13,40 +14,45 @@ namespace OneDas.Infrastructure
 
         static OneDasProjectSettings()
         {
-            OneDasProjectSettings.FormatVersion = 1; // first version
-            OneDasProjectSettings.FormatVersion = 2; // 11.08.2017 (unit_set, transfer_function_set)
+            OneDasProjectSettings.CurrentFormatVersion = 1; // first version
+            OneDasProjectSettings.CurrentFormatVersion = 2; // 11.08.2017 (unit_set, transfer_function_set)
         }
 
-        public OneDasProjectSettings(string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName): this(campaignPrimaryGroup, campaignSecondaryGroup, campaignName, new List<DataGatewayPluginSettingsBase>(), new List<DataWriterPluginSettingsBase>())
+        public OneDasProjectSettings(string primaryGroupName, string secondaryGroupName, string campaignName): this(primaryGroupName, secondaryGroupName, campaignName, new List<DataGatewayPluginSettingsBase>(), new List<DataWriterPluginSettingsBase>())
         {
             //
         }  
 
-        public OneDasProjectSettings(string campaignPrimaryGroup, string campaignSecondaryGroup, string campaignName, IEnumerable<DataGatewayPluginSettingsBase> dataGatewaySettingsSet, IEnumerable<DataWriterPluginSettingsBase> dataWriterSettingsSet)
+        public OneDasProjectSettings(string primaryGroupName, string campaignSecondaryGroup, string campaignName, IEnumerable<DataGatewayPluginSettingsBase> dataGatewaySettingsSet, IEnumerable<DataWriterPluginSettingsBase> dataWriterSettingsSet)
         {
             int nextId;
             
-            this.Description = new OneDasProjectDescription(OneDasProjectSettings.FormatVersion, 0, Guid.NewGuid(), campaignPrimaryGroup, campaignSecondaryGroup, campaignName);
+            this.Description = new OneDasCampaignDescription(Guid.NewGuid(), 0, primaryGroupName, campaignSecondaryGroup, campaignName);
             this.ChannelHubSet = new List<ChannelHub>();
 
             this.DataGatewaySettingsSet = dataGatewaySettingsSet;
             this.DataWriterSettingsSet = dataWriterSettingsSet;
             
             nextId = 1;
-            this.DataGatewaySettingsSet.ToList().ForEach(x => x.Description.InstanceId = nextId++);
+            this.DataGatewaySettingsSet.ToList().ForEach(settings => settings.Description.InstanceId = nextId++);
 
             nextId = 1;
-            this.DataWriterSettingsSet.ToList().ForEach(x => x.Description.InstanceId = nextId++);
+            this.DataWriterSettingsSet.ToList().ForEach(settings => settings.Description.InstanceId = nextId++);
+
+            this.FormatVersion = OneDasProjectSettings.CurrentFormatVersion;
         }
 
         #endregion
 
         #region "Properties"
 
-        public static int FormatVersion { get; private set; }
+        public static int CurrentFormatVersion { get; private set; }
 
         [DataMember]
-        public OneDasProjectDescription Description { get; set; }
+        public int FormatVersion { get; set; }
+
+        [DataMember]
+        public OneDasCampaignDescription Description { get; set; }
 
         [DataMember]
         public List<ChannelHub> ChannelHubSet { get; private set; }
@@ -74,24 +80,24 @@ namespace OneDas.Infrastructure
             string errorDescription;
 
             // -> naming convention
-            if (!InfrastructureHelper.CheckNamingConvention(this.Description.CampaignPrimaryGroup, out errorDescription))
+            if (!InfrastructureHelper.CheckNamingConvention(this.Description.PrimaryGroupName, out errorDescription))
             {
-                throw new ValidationException(ErrorMessage.Project_CampaignPrimaryGroupInvalid);
+                throw new ValidationException(ErrorMessage.OneDasProject_PrimaryGroupNameInvalid);
             }
 
-            if (!InfrastructureHelper.CheckNamingConvention(this.Description.CampaignSecondaryGroup, out errorDescription))
+            if (!InfrastructureHelper.CheckNamingConvention(this.Description.SecondaryGroupName, out errorDescription))
             {
-                throw new ValidationException(ErrorMessage.Project_CampaignSecondaryGroupInvalid);
+                throw new ValidationException(ErrorMessage.OneDasProject_SecondaryGroupNameInvalid);
             }
 
             if (!InfrastructureHelper.CheckNamingConvention(this.Description.CampaignName, out errorDescription))
             {
-                throw new ValidationException(ErrorMessage.Project_CampaignNameInvalid);
+                throw new ValidationException(ErrorMessage.OneDasProject_CampaignNameInvalid);
             }
 
             if (!this.ChannelHubSet.ToList().TrueForAll(x => InfrastructureHelper.CheckNamingConvention(x.Name, out errorDescription)))
             {
-                throw new ValidationException(ErrorMessage.Project_ChannelHubNameInvalid);
+                throw new ValidationException(ErrorMessage.OneDasProject_ChannelHubNameInvalid);
             }
 
             // -> ChannelHub
@@ -100,19 +106,19 @@ namespace OneDas.Infrastructure
 
             if (guidSet.Count() > guidSet.Distinct().Count())
             {
-                throw new ValidationException(ErrorMessage.Project_ChannelHubNotUnqiue);
+                throw new ValidationException(ErrorMessage.OneDasProject_ChannelHubNotUnqiue);
             }
 
             // -> data type matching
             if (!channelHubSet.TrueForAll(x => InfrastructureHelper.GetBitLength(x.DataType, true) == InfrastructureHelper.GetBitLength(x.AssociatedDataInput.DataType, true)))
             {
-                throw new ValidationException(ErrorMessage.Project_DataTypeMismatch);
+                throw new ValidationException(ErrorMessage.OneDasProject_DataTypeMismatch);
             }
 
             // -> data gateway settings
             if (this.DataGatewaySettingsSet.Select(x => x.Description.InstanceId).Count() > this.DataGatewaySettingsSet.Select(x => x.Description.InstanceId).Distinct().Count())
             {
-                throw new ValidationException(ErrorMessage.Project_DataGatewaySettingsIdNotUnique);
+                throw new ValidationException(ErrorMessage.OneDasProject_DataGatewaySettingsIdNotUnique);
             }
 
             this.DataGatewaySettingsSet.ToList().ForEach(dataGatewaySettings => dataGatewaySettings.Validate());
@@ -120,7 +126,7 @@ namespace OneDas.Infrastructure
             // -> data writer settings
             if (this.DataWriterSettingsSet.Select(x => x.Description.InstanceId).Count() > this.DataWriterSettingsSet.Select(x => x.Description.InstanceId).Distinct().Count())
             {
-                throw new ValidationException(ErrorMessage.Project_DataWriterSettingsIdNotUnique);
+                throw new ValidationException(ErrorMessage.OneDasProject_DataWriterSettingsIdNotUnique);
             }
 
             this.DataWriterSettingsSet.ToList().ForEach(dataWriterSettings => dataWriterSettings.Validate());

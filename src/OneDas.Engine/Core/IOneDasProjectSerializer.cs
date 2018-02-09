@@ -1,4 +1,6 @@
-﻿namespace OneDas.Infrastructure
+﻿using OneDas.Infrastructure;
+
+namespace OneDas.Engine.Core
 {
     public interface IOneDasProjectSerializer
     {
@@ -6,6 +8,6 @@
 
         OneDasProjectSettings Load(string filePath);
 
-        OneDasProjectDescription GetProjectDescriptionFromFile(string filePath);
+        OneDasCampaignDescription GetCampaignDescriptionFromFile(string filePath);
     }
 }

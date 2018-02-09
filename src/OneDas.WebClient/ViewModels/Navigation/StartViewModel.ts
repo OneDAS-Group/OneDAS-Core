@@ -1,6 +1,6 @@
 ﻿class StartViewModel extends WorkspaceBase
 {
-    constructor(activeProject: KnockoutObservable<ProjectViewModel>)
+    constructor(activeProject: KnockoutObservable<OneDasProjectViewModel>)
     {
         super('start', 'Start', 'start.html', activeProject)
     }

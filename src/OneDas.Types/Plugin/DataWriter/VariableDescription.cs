@@ -8,19 +8,6 @@ namespace OneDas.Plugin
     {
         #region "Constructors"
 
-        public VariableDescription(ChannelHub channelHub)
-        {
-            this.Guid = channelHub.Guid;
-            this.VariableName = channelHub.Name;
-            this.DatasetName = $"{ 100 / (int)channelHub.SampleRate } Hz"; // Improve remove magic number!
-            this.Group = channelHub.Group;
-            this.DataType = channelHub.DataType;
-            this.SamplesPerDay = InfrastructureHelper.GetSamplesPerDayFromSampleRate(channelHub.SampleRate);
-            this.Unit = channelHub.Unit;
-            this.TransferFunctionSet = channelHub.TransferFunctionSet;
-            this.DataStorageType = typeof(ExtendedDataStorageBase);
-        }
-
         public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
         {
             if (!(dataStorageType.IsSubclassOf(typeof(DataStorageBase))))

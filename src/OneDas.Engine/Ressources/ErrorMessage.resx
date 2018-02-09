@@ -132,28 +132,34 @@
   <data name="OneDasEngine_SystemFaultedAcknowledgeFirst" xml:space="preserve">
     <value>The system is faulted. Acknowledge the error first.</value>
   </data>
-  <data name="PluginProvider_NoMatchingTPluginLogicFound" xml:space="preserve">
-    <value>No matching TPluginLogic was found.</value>
+  <data name="OneDasProjectSerializer_ErrorLoadingProject" xml:space="preserve">
+    <value>An error occured during project loading.</value>
   </data>
-  <data name="PluginProvider_NoMatchingTPluginSettingsFound" xml:space="preserve">
-    <value>No matching TPluginSettings was found.</value>
-  </data>
-  <data name="PluginProvider_NoPluginSupporterAttributeFound" xml:space="preserve">
-    <value>Could not find any PluginSupporterAttribute.</value>
-  </data>
-  <data name="PluginProvider_PluginNotFound" xml:space="preserve">
-    <value>The specified plugin was not found.</value>
-  </data>
-  <data name="PluginProvider_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
-    <value>The specified type does not implement the interface IPluginSupporter.</value>
-  </data>
-  <data name="PluginProvider_TypeNotInheritedFromTPluginSettings" xml:space="preserve">
-    <value>The provided 'pluginSettingsType' is not assignable to an instance of TPluginSettings.</value>
-  </data>
-  <data name="ProjectUpgrader_ErrorLoadingProject" xml:space="preserve">
-    <value>An error occured load the project.</value>
-  </data>
-  <data name="ProjectUpgrader_InvalidProjectVersion" xml:space="preserve">
+  <data name="OneDasProjectSerializer_InvalidProjectVersion" xml:space="preserve">
     <value>The project's version is invalid.</value>
+  </data>
+  <data name="OneDasProject_CampaignNameInvalid" xml:space="preserve">
+    <value>The campaign name is invalid.</value>
+  </data>
+  <data name="OneDasProject_PrimaryGroupNameInvalid" xml:space="preserve">
+    <value>The 1st level group name is invalid.</value>
+  </data>
+  <data name="OneDasProject_SecondaryGroupNameInvalid" xml:space="preserve">
+    <value>The 2nd level group name is invalid.</value>
+  </data>
+  <data name="OneDasProject_ChannelHubNameInvalid" xml:space="preserve">
+    <value>One or more channel names are invalid</value>
+  </data>
+  <data name="OneDasProject_ChannelHubNotUnqiue" xml:space="preserve">
+    <value>The channel set is invalid: A channel must be unique.</value>
+  </data>
+  <data name="OneDasProject_DataGatewaySettingsIdNotUnique" xml:space="preserve">
+    <value>The data gateway settings IDs are not unique.</value>
+  </data>
+  <data name="OneDasProject_DataTypeMismatch" xml:space="preserve">
+    <value>The EcSlaveInfo-Channel-Mapping is invalid: The data types are not matching.</value>
+  </data>
+  <data name="OneDasProject_DataWriterSettingsIdNotUnique" xml:space="preserve">
+    <value>The data writer settings IDs are not unique.</value>
   </data>
 </root>

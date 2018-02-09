@@ -1,23 +1,23 @@
 ﻿class ControlViewModel extends WorkspaceBase
 {
-    public ProjectDescriptionSet: KnockoutObservableArray<ProjectDescriptionViewModel>
+    public CampaignDescriptionSet: KnockoutObservableArray<OneDasCampaignDescriptionViewModel>
 
-    constructor(activeProject: KnockoutObservable<ProjectViewModel>)
+    constructor(activeProject: KnockoutObservable<OneDasProjectViewModel>)
     {
         super('control', 'Control', 'control.html', activeProject)
 
-        this.ProjectDescriptionSet = ko.observableArray<ProjectDescriptionViewModel>()
+        this.CampaignDescriptionSet = ko.observableArray<OneDasCampaignDescriptionViewModel>()
     }
 
     // commands
-    public GetProjectDescriptions = async () =>
+    public GetCampaignDescriptions = async () =>
     {
-        let projectDescriptionSet: any[]
+        let campaignDescriptionSet: any[]
 
         try
         {
-            projectDescriptionSet = await ConnectionManager.InvokeWebClientHub('GetProjectDescriptions')
-            this.ProjectDescriptionSet(projectDescriptionSet.map(projectDescription => new ProjectDescriptionViewModel(projectDescription)))
+            campaignDescriptionSet = await ConnectionManager.InvokeWebClientHub('GetCampaignDescriptions')
+            this.CampaignDescriptionSet(campaignDescriptionSet.map(campaignDescription => new OneDasCampaignDescriptionViewModel(campaignDescription)))
         }
         catch (e)
         {
@@ -25,11 +25,11 @@
         }
     }
 
-    public ActivateProject = async (projectDescriptionViewModel: ProjectDescriptionViewModel) =>
+    public ActivateProject = async (campaignDescriptionViewModel: OneDasCampaignDescriptionViewModel) =>
     {
         try
         {
-            await ConnectionManager.InvokeWebClientHub("ActivateProject", projectDescriptionViewModel.ToModel())
+            await ConnectionManager.InvokeWebClientHub("ActivateProject", campaignDescriptionViewModel.ToModel())
         }
         catch (e)
         {

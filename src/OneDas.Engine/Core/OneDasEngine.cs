@@ -530,14 +530,14 @@ namespace OneDas.Engine.Core
                     throw new Exception(ErrorMessage.OneDasEngine_DirectoryNameInvalid);
                 }
 
-                baseDirectoryPath = Path.Combine(_oneDasOptions.DataDirectoryPath, $"{ this.Project.Settings.Description.CampaignPrimaryGroup }_{ this.Project.Settings.Description.CampaignSecondaryGroup }_{ this.Project.Settings.Description.CampaignName }_V{ this.Project.Settings.Description.CampaignVersion }_{ this.Project.Settings.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
+                baseDirectoryPath = Path.Combine(_oneDasOptions.DataDirectoryPath, $"{ this.Project.Settings.Description.PrimaryGroupName }_{ this.Project.Settings.Description.SecondaryGroupName }_{ this.Project.Settings.Description.CampaignName }_V{ this.Project.Settings.Description.Version }_{ this.Project.Settings.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
 
                 Directory.CreateDirectory(baseDirectoryPath);
 
                 dataWriter.Initialize(
                     currentDateTime,
                     new DataWriterContext("OneDAS", baseDirectoryPath, this.Project.Settings.Description, customMetadataEntrySet),
-                    this.Project.ActiveChannelHubSet.Select(channelHub => new VariableDescription(channelHub)).ToList()
+                    this.Project.ActiveChannelHubSet.Select(channelHub => new VariableDescription(channelHub.Guid, channelHub.Name, $"{ 100 / (int)channelHub.SampleRate } Hz", channelHub.Group, channelHub.DataType, InfrastructureHelper.GetSamplesPerDayFromSampleRate(channelHub.SampleRate), channelHub.Unit, channelHub.TransferFunctionSet, typeof(ExtendedDataStorageBase))).ToList()
                 );
             });
 

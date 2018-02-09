@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OneDas.Common;
-using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
-using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace OneDas.Engine.Core
+namespace OneDas.Plugin
 {
     public class PluginProvider : IPluginProvider
     {
@@ -64,7 +62,6 @@ namespace OneDas.Engine.Core
             Assembly assembly;
 
             assembly = Assembly.LoadFrom(filePath);
-            OneDasConverter.AssemblySet.Add(assembly);
 
             return assembly.ExportedTypes.ToList();
         }

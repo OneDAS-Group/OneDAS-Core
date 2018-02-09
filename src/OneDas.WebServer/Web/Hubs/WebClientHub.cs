@@ -105,7 +105,7 @@ namespace OneDas.WebServer.Web
                 projectSettings.Validate();
 
                 directoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "project");
-                fileName = $"{projectSettings.Description.CampaignPrimaryGroup}_{projectSettings.Description.CampaignSecondaryGroup}_{projectSettings.Description.CampaignName}_{projectSettings.Description.Guid.ToString()}.json";
+                fileName = $"{ projectSettings.Description.PrimaryGroupName }_{ projectSettings.Description.SecondaryGroupName }_{ projectSettings.Description.CampaignName }_{ projectSettings.Description.Guid.ToString() }.json";
                 currentFilePath = Path.Combine(directoryPath, fileName);
 
                 try
@@ -125,17 +125,17 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task ActivateProject(OneDasProjectDescription projectDescription)
+        public Task ActivateProject(OneDasCampaignDescription campaignDescription)
         {
             string filePath;
             OneDasProjectSettings projectSettings;
 
             return Task.Run(() =>
             {
-                projectDescription.Validate();
+                campaignDescription.Validate();
 
                 // Improve: Make more flexible, renaming of file is impossible like that
-                filePath = Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json");
+                filePath = Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ campaignDescription.PrimaryGroupName }_{ campaignDescription.SecondaryGroupName }_{ campaignDescription.CampaignName }_{ campaignDescription.Guid }.json");
                 projectSettings = _projectSerializer.Load(filePath);
 
                 _webServerOptions.CurrentProjectFilePath = filePath;
@@ -178,21 +178,21 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<IEnumerable<OneDasProjectDescription>> GetProjectDescriptions()
+        public Task<IEnumerable<OneDasCampaignDescription>> GetCampaignDescriptions()
         {
             return Task.Run(() =>
             {
                 IEnumerable<string> filePathSet;
-                IList<OneDasProjectDescription> projectDescriptionSet;
+                IList<OneDasCampaignDescription> campaignDescriptionSet;
 
                 filePathSet = Directory.GetFiles(Path.Combine(_webServerOptions.BaseDirectoryPath, "project"), "*.json");
-                projectDescriptionSet = new List<OneDasProjectDescription>();
+                campaignDescriptionSet = new List<OneDasCampaignDescription>();
 
                 foreach (string filePath in filePathSet)
                 {
                     try
                     {
-                        projectDescriptionSet.Add(_projectSerializer.GetProjectDescriptionFromFile(filePath));
+                        campaignDescriptionSet.Add(_projectSerializer.GetCampaignDescriptionFromFile(filePath));
                     }
                     catch (Exception)
                     {
@@ -200,18 +200,18 @@ namespace OneDas.WebServer.Web
                     }
                 }
 
-                return (IEnumerable<OneDasProjectDescription>)projectDescriptionSet;
+                return (IEnumerable<OneDasCampaignDescription>)campaignDescriptionSet;
             });
         }
 
-        public Task<OneDasProjectSettings> OpenProject(OneDasProjectDescription projectDescription)
+        public Task<OneDasProjectSettings> OpenProject(OneDasCampaignDescription campaignDescription)
         {
             // Improve: Make more flexible, renaming of file is impossible like that
             return Task.Run(() =>
             {
                 OneDasProjectSettings projectSettings;
 
-                projectSettings = _projectSerializer.Load(Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ projectDescription.CampaignPrimaryGroup }_{ projectDescription.CampaignSecondaryGroup }_{ projectDescription.CampaignName }_{ projectDescription.Guid }.json"));
+                projectSettings = _projectSerializer.Load(Path.Combine(_webServerOptions.BaseDirectoryPath, "project", $"{ campaignDescription.PrimaryGroupName }_{ campaignDescription.SecondaryGroupName }_{ campaignDescription.CampaignName }_{ campaignDescription.Guid }.json"));
 
                 return projectSettings;
             });
@@ -265,7 +265,7 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<OneDasProjectSettings> CreateProject(string campaignPrimaryGroup, string campaignSecondaryGroup, string configurationName)
+        public Task<OneDasProjectSettings> CreateProject(string primaryGroupName, string SecondaryGroupName, string configurationName)
         {
             return Task.Run(() =>
             {
@@ -281,8 +281,8 @@ namespace OneDas.WebServer.Web
                         Select(pluginSettingsType => (DataWriterPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
 
                 return new OneDasProjectSettings(
-                    campaignPrimaryGroup, 
-                    campaignSecondaryGroup, 
+                    primaryGroupName,
+                    SecondaryGroupName, 
                     configurationName,
                     dataGatewayPluginSettingsSet,
                     dataWriterPluginSettingsSet);

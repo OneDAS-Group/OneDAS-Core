@@ -133,6 +133,87 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Use A-Z, a-z, 0-9 or _. ähnelt.
+        /// </summary>
+        internal static string InfrastructureHelper_InvalidCharacters {
+            get {
+                return ResourceManager.GetString("InfrastructureHelper_InvalidCharacters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Use A-Z or a-z as first character. ähnelt.
+        /// </summary>
+        internal static string InfrastructureHelper_InvalidLeadingCharacter {
+            get {
+                return ResourceManager.GetString("InfrastructureHelper_InvalidLeadingCharacter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The name must not be empty. ähnelt.
+        /// </summary>
+        internal static string InfrastructureHelper_NameEmpty {
+            get {
+                return ResourceManager.GetString("InfrastructureHelper_NameEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign version must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string OneDasCampaignDescription_InvalidVersion {
+            get {
+                return ResourceManager.GetString("OneDasCampaignDescription_InvalidVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string OneDasCampaignDescription_InvalidFormatVersion {
+            get {
+                return ResourceManager.GetString("OneDasCampaignDescription_InvalidFormatVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginLogic was found. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_NoMatchingTPluginLogicFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_NoMatchingTPluginLogicFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any PluginSupporterAttribute. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_NoPluginSupporterAttributeFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_NoPluginSupporterAttributeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_PluginNotFound {
+            get {
+                return ResourceManager.GetString("PluginProvider_PluginNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IPluginSupporter. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_TypeDoesNotImplementIPluginSupporter {
+            get {
+                return ResourceManager.GetString("PluginProvider_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PluginContextAttribute is not defined. ähnelt.
         /// </summary>
         internal static string PluginSettingsBase_PluginContextAttributeNotDefined {
@@ -147,123 +228,6 @@ namespace OneDas {
         internal static string PluginSettingsBase_PluginDescriptionAttributeNotDefined {
             get {
                 return ResourceManager.GetString("PluginSettingsBase_PluginDescriptionAttributeNotDefined", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign name is invalid. ähnelt.
-        /// </summary>
-        internal static string Project_CampaignNameInvalid {
-            get {
-                return ResourceManager.GetString("Project_CampaignNameInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The 1st level group name is invalid. ähnelt.
-        /// </summary>
-        internal static string Project_CampaignPrimaryGroupInvalid {
-            get {
-                return ResourceManager.GetString("Project_CampaignPrimaryGroupInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The 2nd level group name is invalid. ähnelt.
-        /// </summary>
-        internal static string Project_CampaignSecondaryGroupInvalid {
-            get {
-                return ResourceManager.GetString("Project_CampaignSecondaryGroupInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die One or more channel names are invalid ähnelt.
-        /// </summary>
-        internal static string Project_ChannelHubNameInvalid {
-            get {
-                return ResourceManager.GetString("Project_ChannelHubNameInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The channel set is invalid: A channel must be unique. ähnelt.
-        /// </summary>
-        internal static string Project_ChannelHubNotUnqiue {
-            get {
-                return ResourceManager.GetString("Project_ChannelHubNotUnqiue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The data gateway settings IDs are not unique. ähnelt.
-        /// </summary>
-        internal static string Project_DataGatewaySettingsIdNotUnique {
-            get {
-                return ResourceManager.GetString("Project_DataGatewaySettingsIdNotUnique", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The EcSlaveInfo-Channel-Mapping is invalid: The data types are not matching. ähnelt.
-        /// </summary>
-        internal static string Project_DataTypeMismatch {
-            get {
-                return ResourceManager.GetString("Project_DataTypeMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The data writer settings IDs are not unique. ähnelt.
-        /// </summary>
-        internal static string Project_DataWriterSettingsIdNotUnique {
-            get {
-                return ResourceManager.GetString("Project_DataWriterSettingsIdNotUnique", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Use A-Z, a-z, 0-9 or _. ähnelt.
-        /// </summary>
-        internal static string Project_InvalidCharacters {
-            get {
-                return ResourceManager.GetString("Project_InvalidCharacters", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Use A-Z or a-z as first character. ähnelt.
-        /// </summary>
-        internal static string Project_InvalidLeadingCharacter {
-            get {
-                return ResourceManager.GetString("Project_InvalidLeadingCharacter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The name must not be empty. ähnelt.
-        /// </summary>
-        internal static string Project_NameEmpty {
-            get {
-                return ResourceManager.GetString("Project_NameEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign version must be equal or greater zero. ähnelt.
-        /// </summary>
-        internal static string ProjectDescription_InvalidCampaignVersion {
-            get {
-                return ResourceManager.GetString("ProjectDescription_InvalidCampaignVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
-        /// </summary>
-        internal static string ProjectDescription_InvalidFormatVersion {
-            get {
-                return ResourceManager.GetString("ProjectDescription_InvalidFormatVersion", resourceCulture);
             }
         }
         

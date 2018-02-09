@@ -21,7 +21,7 @@ namespace OneDas.Plugin
         public string Id { get; private set; }
 
         [DataMember]
-        public int InstanceId { get; internal set; }
+        public int InstanceId { get; set; }
 
         [DataMember]
         public bool IsEnabled { get; private set; }

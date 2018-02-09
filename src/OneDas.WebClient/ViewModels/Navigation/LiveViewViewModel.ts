@@ -8,7 +8,7 @@
     private _speed: number
     private _iteration: number
 
-    constructor(activeProject: KnockoutObservable<ProjectViewModel>)
+    constructor(activeProject: KnockoutObservable<OneDasProjectViewModel>)
     {
         super('liveview', 'Live View', 'liveview.html', activeProject)
 

@@ -1,43 +1,43 @@
 ﻿class EditorViewModel extends WorkspaceBase
 {
-    public ProjectDescriptionSet: KnockoutObservableArray<ProjectDescriptionViewModel>
-    public Project: KnockoutObservable<ProjectViewModel>
-    public CampaignPrimaryGroup: KnockoutObservable<string>
-    public CampaignSecondaryGroup: KnockoutObservable<string>
+    public CampaignDescriptionSet: KnockoutObservableArray<OneDasCampaignDescriptionViewModel>
+    public Project: KnockoutObservable<OneDasProjectViewModel>
+    public PrimaryGroupName: KnockoutObservable<string>
+    public SecondaryGroupName: KnockoutObservable<string>
     public CampaignName: KnockoutObservable<string>
 
-    public CampaignPrimaryGroupHasError: KnockoutObservable<boolean>
-    public CampaignSecondaryGroupHasError: KnockoutObservable<boolean>
+    public PrimaryGroupNameHasError: KnockoutObservable<boolean>
+    public SecondaryGroupNameHasError: KnockoutObservable<boolean>
     public CampaignNameHasError: KnockoutObservable<boolean>
 
-    public CampaignPrimaryGroupErrorDescription: KnockoutObservable<string>
-    public CampaignSecondaryGroupErrorDescription: KnockoutObservable<string>
+    public PrimaryGroupNameErrorDescription: KnockoutObservable<string>
+    public SecondaryGroupNameErrorDescription: KnockoutObservable<string>
     public CampaignNameErrorDescription: KnockoutObservable<string>
 
     public NewProjectCheckError: KnockoutObservable<boolean>
 
-    constructor(activeProject: KnockoutObservable<ProjectViewModel>)
+    constructor(activeProject: KnockoutObservable<OneDasProjectViewModel>)
     {
         super('editor', 'Editor', 'editor.html', activeProject)
 
-        this.ProjectDescriptionSet = ko.observableArray<ProjectDescriptionViewModel>()
-        this.Project = ko.observable<ProjectViewModel>()
-        this.CampaignPrimaryGroup = ko.observable<string>("")
-        this.CampaignSecondaryGroup = ko.observable<string>("")
+        this.CampaignDescriptionSet = ko.observableArray<OneDasCampaignDescriptionViewModel>()
+        this.Project = ko.observable<OneDasProjectViewModel>()
+        this.PrimaryGroupName = ko.observable<string>("")
+        this.SecondaryGroupName = ko.observable<string>("")
         this.CampaignName = ko.observable<string>("")
 
-        this.CampaignPrimaryGroupHasError = ko.observable<boolean>(false)
-        this.CampaignSecondaryGroupHasError = ko.observable<boolean>(false)
+        this.PrimaryGroupNameHasError = ko.observable<boolean>(false)
+        this.SecondaryGroupNameHasError = ko.observable<boolean>(false)
         this.CampaignNameHasError = ko.observable<boolean>(false)
 
-        this.CampaignPrimaryGroupErrorDescription = ko.observable<string>("")
-        this.CampaignSecondaryGroupErrorDescription = ko.observable<string>("")
+        this.PrimaryGroupNameErrorDescription = ko.observable<string>("")
+        this.SecondaryGroupNameErrorDescription = ko.observable<string>("")
         this.CampaignNameErrorDescription = ko.observable<string>("")
 
         this.NewProjectCheckError = ko.observable(false)
               
         // validation
-        this.CampaignPrimaryGroup.subscribe((value) =>
+        this.PrimaryGroupName.subscribe((value) =>
         {
             var result
 
@@ -50,12 +50,12 @@
                 result = CheckNamingConvention(value)
             }
             
-            this.CampaignPrimaryGroupHasError(result.HasError)
-            this.CampaignPrimaryGroupErrorDescription(result.ErrorDescription)
+            this.PrimaryGroupNameHasError(result.HasError)
+            this.PrimaryGroupNameErrorDescription(result.ErrorDescription)
             this.NewProjectCheckError(true)
         })
 
-        this.CampaignSecondaryGroup.subscribe((value) =>
+        this.SecondaryGroupName.subscribe((value) =>
         {
             var result
 
@@ -68,8 +68,8 @@
                 result = CheckNamingConvention(value)
             }
 
-            this.CampaignSecondaryGroupHasError(result.HasError)
-            this.CampaignSecondaryGroupErrorDescription(result.ErrorDescription)
+            this.SecondaryGroupNameHasError(result.HasError)
+            this.SecondaryGroupNameErrorDescription(result.ErrorDescription)
             this.NewProjectCheckError(true)
         })
 
@@ -93,14 +93,14 @@
     }
 
     // commands
-    public GetProjectDescriptions = async () =>
+    public GetCampaignDescriptions = async () =>
     {
-        let projectDescriptionSet: any[]
+        let campaignDescriptionSet: any[]
 
         try
         {
-            projectDescriptionSet = await ConnectionManager.InvokeWebClientHub('GetProjectDescriptions')
-            this.ProjectDescriptionSet(projectDescriptionSet.map(projectDescription => new ProjectDescriptionViewModel(projectDescription)))
+            campaignDescriptionSet = await ConnectionManager.InvokeWebClientHub('GetCampaignDescriptions')
+            this.CampaignDescriptionSet(campaignDescriptionSet.map(campaignDescription => new OneDasCampaignDescriptionViewModel(campaignDescription)))
         }
         catch (e)
         {
@@ -114,17 +114,17 @@
 
         try
         {
-            projectModel = await ConnectionManager.InvokeWebClientHub("CreateProject", this.CampaignPrimaryGroup(), this.CampaignSecondaryGroup(), this.CampaignName())
+            projectModel = await ConnectionManager.InvokeWebClientHub("CreateProject", this.PrimaryGroupName(), this.SecondaryGroupName(), this.CampaignName())
 
-            this.Project(new ProjectViewModel(projectModel))
+            this.Project(new OneDasProjectViewModel(projectModel))
 
             await this.Project().InitializeAsync(projectModel.DataGatewaySettingsSet, projectModel.DataWriterSettingsSet)
 
             this.NewProjectCheckError(false)
-            this.CampaignPrimaryGroup("")
+            this.PrimaryGroupName("")
 
             this.NewProjectCheckError(false)
-            this.CampaignSecondaryGroup("")
+            this.SecondaryGroupName("")
 
             this.NewProjectCheckError(false)
             this.CampaignName("")
@@ -139,27 +139,27 @@
     {
         try
         {
-            this.Project().Description.CampaignVersion(this.Project().Description.CampaignVersion() + 1)
+            this.Project().Description.Version(this.Project().Description.Version() + 1)
 
             await ConnectionManager.InvokeWebClientHub("SaveProject", this.Project().ToModel())
             console.log("OneDAS: project saved")
         }
         catch (e)
         {
-            this.Project().Description.CampaignVersion(this.Project().Description.CampaignVersion() - 1)
+            this.Project().Description.Version(this.Project().Description.Version() - 1)
             alert(e.message)
         }
     }
 
-    public OpenProject = async (projectDescriptionViewModel: ProjectDescriptionViewModel) =>
+    public OpenProject = async (campaignDescriptionViewModel: OneDasCampaignDescriptionViewModel) =>
     {
         try
         {
             let projectModel: any
 
-            projectModel = await ConnectionManager.InvokeWebClientHub("OpenProject", projectDescriptionViewModel.ToModel())
+            projectModel = await ConnectionManager.InvokeWebClientHub("OpenProject", campaignDescriptionViewModel.ToModel())
             
-            this.Project(new ProjectViewModel(projectModel))
+            this.Project(new OneDasProjectViewModel(projectModel))
 
             await this.Project().InitializeAsync(projectModel.DataGatewaySettingsSet, projectModel.DataWriterSettingsSet)
 

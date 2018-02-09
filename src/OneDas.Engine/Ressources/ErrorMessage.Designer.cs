@@ -106,74 +106,92 @@ namespace OneDas.Engine {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginLogic was found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign name is invalid. ähnelt.
         /// </summary>
-        internal static string PluginProvider_NoMatchingTPluginLogicFound {
+        internal static string OneDasProject_CampaignNameInvalid {
             get {
-                return ResourceManager.GetString("PluginProvider_NoMatchingTPluginLogicFound", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_CampaignNameInvalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginSettings was found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die One or more channel names are invalid ähnelt.
         /// </summary>
-        internal static string PluginProvider_NoMatchingTPluginSettingsFound {
+        internal static string OneDasProject_ChannelHubNameInvalid {
             get {
-                return ResourceManager.GetString("PluginProvider_NoMatchingTPluginSettingsFound", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_ChannelHubNameInvalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any PluginSupporterAttribute. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The channel set is invalid: A channel must be unique. ähnelt.
         /// </summary>
-        internal static string PluginProvider_NoPluginSupporterAttributeFound {
+        internal static string OneDasProject_ChannelHubNotUnqiue {
             get {
-                return ResourceManager.GetString("PluginProvider_NoPluginSupporterAttributeFound", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_ChannelHubNotUnqiue", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data gateway settings IDs are not unique. ähnelt.
         /// </summary>
-        internal static string PluginProvider_PluginNotFound {
+        internal static string OneDasProject_DataGatewaySettingsIdNotUnique {
             get {
-                return ResourceManager.GetString("PluginProvider_PluginNotFound", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_DataGatewaySettingsIdNotUnique", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IPluginSupporter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The EcSlaveInfo-Channel-Mapping is invalid: The data types are not matching. ähnelt.
         /// </summary>
-        internal static string PluginProvider_TypeDoesNotImplementIPluginSupporter {
+        internal static string OneDasProject_DataTypeMismatch {
             get {
-                return ResourceManager.GetString("PluginProvider_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_DataTypeMismatch", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The provided &apos;pluginSettingsType&apos; is not assignable to an instance of TPluginSettings. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data writer settings IDs are not unique. ähnelt.
         /// </summary>
-        internal static string PluginProvider_TypeNotInheritedFromTPluginSettings {
+        internal static string OneDasProject_DataWriterSettingsIdNotUnique {
             get {
-                return ResourceManager.GetString("PluginProvider_TypeNotInheritedFromTPluginSettings", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_DataWriterSettingsIdNotUnique", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die An error occured load the project. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The 1st level group name is invalid. ähnelt.
         /// </summary>
-        internal static string ProjectUpgrader_ErrorLoadingProject {
+        internal static string OneDasProject_PrimaryGroupNameInvalid {
             get {
-                return ResourceManager.GetString("ProjectUpgrader_ErrorLoadingProject", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_PrimaryGroupNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The 2nd level group name is invalid. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_SecondaryGroupNameInvalid {
+            get {
+                return ResourceManager.GetString("OneDasProject_SecondaryGroupNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An error occured during project loading. ähnelt.
+        /// </summary>
+        internal static string OneDasProjectSerializer_ErrorLoadingProject {
+            get {
+                return ResourceManager.GetString("OneDasProjectSerializer_ErrorLoadingProject", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The project&apos;s version is invalid. ähnelt.
         /// </summary>
-        internal static string ProjectUpgrader_InvalidProjectVersion {
+        internal static string OneDasProjectSerializer_InvalidProjectVersion {
             get {
-                return ResourceManager.GetString("ProjectUpgrader_InvalidProjectVersion", resourceCulture);
+                return ResourceManager.GetString("OneDasProjectSerializer_InvalidProjectVersion", resourceCulture);
             }
         }
     }
