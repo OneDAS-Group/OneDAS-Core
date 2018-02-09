@@ -1,6 +1,7 @@
-﻿using OneDas.Infrastructure;
+﻿using OneDas.Engine.Core;
+using OneDas.Infrastructure;
 
-namespace OneDas.Engine.Core
+namespace OneDas.Engine.Serialization
 {
     public interface IOneDasProjectSerializer
     {
