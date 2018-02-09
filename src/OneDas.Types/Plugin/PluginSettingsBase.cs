@@ -34,7 +34,7 @@ namespace OneDas.Plugin
         #region "Properties"
 
         [DataMember]
-        public PluginDescription Description { get; private set; }
+        public PluginDescription Description { get; set; }
 
         #endregion
 

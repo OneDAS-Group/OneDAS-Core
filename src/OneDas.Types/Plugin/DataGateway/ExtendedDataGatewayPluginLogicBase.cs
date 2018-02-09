@@ -23,8 +23,8 @@ namespace OneDas.Plugin
 
         public new ExtendedDataGatewayPluginSettingsBase Settings { get; private set; }
 
-        protected byte[] InputBuffer { get; private set; }
-        protected byte[] OutputBuffer { get; private set; }
+        public byte[] InputBuffer { get; private set; }
+        public byte[] OutputBuffer { get; private set; }
 
         protected List<DataPort> DataPortSet { get; set; }
         protected Dictionary<OneDasModule, List<DataPort>> ModuleToDataPortMap { get; private set; }

@@ -321,7 +321,7 @@
         }
 
         model.ChannelHubSet.sort((channelHub1, channelHub2) => this.CompareStrings(channelHub1.Name, channelHub2.Name))
-
+        
         return model
     }
 

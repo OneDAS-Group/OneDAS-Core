@@ -10,6 +10,7 @@ namespace OneDas.Plugin
             Contract.Requires(settings != null);
 
             this.Settings = settings;
+            this.Settings.Validate();
 
             this.DisplayName = $"{ settings.Description.Id } ({ settings.Description.InstanceId })";
         }

@@ -3,6 +3,7 @@ using OneDas.Engine.Core;
 using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace OneDas.Engine.Serialization
@@ -13,6 +14,8 @@ namespace OneDas.Engine.Serialization
 
         static OneDasConverter()
         {
+            AssemblyProductAttribute assemblyProductAttribute;
+
             OneDasConverter.AssemblySet = new HashSet<Assembly>();
 
             OneDasConverter.AssemblySet.Add(Assembly.GetExecutingAssembly());
@@ -20,7 +23,9 @@ namespace OneDas.Engine.Serialization
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (assembly.FullName.Contains("OneDAS"))
+                assemblyProductAttribute = assembly.GetCustomAttribute<AssemblyProductAttribute>();
+
+                if (assemblyProductAttribute != null && assemblyProductAttribute.Product.Contains("OneDAS"))
                 {
                     OneDasConverter.AssemblySet.Add(assembly);
                 }

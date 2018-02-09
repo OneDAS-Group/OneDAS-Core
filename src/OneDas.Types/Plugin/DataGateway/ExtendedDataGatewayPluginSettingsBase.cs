@@ -21,7 +21,7 @@ namespace OneDas.Plugin
         #region "Properties"
 
         [DataMember]
-        public List<OneDasModule> ModuleSet;
+        public List<OneDasModule> ModuleSet { get; set; }
 
         #endregion
 
@@ -34,7 +34,7 @@ namespace OneDas.Plugin
 
         public List<OneDasModule> GetOutputModuleSet()
         {
-            return this.ModuleSet.Where(module => module.DataDirection == DataDirection.Input).ToList();
+            return this.ModuleSet.Where(module => module.DataDirection == DataDirection.Output).ToList();
         }
 
         #endregion

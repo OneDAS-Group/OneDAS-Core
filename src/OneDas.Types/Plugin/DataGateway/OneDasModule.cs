@@ -12,7 +12,7 @@ namespace OneDas.Plugin
         public OneDasModule(OneDasDataType dataType, DataDirection dataDirection, Endianness endianness, int size)
         {
             this.DataType = dataType;
-            this.DataDirection = DataDirection;
+            this.DataDirection = dataDirection;
             this.Endianness = endianness;
             this.Size = size;
         }
