@@ -160,20 +160,20 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign version must be equal or greater zero. ähnelt.
-        /// </summary>
-        internal static string OneDasCampaignDescription_InvalidVersion {
-            get {
-                return ResourceManager.GetString("OneDasCampaignDescription_InvalidVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
         /// </summary>
         internal static string OneDasCampaignDescription_InvalidFormatVersion {
             get {
                 return ResourceManager.GetString("OneDasCampaignDescription_InvalidFormatVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign version must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string OneDasCampaignDescription_InvalidVersion {
+            get {
+                return ResourceManager.GetString("OneDasCampaignDescription_InvalidVersion", resourceCulture);
             }
         }
         
@@ -210,6 +210,15 @@ namespace OneDas {
         internal static string PluginProvider_TypeDoesNotImplementIPluginSupporter {
             get {
                 return ResourceManager.GetString("PluginProvider_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;settingsType&apos; must be a subclass of PluginSettingsBase. ähnelt.
+        /// </summary>
+        internal static string PluginProvider_TypeDoesNotInheritFromPluginSettingsBase {
+            get {
+                return ResourceManager.GetString("PluginProvider_TypeDoesNotInheritFromPluginSettingsBase", resourceCulture);
             }
         }
         

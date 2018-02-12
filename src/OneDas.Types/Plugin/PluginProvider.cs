@@ -147,6 +147,11 @@ namespace OneDas.Plugin
                 throw new ArgumentNullException();
             }
 
+            if (!pluginSettingsType.IsSubclassOf(typeof(PluginSettingsBase)))
+            {
+                throw new OneDasException(ErrorMessage.PluginProvider_TypeDoesNotInheritFromPluginSettingsBase);
+            }
+
             pluginSupporterType = pluginSettingsType.GetFirstAttribute<PluginSupporterAttribute>()?.Type;
 
             if (pluginSupporterType == null)
@@ -169,6 +174,11 @@ namespace OneDas.Plugin
             if (pluginSettingsType == null)
             {
                 throw new ArgumentNullException();
+            }
+
+            if (!pluginSettingsType.IsSubclassOf(typeof(PluginSettingsBase)))
+            {
+                return null;
             }
 
             pluginSupporterType = pluginSettingsType.GetFirstAttribute<PluginSupporterAttribute>()?.Type;
