@@ -98,21 +98,21 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 case FileFormat.CSV:
 
-                    settings = new CsvModel(fileGranularity);
+                    settings = new CsvModel() { FileGranularity = fileGranularity };
                     dataWriter = new CsvWriter((CsvModel)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.GAM:
 
-                    settings = new GamModel(fileGranularity);
+                    settings = new GamModel() { FileGranularity = fileGranularity };
                     dataWriter = new GamWriter((GamModel)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.MAT73:
 
-                    settings = new Mat73Model(fileGranularity);
+                    settings = new Mat73Model() { FileGranularity = fileGranularity };
                     dataWriter = new Mat73Writer((Mat73Model)settings, new LoggerFactory());
 
                     break;
@@ -131,7 +131,7 @@ namespace OneDas.Hdf.Explorer.Core
 
             // initialize data writer
             campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
-            dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(0, 0, Guid.Empty, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
+            dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
             dataWriter.Initialize(zipSettings.DateTimeBegin, dataWriterContext, variableDescriptionSet);
 
             // create temp files

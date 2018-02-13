@@ -4,7 +4,7 @@
     public ReducedWorkspaceSet: KnockoutObservableArray<WorkspaceBase>
     public ActiveProject: KnockoutObservable<OneDasProjectViewModel>
     public ClientSet: KnockoutObservableArray<string>
-    public OneDasState: KnockoutObservable<number>
+    public OneDasState: KnockoutObservable<OneDasStateEnum>
     public WebServerOptionsLight: KnockoutObservable<WebServerOptionsLightViewModel>
     public ClientMessageLog: KnockoutObservableArray<MessageLogEntryViewModel>
     public LastError: KnockoutObservable<string>
@@ -143,9 +143,9 @@
             }
         })
 
-        if (appModel.ActiveProject)
+        if (appModel.ActiveProjectSettings)
         {
-            this.InitializeProject(appModel.ActiveProject)
+            this.InitializeProject(appModel.ActiveProjectSettings)
         }
 
         // server callbacks

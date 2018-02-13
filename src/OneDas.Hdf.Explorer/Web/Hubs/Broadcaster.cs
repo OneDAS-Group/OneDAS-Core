@@ -426,6 +426,7 @@ namespace OneDas.Hdf.Explorer.Web
             }
             catch (Exception)
             {
+                //
             }
         }
     }

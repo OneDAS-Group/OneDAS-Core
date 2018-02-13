@@ -8,6 +8,16 @@ namespace OneDas.Plugin
 {
     public abstract class ExtendedDataGatewayPluginLogicBase : DataGatewayPluginLogicBase
     {
+
+        #region "Fields"
+
+        private int _inputBufferSize;
+        private int _outputBufferSize;
+        private bool _freeInputBufferPtr;
+        private bool _freeOutputBufferPtr;
+
+        #endregion
+
         #region "Constructors"
 
         public ExtendedDataGatewayPluginLogicBase(ExtendedDataGatewayPluginSettingsBase settings) : base(settings)
@@ -15,6 +25,9 @@ namespace OneDas.Plugin
             this.Settings = settings;
 
             this.UpdateDataPortSet();
+
+            (this.InputBufferPtr, _inputBufferSize) = this.PrepareBuffer(this.GetModuleToDataPortMap(DataDirection.Input), DataDirection.Input);
+            (this.OutputBufferPtr, _outputBufferSize) = this.PrepareBuffer(this.GetModuleToDataPortMap(DataDirection.Output), DataDirection.Output);
         }
 
         #endregion
@@ -23,57 +36,70 @@ namespace OneDas.Plugin
 
         public new ExtendedDataGatewayPluginSettingsBase Settings { get; private set; }
 
-        public byte[] InputBuffer { get; private set; }
-        public byte[] OutputBuffer { get; private set; }
-
         protected List<DataPort> DataPortSet { get; set; }
+
         protected Dictionary<OneDasModule, List<DataPort>> ModuleToDataPortMap { get; private set; }
 
-        protected GCHandle InputBufferHandle { get; private set; }
-        protected GCHandle OutputBufferHandle { get; private set; }
+        protected IntPtr InputBufferPtr { get; private set; }
+
+        protected IntPtr OutputBufferPtr { get; private set; }
 
         #endregion
 
         #region "Methods"
-
-        public override void Configure()
-        {
-            (this.InputBuffer, this.InputBufferHandle) = this.PrepareBuffer(this.GetModuleToDataPortMap(DataDirection.Input), DataDirection.Input);
-            (this.OutputBuffer, this.OutputBufferHandle) = this.PrepareBuffer(this.GetModuleToDataPortMap(DataDirection.Output), DataDirection.Output);
-        }
 
         public override IEnumerable<DataPort> GetDataPortSet()
         {
             return this.DataPortSet;
         }
 
-        protected virtual (byte[] Buffer, GCHandle BufferHandle) PrepareBuffer(Dictionary<OneDasModule, List<DataPort>> moduleToDataPortMap, DataDirection dataDirection)
+        // don't force sub classes to overrides this
+        public override void Configure()
+        {
+            //
+        }
+
+        public Span<byte> GetInputBuffer()
+        {
+            unsafe
+            {
+                return new Span<byte>(this.InputBufferPtr.ToPointer(), _inputBufferSize);
+            }
+        }
+
+        public Span<byte> GetOutputBuffer()
+        {
+            unsafe
+            {
+                return new Span<byte>(this.OutputBufferPtr.ToPointer(), _outputBufferSize);
+            }
+        }
+
+        protected virtual (IntPtr bufferPtr, int size) PrepareBuffer(Dictionary<OneDasModule, List<DataPort>> moduleToDataPortMap, DataDirection dataDirection)
         {
             int currentBufferSize;
-            int firstUsableByte;
+            int size;
 
-            byte[] buffer;
-            GCHandle bufferHandle;
+            IntPtr bufferPtr;
 
             currentBufferSize = 0;
 
-            // calculate total length of buffer
+            // prepare data port pointers and calculate total length of buffer
             moduleToDataPortMap.ToList().ForEach(moduleEntry =>
             {
                 currentBufferSize += this.SetDataPortBufferOffset(moduleEntry, currentBufferSize, dataDirection);
             });
 
             // create buffer
-            (buffer, firstUsableByte) = this.CreateBuffer(currentBufferSize, dataDirection);
-            bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            (bufferPtr, size) = this.CreateBuffer(currentBufferSize, dataDirection);
 
             // 
             moduleToDataPortMap.ToList().ForEach(moduleEntry =>
             {
-                moduleEntry.Value.ForEach(dataPort => dataPort.DataPtr = IntPtr.Add(bufferHandle.AddrOfPinnedObject(), firstUsableByte + dataPort.DataPtr.ToInt32()));
+                moduleEntry.Value.ForEach(dataPort => dataPort.DataPtr = IntPtr.Add(bufferPtr, dataPort.DataPtr.ToInt32()));
             });
 
-            return (buffer, bufferHandle);
+            return (bufferPtr, size);
         }
 
         protected virtual int SetDataPortBufferOffset(KeyValuePair<OneDasModule, List<DataPort>> moduleEntry, int bufferOffsetBase, DataDirection dataDirection)
@@ -91,9 +117,27 @@ namespace OneDas.Plugin
             return moduleEntry.Key.GetByteCount();
         }
 
-        protected virtual (byte[] Buffer, int FirstUsableByte) CreateBuffer(int size, DataDirection dataDirection)
+        protected virtual (IntPtr BufferPtr, int Size) CreateBuffer(int size, DataDirection dataDirection)
         {
-            return (new byte[size], 0);
+            IntPtr ptr;
+
+            switch (dataDirection)
+            {
+                case DataDirection.Input:
+                    _freeInputBufferPtr = true;
+                    break;
+
+                case DataDirection.Output:
+                    _freeOutputBufferPtr = true;
+                    break;
+
+                default:
+                    throw new ArgumentException();
+            }
+
+            ptr = Marshal.AllocHGlobal(size);
+
+            return (ptr, size);
         }
 
         protected virtual void UpdateDataPortSet()
@@ -132,7 +176,7 @@ namespace OneDas.Plugin
                 return dataPortSet;
             });
 
-            this.DataPortSet = ModuleToDataPortMap.SelectMany(moduleEntry => moduleEntry.Value).ToList();
+            this.DataPortSet = this.ModuleToDataPortMap.SelectMany(moduleEntry => moduleEntry.Value).ToList();
         }
 
         protected virtual List<DataPort> CreateDataPortSet(OneDasModule oneDasModule, int index)
@@ -154,20 +198,20 @@ namespace OneDas.Plugin
 
         protected override void FreeUnmanagedResources()
         {
-            if (this.InputBufferHandle.IsAllocated)
+            if (_freeInputBufferPtr)
             {
-                this.InputBufferHandle.Free();
+                Marshal.FreeHGlobal(this.InputBufferPtr);
             }
 
-            if (this.OutputBufferHandle.IsAllocated)
+            if (_freeOutputBufferPtr)
             {
-                this.OutputBufferHandle.Free();
+                Marshal.FreeHGlobal(this.OutputBufferPtr);
             }
         }
 
         private Dictionary<OneDasModule, List<DataPort>> GetModuleToDataPortMap(DataDirection dataDirection)
         {
-            return ModuleToDataPortMap.Where(moduleEntry => moduleEntry.Key.DataDirection == dataDirection).ToDictionary(moduleEntry => moduleEntry.Key, moduleEntry => moduleEntry.Value);
+            return this.ModuleToDataPortMap.Where(moduleEntry => moduleEntry.Key.DataDirection == dataDirection).ToDictionary(moduleEntry => moduleEntry.Key, moduleEntry => moduleEntry.Value);
         }
 
         #endregion

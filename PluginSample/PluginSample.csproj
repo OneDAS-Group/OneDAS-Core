@@ -8,7 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-    <PackageReference Include="OneDas.Plugin.DataGateway.ModbusTcp" Version="0.1.0-alpha-6614-24332" />
+    <PackageReference Include="OneDas.Plugin.DataGateway.Example" Version="0.1.0-alpha-6617-29359" />
     <PackageReference Include="System.Memory" Version="4.4.0-preview1-25305-02" />
   </ItemGroup>
 

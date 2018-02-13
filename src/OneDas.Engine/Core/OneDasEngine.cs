@@ -262,7 +262,10 @@ namespace OneDas.Engine.Core
 
         public OneDasPerformanceInformation CreatePerformanceInformation()
         {
-            return new OneDasPerformanceInformation(this.OneDasState, Process.GetCurrentProcess().PriorityClass,
+            return new OneDasPerformanceInformation(
+                DateTime.UtcNow,
+                this.OneDasState, 
+                Process.GetCurrentProcess().PriorityClass,
                 _lateBy,
                 _cycleTime,
                 _timerDrift,

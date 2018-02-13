@@ -201,8 +201,13 @@
         </div>
         <div class="col-md-4">
             <div class="card my-2 noselect">
-                <div class="card-header">
-                    Performance
+                <div class="card-header d-flex justify-content-between">
+                    <div>
+                        Performance
+                    </div>
+                    <div data-bind="with: $root.PerformanceInformation">
+                        <div class="text-muted" data-bind="text: Time"></div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -217,7 +222,7 @@
                     </div>
                     <div class="d-flex justify-content-between">
                         <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'OneDAS timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
+                            data-bind="tooltip: { title: 'Timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
                             Delay
                         </h5>
                         <div data-bind="with: $root.PerformanceInformation">
@@ -227,7 +232,7 @@
                     </div>
                     <div class="d-flex justify-content-between">
                         <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'Indicates the OneDAS load.'}">
+                            data-bind="tooltip: { title: 'Indicates the load.'}">
                             Cycle Time
                         </h5>
                         <div data-bind="with: $root.PerformanceInformation">
@@ -236,7 +241,7 @@
                         </div>
                     </div>
                     <div class="progress mt-2"
-                         data-bind="tooltip: { title: 'Time difference of OneDAS reference clock and Windows clock.' },
+                         data-bind="tooltip: { title: 'Time difference of reference clock and Windows clock.' },
                                     with: $root.PerformanceInformation">
                         <div class="progress-bar progress-bar-striped progress-bar-animated"
                              role="progressbar"

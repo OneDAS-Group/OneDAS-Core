@@ -6,6 +6,8 @@
     public CpuTime: number
     public TimerDriftMicroseconds: number
 
+    public Time: string
+
     public UpTimeHours: number
     public UpTimeMinutes: number
     public UpTimeSeconds: number
@@ -15,6 +17,7 @@
         let timeSpan: number
         let secPerMinute = 60;
         let secPerHour = secPerMinute * 60;
+        let dateTime : Date
 
         this.LateBy = performanceInformationModel.LateBy
         this.CycleTime = performanceInformationModel.CycleTime
@@ -22,6 +25,19 @@
         this.CpuTime = performanceInformationModel.CycleTime
 
         this.TimerDriftMicroseconds = Math.abs(this.TimerDrift) / 1000
+
+        // get current time
+        dateTime = new Date(performanceInformationModel.DateTime);
+
+        this.Time = dateTime.toLocaleString(
+            "de-DE",
+            {
+                timeZone: "UTC",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }
+        )
 
         // calculate system uptime
         timeSpan = performanceInformationModel.UpTime

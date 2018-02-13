@@ -2,9 +2,8 @@
 using Microsoft.Extensions.Logging;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
-using OneDas.Plugin.DataGateway.ModbusTcp;
+using OneDas.Plugin.DataGateway.Example;
 using System;
-using System.IO;
 using System.Threading;
 
 namespace EngineSample
@@ -12,7 +11,6 @@ namespace EngineSample
     class Program
     {
         /* improvements:
-        * - modbusTcpGateway.InputBuffer should be a Span<T> pointing to native memory
         * - make reading big endian values easier
         * - FrameRateDivider should not be set as it is not used in this example
         * - make example stoppable
@@ -27,34 +25,31 @@ namespace EngineSample
             var provider = services.BuildServiceProvider();
             var pluginProvider = provider.GetRequiredService<IPluginProvider>();
 
-            pluginProvider.Add(typeof(ModbusTcpGateway));
+            pluginProvider.Add(typeof(ExampleGateway));
 
-            var modbusTcpModel = new ModbusTcpModel();
-            modbusTcpModel.ModuleSet.Add(new ModbusTcpModule(0, ModbusTcpObjectTypeEnum.HoldingRegister, OneDasDataType.FLOAT32, DataDirection.Input, Endianness.BigEndian, 10));
-            modbusTcpModel.FrameRateDivider = 4;
-            modbusTcpModel.RemoteIpAddressString = "192.168.0.2";
+            var modbusTcpModel = new ExampleModel();
+            modbusTcpModel.ModuleSet.Add(new OneDasModule(OneDasDataType.FLOAT32, DataDirection.Input, Endianness.LittleEndian, 10));
             modbusTcpModel.Validate();
 
-            var modbusTcpGateway = pluginProvider.BuildLogic<ModbusTcpGateway>(modbusTcpModel);
-            modbusTcpGateway.Configure();
-
-            while (true)
+            using (var exampleGateway = pluginProvider.BuildLogic<ExampleGateway>(modbusTcpModel))
             {
-                modbusTcpGateway.UpdateIo(DateTime.Now);
+                exampleGateway.Configure();
 
-                for (int i = 0; i < 10; i++)
+                while (true)
                 {
-                    var value = new Span<byte>(modbusTcpGateway.InputBuffer, i * 4, 4);
-                    var singleValue = value.ToArray();
+                    exampleGateway.UpdateIo(DateTime.Now);
 
-                    Array.Reverse(singleValue);
-                    Console.Write(BitConverter.ToSingle(singleValue, 0) + "; ");
+                    var values = exampleGateway.GetInputBuffer().NonPortableCast<byte, float>();
+
+                    for (int i = 0; i < 10; i++)
+                    {
+                        Console.Write(values[i] + "; ");
+                    }
+
+                    Console.Write("\n\n");
+
+                    Thread.Sleep(1000);
                 }
-
-                Console.WriteLine();
-                Console.WriteLine();
-
-                Thread.Sleep(1000);
             }
 
             Console.ReadKey();

@@ -30,9 +30,8 @@
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label class="form-control-label" for="live_view_period">Period:</label>
+                <label class="form-control-label">Period:</label>
                 <select class="form-control"
-                        id="live_view_period"
                         data-bind="options: EnumerationHelper.GetEnumValues('LiveViewPeriodEnum'),
                                             optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('LiveViewPeriodEnum', x) },
                                             value: SelectedLiveViewPeriod"></select>
@@ -42,12 +41,14 @@
                     <div class="input-group mb-2">
                         <div class="input-group-prepend url"
                              data-bind="click: ResetSearch">
-                            <!-- ko if: SearchString().length > 0 -->
-                                <strong class="input-group-text">X</strong>
-                            <!-- /ko -->
-                            <!-- ko ifnot: SearchString().length > 0 -->
-                                <span class="input-group-text fa fa-search fa-fix"></span>
-                            <!-- /ko -->
+                            <div class="input-group-text">
+                                <!-- ko if: SearchString().length > 0 -->
+                                <strong>X</strong>
+                                <!-- /ko -->
+                                <!-- ko ifnot: SearchString().length > 0 -->
+                                <span class="fa fa-search fa-fix"></span>
+                                <!-- /ko -->
+                            </div>
                         </div>
                         <input type="text"
                                class="form-control"

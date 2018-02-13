@@ -8,10 +8,6 @@
     {
         #region "Constuctors"
 
-        /// <summary>
-        /// Creates a new <see cref="DataStorage(Of T)"/> instance.
-        /// </summary>
-        /// <param name="length">The buffer length.</param>
         public ExtendedDataStorage(int length) : base(new T[length], typeof(T))
         {
             //
