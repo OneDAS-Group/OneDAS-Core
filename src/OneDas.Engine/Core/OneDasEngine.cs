@@ -301,9 +301,9 @@ namespace OneDas.Engine.Core
 
             realChunkIndex = Convert.ToInt32(currentChunkIndex / (int)channelHub.SampleRate);
 
-            if (channelHub.AssociatedDataStorageSet[currentStorageIndex].ReadStatus(realChunkIndex) == 1)
+            if (channelHub.AssociatedDataStorageSet[currentStorageIndex].GetStatusBuffer()[realChunkIndex] == 1)
             {
-                return channelHub.AssociatedDataStorageSet[currentStorageIndex].Read(realChunkIndex);
+                return channelHub.AssociatedDataStorageSet[currentStorageIndex].Get(realChunkIndex);
             }
             else
             {
@@ -776,9 +776,9 @@ namespace OneDas.Engine.Core
             byte* targetPtr;
 
             sourcePtr = (byte*)dataPort.DataPtr.ToPointer();
-            targetPtr = (byte*)dataStorage.GetDataPointer(index).ToPointer();
+            targetPtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index;
 
-            dataStorage.WriteStatus(index, status);
+            dataStorage.GetStatusBuffer()[index] = status;
 
             if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
             {
@@ -816,12 +816,12 @@ namespace OneDas.Engine.Core
             }
         }
 
-        public unsafe void WriteToDataPort(DataPort dataPort, DataStorageBase dataStorage, int index)
+        public unsafe void WriteToDataPort(DataPort dataPort, ExtendedDataStorageBase dataStorage, int index)
         {
             byte* sourcePtr;
             byte* targetPtr;
 
-            sourcePtr = (byte*)dataStorage.GetDataPointer(index).ToPointer();
+            sourcePtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index;
             targetPtr = (byte*)dataPort.DataPtr.ToPointer();
 
             if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean

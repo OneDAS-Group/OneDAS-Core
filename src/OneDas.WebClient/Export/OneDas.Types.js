@@ -157,9 +157,11 @@ class ObservableGroup {
 }
 function ObservableGroupBy(list, nameGetter, groupNameGetter, filter) {
     let result;
+    let regExp;
     result = [];
+    regExp = new RegExp(filter, "i");
     list.forEach(element => {
-        if (nameGetter(element).indexOf(filter) > -1) {
+        if (regExp.test(nameGetter(element))) {
             groupNameGetter(element).split("\n").forEach(groupName => {
                 AddToGroupedArray(element, groupName, result);
             });

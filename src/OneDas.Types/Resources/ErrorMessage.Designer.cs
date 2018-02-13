@@ -79,33 +79,6 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Array lengths are not matching. ähnelt.
-        /// </summary>
-        internal static string DataStorage_ArrayLengthMismatch {
-            get {
-                return ResourceManager.GetString("DataStorage_ArrayLengthMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Length must be non-negative. ähnelt.
-        /// </summary>
-        internal static string DataStorage_LengthNonNegative {
-            get {
-                return ResourceManager.GetString("DataStorage_LengthNonNegative", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The type of the generic parameter T must be primitive. ähnelt.
-        /// </summary>
-        internal static string DataStorage_ParameterTNonPrimitive {
-            get {
-                return ResourceManager.GetString("DataStorage_ParameterTNonPrimitive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The requested period has already been written before. ähnelt.
         /// </summary>
         internal static string DataWriterPluginLogicBase_DateTimeAlreadyWritten {

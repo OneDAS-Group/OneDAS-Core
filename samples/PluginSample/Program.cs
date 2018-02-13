@@ -4,6 +4,7 @@ using OneDas.Infrastructure;
 using OneDas.Plugin;
 using OneDas.Plugin.DataGateway.Example;
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace EngineSample
@@ -39,7 +40,7 @@ namespace EngineSample
                 {
                     exampleGateway.UpdateIo(DateTime.Now);
 
-                    var values = exampleGateway.GetInputBuffer().NonPortableCast<byte, float>();
+                    var values = MemoryMarshal.Cast<byte, float>(exampleGateway.GetInputBuffer());
 
                     for (int i = 0; i < 10; i++)
                     {

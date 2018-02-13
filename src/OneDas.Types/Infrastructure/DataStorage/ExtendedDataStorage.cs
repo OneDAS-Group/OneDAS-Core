@@ -1,19 +1,10 @@
 ﻿namespace OneDas.Infrastructure
 {
-    /// <summary>
-    /// Represents a generic infrastructure to buffer data.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class ExtendedDataStorage<T> : ExtendedDataStorageBase where T : struct
     {
         #region "Constuctors"
 
-        public ExtendedDataStorage(int length) : base(new T[length], typeof(T))
-        {
-            //
-        }
-
-        public ExtendedDataStorage(T[] dataset, byte[] statusSet) : base(dataset, statusSet, typeof(T))
+        public ExtendedDataStorage(int elementCount) : base(typeof(T), elementCount)
         {
             //
         }
@@ -22,9 +13,14 @@
 
         #region "Methods"
 
+        public override object Get(int index)
+        {
+            return this.GetDataBuffer<T>()[index];
+        }
+
         public override double[] ApplyDatasetStatus()
         {
-            return ExtendedDataStorageBase.ApplyDatasetStatus((T[])this.Dataset, this.StatusSet);
+            return ExtendedDataStorageBase.ApplyDatasetStatus(this.GetDataBuffer<T>().ToArray(), this.GetStatusBuffer().ToArray());
         }
 
         public override SimpleDataStorage ToSimpleDataStorage()

@@ -117,20 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DataStorage_LengthNonNegative" xml:space="preserve">
-    <value>Length must be non-negative.</value>
-  </data>
-  <data name="DataStorage_ParameterTNonPrimitive" xml:space="preserve">
-    <value>The type of the generic parameter T must be primitive.</value>
-  </data>
   <data name="PluginSettingsBase_PluginContextAttributeNotDefined" xml:space="preserve">
     <value>PluginContextAttribute is not defined.</value>
   </data>
   <data name="PluginSettingsBase_PluginDescriptionAttributeNotDefined" xml:space="preserve">
     <value>PluginDescriptionAttribute is not defined.</value>
-  </data>
-  <data name="DataStorage_ArrayLengthMismatch" xml:space="preserve">
-    <value>Array lengths are not matching.</value>
   </data>
   <data name="VariableDescription_TypeNotSubclassOfDataStorage" xml:space="preserve">
     <value>The argument 'dataStorageType' must be a subclass of DataStorageBase.</value>

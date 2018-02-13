@@ -13,12 +13,14 @@
 function ObservableGroupBy<T>(list: T[], nameGetter: (x: T) => string, groupNameGetter: (x: T) => string, filter: string): ObservableGroup<T>[]
 {
     let result: ObservableGroup<T>[]
+    let regExp: RegExp
 
     result = []
+    regExp = new RegExp(filter, "i")
 
     list.forEach(element =>
     {
-        if (nameGetter(element).indexOf(filter) > -1)
+        if (regExp.test(nameGetter(element)))
         {
             groupNameGetter(element).split("\n").forEach(groupName =>
             {

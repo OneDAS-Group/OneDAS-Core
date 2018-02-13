@@ -270,23 +270,12 @@ namespace OneDas.WebServer.Web
         {
             return Task.Run(() =>
             {
-                IList<DataGatewayPluginSettingsBase> dataGatewayPluginSettingsSet;
-                IList<DataWriterPluginSettingsBase> dataWriterPluginSettingsSet;
-
-                dataGatewayPluginSettingsSet = Enumerable.
-                        Where(_pluginProvider.Get<DataGatewayPluginSettingsBase>(), pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "EtherCAT").
-                        Select(pluginSettingsType => (DataGatewayPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
-
-                dataWriterPluginSettingsSet = Enumerable.
-                        Where(_pluginProvider.Get<DataWriterPluginSettingsBase>(), pluginSettingsType => pluginSettingsType.GetFirstAttribute<PluginIdentificationAttribute>().Id == "HDF").
-                        Select(pluginSettingsType => (DataWriterPluginSettingsBase)Activator.CreateInstance(pluginSettingsType)).ToList();
-
                 return new OneDasProjectSettings(
                     primaryGroupName,
                     SecondaryGroupName, 
                     configurationName,
-                    dataGatewayPluginSettingsSet,
-                    dataWriterPluginSettingsSet);
+                    new List<DataGatewayPluginSettingsBase>(),
+                    new List<DataWriterPluginSettingsBase>());
             });
         }
 

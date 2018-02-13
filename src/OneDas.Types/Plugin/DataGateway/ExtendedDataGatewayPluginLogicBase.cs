@@ -59,20 +59,14 @@ namespace OneDas.Plugin
             //
         }
 
-        public Span<byte> GetInputBuffer()
+        public unsafe Span<byte> GetInputBuffer()
         {
-            unsafe
-            {
-                return new Span<byte>(this.InputBufferPtr.ToPointer(), _inputBufferSize);
-            }
+            return new Span<byte>(this.InputBufferPtr.ToPointer(), _inputBufferSize);
         }
 
-        public Span<byte> GetOutputBuffer()
+        public unsafe Span<byte> GetOutputBuffer()
         {
-            unsafe
-            {
-                return new Span<byte>(this.OutputBufferPtr.ToPointer(), _outputBufferSize);
-            }
+            return new Span<byte>(this.OutputBufferPtr.ToPointer(), _outputBufferSize);
         }
 
         protected virtual (IntPtr bufferPtr, int size) PrepareBuffer(Dictionary<OneDasModule, List<DataPort>> moduleToDataPortMap, DataDirection dataDirection)
@@ -117,7 +111,7 @@ namespace OneDas.Plugin
             return moduleEntry.Key.GetByteCount();
         }
 
-        protected virtual (IntPtr BufferPtr, int Size) CreateBuffer(int size, DataDirection dataDirection)
+        protected virtual unsafe (IntPtr BufferPtr, int Size) CreateBuffer(int size, DataDirection dataDirection)
         {
             IntPtr ptr;
 
@@ -136,6 +130,8 @@ namespace OneDas.Plugin
             }
 
             ptr = Marshal.AllocHGlobal(size);
+
+            new Span<bool>(ptr.ToPointer(), size).Clear();
 
             return (ptr, size);
         }
