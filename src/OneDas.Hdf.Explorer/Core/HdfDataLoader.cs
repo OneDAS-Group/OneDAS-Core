@@ -98,22 +98,22 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 case FileFormat.CSV:
 
-                    settings = new CsvModel() { FileGranularity = fileGranularity };
-                    dataWriter = new CsvWriter((CsvModel)settings, new LoggerFactory());
+                    settings = new CsvSettings() { FileGranularity = fileGranularity };
+                    dataWriter = new CsvWriter((CsvSettings)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.GAM:
 
-                    settings = new GamModel() { FileGranularity = fileGranularity };
-                    dataWriter = new GamWriter((GamModel)settings, new LoggerFactory());
+                    settings = new GamSettings() { FileGranularity = fileGranularity };
+                    dataWriter = new GamWriter((GamSettings)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.MAT73:
 
-                    settings = new Mat73Model() { FileGranularity = fileGranularity };
-                    dataWriter = new Mat73Writer((Mat73Model)settings, new LoggerFactory());
+                    settings = new Mat73Settings() { FileGranularity = fileGranularity };
+                    dataWriter = new Mat73Writer((Mat73Settings)settings, new LoggerFactory());
 
                     break;
 

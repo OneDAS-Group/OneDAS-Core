@@ -28,7 +28,7 @@ namespace EngineSample
 
             pluginProvider.Add(typeof(ExampleGateway));
 
-            var modbusTcpModel = new ExampleModel();
+            var modbusTcpModel = new ExampleSettings();
             modbusTcpModel.ModuleSet.Add(new OneDasModule(OneDasDataType.FLOAT32, DataDirection.Input, Endianness.LittleEndian, 10));
             modbusTcpModel.Validate();
 

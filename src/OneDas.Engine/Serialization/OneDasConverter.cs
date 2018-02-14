@@ -3,7 +3,6 @@ using OneDas.Engine.Core;
 using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace OneDas.Engine.Serialization
@@ -54,7 +53,7 @@ namespace OneDas.Engine.Serialization
             }
             else
             {
-                SerializationHelper.JsonSerializer.Serialize(writer, value, typeof(JsonSerializer));
+                SerializationHelper.JsonSerializer.Serialize(writer, value);
             }
         }
     }
