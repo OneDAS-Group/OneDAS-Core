@@ -172,20 +172,14 @@
         })
 
         // jQeuery
-        $("#start-date").on("dp.change", (e: any) =>
+        $("#start-date").on("change.datetimepicker", (e: any) =>
         {
-            if (moment(this.EndDate()).isBefore(e.date))
-            {
-                this.EndDate(e.date)
-            }
+            this.StartDate(e.date)
         })
 
-        $("#end-date").on("dp.change", (e: any) =>
+        $("#end-date").on("change.datetimepicker", (e: any) =>
         {
-            if (moment(this.StartDate()).isAfter(e.date))
-            {
-                this.StartDate(e.date)
-            }
+            this.EndDate(e.date)
         })
     }  
 

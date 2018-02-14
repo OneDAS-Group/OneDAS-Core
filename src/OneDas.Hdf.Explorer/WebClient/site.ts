@@ -68,31 +68,62 @@ function MapMany<TArrayElement, TSelect>(array: TArrayElement[], mapFunc: (item:
     }, <TSelect[]>[]);
 }
 
+function addDays(date, days)
+{
+    var result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
 $(document).ready(() =>
 {
     (<any>$("body")).tooltip({ selector: "[data-toggle=tooltip]", container: "body" });
 
-    (<any>$('#start-date')).datetimepicker(
-        {
-            format: "DD/MM/YYYY HH:mm",
-            minDate: moment.utc('2000-01-01T00:00:00.000Z'),
-            maxDate: moment.utc('2030-01-01T00:00:00.000Z'),
-            keepOpen: false, // not working
-            ignoreReadonly: true,
-            timeZone: 'utc'
-        }
-    );
+    $(function ()
+    {
+        let startDate: Date
 
-    (<any>$('#end-date')).datetimepicker(
+        startDate = new Date()
+        startDate.setHours(0, 0, 0, 0);
+        startDate = addDays(startDate, -1);
+
+        let endDate: Date
+
+        endDate = new Date()
+        endDate.setHours(0, 0, 0, 0);
+
+        (<any>$("#start-date")).datetimepicker(
+            {
+                format: "DD/MM/YYYY HH:mm",
+                minDate: new Date("2000-01-01T00:00:00.000Z"),
+                maxDate: new Date("2030-01-01T00:00:00.000Z"),
+                defaultDate: startDate,
+                ignoreReadonly: true,
+                //calendarWeeks: true // not working
+            }
+        );
+
+        (<any>$("#end-date")).datetimepicker(
+            {
+                format: "DD/MM/YYYY HH:mm",
+                minDate: new Date("2000-01-01T00:00:00.000Z"),
+                maxDate: new Date("2030-01-01T00:00:00.000Z"),
+                defaultDate: endDate,
+                ignoreReadonly: true,
+                //calendarWeeks: true // not working
+            }
+        );
+
+        (<any>$("#start-date")).on("change.datetimepicker", function (e)
         {
-            format: "DD/MM/YYYY HH:mm",
-            minDate: moment.utc('2000-01-01T00:00:00.000Z'),
-            maxDate: moment.utc('2030-01-01T00:00:00.000Z'),
-            keepOpen: false, // not working
-            ignoreReadonly: true,
-            timeZone: 'utc'
-        }
-    );
+            (<any>$('#end-date')).datetimepicker('minDate', e.date);
+        });
+
+        (<any>$("#end-date")).on("change.datetimepicker", function (e)
+        {
+            (<any>$('#start-date')).datetimepicker('maxDate', e.date);
+        });
+    });
 })
 
 broadcaster = new signalR.HubConnection("broadcaster");
@@ -126,55 +157,6 @@ broadcaster.start().then(async () =>
     {
         appModel = await broadcaster.invoke("GetAppModel")
         appViewModel(new AppViewModel(appModel))
-
-        ko.bindingHandlers.dateTimePicker = {
-            init: function (element, valueAccessor, allBindingsAccessor)
-            {
-                //initialize datepicker with some optional options
-                var options = allBindingsAccessor().dateTimePickerOptions || {};
-                (<any>$(element)).datetimepicker(options);
-
-                //when a user changes the date, update the view model
-                ko.utils.registerEventHandler(element, "dp.change", function (event)
-                {
-                    var value = valueAccessor()
-                    if (ko.isObservable(value))
-                    {
-                        if (event.date != null && !(event.date instanceof Date))
-                        {
-                            value(event.date.toDate());
-                        } else
-                        {
-                            value(event.date)
-                        }
-                    }
-                });
-
-                ko.utils.domNodeDisposal.addDisposeCallback(element, function ()
-                {
-                    var picker = $(element).data("DateTimePicker")
-                    if (picker)
-                    {
-                        picker.destroy();
-                    }
-                })
-            },
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext)
-            {
-
-                var picker = $(element).data("DateTimePicker")
-                //when the view model is updated, update the widget
-                if (picker)
-                {
-                    var koDate = ko.utils.unwrapObservable(valueAccessor())
-
-                    //in case return from server datetime i am get in this form for example /Date(93989393)/ then fomat this
-                    koDate = (typeof (koDate) !== 'object') ? new Date(parseFloat(koDate.replace(/[^0-9]/g, ''))) : koDate
-
-                    picker.date(koDate)
-                }
-            }
-        }
 
         ko.bindingHandlers.toggleArrow = {
             init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext: KnockoutBindingContext)
