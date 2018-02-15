@@ -4,8 +4,10 @@ using OneDas.Infrastructure;
 using OneDas.Plugin;
 using OneDas.Plugin.DataGateway.Example;
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace EngineSample
 {
@@ -32,28 +34,33 @@ namespace EngineSample
             modbusTcpModel.ModuleSet.Add(new OneDasModule(OneDasDataType.FLOAT32, DataDirection.Input, Endianness.LittleEndian, 10));
             modbusTcpModel.Validate();
 
-            using (var exampleGateway = pluginProvider.BuildLogic<ExampleGateway>(modbusTcpModel))
+            Console.CursorVisible = false;
+
+            Task.Run(() =>
             {
-                exampleGateway.Configure();
-
-                while (true)
+                using (var exampleGateway = pluginProvider.BuildLogic<ExampleGateway>(modbusTcpModel))
                 {
-                    exampleGateway.UpdateIo(DateTime.Now);
+                    exampleGateway.Configure();
 
-                    var values = MemoryMarshal.Cast<byte, float>(exampleGateway.GetInputBuffer());
-
-                    for (int i = 0; i < 10; i++)
+                    while (true)
                     {
-                        Console.Write(values[i] + "; ");
+                        exampleGateway.UpdateIo(DateTime.Now);
+
+                        var values = MemoryMarshal.Cast<byte, float>(exampleGateway.GetInputBuffer());
+
+                        Console.Clear();
+
+                        for (int i = 0; i < 10; i++)
+                        {
+                            Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "{0,6:F2}", values[i]));
+                        }
+
+                        Thread.Sleep(1000);
                     }
-
-                    Console.Write("\n\n");
-
-                    Thread.Sleep(1000);
                 }
-            }
+            });
 
-            Console.ReadKey();
+            Console.ReadKey(true);
         }
 
         static void ConfigureServices(IServiceCollection services)
