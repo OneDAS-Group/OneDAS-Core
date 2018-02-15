@@ -16,7 +16,6 @@ namespace EngineSample
         /* improvements:
         * - make reading big endian values easier
         * - FrameRateDivider should not be set as it is not used in this example
-        * - make example stoppable
         */
 
         static void Main(string[] args)
