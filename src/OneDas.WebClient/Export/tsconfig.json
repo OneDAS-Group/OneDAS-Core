@@ -8,8 +8,6 @@
     "wwwroot"
   ],
   "files": [
-    "./../../../../OneDas-Support/web/typings/global.d.ts",
-
     "./../OneDas.Types/DataDirectionEnum.ts",
     "./../OneDas.Types/EndiannessEnum.ts",
     "./../OneDas.Types/FileGranularityEnum.ts",

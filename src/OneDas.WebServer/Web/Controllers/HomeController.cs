@@ -68,7 +68,7 @@ namespace OneDas.WebServer.Web
             if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
                 OneDasPerformanceInformation performanceInformation = _oneDasEngine.CreatePerformanceInformation();
-                _hubContext?.Clients.All.InvokeAsync("SendPerformanceInformation", performanceInformation);
+                _hubContext?.Clients.All.SendAsync("SendPerformanceInformation", performanceInformation);
             }
         }
 
@@ -79,7 +79,7 @@ namespace OneDas.WebServer.Web
             if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
                 dataSnapshot = _oneDasEngine.CreateDataSnapshot();
-                _hubContext?.Clients.All.InvokeAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
+                _hubContext?.Clients.All.SendAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
             }
         }
 
@@ -92,19 +92,19 @@ namespace OneDas.WebServer.Web
                 foreach (var liveViewSubscription in HomeController.LiveViewSubscriptionSet)
                 {
                     dataSnapshot = _oneDasEngine.CreateDataSnapshot(liveViewSubscription.Value.ChannelHubSet);
-                    _hubContext?.Clients.Client(liveViewSubscription.Key).InvokeAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
+                    _hubContext?.Clients.Client(liveViewSubscription.Key).SendAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
                 }
             }
         }
 
         public static void SendMessage(string message)
         {
-            _hubContext?.Clients.All.InvokeAsync("SendMessage", message);
+            _hubContext?.Clients.All.SendAsync("SendMessage", message);
         }
 
         private static void OneDasEngine_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)
         {
-            _hubContext?.Clients.All.InvokeAsync("SendOneDasState", e.NewState);
+            _hubContext?.Clients.All.SendAsync("SendOneDasState", e.NewState);
         }
     }
 }

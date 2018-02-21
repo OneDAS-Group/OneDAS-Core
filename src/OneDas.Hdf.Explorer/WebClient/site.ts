@@ -1,4 +1,6 @@
-﻿let appViewModel: KnockoutObservable<AppViewModel> = ko.observable<AppViewModel>()
+﻿declare var signalR: any
+
+let appViewModel: KnockoutObservable<AppViewModel> = ko.observable<AppViewModel>()
 let broadcaster: any
 
 interface Map<K, V>
@@ -126,7 +128,7 @@ $(document).ready(() =>
     });
 })
 
-broadcaster = new signalR.HubConnection("broadcaster");
+broadcaster = new signalR.HubConnection("/broadcaster");
 
 // improve: how to handle this?
 

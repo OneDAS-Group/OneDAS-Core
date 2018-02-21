@@ -91,6 +91,7 @@ declare class TransferFunctionModel {
     Argument: string;
     constructor(dateTime: string, type: string, option: string, argument: string);
 }
+declare var signalR: any;
 declare class ConnectionManager {
     static WebClientHub: any;
     static Initialize(enableLogging: boolean): void;

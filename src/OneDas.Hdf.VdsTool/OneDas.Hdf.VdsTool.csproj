@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="3.20.0" />
-    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6614-23293" />
+    <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6626-27140" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">

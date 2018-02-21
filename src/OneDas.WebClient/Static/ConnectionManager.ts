@@ -1,4 +1,6 @@
-﻿class ConnectionManager
+﻿declare var signalR: any
+
+class ConnectionManager
 {
     public static WebClientHub: any // improve: use typings
 

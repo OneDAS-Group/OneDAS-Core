@@ -1,4 +1,6 @@
-﻿namespace OneDas.Infrastructure
+﻿using System;
+
+namespace OneDas.Infrastructure
 {
     public class ExtendedDataStorage<T> : ExtendedDataStorageBase where T : struct
     {
@@ -7,6 +9,11 @@
         public ExtendedDataStorage(int elementCount) : base(typeof(T), elementCount)
         {
             //
+        }
+
+        public ExtendedDataStorage(T[] dataset, byte[] statusSet) : base(typeof(T), statusSet)
+        {
+            dataset.CopyTo(this.GetDataBuffer<T>());
         }
 
         #endregion

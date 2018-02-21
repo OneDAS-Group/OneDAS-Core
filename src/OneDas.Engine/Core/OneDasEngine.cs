@@ -772,11 +772,13 @@ namespace OneDas.Engine.Core
 
         public unsafe void WriteToDataStorage(ExtendedDataStorageBase dataStorage, int index, DataPort dataPort, byte status)
         {
+            int elementSize;
             byte* sourcePtr;
             byte* targetPtr;
 
+            elementSize = dataStorage.ElementSize;
             sourcePtr = (byte*)dataPort.DataPtr.ToPointer();
-            targetPtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index;
+            targetPtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index * elementSize;
 
             dataStorage.GetStatusBuffer()[index] = status;
 
@@ -793,7 +795,7 @@ namespace OneDas.Engine.Core
                 {
                     case Endianness.LittleEndian:
 
-                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        for (int i = 0; i < elementSize; i++)
                         {
                             targetPtr[i] = sourcePtr[i];
                         }
@@ -802,9 +804,9 @@ namespace OneDas.Engine.Core
 
                     case Endianness.BigEndian:
 
-                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        for (int i = 0; i < elementSize; i++)
                         {
-                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i - 1];
+                            targetPtr[i] = sourcePtr[elementSize - i - 1];
                         }
 
                         break;
@@ -818,10 +820,12 @@ namespace OneDas.Engine.Core
 
         public unsafe void WriteToDataPort(DataPort dataPort, ExtendedDataStorageBase dataStorage, int index)
         {
+            int elementSize;
             byte* sourcePtr;
             byte* targetPtr;
 
-            sourcePtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index;
+            elementSize = dataStorage.ElementSize;
+            sourcePtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index * elementSize;
             targetPtr = (byte*)dataPort.DataPtr.ToPointer();
 
             if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
@@ -841,7 +845,7 @@ namespace OneDas.Engine.Core
                 {
                     case Endianness.LittleEndian:
 
-                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        for (int i = 0; i < elementSize; i++)
                         {
                             targetPtr[i] = sourcePtr[i];
                         }
@@ -850,9 +854,9 @@ namespace OneDas.Engine.Core
 
                     case Endianness.BigEndian:
 
-                        for (int i = 0; i < dataStorage.ElementSize; i++)
+                        for (int i = 0; i < elementSize; i++)
                         {
-                            targetPtr[i] = sourcePtr[dataStorage.ElementSize - i - 1];
+                            targetPtr[i] = sourcePtr[elementSize - i - 1];
                         }
 
                         break;

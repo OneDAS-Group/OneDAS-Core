@@ -105,8 +105,9 @@ namespace OneDas.Hdf.Explorer.Core
 
                 case FileFormat.GAM:
 
-                    settings = new GamSettings() { FileGranularity = fileGranularity };
-                    dataWriter = new GamWriter((GamSettings)settings, new LoggerFactory());
+                    //settings = new GamSettings() { FileGranularity = fileGranularity };
+                    //dataWriter = new GamWriter((GamSettings)settings, new LoggerFactory());
+                    dataWriter = null;
 
                     break;
 
@@ -252,7 +253,10 @@ namespace OneDas.Hdf.Explorer.Core
             Array dataset;
             Array dataset_status;
 
+            Type genericType;
+
             ExtendedDataStorageBase extendedDataStorage;
+            SimpleDataStorage simpleDataStorage;
 
             dataset = IOHelper.ReadDataset(sourceFileId, datasetPath, start, stride, block, count);
 
@@ -263,8 +267,12 @@ namespace OneDas.Hdf.Explorer.Core
                 {
                     datasetId = H5D.open(sourceFileId, datasetPath);
                     typeId = H5D.get_type(datasetId);
+
                     dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<byte>().ToArray();
-                    extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId)), dataset, dataset_status);
+
+                    genericType = typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
+                    extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(genericType, dataset, dataset_status);
+
                     dataset_status = null;
                 }
                 finally
@@ -273,7 +281,10 @@ namespace OneDas.Hdf.Explorer.Core
                     H5T.close(typeId);
                 }
 
-                return extendedDataStorage.ToSimpleDataStorage();
+                simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
+                extendedDataStorage.Dispose();
+
+                return simpleDataStorage;
             }
             else
             {

@@ -4,7 +4,7 @@ if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set "sourceDirectory=.\..\OneDAS-Support\web\node_modules"
 
-set list="@aspnet\signalr-client\dist\browser"
+set list=@aspnet\signalr\dist\browser
 set list=%list%;bootstrap\dist
 set list=%list%;chart.js\dist
 set list=%list%;font-awesome\css
@@ -32,7 +32,7 @@ if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set "sourceDirectory=.\..\OneDAS-Support\web\node_modules"
 
-set list="@aspnet\signalr-client\dist\browser"
+set list=@aspnet\signalr\dist\browser
 set list=%list%;bootstrap\dist   
 set list=%list%;chart.js\dist
 set list=%list%;font-awesome\css
@@ -44,7 +44,7 @@ set list=%list%;popper.js\dist
 set list=%list%;tempusdominus-bootstrap-4\build
 
 for %%a in (%list%) do ( 
-     xcopy /s /y "%sourceDirectory%\%%a\." "%targetDirectory%\%%a\"
+     xcopy /s /y %sourceDirectory%\%%a\. %targetDirectory%\%%a\
 )
 
 set list=%list%;moment\moment.js

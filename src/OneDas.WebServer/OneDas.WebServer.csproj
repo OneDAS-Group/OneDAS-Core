@@ -2,22 +2,22 @@
   <PropertyGroup>
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
+    <DebugType>portable</DebugType>
     <LangVersion>latest</LangVersion>
     <TargetFramework>net47</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.4.337" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.0.1" />
+    <PackageReference Include="BuildBundlerMinifier" Version="2.6.362" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.1.0-preview2-30155" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-alpha2-final" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-alpha2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-alpha2-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="OneDas.Engine" Version="0.1.0-alpha-6618-28890" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview2-30155" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="OneDas.Engine" Version="0.1.0-alpha-6626-27143" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview2-26130-01" />
   </ItemGroup>
   <ItemGroup>

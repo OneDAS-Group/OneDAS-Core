@@ -8,17 +8,13 @@ namespace OneDas.Hdf.Explorer
 {
     public class Startup
     {
-        public Startup()
-        {
-        }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSignalR(hubOptions =>
+            services.AddSignalR().AddJsonProtocol(options =>
             {
-                hubOptions.JsonSerializerSettings = new JsonSerializerSettings();
+                options.PayloadSerializerSettings = new JsonSerializerSettings();
             });
         }
 
@@ -38,7 +34,7 @@ namespace OneDas.Hdf.Explorer
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<Broadcaster>("broadcaster");
+                routes.MapHub<Broadcaster>("/broadcaster");
             });
 
             app.UseMvc(routes =>

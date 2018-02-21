@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
+    <DebugType>portable</DebugType>
     <LangVersion>latest</LangVersion>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -10,14 +10,14 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke" Version="1.10.1" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-alpha2-final" />
-	  <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6614-23293" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="0.1.0-alpha-6619-15823" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30155" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30155" />
+	  <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6626-27140" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="0.1.0-alpha-6626-27159" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="0.1.0-alpha-6579-25141" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="0.1.0-alpha-6619-15823" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="0.1.0-alpha-6626-27159" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />

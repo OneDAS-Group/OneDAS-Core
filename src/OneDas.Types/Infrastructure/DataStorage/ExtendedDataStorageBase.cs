@@ -13,7 +13,6 @@ namespace OneDas.Infrastructure
         #region "Fields"
 
         int _byteCount;
-        IntPtr _statusBufferPtr;
 
         #endregion
 
@@ -22,9 +21,32 @@ namespace OneDas.Infrastructure
         public ExtendedDataStorageBase(Type type, int elementCount) : base(type, elementCount)
         {
             _byteCount = elementCount;
-            _statusBufferPtr = Marshal.AllocHGlobal(elementCount);
 
+            this.StatusBufferPtr = Marshal.AllocHGlobal(_byteCount);
             this.GetStatusBuffer().Clear();
+        }
+
+        public ExtendedDataStorageBase(Type type, byte[] statusSet) : base(type, statusSet.Length)
+        {
+            _byteCount = statusSet.Length;
+
+            this.StatusBufferPtr = Marshal.AllocHGlobal(_byteCount);
+            statusSet.CopyTo(this.StatusBuffer);
+        }
+
+        #endregion
+
+        #region "Properties"
+
+        // Improve: remove this if possible to replace it by Span<T>
+        public IntPtr StatusBufferPtr { get; private set; }
+
+        public Span<byte> StatusBuffer
+        {
+            get
+            {
+                return this.GetStatusBuffer();
+            }
         }
 
         #endregion
@@ -33,7 +55,7 @@ namespace OneDas.Infrastructure
 
         public unsafe Span<byte> GetStatusBuffer()
         {
-            return new Span<byte>(_statusBufferPtr.ToPointer(), _byteCount);
+            return new Span<byte>(this.StatusBufferPtr.ToPointer(), _byteCount);
         }
 
         public override void Clear()
@@ -75,8 +97,8 @@ namespace OneDas.Infrastructure
         {
             if (!disposedValue)
             {
-                Marshal.FreeHGlobal(_statusBufferPtr);
-                Marshal.FreeHGlobal(this.DataBufferPtr);
+                Marshal.FreeHGlobal(this.StatusBufferPtr);
+
                 disposedValue = true;
             }
         }

@@ -22,14 +22,14 @@ namespace OneDas.WebServer.Web
             // Add framework services.
             services.AddMvc();
 
-            services.AddSignalR(hubOptions =>
+            services.AddSignalR().AddJsonProtocol(options =>
             {
                 var settings = new JsonSerializerSettings()
                 {
                     Converters = { new OneDasConverter() }
                 };
 
-                hubOptions.JsonSerializerSettings = settings;
+                options.PayloadSerializerSettings = settings;
             });
 
             services.AddResponseCompression();
@@ -56,8 +56,8 @@ namespace OneDas.WebServer.Web
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<WebClientHub>(webServerOptions.WebClientHubName);
-                routes.MapHub<ConsoleHub>(webServerOptions.ConsoleHubName);
+                routes.MapHub<WebClientHub>("/" + webServerOptions.WebClientHubName);
+                routes.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
             });
 
             app.UseMvc(routes =>

@@ -3,9 +3,6 @@
   "compilerOptions": {
     "outFile": "./../OneDas.WebServer/wwwroot/js/site.js"
   },
-  "files": [
-    "./../../../OneDas-Support/web/typings/global.d.ts"
-  ],
   "include": [
     "./**/*.ts"
   ],

@@ -45,7 +45,8 @@ namespace OneDas.WebServer.Shell
             SafeNativeMethods.SetConsoleCtrlHandler(_handlerRoutine, true);
 
             Console.Write("initialization (standard) ... ");
-            BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");        }
+            BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
+        }
 
         #endregion
 
