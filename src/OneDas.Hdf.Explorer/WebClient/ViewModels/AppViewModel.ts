@@ -17,6 +17,8 @@
     public DataAvailabilityStatistics: KnockoutObservable<DataAvailabilityStatisticsViewModel>
     public SelectedCampaignInfo: KnockoutObservable<CampaignInfoViewModel>
 
+    public CanLoadData: KnockoutObservable<boolean>
+
     private _variableInfoSet: VariableInfoViewModel[]
     private _datasetInfoSet: DatasetInfoViewModel[]
     private _chart: Chart
@@ -40,6 +42,8 @@
         this.EndDate = ko.observable<Date>(moment().add(0, 'days').startOf('day').toDate())
         this.DataAvailabilityStatistics = ko.observable<DataAvailabilityStatisticsViewModel>()
         this.SelectedCampaignInfo = ko.observable<CampaignInfoViewModel>()
+
+        this.CanLoadData = ko.observable<boolean>(false)
 
         // enumeration description
         EnumerationHelper.Description["FileFormatEnum_CSV"] = "Comma-separated (*.csv)"
@@ -118,6 +122,12 @@
             this.UpdateSelectedDatainfoSetSet()
         })
 
+        // validation
+        this.StartDate.subscribe(() => this.Validate())
+        this.EndDate.subscribe(() => this.Validate())
+        this.SelectedSampleRate.subscribe(() => this.Validate())
+        this.SelectedDatasetInfoSet.subscribe(() => this.Validate())
+
         // chart
         this.StartDate.subscribe(async (newValue) =>
         {
@@ -174,16 +184,25 @@
         // jQeuery
         $("#start-date").on("change.datetimepicker", (e: any) =>
         {
-            this.StartDate(e.date)
+            this.StartDate(e.date.toDate())
         })
 
         $("#end-date").on("change.datetimepicker", (e: any) =>
         {
-            this.EndDate(e.date)
+            this.EndDate(e.date.toDate())
         })
     }  
 
     // methods
+    private Validate()
+    {
+        this.CanLoadData(
+            (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
+            this.SelectedDatasetInfoSet().length > 0 &&
+            this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate())
+        )
+    }
+
     private GetSamplesPerDayFromString = (datasetName: string) =>
     {
         if (!datasetName)

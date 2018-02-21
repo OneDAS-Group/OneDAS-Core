@@ -36,7 +36,7 @@
                                            optionsCaption: 'select sample rate ...',
                                            value: SelectedSampleRate"></select>
 
-                            <!-- ko if: SelectedSampleRate() && SelectedDatasetInfoSet().length > 0 && SelectedFileGranularity() >= 86400 / GetSamplesPerDayFromString(SelectedSampleRate()) -->
+                            <!-- ko if: CanLoadData -->
                             <button type="button"
                                     class="btn btn-info ml-auto align-self-center"
                                     data-bind="click: LoadData"
@@ -44,7 +44,7 @@
                                 Go!
                             </button>
                             <!-- /ko -->
-                            <!-- ko ifnot: SelectedSampleRate() && SelectedDatasetInfoSet().length > 0 && SelectedFileGranularity() >= 86400 / GetSamplesPerDayFromString(SelectedSampleRate()) -->
+                            <!-- ko ifnot: CanLoadData -->
                             <button type="button"
                                     class="btn btn-outline-info ml-auto align-self-center"
                                     disabled
