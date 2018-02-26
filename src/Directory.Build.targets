@@ -1,6 +1,5 @@
 <Project InitialTargets="CreateOneDasMetaData">
   <Import Project=".\..\..\OneDAS-Support\build\OneDas.targets" />
-  <UsingTask TaskName="BuildTask" AssemblyFile=".\..\..\OneDAS-Support\build\OneDas.BuildTask.dll" /> 
   <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
     <BuildTask Input_PackageId="$(PackageId)"
 	           Input_Major="$(Major)" 
