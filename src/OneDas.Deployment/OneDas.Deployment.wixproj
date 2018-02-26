@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\RoslynCodeTaskFactory.1.2.6\build\RoslynCodeTaskFactory.props" Condition="Exists('..\..\packages\RoslynCodeTaskFactory.1.2.6\build\RoslynCodeTaskFactory.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -9,7 +10,7 @@
     <OutputName>OneDas</OutputName>
     <OutputType>Package</OutputType>
     <Name>OneDas.Deployment</Name>
-	<OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
@@ -22,7 +23,7 @@
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
-  <WixExtension Include="WixNetFxExtension">
+    <WixExtension Include="WixNetFxExtension">
       <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
       <Name>WixNetFxExtension</Name>
     </WixExtension>
@@ -39,16 +40,12 @@
     <Content Include="license.rtf" />
     <Content Include="RemoveExe.xslt" />
   </ItemGroup>
-  
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
-  
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
-   
   <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled">
-   
     <PropertyGroup>
       <WixPackageName>OneDAS</WixPackageName>
       <WixApplicationName>OneDas.WebServer</WixApplicationName>
@@ -57,17 +54,13 @@
       <OutputName>$(WixPackageName)-$(WixVersion)</OutputName>
       <TargetName>$(OutputName)</TargetName>
     </PropertyGroup>
-	
     <GetProductVersionTask AssemblyFilePath="$(WixHarvestPath)\\$(WixApplicationName).exe">
-	  <Output TaskParameter="ProductVersion" PropertyName="WixProductVersion" />
-	</GetProductVersionTask>
-	
+      <Output TaskParameter="ProductVersion" PropertyName="WixProductVersion" />
+    </GetProductVersionTask>
     <PropertyGroup>
       <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixProductVersion=$(WixProductVersion)</DefineConstants>
     </PropertyGroup>
-		
   </Target>
-  
   <Target Name="BeforeBuild">
     <PropertyGroup>
       <WixRootPath Condition=" '$(WixRootPath)' == '' ">$(WIX)bin\</WixRootPath>
@@ -88,22 +81,16 @@
     </ItemGroup>
     <!-- <HeatDirectory OutputFile="$(ProjectDir)\ProductInstallFiles.wxs" AutogenerateGuids="true" ComponentGroupName="HeatComponentGroup" Directory="$(WixHarvestPath)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.WixHarvestPath" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" /> -->
   </Target>
-   
   <UsingTask TaskName="GetProductVersionTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-
     <ParameterGroup>
       <AssemblyFilePath ParameterType="System.String" Required="true" />
       <ProductVersion ParameterType="System.String" Output="true" />
     </ParameterGroup>
-
     <Task>
       <Using Namespace="System.Diagnostics" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
+      <Code Type="Fragment" Language="cs"><![CDATA[
 	      this.ProductVersion = FileVersionInfo.GetVersionInfo(this.AssemblyFilePath).ProductVersion; 
-        ]]>
-      </Code>
+        ]]></Code>
     </Task>
   </UsingTask>
-  
 </Project>
