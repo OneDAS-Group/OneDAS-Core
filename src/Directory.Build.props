@@ -10,7 +10,7 @@
 
   <PropertyGroup> 
     <Major Condition="$(Major) == ''">1</Major>
-    <Minor Condition="$(Major) == ''">0</Minor>
+    <Minor Condition="$(Minor) == ''">0</Minor>
     <Revision Condition="$(Revision) == ''">0</Revision>
     <VersionSuffix Condition="$(VersionSuffix) == ''">alpha</VersionSuffix>
     <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
