@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <Import Project="..\..\packages\RoslynCodeTaskFactory.1.2.6\build\RoslynCodeTaskFactory.props" Condition="Exists('..\..\packages\RoslynCodeTaskFactory.1.2.6\build\RoslynCodeTaskFactory.props')" />
+  <Import Project=".\..\Directory.Build.props" />
+  
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>3.9</ProductVersion>
     <ProjectGuid>{a30ffe93-a205-48e6-880b-b8dc17e12af8}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>OneDas</OutputName>
     <OutputType>Package</OutputType>
     <Name>OneDas.Deployment</Name>
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -19,9 +21,16 @@
     <SuppressSpecificWarnings>
     </SuppressSpecificWarnings>
   </PropertyGroup>
+  
   <ItemGroup>
     <Compile Include="Product.wxs" />
   </ItemGroup>
+   
+  <ItemGroup>
+    <Content Include="license.rtf" />
+    <Content Include="RemoveExe.xslt" />
+  </ItemGroup>
+  
   <ItemGroup>
     <WixExtension Include="WixNetFxExtension">
       <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
@@ -36,37 +45,38 @@
       <Name>WixUtilExtension</Name>
     </WixExtension>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="license.rtf" />
-    <Content Include="RemoveExe.xslt" />
-  </ItemGroup>
+  
+  <Import Project=".\..\Directory.Build.targets" />
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+  
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
-  <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled">
+  
+  <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateOneDasMetaData">
+    
     <PropertyGroup>
-      <WixPackageName>OneDAS</WixPackageName>
+	  <WixPackageName>OneDAS</WixPackageName>
       <WixApplicationName>OneDas.WebServer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
       <WixHarvestPath>..\$(WixApplicationName)\bin\$(WixConfiguration)\PublishOutput</WixHarvestPath>
-      <OutputName>$(WixPackageName)-$(WixVersion)</OutputName>
+	  <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
+      <OutputName>$(WixPackageName)-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>
     </PropertyGroup>
-    <GetProductVersionTask AssemblyFilePath="$(WixHarvestPath)\\$(WixApplicationName).exe">
-      <Output TaskParameter="ProductVersion" PropertyName="WixProductVersion" />
-    </GetProductVersionTask>
-    <PropertyGroup>
-      <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixProductVersion=$(WixProductVersion)</DefineConstants>
-    </PropertyGroup>
+	
   </Target>
+  
   <Target Name="BeforeBuild">
+  
     <PropertyGroup>
       <WixRootPath Condition=" '$(WixRootPath)' == '' ">$(WIX)bin\</WixRootPath>
       <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(WixRootPath)</WixToolPath>
     </PropertyGroup>
+	
     <Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(WixConfiguration) -o $(WixHarvestPath)" />
+	
     <ItemGroup>
       <HarvestDirectory Include="$(WixHarvestPath)">
         <AutogenerateGuids>true</AutogenerateGuids>
@@ -79,18 +89,9 @@
         <Transforms>RemoveExe.xslt</Transforms>
       </HarvestDirectory>
     </ItemGroup>
+	
     <!-- <HeatDirectory OutputFile="$(ProjectDir)\ProductInstallFiles.wxs" AutogenerateGuids="true" ComponentGroupName="HeatComponentGroup" Directory="$(WixHarvestPath)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.WixHarvestPath" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" /> -->
+	
   </Target>
-  <UsingTask TaskName="GetProductVersionTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-    <ParameterGroup>
-      <AssemblyFilePath ParameterType="System.String" Required="true" />
-      <ProductVersion ParameterType="System.String" Output="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.Diagnostics" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-	      this.ProductVersion = FileVersionInfo.GetVersionInfo(this.AssemblyFilePath).ProductVersion; 
-        ]]></Code>
-    </Task>
-  </UsingTask>
+  
 </Project>

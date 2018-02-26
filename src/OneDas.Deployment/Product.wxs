@@ -20,7 +20,7 @@
   <Product Id="*"
            Name="$(var.OneDasDisplayName) $(var.WebServerDisplayName)"
            Language="1033"
-           Version="!(bind.FileVersion.ServiceComponentMain)"
+           Version="$(var.WixFileVersion)"
            Manufacturer="$(var.OneDasCompanyName)"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
