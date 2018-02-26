@@ -3,83 +3,14 @@
 let appViewModel: KnockoutObservable<AppViewModel> = ko.observable<AppViewModel>()
 let broadcaster: any
 
-interface Map<K, V>
-{
-    toJSON(): any;
-}
-
-Map.prototype.toJSON = function ()
-{
-    var obj = {}
-
-    for (let [key, value] of this)
-        obj[key] = value
-
-    return obj
-}
-
-class ObservableGroup<T>
-{
-    Key: string;
-    Members: KnockoutObservableArray<T>
-
-    constructor(key: string)
-    {
-        this.Key = key
-        this.Members = ko.observableArray([])
-    }
-}
-
-function ObservableGroupBy<T>(list: T[], nameGetter: (x: T) => string, groupNameGetter: (x: T) => string, filter: string): ObservableGroup<T>[]
-{
-    let result: ObservableGroup<T>[]
-
-    result = []
-
-    list.forEach(x =>
-    {
-        if (nameGetter(x).indexOf(filter) > -1)
-        {
-            AddToGroupedArray(x, groupNameGetter(x), result)
-        }
-    })
-
-    return result
-}
-
-function AddToGroupedArray<T>(item: T, groupName: string, observableGroupSet: ObservableGroup<T>[])
-{
-    let group: ObservableGroup<T>
-
-    group = observableGroupSet.find(y => y.Key === groupName)
-
-    if (!group)
-    {
-        group = new ObservableGroup<T>(groupName)
-        observableGroupSet.push(group)
-    }
-
-    group.Members.push(item)
-}
-
-function MapMany<TArrayElement, TSelect>(array: TArrayElement[], mapFunc: (item: TArrayElement) => TSelect[]): TSelect[]
-{
-    return array.reduce((previous, current, i) =>
-    {
-        return previous.concat(mapFunc(current));
-    }, <TSelect[]>[]);
-}
-
-function addDays(date, days)
-{
-    var result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-}
-
-$(document).ready(() =>
+window.addEventListener("DOMContentLoaded", () =>
 {
     (<any>$("body")).tooltip({ selector: "[data-toggle=tooltip]", container: "body" });
+
+    $(function ()
+    {
+        (<any>$('[data-toggle="tooltip"]')).tooltip()
+    })
 
     $(function ()
     {
@@ -130,25 +61,29 @@ $(document).ready(() =>
 
 broadcaster = new signalR.HubConnection("/broadcaster");
 
-// improve: how to handle this?
+broadcaster.onclose(async error =>
+{
+    console.log("OneDAS: signalr connection failed")
 
-//let options:signalR.HttpConnection
+    if (appViewModel())
+    {
+        appViewModel().IsConnected(false);
+    }
 
-//new signalR.HubConnection(new signalR.HttpConnection(urlOrConnection, options).).on("disconnect", () =>
-//{
-//    debugger
+    while (!appViewModel().IsConnected())
+    {
+        broadcaster.start().then(async () =>
+        {
+            console.log("OneDAS: signalr reconnected")  
+            appViewModel().IsConnected(true);
+        }).catch(() =>
+        {
+            console.log("OneDAS: trying to reconnect ...")
+        })
 
-//    //$.connection.hub.start();
-
-//    //if ($.connection.hub.state == 0)
-//    //{
-//    //    console.log("OneDAS: signalr reconnected")
-//    //}
-//    //else
-//    //{
-//    //    console.log("OneDAS: signalr disconnected")
-//    //}
-//})
+        await delay(5000)
+    }
+})
 
 broadcaster.start().then(async () =>
 {

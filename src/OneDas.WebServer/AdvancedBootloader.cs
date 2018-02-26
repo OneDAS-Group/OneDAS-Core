@@ -152,7 +152,7 @@ namespace OneDas.WebServer
                     };
                 }
 
-                eventLogSettings.Filter = (category, logLevel) => category == "System";
+                eventLogSettings.Filter = (category, logLevel) => category == "System" && logLevel >= LogLevel.Information;
 
                 // client message log
                 clientMessageLoggerProvider = new ClientMessageLoggerProvider((category, logLevel) => category != "System");

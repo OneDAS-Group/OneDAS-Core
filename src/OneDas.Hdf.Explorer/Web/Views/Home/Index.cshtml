@@ -1,7 +1,14 @@
-﻿<!-- https://kangax.github.io/compat-table/es6/ -->
+﻿<div class="alert alert-danger url flex-column" style="display:none"
+     data-bind="style: { display: IsConnected() ? 'none' : 'inherit' }">
+    <div class="d-flex">
+        <strong>Attention!</strong>
+        <small class="ml-auto">This can be caused by a bad network connection.</small>
+    </div>
+    Connection to server lost. Trying to reconnect...
+</div>
 
-<div style="display: none"
-     data-bind="style: { display: HdfExplorerState() === 1 ? 'inherit' : 'none' }">
+<!-- ko if: HdfExplorerState() === 1 -->
+<div>
     <div class="row my-4">
         <div class="col">
             <h1 class="text-center display-4">Download Measurement Data</h1>
@@ -186,14 +193,13 @@
         <button class="btn btn-primary pull-right" role="button" data-bind="click: ShowMainView">Get back</button>
     </div>
 </div>
-
-<div class="center-vertically plus-center-horizontally"
-     style="display: none;"
-     data-bind="style: { display: HdfExplorerState() !== 1 ? 'flex' : 'none' }">
+<!-- /ko -->
+<!-- ko if: HdfExplorerState() !== 1 -->
+<div class="center-vertically plus-center-horizontally">
     <h1 class="display-4 text-center mb-5 noselect" data-bind="text: 'Preparing download (' + Math.round(ByteCount() / 1024 / 1024) + ' MB) ...'"></h1>
     <strong class="align-self-start" data-bind="text: Message"></strong>
     <div class="progress w-100">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+        <div class="progress-bar progress-bar-striped progress-bar-animated"
              role="progressbar"
              data-bind="style: { width: Progress() + '%' }"></div>
     </div>
@@ -204,3 +210,4 @@
         <span><small>* size: uncompressed binary data</small></span>
     </div>
 </div>
+<!-- /ko -->

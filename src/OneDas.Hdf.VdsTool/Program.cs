@@ -73,7 +73,7 @@ namespace OneDas.Hdf.VdsTool
 
         #region "VDS"
 
-        public static void CreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd, bool isTopLevel)
+        public static unsafe void CreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd, bool isTopLevel)
         {        
             long sourceFileId = -1;
             long vdsFileId = -1;

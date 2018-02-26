@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.ServiceProcess;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace OneDas.WebServer.Shell
@@ -54,7 +55,36 @@ namespace OneDas.WebServer.Shell
 
         public void Run(bool isHosting)
         {
-            _consoleHubClient = this.GetNewConnection();
+            // SignalR connection
+            _consoleHubClient = this.BuildHubConnection();
+
+            _consoleHubClient.Closed += e =>
+            {
+                _isConnected = false;
+                this.ResetConsole();
+            };
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    if (!_isConnected)
+                    {
+                        try
+                        {
+                            _consoleHubClient.StartAsync().Wait();
+                            _isConnected = true;
+                            this.ResetConsole();
+                        }
+                        catch
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(4));
+                        }
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            });
 
             // timer
             _timer_UpdateConsole = new System.Timers.Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
@@ -104,9 +134,9 @@ namespace OneDas.WebServer.Shell
                         }
                     }
                 }
-                catch (Exception)
+                catch
                 {
-                    _consoleHubClient = this.GetNewConnection();
+                    //
                 }
             }
         }
@@ -206,6 +236,11 @@ namespace OneDas.WebServer.Shell
         {
             OneDasPerformanceInformation performanceInformation;
 
+            if (!_isConnected)
+            {
+                return;
+            }
+
             try
             {
                 performanceInformation = await _consoleHubClient.InvokeAsync<OneDasPerformanceInformation>("GetPerformanceInformation");
@@ -213,12 +248,6 @@ namespace OneDas.WebServer.Shell
                 lock (_syncLock_UpdateConsole)
                 {
                     int offset = 39;
-
-                    if (!_isConnected)
-                    {
-                        _isConnected = true;
-                        this.ResetConsole();
-                    }
 
                     // text
                     Console.SetCursorPosition(7, 2);
@@ -272,13 +301,9 @@ namespace OneDas.WebServer.Shell
                     Console.SetCursorPosition(0, 13);
                 }
             }
-            catch (Exception)
+            catch
             {
-                _isConnected = false;
-
-                this.ResetConsole();
-
-                _consoleHubClient = this.GetNewConnection();
+                //
             }
         }
 
@@ -301,29 +326,6 @@ namespace OneDas.WebServer.Shell
             return new HubConnectionBuilder()
                  .WithUrl($"{ _webServerOptions.AspBaseUrl }/{ _webServerOptions.ConsoleHubName }")
                  .Build();
-        }
-
-        private HubConnection GetNewConnection()
-        {
-            HubConnection hubConnection;
-
-            while (true)
-            {
-                hubConnection = this.BuildHubConnection();
-
-                try
-                {
-                    hubConnection.StartAsync().Wait();
-
-                    break;
-                }
-                catch
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-                }
-            }
-
-            return hubConnection;
         }
 
         #endregion

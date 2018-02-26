@@ -54,7 +54,7 @@ ko.bindingHandlers.page = {
 };
 
 // jQuery
-$(document).ready(() =>
+window.addEventListener("DOMContentLoaded", () =>
 {
     (<any>$("body")).tooltip({ selector: '[data-toggle=tooltip]', container: "body" });
     (<any>$("body")).popover({ selector: "[data-toggle=popover]", container: "body", trigger: "focus" });

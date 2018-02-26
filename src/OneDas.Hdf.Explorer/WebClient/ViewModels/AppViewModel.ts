@@ -8,6 +8,7 @@
     public SelectedSampleRate: KnockoutObservable<string>
     public SelectedFileFormat: KnockoutObservable<FileFormatEnum>
     public SelectedFileGranularity: KnockoutObservable<FileGranularityEnum>
+    public IsConnected: KnockoutObservable<boolean>
     public HdfExplorerState: KnockoutObservable<HdfExplorerState>
     public ByteCount: KnockoutObservable<number>
     public Progress: KnockoutObservable<number>
@@ -34,6 +35,7 @@
         this.SelectedSampleRate = ko.observable<string>()
         this.SelectedFileFormat = ko.observable<FileFormatEnum>(FileFormatEnum.CSV)
         this.SelectedFileGranularity = ko.observable<FileGranularityEnum>(FileGranularityEnum.Hour)
+        this.IsConnected = ko.observable<boolean>(true)
         this.HdfExplorerState = ko.observable<HdfExplorerState>(appModel.HdfExplorerState)
         this.ByteCount = ko.observable<number>(0)
         this.Progress = ko.observable<number>(0)

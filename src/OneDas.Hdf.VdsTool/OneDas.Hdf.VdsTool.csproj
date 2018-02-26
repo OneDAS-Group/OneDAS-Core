@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <DebugType>embedded</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <LangVersion>latest</LangVersion>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <TargetFramework>net47</TargetFramework>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="3.20.0" />
     <PackageReference Include="OneDas.Hdf.Types" Version="0.1.0-alpha-6626-27140" />
   </ItemGroup>
+  
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -18,6 +18,7 @@
       <DependentUpon>ErrorMessage.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -25,7 +26,9 @@
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="if not exist &quot;$(TargetDir)bin32&quot; md &quot;$(TargetDir)bin32&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin32\*.*&quot; &quot;$(TargetDir)bin32&quot;&#xD;&#xA;if not exist &quot;$(TargetDir)bin64&quot; md &quot;$(TargetDir)bin64&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin64\*.*&quot; &quot;$(TargetDir)bin64&quot;" />
   </Target>
+  
 </Project>
