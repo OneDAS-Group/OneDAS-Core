@@ -39,9 +39,6 @@ namespace OneDas.Engine.Core
         public OneDasDataType DataType { get; private set; }
 
         [DataMember]
-        public SampleRate SampleRate { get; private set; }
-
-        [DataMember]
         public Guid Guid { get; private set; }
 
         [DataMember]
@@ -61,8 +58,6 @@ namespace OneDas.Engine.Core
                 return _associatedDataOutputSet;
             }
         }
-
-        public List<ExtendedDataStorageBase> AssociatedDataStorageSet { get; set; }
 
         #endregion
 

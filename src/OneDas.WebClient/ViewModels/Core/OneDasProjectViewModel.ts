@@ -78,7 +78,7 @@
         this.EditChannelNameErrorDescription = ko.observable<string>("")
         this.EditChannelGroupHasError = ko.observable<boolean>(false)
         this.EditChannelGroupErrorDescription = ko.observable<string>("")
-        this.EditChannelDummyChannel = ko.observable(new ChannelHubViewModel(new ChannelHubModel("", "", 0, 0)))
+        this.EditChannelDummyChannel = ko.observable(new ChannelHubViewModel(new ChannelHubModel("", "", 0)))
 
         this.MultiMappingEditor = ko.observable<MultiMappingEditorViewModel>()
 
@@ -518,7 +518,6 @@
         this.EditChannelDummyChannel().Name(this.SelectedChannelHub().Name())
         this.EditChannelDummyChannel().Group(this.SelectedChannelHub().Group())
         this.EditChannelDummyChannel().DataType(this.SelectedChannelHub().DataType())
-        this.EditChannelDummyChannel().SampleRate(this.SelectedChannelHub().SampleRate())
     }
 
     public EndEditChannel = () =>
@@ -532,7 +531,7 @@
     {
         this.ChannelHubSet.push(...this.NewChannelName().split("\n").map(channelName =>
         {
-            return new ChannelHubViewModel(new ChannelHubModel(channelName, this.NewChannelGroup(), this.NewChannelSelectedDataType(), this.NewChannelSelectedSampleRate()))
+            return new ChannelHubViewModel(new ChannelHubModel(channelName, this.NewChannelGroup(), this.NewChannelSelectedDataType()))
         }))
 
         this.NewChannelCheckError(false)

@@ -1,4 +1,5 @@
 ﻿using OneDas.Infrastructure;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace OneDas.Plugin
@@ -11,6 +12,7 @@ namespace OneDas.Plugin
         public DataWriterPluginSettingsBase()
         {
             this.FileGranularity = FileGranularity.Day;
+            this.BufferRequestSet = new List<BufferRequest>();
         }
 
         #endregion
@@ -19,6 +21,9 @@ namespace OneDas.Plugin
 
         [DataMember]
         public FileGranularity FileGranularity { get; set; }
+
+        [DataMember]
+        public List<BufferRequest> BufferRequestSet { get; set; }
 
         #endregion
 

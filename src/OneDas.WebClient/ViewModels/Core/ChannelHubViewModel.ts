@@ -3,7 +3,6 @@
     public Name: KnockoutObservable<string>
     public Group: KnockoutObservable<string>
     public readonly DataType: KnockoutObservable<OneDasDataTypeEnum>
-    public readonly SampleRate: KnockoutObservable<SampleRateEnum>
     public readonly Guid: string
     public readonly CreationDateTime: string
     public readonly Unit: KnockoutObservable<string>
@@ -23,7 +22,6 @@
         this.Name = ko.observable<string>(channelHubModel.Name)
         this.Group = ko.observable<string>(channelHubModel.Group)
         this.DataType = ko.observable<OneDasDataTypeEnum>(channelHubModel.DataType)
-        this.SampleRate = ko.observable<SampleRateEnum>(channelHubModel.SampleRate)
         this.Guid = channelHubModel.Guid
         this.CreationDateTime = channelHubModel.CreationDateTime
         this.Unit = ko.observable<string>(channelHubModel.Unit)
@@ -180,7 +178,6 @@
             Name: <string>this.Name(),
             Group: <string>this.Group(),
             DataType: <OneDasDataTypeEnum>this.DataType(),
-            SampleRate: <SampleRateEnum>this.SampleRate(),
             Guid: <string>this.Guid,
             CreationDateTime: <string>this.CreationDateTime,
             Unit: <string>this.Unit(),

@@ -68,14 +68,13 @@ declare class ChannelHubModel {
     Name: string;
     Group: string;
     DataType: OneDasDataTypeEnum;
-    SampleRate: SampleRateEnum;
     Guid: string;
     CreationDateTime: string;
     Unit: string;
     TransferFunctionSet: any[];
     SerializerDataInputId: string;
     SerializerDataOutputIdSet: string[];
-    constructor(name: string, group: string, dataType: OneDasDataTypeEnum, sampleRate: SampleRateEnum);
+    constructor(name: string, group: string, dataType: OneDasDataTypeEnum);
 }
 declare class OneDasModuleModel {
     DataType: OneDasDataTypeEnum;
@@ -134,7 +133,6 @@ declare class ChannelHubViewModel {
     Name: KnockoutObservable<string>;
     Group: KnockoutObservable<string>;
     readonly DataType: KnockoutObservable<OneDasDataTypeEnum>;
-    readonly SampleRate: KnockoutObservable<SampleRateEnum>;
     readonly Guid: string;
     readonly CreationDateTime: string;
     readonly Unit: KnockoutObservable<string>;
@@ -160,7 +158,6 @@ declare class ChannelHubViewModel {
         Name: string;
         Group: string;
         DataType: OneDasDataTypeEnum;
-        SampleRate: SampleRateEnum;
         Guid: string;
         CreationDateTime: string;
         Unit: string;
@@ -272,6 +269,7 @@ declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewM
 }
 declare abstract class DataWriterViewModelBase extends PluginViewModelBase {
     readonly FileGranularity: KnockoutObservable<FileGranularityEnum>;
+    readonly BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>;
     constructor(model: any, identification: PluginIdentificationViewModel);
     ExtendModel(model: any): void;
 }
@@ -291,4 +289,18 @@ declare class PluginIdentificationViewModel {
     ViewResourceName: string;
     ViewModelResourceName: string;
     constructor(pluginIdentificationModel: any);
+}
+declare class BufferRequestModel {
+    SampleRate: SampleRateEnum;
+    GroupFilter: string;
+    constructor(sampleRate: SampleRateEnum, groupFilter: string);
+}
+declare class BufferRequestViewModel {
+    SampleRate: KnockoutObservable<SampleRateEnum>;
+    GroupFilter: KnockoutObservable<string>;
+    constructor(model: BufferRequestModel);
+    ToModel(): {
+        SampleRate: SampleRateEnum;
+        GroupFilter: string;
+    };
 }

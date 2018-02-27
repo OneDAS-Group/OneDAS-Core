@@ -15,7 +15,6 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30155" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview2-30155" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview2-30155" />
-    <PackageReference Include="OneDas.Engine" Version="0.1.0-alpha-6626-27143" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview2-26130-01" />
   </ItemGroup>
   
@@ -44,9 +43,31 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\OneDas.Engine\OneDas.Engine.csproj" />
     <ProjectReference Include="..\OneDas.WebClient\OneDas.WebClient.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptModuleKind />
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
   
 </Project>

@@ -401,7 +401,7 @@
                                data-bind="event: { contextmenu: $parents[1].ShowContextMenu }, callFunction: $parents[1].Dropable">
                                 <div class="d-flex">
                                     <small class="mb-1 mr-auto" data-bind="text: Name"></small>
-                                    <small data-bind="text: 100 / SampleRate() + ' Hz' + ' / ' + EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></small>
+                                    <small data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></small>
                                 </div>
                                 <div class="d-flex" style="font-size:0.6em;">
                                     <div class="w-50">
@@ -529,13 +529,6 @@
                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
                                            value: NewChannelSelectedDataType"></select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-control-label">Sample rate:</label>
-                        <select class="form-control"
-                                data-bind="options: EnumerationHelper.GetEnumValues('SampleRateEnum'),
-                                           optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('SampleRateEnum', x) },
-                                           value: NewChannelSelectedSampleRate"></select>
-                    </div>
                 </form>
                 <div id="new_channel_alert" class="alert alert-success alert-hidden m-0" role="alert" data-bind="css: {'alert-show-fade' : NewChannelIsNotificationVisible() }">
                     <strong>Well done!</strong> The channel was created successfully.
@@ -572,7 +565,7 @@
                              data-bind="visible: EditChannelNameHasError(), text: EditChannelNameErrorDescription"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-control-label">Group:</label>
+                        <label class="form-control-label">Group(s):</label>
                         <textarea type="text" rows="2"
                                class="form-control modal-input-full-width"
                                data-bind="textInput: EditChannelDummyChannel().Group"></textarea>
@@ -585,14 +578,6 @@
                                 data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
                                            value: EditChannelDummyChannel().OneDasDataType,
-                                           enable: IsFullEditingEnabled"></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-control-label">Sample rate:</label>
-                        <select class="form-control" disabled
-                                data-bind="options: EnumerationHelper.GetEnumValues('SampleRateEnum'),
-                                           optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('SampleRateEnum', x) },
-                                           value: EditChannelDummyChannel().SampleRate,
                                            enable: IsFullEditingEnabled"></select>
                     </div>
                 </form>

@@ -21,6 +21,7 @@
     "./../Core/IEvent.ts",
     "./../Core/OneDasModuleSelectorModeEnum.ts",
 
+    "./../Models/BufferRequestModel.ts",
     "./../Models/ChannelHubModel.ts",
     "./../Models/OneDasModuleModel.ts",
     "./../Models/TransferFunctionModel.ts",
@@ -37,6 +38,7 @@
     "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
     "./../ViewModels/Core/TransferFunctionViewModel.ts",
 
+    "./../ViewModels/Plugin/BufferRequestViewModel.ts",
     "./../ViewModels/Plugin/DataPortViewModel.ts",
     "./../ViewModels/Plugin/PluginViewModelBase.ts",
     "./../ViewModels/Plugin/DataGatewayViewModelBase.ts",

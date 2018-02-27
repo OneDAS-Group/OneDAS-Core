@@ -8,7 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-    <PackageReference Include="OneDas.Engine" Version="0.1.0-alpha-6626-27143" />
+    <PackageReference Include="OneDas.Engine" Version="1.0.0-alpha-6631-30163" />
   </ItemGroup>
 
 </Project>

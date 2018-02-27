@@ -84,9 +84,9 @@ namespace OneDas.Plugin
             this.PrepareFile(fileStartDateTime);
         }
 
-        public void Write(DateTime dateTime, TimeSpan dataStoragePeriod, IList<DataStorageBase> dataStorageSet)
+        public void Write(DateTime dateTime, TimeSpan dataStoragePeriod, IList<ExtendedDataStorageBase> dataStorageSet)
         {
-            Dictionary<ulong, List<DataStorageBase>> dataStorageDictionary;
+            Dictionary<ulong, List<ExtendedDataStorageBase>> dataStorageDictionary;
 
             DateTime currentDateTime;
             DateTime fileStartDateTime;
@@ -208,7 +208,7 @@ namespace OneDas.Plugin
         /// <param name="enforceInitialization"></param>
         protected abstract void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableDescription> variableDescriptionSet);
 
-        protected abstract void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableDescription> variableDescriptionSet, IList<DataStorageBase> dataStorageSet);
+        protected abstract void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableDescription> variableDescriptionSet, IList<ExtendedDataStorageBase> dataStorageSet);
 
         private void PrepareFile(DateTime fileStartDateTime)
         {
