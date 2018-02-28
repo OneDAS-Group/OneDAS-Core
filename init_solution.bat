@@ -1,12 +1,12 @@
-set "rootFolder=%cd%"
+set "baseFolder=%cd%"
 
 :: WebServer
 
-cd %rootFolder%\src\OneDas.WebServer
+cd %baseFolder%\src\OneDas.WebServer
 call npm install
 
-set "sourceDirectory=%rootFolder%\src\OneDas.WebServer\node_modules"
-set "targetDirectory=%rootFolder%\src\OneDas.WebServer\wwwroot\lib"
+set "sourceDirectory=%baseFolder%\src\OneDas.WebServer\node_modules"
+set "targetDirectory=%baseFolder%\src\OneDas.WebServer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set list=@aspnet\signalr\dist\browser
@@ -32,11 +32,11 @@ for %%a in (%list%) do (
 )
 
 :: HDF.Explorer
-cd %rootFolder%\src\OneDas.Hdf.Explorer
+cd %baseFolder%\src\OneDas.Hdf.Explorer
 call npm install
 
-set "sourceDirectory=%rootFolder%\src\OneDas.Hdf.Explorer\node_modules"
-set "targetDirectory=%rootFolder%\src\OneDas.Hdf.Explorer\wwwroot\lib"
+set "sourceDirectory=%baseFolder%\src\OneDas.Hdf.Explorer\node_modules"
+set "targetDirectory=%baseFolder%\src\OneDas.Hdf.Explorer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set list=@aspnet\signalr\dist\browser
