@@ -1,8 +1,13 @@
-:: WebServer
-set "targetDirectory=.\src\OneDas.WebServer\wwwroot\lib"
-if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
+set "rootFolder=%cd%"
 
-set "sourceDirectory=.\..\OneDAS-Support\web\node_modules"
+:: WebServer
+
+cd %rootFolder%\src\OneDas.WebServer
+call npm install
+
+set "sourceDirectory=%rootFolder%\src\OneDas.WebServer\node_modules"
+set "targetDirectory=%rootFolder%\src\OneDas.WebServer\wwwroot\lib"
+if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set list=@aspnet\signalr\dist\browser
 set list=%list%;bootstrap\dist
@@ -27,10 +32,12 @@ for %%a in (%list%) do (
 )
 
 :: HDF.Explorer
-set "targetDirectory=.\src\OneDas.Hdf.Explorer\wwwroot\lib"
-if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
+cd %rootFolder%\src\OneDas.Hdf.Explorer
+call npm install
 
-set "sourceDirectory=.\..\OneDAS-Support\web\node_modules"
+set "sourceDirectory=%rootFolder%\src\OneDas.Hdf.Explorer\node_modules"
+set "targetDirectory=%rootFolder%\src\OneDas.Hdf.Explorer\wwwroot\lib"
+if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set list=@aspnet\signalr\dist\browser
 set list=%list%;bootstrap\dist   

@@ -7,7 +7,7 @@
     "wwwroot"
   ],
   "files": [
-    "./../../../../OneDas-Support/web/typings/moment.d.ts"
+    "./../../../../OneDas-Support/web/node_modules/moment/moment.d.ts"
   ],
   "include": [
     "./**/*.ts"

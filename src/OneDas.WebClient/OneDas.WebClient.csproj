@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <PostBuildEvent>xcopy /s /y "$(MSBuildProjectDirectory)\Export\*.d.ts" "$(MSBuildProjectDirectory)..\..\..\..\OneDAS-Support\web\typings\*.d.ts"</PostBuildEvent>
     <OutputType>Library</OutputType>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>

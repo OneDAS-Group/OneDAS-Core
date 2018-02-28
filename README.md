@@ -36,10 +36,6 @@ git clone "%origin%/%projectName%-Ethercat"
 git clone "%origin%/%projectName%-Plugins"
 git clone "%origin%/%projectName%-Support"
 
-:: Support
-cd %rootFolder%\%projectName%-Support\web
-call install_packages.bat
-
 :: Core
 cd %rootFolder%\%projectName%-Core
 call init_solution.bat
