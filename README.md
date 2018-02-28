@@ -34,7 +34,6 @@ git clone "%origin%/%projectName%-Core"
 git clone "%origin%/%projectName%-Documentation"
 git clone "%origin%/%projectName%-Ethercat"
 git clone "%origin%/%projectName%-Plugins"
-git clone "%origin%/%projectName%-Support"
 
 :: Core
 cd %rootFolder%\%projectName%-Core

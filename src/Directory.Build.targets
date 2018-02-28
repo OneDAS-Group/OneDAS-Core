@@ -1,28 +1,3 @@
-<Project InitialTargets="CreateOneDasMetaData">
-  <Import Project=".\..\..\OneDAS-Support\build\OneDas.targets" />
-  <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
-    <BuildTask Input_PackageId="$(PackageId)"
-	           Input_Major="$(Major)" 
-	           Input_Minor="$(Minor)" 
-	           Input_Revision="$(Revision)" 
-	           Input_VersionSuffix="$(VersionSuffix)"
-	           Input_LicenseUrl="$(LicenseUrl)"
-	           Input_ProjectUrl="$(ProjectUrl)"
-			   
-	           Input_Authors="$(Authors)"
-	           Input_Company="$(Company)"
-	           Input_Copyright="$(Copyright)">
-      <Output TaskParameter="Version" PropertyName="Version" />
-      <Output TaskParameter="PackageVersion" PropertyName="PackageVersion" />
-      <Output TaskParameter="Authors" PropertyName="Authors" />
-      <Output TaskParameter="AssemblyVersion" PropertyName="AssemblyVersion" />
-      <Output TaskParameter="Company" PropertyName="Company" />
-      <Output TaskParameter="Copyright" PropertyName="Copyright" />
-      <Output TaskParameter="FileVersion" PropertyName="FileVersion" />
-      <Output TaskParameter="PackageLicenseUrl" PropertyName="PackageLicenseUrl" />
-      <Output TaskParameter="PackageProjectUrl" PropertyName="PackageProjectUrl" />
-      <Output TaskParameter="Product" PropertyName="Product" />
-      <Output TaskParameter="RepositoryUrl" PropertyName="RepositoryUrl" />
-    </BuildTask>
-  </Target>
+<Project>
+  <Import Project="./../build/OneDas.targets" />
 </Project>

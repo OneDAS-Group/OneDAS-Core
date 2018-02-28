@@ -1,0 +1,50 @@
+<Project>
+
+  <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
+
+    <!-- validation -->
+    <Error Condition="$(Major) == ''" Text="The Major property must be set." />
+    <Error Condition="$(Minor) == ''" Text="The Minor property must be set." />
+    <Error Condition="$(Revision) == ''" Text="The Revision property must be set." />
+    <Error Condition="$(PackageLicenseUrl) == ''" Text="The PackageLicenseUrl property must be set." />
+    <Error Condition="$(PackageProjectUrl) == ''" Text="The PackageProjectUrl property must be set." />
+
+    <!-- build properties -->
+    <PropertyGroup>
+
+      <!-- calculation -->
+      <DaysSince2000>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::MinValue.AddTicks(630822816000000000))).TotalDays.ToString(`F0`))</DaysSince2000>
+      <SecondsSinceMidnight>$([MSBuild]::Divide($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::UtcNow.Date)).TotalSeconds), 2).ToString(`F0`))</SecondsSinceMidnight>
+
+      <!-- ensure default vaues -->
+      <Authors Condition="$(Authors) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Authors>
+      <Company Condition="$(Company) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Company>
+      <Copyright Condition="$(Copyright) == ''">OneDAS Group</Copyright>
+
+      <!-- create new properties -->
+      <AssemblyVersion>$(Major).0.0.0</AssemblyVersion>
+      <FileVersion>$(Major).$(Minor).$(DaysSince2000).$(SecondsSinceMidnight)</FileVersion>
+      <Product>OneDas</Product>
+      <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+      <Version>$(Major).$(Minor).$(Revision)</Version>
+
+    </PropertyGroup>
+
+    <!-- build Version -->
+    <PropertyGroup Condition="$(VersionSuffix) != ''">
+      <Version>$(Version)-$(VersionSuffix)-$(DaysSince2000)-$(SecondsSinceMidnight)</Version>
+    </PropertyGroup>
+
+    <!-- build PackageVersion -->
+    <PropertyGroup>
+      <PackageVersion>$(Version)</PackageVersion>
+    </PropertyGroup>
+
+  </Target>
+  
+  <Target Name="PushTarget" AfterTargets="Pack">
+    <Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
+    <Exec Command="dotnet nuget push &quot;$(TargetDir)..\*.nupkg&quot; --source https://www.myget.org/F/onedas/api/v3/index.json" />
+  </Target>
+
+</Project>

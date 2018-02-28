@@ -64,6 +64,11 @@ declare enum OneDasModuleSelectorModeEnum {
     InputOnly = 2,
     OutputOnly = 3,
 }
+declare class BufferRequestModel {
+    SampleRate: SampleRateEnum;
+    GroupFilter: string;
+    constructor(sampleRate: SampleRateEnum, groupFilter: string);
+}
 declare class ChannelHubModel {
     Name: string;
     Group: string;
@@ -223,6 +228,15 @@ declare class TransferFunctionViewModel {
     constructor(transferFunctionModel: TransferFunctionModel);
     ToModel(): TransferFunctionModel;
 }
+declare class BufferRequestViewModel {
+    SampleRate: KnockoutObservable<SampleRateEnum>;
+    GroupFilter: KnockoutObservable<string>;
+    constructor(model: BufferRequestModel);
+    ToModel(): {
+        SampleRate: SampleRateEnum;
+        GroupFilter: string;
+    };
+}
 declare class DataPortViewModel {
     Name: KnockoutObservable<string>;
     readonly DataType: OneDasDataTypeEnum;
@@ -289,18 +303,4 @@ declare class PluginIdentificationViewModel {
     ViewResourceName: string;
     ViewModelResourceName: string;
     constructor(pluginIdentificationModel: any);
-}
-declare class BufferRequestModel {
-    SampleRate: SampleRateEnum;
-    GroupFilter: string;
-    constructor(sampleRate: SampleRateEnum, groupFilter: string);
-}
-declare class BufferRequestViewModel {
-    SampleRate: KnockoutObservable<SampleRateEnum>;
-    GroupFilter: KnockoutObservable<string>;
-    constructor(model: BufferRequestModel);
-    ToModel(): {
-        SampleRate: SampleRateEnum;
-        GroupFilter: string;
-    };
 }

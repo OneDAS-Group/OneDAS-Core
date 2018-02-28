@@ -13,8 +13,8 @@
     <Minor Condition="$(Minor) == ''">0</Minor>
     <Revision Condition="$(Revision) == ''">0</Revision>
     <VersionSuffix Condition="$(VersionSuffix) == ''">alpha</VersionSuffix>
-    <LicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</LicenseUrl>
-    <ProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</ProjectUrl>
+    <PackageLicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</PackageProjectUrl>
   </PropertyGroup>
 
 </Project>
