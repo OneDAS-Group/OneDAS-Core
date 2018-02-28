@@ -26,7 +26,7 @@ set "origin=https://github.com/OneDAS-Group/"
 
 :: create parent folder
 md %projectName%
-cd .\%projectName%
+cd ".\%projectName%"
 set "rootFolder=%cd%"
 
 :: clone projects
@@ -36,10 +36,10 @@ git clone "%origin%/%projectName%-Ethercat"
 git clone "%origin%/%projectName%-Plugins"
 
 :: Core
-cd %rootFolder%\%projectName%-Core
+cd "%rootFolder%\%projectName%-Core"
 call init_solution.bat
 
 :: Ethercat
-cd %rootFolder%\%projectName%-Ethercat
+cd "%rootFolder%\%projectName%-Ethercat"
 call init_solution.bat
 ```
