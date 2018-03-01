@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "module": "none",
     "typeRoots": [
-      "./src/OneDas.WebServer/node_modules/@types/"
+      "./web/node_modules/@types/"
     ]
   },
   "compileOnSave": true

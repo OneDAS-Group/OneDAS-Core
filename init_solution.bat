@@ -1,11 +1,10 @@
 set "rootFolder=%cd%"
 
-:: WebServer
-
-cd %rootFolder%\src\OneDas.WebServer
+cd %rootFolder%\web
 call npm install
 
-set "sourceDirectory=%rootFolder%\src\OneDas.WebServer\node_modules"
+:: WebServer
+set "sourceDirectory=%rootFolder%\web\node_modules"
 set "targetDirectory=%rootFolder%\src\OneDas.WebServer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
@@ -32,10 +31,7 @@ for %%a in (%list%) do (
 )
 
 :: HDF.Explorer
-cd %rootFolder%\src\OneDas.Hdf.Explorer
-call npm install
-
-set "sourceDirectory=%rootFolder%\src\OneDas.Hdf.Explorer\node_modules"
+set "sourceDirectory=%rootFolder%\web\node_modules"
 set "targetDirectory=%rootFolder%\src\OneDas.Hdf.Explorer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
