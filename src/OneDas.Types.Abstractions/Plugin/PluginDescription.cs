@@ -12,6 +12,8 @@ namespace OneDas.Plugin
             this.ProductVersion = productVersion;
             this.Id = id;
             this.IsEnabled = isEnabled;
+
+            this.InstanceName = string.Empty;
         }
 
         [DataMember]
@@ -24,6 +26,9 @@ namespace OneDas.Plugin
         public int InstanceId { get; set; }
 
         [DataMember]
+        public string InstanceName { get; set; }
+
+        [DataMember]
         public bool IsEnabled { get; private set; }
 
         public void Validate()
@@ -32,7 +37,7 @@ namespace OneDas.Plugin
 
             string errorMessage;
 
-            if (!InfrastructureHelper.CheckNamingConvention(this.Id, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.Id, out errorMessage))
             {
                 throw new ValidationException($"The ID is invalid: { errorMessage }");
             }

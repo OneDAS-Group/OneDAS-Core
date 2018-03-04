@@ -105,7 +105,7 @@ namespace OneDas.Plugin
             moduleEntry.Value.ForEach(dataPort =>
             {
                 dataPort.DataPtr = new IntPtr(bufferOffsetBase + dataPortOffset);
-                dataPortOffset += Marshal.SizeOf(InfrastructureHelper.GetTypeFromOneDasDataType(dataPort.DataType));
+                dataPortOffset += Marshal.SizeOf(OneDasUtilities.GetTypeFromOneDasDataType(dataPort.DataType));
             });
 
             return moduleEntry.Key.GetByteCount();

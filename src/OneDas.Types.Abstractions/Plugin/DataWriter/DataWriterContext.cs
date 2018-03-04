@@ -16,7 +16,7 @@ namespace OneDas.Plugin
 
             customMetadataEntrySet.ToList().ForEach(customMetaDataEntry =>
             {
-                if (!InfrastructureHelper.CheckNamingConvention(customMetaDataEntry.Key, out errorDescription))
+                if (!OneDasUtilities.CheckNamingConvention(customMetaDataEntry.Key, out errorDescription))
                 {
                     throw new ArgumentException($"Argument '{ nameof(customMetadataEntrySet) }', value '{ customMetaDataEntry.Key }': { errorDescription }");
                 }

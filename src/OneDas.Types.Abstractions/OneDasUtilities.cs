@@ -1,10 +1,25 @@
-﻿using System;
+﻿using OneDas.Infrastructure;
+using System;
+using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
-namespace OneDas.Infrastructure
+namespace OneDas
 {
-    public static class InfrastructureHelper
+    public static class OneDasUtilities
     {
+        public static bool ValidateIPv4(string ipAddressString, out IPAddress ipAddress)
+        {
+            ipAddress = null;
+
+            return IPAddress.TryParse(ipAddressString, out ipAddress) && ipAddressString.Split('.').Length == 4;
+        }
+
+        public static T GetFirstAttribute<T>(this Type type) where T : Attribute
+        {
+            return type.GetCustomAttributes(false).OfType<T>().FirstOrDefault();
+        }
+
         public static ulong GetSamplesPerDayFromSampleRate(SampleRate sampleRate)
         {
             switch (sampleRate)
@@ -152,15 +167,15 @@ namespace OneDas.Infrastructure
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                errorDescription = ErrorMessage.InfrastructureHelper_NameEmpty;
+                errorDescription = ErrorMessage.OneDasUtilities_NameEmpty;
             }
             else if (Regex.IsMatch(value, "[^A-Za-z0-9_]"))
             {
-                errorDescription = ErrorMessage.InfrastructureHelper_InvalidCharacters;
+                errorDescription = ErrorMessage.OneDasUtilities_InvalidCharacters;
             }
             else if (Regex.IsMatch(value, "^[0-9_]"))
             {
-                errorDescription = ErrorMessage.InfrastructureHelper_InvalidLeadingCharacter;
+                errorDescription = ErrorMessage.OneDasUtilities_InvalidLeadingCharacter;
             }
             else
             {

@@ -6,6 +6,7 @@ namespace OneDas.Plugin
     {
         public PluginException(string message) : base(message)
         {
+            //
         }
     }
 }

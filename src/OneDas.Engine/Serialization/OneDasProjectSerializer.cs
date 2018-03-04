@@ -60,7 +60,7 @@ namespace OneDas.Engine.Serialization
             }
             catch (Exception ex)
             {
-                throw ExceptionHelper.UnwrapException(ex);
+                throw EngineUtilities.UnwrapException(ex);
             }
         }
 

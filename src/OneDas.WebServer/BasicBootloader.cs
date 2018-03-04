@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using OneDas.Common;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -72,7 +71,7 @@ namespace OneDas.WebServer
             }
             else
             {
-                if (!SingeltonHelper.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
+                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
                 {
                     Environment.Exit(0);
                 }

@@ -343,7 +343,7 @@ namespace OneDas.Engine.Core
         {
             this.Project?.Dispose();
 
-            exception = ExceptionHelper.UnwrapException(exception);
+            exception = EngineUtilities.UnwrapException(exception);
 
             this.LastError = exception.Message;
             this.OneDasState = OneDasState.Error;
@@ -417,7 +417,7 @@ namespace OneDas.Engine.Core
             {
                 this.Project?.Dispose();
 
-                throw ExceptionHelper.UnwrapException(ex);
+                throw EngineUtilities.UnwrapException(ex);
             }
         }
 
@@ -475,7 +475,7 @@ namespace OneDas.Engine.Core
             Type type;
 
             length = Convert.ToInt32(_oneDasOptions.NativeSampleRate / Convert.ToInt32(sampleRate) * _oneDasOptions.ChunkPeriod);
-            type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { InfrastructureHelper.GetTypeFromOneDasDataType(channelHub.DataType) });
+            type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(channelHub.DataType) });
 
             return Enumerable.Range(0, count).Select(x => (ExtendedDataStorageBase)Activator.CreateInstance(type, length)).ToList();
         }
@@ -599,7 +599,7 @@ namespace OneDas.Engine.Core
                     DataGatewayPluginLogicBase dataGateway;
 
                     length = Convert.ToInt32(_oneDasOptions.NativeSampleRate / Convert.ToInt32(sampleRate) * _oneDasOptions.ChunkPeriod);
-                    type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { InfrastructureHelper.GetTypeFromOneDasDataType(channelHub.DataType) });
+                    type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(channelHub.DataType) });
                     channelHub.AssociatedDataStorageSet = Enumerable.Range(0, STORAGE_COUNT).Select(x => (ExtendedDataStorageBase)Activator.CreateInstance(type, length)).ToList();
 
                     // input
@@ -656,7 +656,7 @@ namespace OneDas.Engine.Core
                         $"{ 100 / 1 } Hz", 
                         channelHub.Group, 
                         channelHub.DataType, 
-                        InfrastructureHelper.GetSamplesPerDayFromSampleRate(SampleRate.SampleRate_1), 
+                        OneDasUtilities.GetSamplesPerDayFromSampleRate(SampleRate.SampleRate_1), 
                         channelHub.Unit, 
                         channelHub.TransferFunctionSet, 
                         typeof(ExtendedDataStorageBase))

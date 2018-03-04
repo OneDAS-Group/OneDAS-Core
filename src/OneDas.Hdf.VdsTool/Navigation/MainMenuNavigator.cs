@@ -1,11 +1,10 @@
-﻿using System;
+﻿using HDF.PInvoke;
+using OneDas.Hdf.Core;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using OneDas.Common;
-using OneDas.Hdf.Core;
-using HDF.PInvoke;
 
 namespace OneDas.Hdf.VdsTool.Navigation
 {
@@ -112,7 +111,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                dateTime = ConsoleHelper.ReadLine(new List<string>(), ref isEscaped);
+                dateTime = VdsToolUtilities.ReadLine(new List<string>(), ref isEscaped);
 
                 if (isEscaped)
                 {
@@ -227,7 +226,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                dateTime = ConsoleHelper.ReadLine(new List<string>(), ref isEscaped);
+                dateTime = VdsToolUtilities.ReadLine(new List<string>(), ref isEscaped);
 
                 if (isEscaped)
                 {

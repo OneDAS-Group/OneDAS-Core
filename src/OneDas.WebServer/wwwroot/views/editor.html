@@ -247,7 +247,12 @@
                                     <span class="fa fa-exchange mx-1"
                                           data-toggle="tooltip"
                                           title="I/O operation (data-gateway)"></span>
+                                    <!-- ko if: Descripton.InstanceName().length !== 0 -->
+                                    <span data-bind="text: PluginIdentification.Name + ' - ' + Description.InstanceId"></span>
+                                    <!-- /ko -->
+                                    <!-- ko if: Descripton.InstanceName().length === 0 -->
                                     <span data-bind="text: PluginIdentification.Name"></span>
+                                    <!-- /ko -->
                                 </a>
                                 <a class="nav-link url"
                                    role="button"
@@ -993,10 +998,14 @@
                 Enable Plugin
             </label>
         </div>
+        <div class="form-group">
+            <label class="form-control-label">Instance name:</label>
+            <input class="form-control" data-bind="value: InstanceName">
+        </div>
         <!-- /ko -->
         <div class="form-group">
             <label class="form-control-label">Valid data age (ms):</label>
-            <input class="form-control" type="number" min="0" max="10000" step="1" data-bind="textInput: MaximumDatasetAge">  
+            <input class="form-control" type="number" min="0" max="10000" step="1" data-bind="textInput: MaximumDatasetAge">
         </div>
     </form>
 <!-- /ko -->
@@ -1023,6 +1032,10 @@
                        data-bind="checked: IsEnabled">
                 Enable Plugin
             </label>
+            <div class="form-group">
+                <label class="form-control-label">Instance name:</label>
+                <input class="form-control" data-bind="value: InstanceName">
+            </div>
         </div>
         <!-- /ko -->
         <div class="form-group">

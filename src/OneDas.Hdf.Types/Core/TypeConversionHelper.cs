@@ -1,10 +1,9 @@
-﻿using System;
+﻿using HDF.PInvoke;
+using OneDas.Hdf.IO;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using OneDas.Hdf.IO;
-using OneDas.Infrastructure;
-using HDF.PInvoke;
 
 namespace OneDas.Hdf.Core
 {
@@ -24,33 +23,6 @@ namespace OneDas.Hdf.Core
         }
 
         #endregion
-
-        public static long GetHdfTypeIdFromOneDasDataType(OneDasDataType oneDasDataType)
-        {
-            switch (oneDasDataType)
-            {
-                case OneDasDataType.BOOLEAN:
-                    return H5T.NATIVE_UINT8;
-                case OneDasDataType.UINT8:
-                    return H5T.NATIVE_UINT8;
-                case OneDasDataType.INT8:
-                    return H5T.NATIVE_INT8;
-                case OneDasDataType.UINT16:
-                    return H5T.NATIVE_UINT16;
-                case OneDasDataType.INT16:
-                    return H5T.NATIVE_INT16;
-                case OneDasDataType.UINT32:
-                    return H5T.NATIVE_UINT32;
-                case OneDasDataType.INT32:
-                    return H5T.NATIVE_INT32;
-                case OneDasDataType.FLOAT32:
-                    return H5T.NATIVE_FLOAT;
-                case OneDasDataType.FLOAT64:
-                    return H5T.NATIVE_DOUBLE;
-                default:
-                    throw new NotSupportedException();
-            }
-        }
 
         public static Type GetTypeFromHdfTypeId(long typeId)
         {

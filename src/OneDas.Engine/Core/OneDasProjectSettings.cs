@@ -80,22 +80,22 @@ namespace OneDas.Engine.Core
             string errorDescription;
 
             // -> naming convention
-            if (!InfrastructureHelper.CheckNamingConvention(this.Description.PrimaryGroupName, out errorDescription))
+            if (!OneDasUtilities.CheckNamingConvention(this.Description.PrimaryGroupName, out errorDescription))
             {
                 throw new ValidationException(ErrorMessage.OneDasProject_PrimaryGroupNameInvalid);
             }
 
-            if (!InfrastructureHelper.CheckNamingConvention(this.Description.SecondaryGroupName, out errorDescription))
+            if (!OneDasUtilities.CheckNamingConvention(this.Description.SecondaryGroupName, out errorDescription))
             {
                 throw new ValidationException(ErrorMessage.OneDasProject_SecondaryGroupNameInvalid);
             }
 
-            if (!InfrastructureHelper.CheckNamingConvention(this.Description.CampaignName, out errorDescription))
+            if (!OneDasUtilities.CheckNamingConvention(this.Description.CampaignName, out errorDescription))
             {
                 throw new ValidationException(ErrorMessage.OneDasProject_CampaignNameInvalid);
             }
 
-            if (!this.ChannelHubSet.ToList().TrueForAll(x => InfrastructureHelper.CheckNamingConvention(x.Name, out errorDescription)))
+            if (!this.ChannelHubSet.ToList().TrueForAll(x => OneDasUtilities.CheckNamingConvention(x.Name, out errorDescription)))
             {
                 throw new ValidationException(ErrorMessage.OneDasProject_ChannelHubNameInvalid);
             }
@@ -110,7 +110,7 @@ namespace OneDas.Engine.Core
             }
 
             // -> data type matching
-            if (!channelHubSet.TrueForAll(x => InfrastructureHelper.GetBitLength(x.DataType, true) == InfrastructureHelper.GetBitLength(x.AssociatedDataInput.DataType, true)))
+            if (!channelHubSet.TrueForAll(x => OneDasUtilities.GetBitLength(x.DataType, true) == OneDasUtilities.GetBitLength(x.AssociatedDataInput.DataType, true)))
             {
                 throw new ValidationException(ErrorMessage.OneDasProject_DataTypeMismatch);
             }

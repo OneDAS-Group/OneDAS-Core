@@ -117,19 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PluginProvider_NoMatchingTPluginLogicFound" xml:space="preserve">
-    <value>No matching TPluginLogic was found.</value>
+  <data name="PluginSettingsBase_PluginContextAttributeNotDefined" xml:space="preserve">
+    <value>PluginContextAttribute is not defined.</value>
   </data>
-  <data name="PluginProvider_NoPluginSupporterAttributeFound" xml:space="preserve">
-    <value>Could not find any PluginSupporterAttribute.</value>
+  <data name="PluginSettingsBase_PluginDescriptionAttributeNotDefined" xml:space="preserve">
+    <value>PluginDescriptionAttribute is not defined.</value>
   </data>
-  <data name="PluginProvider_PluginNotFound" xml:space="preserve">
-    <value>The specified plugin was not found.</value>
+  <data name="VariableDescription_TypeNotSubclassOfDataStorage" xml:space="preserve">
+    <value>The argument 'dataStorageType' must be a subclass of DataStorageBase.</value>
   </data>
-  <data name="PluginProvider_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
-    <value>The specified type does not implement the interface IPluginSupporter.</value>
+  <data name="DataWriterPluginLogicBase_DateTimeGranularityTooHigh" xml:space="preserve">
+    <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute.</value>
   </data>
-  <data name="PluginProvider_TypeDoesNotInheritFromPluginSettingsBase" xml:space="preserve">
-    <value>The argument 'settingsType' must be a subclass of PluginSettingsBase.</value>
+  <data name="DataWriterPluginLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
+    <value>The requested period has already been written before.</value>
+  </data>
+  <data name="OneDasCampaignDescription_InvalidFormatVersion" xml:space="preserve">
+    <value>The format version must be equal or greater zero.</value>
+  </data>
+  <data name="OneDasCampaignDescription_InvalidVersion" xml:space="preserve">
+    <value>The campaign version must be equal or greater zero.</value>
+  </data>
+  <data name="ActionRequest_InstanceIdInvalid" xml:space="preserve">
+    <value>The instance ID must be equal or greater zero.</value>
+  </data>
+  <data name="DataWriterPluginSettingsBase_FileGranularityInvalid" xml:space="preserve">
+    <value>The file granularity value is invalid.</value>
+  </data>
+  <data name="DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
+    <value>The MaximumDatasetAge is must be between zero and 10000.</value>
+  </data>
+  <data name="OneDasUtilities_InvalidCharacters" xml:space="preserve">
+    <value>Use A-Z, a-z, 0-9 or _.</value>
+  </data>
+  <data name="OneDasUtilities_InvalidLeadingCharacter" xml:space="preserve">
+    <value>Use A-Z or a-z as first character.</value>
+  </data>
+  <data name="OneDasUtilities_NameEmpty" xml:space="preserve">
+    <value>The name must not be empty.</value>
   </data>
 </root>

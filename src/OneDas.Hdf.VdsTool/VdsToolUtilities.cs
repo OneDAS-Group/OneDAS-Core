@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
 
-namespace OneDas.Common
+namespace OneDas.Hdf.VdsTool
 {
-    public static class ConsoleHelper
+    public static class VdsToolUtilities
     {
         public static void RemoveCharacters(int count)
         {
@@ -39,7 +39,7 @@ namespace OneDas.Common
                         {
                             selectedIndex = (selectedIndex + 1) % optionSet.Count;
 
-                            ConsoleHelper.RemoveCharacters(buffer.Length);
+                            VdsToolUtilities.RemoveCharacters(buffer.Length);
                             buffer.Clear();
 
                             Console.Write(optionSet[selectedIndex]);
@@ -59,7 +59,7 @@ namespace OneDas.Common
 
                             selectedIndex -= 1;
 
-                            ConsoleHelper.RemoveCharacters(buffer.Length);
+                            VdsToolUtilities.RemoveCharacters(buffer.Length);
                             buffer.Clear();
 
                             Console.Write(optionSet[selectedIndex]);
@@ -75,7 +75,7 @@ namespace OneDas.Common
 
                     case ConsoleKey.Escape:
 
-                        ConsoleHelper.RemoveCharacters(buffer.Length);
+                        VdsToolUtilities.RemoveCharacters(buffer.Length);
                         buffer.Clear();
                         isEscaped = true;
 
@@ -88,7 +88,7 @@ namespace OneDas.Common
                             buffer.Remove(buffer.Length - 1, 1);
                         }
 
-                        ConsoleHelper.RemoveCharacters(1);
+                        VdsToolUtilities.RemoveCharacters(1);
 
                         optionSet[0] = buffer.ToString();
                         selectedIndex = 0;

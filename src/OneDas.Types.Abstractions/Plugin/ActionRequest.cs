@@ -31,7 +31,7 @@ namespace OneDas.Plugin
         {
             string errorMessage;
 
-            if (!InfrastructureHelper.CheckNamingConvention(this.PluginId, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.PluginId, out errorMessage))
             {
                 throw new ValidationException($"The plugin ID is invalid: { errorMessage }");
             }
@@ -41,7 +41,7 @@ namespace OneDas.Plugin
                 throw new ValidationException(ErrorMessage.ActionRequest_InstanceIdInvalid);
             }
 
-            if (!InfrastructureHelper.CheckNamingConvention(this.MethodName, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.MethodName, out errorMessage))
             {
                 throw new ValidationException($"The method name is invalid: { errorMessage }");
             }

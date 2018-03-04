@@ -12,20 +12,23 @@
             <tr>
                 <th>Plugin</th>
                 <th>Name</th>
+				<th>Description</th>
                 <th>Version</th>
             </tr>
         </thead>
         <tbody data-bind="foreach: PluginHive.PluginIdentificationSet.get('DataGateway')">
-            <tr data-toggle="tooltip" data-bind="attr: {title: Description}">
+            <tr>
                 <td>data gateway</td>
                 <td data-bind="text: Name"></td>
+				<td data-bind="text: Description"></td>
                 <td data-bind="text: ProductVersion"></td>
             </tr>
         </tbody>
         <tbody data-bind="foreach: PluginHive.PluginIdentificationSet.get('DataWriter')">
-            <tr data-toggle="tooltip" data-bind="attr: {title: Description}">
+            <tr>
                 <td>data writer</td>
                 <td data-bind="text: Name"></td>
+				<td data-bind="text: Description"></td>
                 <td data-bind="text: ProductVersion"></td>
             </tr>
         </tbody>

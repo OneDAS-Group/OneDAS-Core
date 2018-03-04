@@ -291,6 +291,7 @@ declare class PluginDescriptionViewModel {
     ProductVersion: number;
     Id: string;
     InstanceId: number;
+    InstanceName: KnockoutObservable<string>;
     IsEnabled: KnockoutObservable<boolean>;
     constructor(pluginDescriptionModel: any);
     ToModel(): any;

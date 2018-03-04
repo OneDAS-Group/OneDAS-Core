@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace OneDas.Common
+namespace OneDas.Engine
 {
     public static class GcNotification
     {

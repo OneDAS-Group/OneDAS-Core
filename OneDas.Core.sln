@@ -3,14 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "src\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj", "{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Explorer", "src\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj", "{FC88C425-009A-40CB-8C99-72DA49C82386}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types", "src\OneDas.Types\OneDas.Types.csproj", "{97552492-EDC6-4F26-B2F6-7690B11EF1B0}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Types", "src\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj", "{016F5C76-9BCE-48C1-8936-AF1E869F58C5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC5F24C-EF86-424F-AC3E-79FF0E343684}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -21,23 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		tsconfig.base.json = tsconfig.base.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Engine", "src\OneDas.Engine\OneDas.Engine.csproj", "{DC7E940F-EFD3-435B-B49A-AD72A751782B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebServer", "src\OneDas.WebServer\OneDas.WebServer.csproj", "{BA4AACDD-8F38-45F5-85F1-094FE9DFE12A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebClient", "src\OneDas.WebClient\OneDas.WebClient.csproj", "{9089076A-052E-47BA-8634-AAE9FC77D572}"
-EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Deployment", "src\OneDas.Deployment\OneDas.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data aquisition", "data aquisition", "{542D946C-E4D9-4A6A-99FD-6C1B940A81F1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6767CF64-F8E3-450B-AE8E-0255642FD753}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3DBD52E4-26F8-413F-A954-2BE86E572F3E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EngineSample", "samples\EngineSample\EngineSample.csproj", "{59BA0806-A634-48F4-9514-3B557B15072F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginSample", "samples\PluginSample\PluginSample.csproj", "{4FE5CC6A-4BFC-4D4B-8D9A-1F1F55357852}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data post processing", "data post processing", "{28552ECD-9437-4D06-9B4C-96A7FDB069E3}"
 EndProject
@@ -46,6 +26,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1C185F4C
 		build\OneDas.targets = build\OneDas.targets
 		build\PostBuild.bat = build\PostBuild.bat
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "src\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj", "{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Explorer", "src\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj", "{FC88C425-009A-40CB-8C99-72DA49C82386}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types", "src\OneDas.Types\OneDas.Types.csproj", "{97552492-EDC6-4F26-B2F6-7690B11EF1B0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types.Abstractions", "src\OneDas.Types.Abstractions\OneDas.Types.Abstractions.csproj", "{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Types", "src\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj", "{016F5C76-9BCE-48C1-8936-AF1E869F58C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Engine", "src\OneDas.Engine\OneDas.Engine.csproj", "{DC7E940F-EFD3-435B-B49A-AD72A751782B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebServer", "src\OneDas.WebServer\OneDas.WebServer.csproj", "{BA4AACDD-8F38-45F5-85F1-094FE9DFE12A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.WebClient", "src\OneDas.WebClient\OneDas.WebClient.csproj", "{9089076A-052E-47BA-8634-AAE9FC77D572}"
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Deployment", "src\OneDas.Deployment\OneDas.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EngineSample", "samples\EngineSample\EngineSample.csproj", "{59BA0806-A634-48F4-9514-3B557B15072F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginSample", "samples\PluginSample\PluginSample.csproj", "{4FE5CC6A-4BFC-4D4B-8D9A-1F1F55357852}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +95,18 @@ Global
 		{97552492-EDC6-4F26-B2F6-7690B11EF1B0}.Release|x64.Build.0 = Release|Any CPU
 		{97552492-EDC6-4F26-B2F6-7690B11EF1B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{97552492-EDC6-4F26-B2F6-7690B11EF1B0}.Release|x86.Build.0 = Release|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Debug|x64.Build.0 = Debug|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Debug|x86.Build.0 = Debug|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Release|x64.ActiveCfg = Release|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Release|x64.Build.0 = Release|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Release|x86.ActiveCfg = Release|Any CPU
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8}.Release|x86.Build.0 = Release|Any CPU
 		{016F5C76-9BCE-48C1-8936-AF1E869F58C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{016F5C76-9BCE-48C1-8936-AF1E869F58C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{016F5C76-9BCE-48C1-8936-AF1E869F58C5}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -181,6 +195,7 @@ Global
 		{D5CFA272-953F-4CD8-A2AE-AE4C3BB834B2} = {28552ECD-9437-4D06-9B4C-96A7FDB069E3}
 		{FC88C425-009A-40CB-8C99-72DA49C82386} = {28552ECD-9437-4D06-9B4C-96A7FDB069E3}
 		{97552492-EDC6-4F26-B2F6-7690B11EF1B0} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{7A1FA0CC-EEF2-4845-8705-05E5A1F649E8} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 		{016F5C76-9BCE-48C1-8936-AF1E869F58C5} = {28552ECD-9437-4D06-9B4C-96A7FDB069E3}
 		{DC7E940F-EFD3-435B-B49A-AD72A751782B} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 		{BA4AACDD-8F38-45F5-85F1-094FE9DFE12A} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}

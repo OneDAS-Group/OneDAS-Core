@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace OneDas.Common
+namespace OneDas
 {
-    public static class DateTimeHelper
+    public static class DateTimeExtensions
     {
         public static DateTime RoundUp(this DateTime dateTime, TimeSpan timeSpan)
         {

@@ -205,7 +205,7 @@ namespace OneDas.Hdf.VdsTool
 
             //
             datasetName = datasetInfo.Name;
-            lengthPerDay = InfrastructureHelper.GetSamplesPerDayFromString(datasetName);
+            lengthPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
             vdsLength = (ulong)(epochEnd - epochStart).Days * lengthPerDay;
             spaceId = H5S.create_simple(1, new ulong[] { vdsLength }, new ulong[] { H5S.UNLIMITED });
             propertyId = H5P.create(H5P.DATASET_CREATE);
@@ -286,7 +286,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
 
-                if (!string.IsNullOrWhiteSpace(type = ConsoleHelper.ReadLine(optionSet, ref isEscaped)) && InfrastructureHelper.CheckNamingConvention(type, out tmp))
+                if (!string.IsNullOrWhiteSpace(type = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)) && OneDasUtilities.CheckNamingConvention(type, out tmp))
                 {
                     hdf_aggregate_function.type = type;
                     break;
@@ -305,7 +305,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { "none" };
 
-                if (!string.IsNullOrWhiteSpace(argument = ConsoleHelper.ReadLine(optionSet, ref isEscaped)))
+                if (!string.IsNullOrWhiteSpace(argument = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)))
                 {
                     hdf_aggregate_function.argument = argument;
                     break;
@@ -344,7 +344,7 @@ namespace OneDas.Hdf.VdsTool
                 Console.Write($"Enter value for date/time ({hdf_transfer_function.date_time}): ");
 
                 optionSet = new List<string>() { "0001-01-01" };
-                dateTime_tmp = ConsoleHelper.ReadLine(optionSet, ref isEscaped);
+                dateTime_tmp = VdsToolUtilities.ReadLine(optionSet, ref isEscaped);
 
                 if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
@@ -370,7 +370,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { "polynomial", "function" };
 
-                if (!string.IsNullOrWhiteSpace(type = ConsoleHelper.ReadLine(optionSet, ref isEscaped)))
+                if (!string.IsNullOrWhiteSpace(type = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)))
                 {
                     hdf_transfer_function.type = type;
                     break;
@@ -389,7 +389,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { "permanent" };
 
-                if (!string.IsNullOrWhiteSpace(option = ConsoleHelper.ReadLine(optionSet, ref isEscaped)))
+                if (!string.IsNullOrWhiteSpace(option = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)))
                 {
                     hdf_transfer_function.option = option;
                     break;
@@ -408,7 +408,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { };
 
-                if (!string.IsNullOrWhiteSpace(argument = ConsoleHelper.ReadLine(optionSet, ref isEscaped)))
+                if (!string.IsNullOrWhiteSpace(argument = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)))
                 {
                     hdf_transfer_function.argument = argument;
                     break;
@@ -449,7 +449,7 @@ namespace OneDas.Hdf.VdsTool
                 Console.Write($"Enter value for date/time ({hdf_tag.date_time}): ");
 
                 optionSet = new List<string>() { "0001-01-01" };
-                dateTime_tmp = ConsoleHelper.ReadLine(optionSet, ref isEscaped);
+                dateTime_tmp = VdsToolUtilities.ReadLine(optionSet, ref isEscaped);
 
                 if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
@@ -475,7 +475,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { };
 
-                if (!string.IsNullOrWhiteSpace(name = ConsoleHelper.ReadLine(optionSet, ref isEscaped)) && InfrastructureHelper.CheckNamingConvention(name, out tmp))
+                if (!string.IsNullOrWhiteSpace(name = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)) && OneDasUtilities.CheckNamingConvention(name, out tmp))
                 {
                     hdf_tag.name = name;
                     break;
@@ -494,7 +494,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { "none", "start", "end" };
 
-                if (!string.IsNullOrWhiteSpace(comment = ConsoleHelper.ReadLine(optionSet, ref isEscaped)))
+                if (!string.IsNullOrWhiteSpace(comment = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)))
                 {
                     hdf_tag.mode = comment;
                     break;
@@ -513,7 +513,7 @@ namespace OneDas.Hdf.VdsTool
 
                 optionSet = new List<string>() { "none"};
 
-                if ((mode = ConsoleHelper.ReadLine(optionSet, ref isEscaped)).Any())
+                if ((mode = VdsToolUtilities.ReadLine(optionSet, ref isEscaped)).Any())
                 {
                     hdf_tag.comment = mode;
                     break;

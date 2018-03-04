@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace OneDas.Common
 {
-    public static class ExceptionHelper
+    public static class EngineUtilities
     {
         public static Exception UnwrapException(Exception exception)
         {

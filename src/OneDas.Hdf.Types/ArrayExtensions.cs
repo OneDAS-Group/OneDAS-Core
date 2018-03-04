@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace OneDas.Common
+namespace OneDas.Hdf
 {
-    public static class ArrayHelper
+    public static class ArrayExtensions
     {
         public static void ToUnmanagedArray(this Array valueSet, IntPtr targetPtr)
         {

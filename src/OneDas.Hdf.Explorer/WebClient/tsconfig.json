@@ -6,9 +6,6 @@
   "exclude": [
     "wwwroot"
   ],
-  "files": [
-    "./../../../../OneDas-Support/web/node_modules/moment/moment.d.ts"
-  ],
   "include": [
     "./**/*.ts"
   ],

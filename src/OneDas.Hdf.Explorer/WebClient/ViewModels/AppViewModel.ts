@@ -1,4 +1,6 @@
-﻿class AppViewModel
+﻿declare var moment: any
+
+class AppViewModel
 {
     public IsMainViewRequested: KnockoutObservable<boolean>
     public CampaignInfoSet: KnockoutObservableArray<CampaignInfoViewModel>
