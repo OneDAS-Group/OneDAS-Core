@@ -1,4 +1,5 @@
 ﻿using OneDas.Infrastructure;
+using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
 
@@ -39,7 +40,7 @@ namespace OneDas.Plugin
 
             if (!OneDasUtilities.CheckNamingConvention(this.Id, out errorMessage))
             {
-                throw new ValidationException($"The ID is invalid: { errorMessage }");
+                throw new Exception($"The ID is invalid: { errorMessage }");
             }
         }
     }

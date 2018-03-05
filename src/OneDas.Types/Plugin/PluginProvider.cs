@@ -148,19 +148,19 @@ namespace OneDas.Plugin
 
             if (!pluginSettingsType.IsSubclassOf(typeof(PluginSettingsBase)))
             {
-                throw new OneDasException(ErrorMessage.PluginProvider_TypeDoesNotInheritFromPluginSettingsBase);
+                throw new Exception(ErrorMessage.PluginProvider_TypeDoesNotInheritFromPluginSettingsBase);
             }
 
             pluginSupporterType = pluginSettingsType.GetFirstAttribute<PluginSupporterAttribute>()?.Type;
 
             if (pluginSupporterType == null)
             {
-                throw new OneDasException(ErrorMessage.PluginProvider_NoPluginSupporterAttributeFound);
+                throw new Exception(ErrorMessage.PluginProvider_NoPluginSupporterAttributeFound);
             }
 
             if (!typeof(IPluginSupporter).IsAssignableFrom(pluginSupporterType))
             {
-                throw new OneDasException(ErrorMessage.PluginProvider_TypeDoesNotImplementIPluginSupporter);
+                throw new Exception(ErrorMessage.PluginProvider_TypeDoesNotImplementIPluginSupporter);
             }
 
             return (IPluginSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType);
@@ -205,7 +205,7 @@ namespace OneDas.Plugin
 
             if (pluginLogicType == null)
             {
-                throw new OneDasException(ErrorMessage.PluginProvider_NoMatchingTPluginLogicFound);
+                throw new Exception(ErrorMessage.PluginProvider_NoMatchingTPluginLogicFound);
             }
 
             return (TPluginLogic)ActivatorUtilities.CreateInstance(_serviceProvider, pluginLogicType, argsExtended);
@@ -264,13 +264,13 @@ namespace OneDas.Plugin
                     }
                     else
                     {
-                        throw new OneDasException($"The requested resource of plugin ID = '{ pluginId }' and name = '{ resourceName }' could not be found.");
+                        throw new Exception($"The requested resource of plugin ID = '{ pluginId }' and name = '{ resourceName }' could not be found.");
                     }
                 }
             }
             else
             {
-                throw new OneDasException($"The requested plugin with ID = '{ pluginId }' could not be found.");
+                throw new Exception($"The requested plugin with ID = '{ pluginId }' could not be found.");
             }
         }
 

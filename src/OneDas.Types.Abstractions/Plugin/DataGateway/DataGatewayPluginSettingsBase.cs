@@ -1,4 +1,5 @@
 ﻿using OneDas.Infrastructure;
+using System;
 using System.Runtime.Serialization;
 
 namespace OneDas.Plugin
@@ -31,12 +32,12 @@ namespace OneDas.Plugin
             // IMPROVE: implement general frame rate divider setting
             //if (this.FrameRateDivider < 1 || FrameRateDivider > oneDasOptions.NativeSampleRate)
             //{
-            //    throw new ValidationException(ErrorMessage.UdpModel_FrameRateDividerInvalid);
+            //    throw new Exception(ErrorMessage.UdpModel_FrameRateDividerInvalid);
             //}
 
             if (this.MaximumDatasetAge < 0 || this.MaximumDatasetAge > 10000)
             {
-                throw new ValidationException(ErrorMessage.DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid);
+                throw new Exception(ErrorMessage.DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid);
             }
         }
 

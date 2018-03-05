@@ -1,4 +1,5 @@
 ﻿using OneDas.Infrastructure;
+using System;
 using System.Runtime.Serialization;
 
 namespace OneDas.Plugin
@@ -33,17 +34,17 @@ namespace OneDas.Plugin
 
             if (!OneDasUtilities.CheckNamingConvention(this.PluginId, out errorMessage))
             {
-                throw new ValidationException($"The plugin ID is invalid: { errorMessage }");
+                throw new Exception($"The plugin ID is invalid: { errorMessage }");
             }
 
             if (this.InstanceId < 0)
             {
-                throw new ValidationException(ErrorMessage.ActionRequest_InstanceIdInvalid);
+                throw new Exception(ErrorMessage.ActionRequest_InstanceIdInvalid);
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.MethodName, out errorMessage))
             {
-                throw new ValidationException($"The method name is invalid: { errorMessage }");
+                throw new Exception($"The method name is invalid: { errorMessage }");
             }
         }
     }

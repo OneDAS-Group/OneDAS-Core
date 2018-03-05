@@ -82,22 +82,22 @@ namespace OneDas.Engine.Core
             // -> naming convention
             if (!OneDasUtilities.CheckNamingConvention(this.Description.PrimaryGroupName, out errorDescription))
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_PrimaryGroupNameInvalid);
+                throw new Exception(ErrorMessage.OneDasProject_PrimaryGroupNameInvalid);
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.Description.SecondaryGroupName, out errorDescription))
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_SecondaryGroupNameInvalid);
+                throw new Exception(ErrorMessage.OneDasProject_SecondaryGroupNameInvalid);
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.Description.CampaignName, out errorDescription))
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_CampaignNameInvalid);
+                throw new Exception(ErrorMessage.OneDasProject_CampaignNameInvalid);
             }
 
             if (!this.ChannelHubSet.ToList().TrueForAll(x => OneDasUtilities.CheckNamingConvention(x.Name, out errorDescription)))
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_ChannelHubNameInvalid);
+                throw new Exception(ErrorMessage.OneDasProject_ChannelHubNameInvalid);
             }
 
             // -> ChannelHub
@@ -106,19 +106,19 @@ namespace OneDas.Engine.Core
 
             if (guidSet.Count() > guidSet.Distinct().Count())
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_ChannelHubNotUnqiue);
+                throw new Exception(ErrorMessage.OneDasProject_ChannelHubNotUnqiue);
             }
 
             // -> data type matching
             if (!channelHubSet.TrueForAll(x => OneDasUtilities.GetBitLength(x.DataType, true) == OneDasUtilities.GetBitLength(x.AssociatedDataInput.DataType, true)))
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_DataTypeMismatch);
+                throw new Exception(ErrorMessage.OneDasProject_DataTypeMismatch);
             }
 
             // -> data gateway settings
             if (this.DataGatewaySettingsSet.Select(x => x.Description.InstanceId).Count() > this.DataGatewaySettingsSet.Select(x => x.Description.InstanceId).Distinct().Count())
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_DataGatewaySettingsIdNotUnique);
+                throw new Exception(ErrorMessage.OneDasProject_DataGatewaySettingsIdNotUnique);
             }
 
             this.DataGatewaySettingsSet.ToList().ForEach(dataGatewaySettings => dataGatewaySettings.Validate());
@@ -126,7 +126,7 @@ namespace OneDas.Engine.Core
             // -> data writer settings
             if (this.DataWriterSettingsSet.Select(x => x.Description.InstanceId).Count() > this.DataWriterSettingsSet.Select(x => x.Description.InstanceId).Distinct().Count())
             {
-                throw new ValidationException(ErrorMessage.OneDasProject_DataWriterSettingsIdNotUnique);
+                throw new Exception(ErrorMessage.OneDasProject_DataWriterSettingsIdNotUnique);
             }
 
             this.DataWriterSettingsSet.ToList().ForEach(dataWriterSettings => dataWriterSettings.Validate());

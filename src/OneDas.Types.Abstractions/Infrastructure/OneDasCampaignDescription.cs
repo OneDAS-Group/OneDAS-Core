@@ -36,22 +36,22 @@ namespace OneDas.Infrastructure
 
             if (this.Version < 0)
             {
-                throw new ValidationException(ErrorMessage.OneDasCampaignDescription_InvalidVersion);
+                throw new Exception(ErrorMessage.OneDasCampaignDescription_InvalidVersion);
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.PrimaryGroupName, out errorMessage))
             {
-                throw new ValidationException($"The PrimaryGroupName is invalid: { errorMessage }");
+                throw new Exception($"The PrimaryGroupName is invalid: { errorMessage }");
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.SecondaryGroupName, out errorMessage))
             {
-                throw new ValidationException($"The SecondaryGroupName is invalid: { errorMessage }");
+                throw new Exception($"The SecondaryGroupName is invalid: { errorMessage }");
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.CampaignName, out errorMessage))
             {
-                throw new ValidationException($"The CampaignName is invalid: { errorMessage }");
+                throw new Exception($"The CampaignName is invalid: { errorMessage }");
             }
         }
     }

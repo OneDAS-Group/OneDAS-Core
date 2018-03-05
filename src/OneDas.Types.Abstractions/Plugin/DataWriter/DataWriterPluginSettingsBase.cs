@@ -1,4 +1,5 @@
 ﻿using OneDas.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -35,7 +36,7 @@ namespace OneDas.Plugin
 
             if (this.FileGranularity == 0)
             {
-                throw new ValidationException(ErrorMessage.DataWriterPluginSettingsBase_FileGranularityInvalid);
+                throw new Exception(ErrorMessage.DataWriterPluginSettingsBase_FileGranularityInvalid);
             }
         }
 
