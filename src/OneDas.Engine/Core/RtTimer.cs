@@ -120,7 +120,7 @@ namespace OneDas.Engine.Core
 
                 if (timeSpan_Elapsed >= timeSpan_Sleep)
                 {
-                    stopwatch = Stopwatch.StartNew();
+                    stopwatch.Restart();
                     currentDateTime = _func.Invoke();
 
                     this.LastActionTime = stopwatch.Elapsed.TotalMilliseconds;

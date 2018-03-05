@@ -10,10 +10,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30155" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30155" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30155" />
-	<PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6638-29906" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6631-28500" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="0.1.0-alpha-6579-25141" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6631-28500" />
+	<PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6638-31020" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6638-33813" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="1.0.0-alpha-6638-33851" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6638-33813" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
