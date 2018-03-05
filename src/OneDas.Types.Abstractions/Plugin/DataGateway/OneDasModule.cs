@@ -1,6 +1,6 @@
-﻿using System;
+﻿using OneDas.Infrastructure;
+using System;
 using System.Runtime.Serialization;
-using OneDas.Infrastructure;
 
 namespace OneDas.Plugin
 {

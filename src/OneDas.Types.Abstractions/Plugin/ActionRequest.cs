@@ -1,5 +1,4 @@
-﻿using OneDas.Infrastructure;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 
 namespace OneDas.Plugin
