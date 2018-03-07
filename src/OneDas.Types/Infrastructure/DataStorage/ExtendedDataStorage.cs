@@ -30,7 +30,7 @@ namespace OneDas.Infrastructure
             return ExtendedDataStorageBase.ApplyDatasetStatus(this.GetDataBuffer<T>().ToArray(), this.GetStatusBuffer().ToArray());
         }
 
-        public override SimpleDataStorage ToSimpleDataStorage()
+        public override ISimpleDataStorage ToSimpleDataStorage()
         {
             return new SimpleDataStorage(this.ApplyDatasetStatus());
         }

@@ -287,7 +287,7 @@ namespace OneDas.Hdf.Explorer.Web
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
                 }
 
-                lengthPerDay = InfrastructureHelper.GetSamplesPerDayFromString("is_chunk_completed_set");
+                lengthPerDay = OneDasUtilities.GetSamplesPerDayFromString("is_chunk_completed_set");
 
                 start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalDays * lengthPerDay));
                 stride = 1;

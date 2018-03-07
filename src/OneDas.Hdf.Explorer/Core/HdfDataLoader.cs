@@ -80,8 +80,8 @@ namespace OneDas.Hdf.Explorer.Core
                         hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
                         transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", new CultureInfo("en-US")), tf.type, tf.option, tf.argument)).ToList();
 
-                        oneDasDataType = InfrastructureHelper.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                        samplesPerDay = InfrastructureHelper.GetSamplesPerDayFromString(datasetName);
+                        oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
+                        samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
 
                         variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, typeof(SimpleDataStorage)));
                     }
@@ -199,13 +199,13 @@ namespace OneDas.Hdf.Explorer.Core
             currentRowCount = zipSettings.SegmentLength;
             lastRow = zipSettings.Start + zipSettings.Block;
 
-            IList<DataStorageBase> dataStorageSet;
+            IList<IDataStorage> dataStorageSet;
 
             // for each segment
             for (ulong currentStart = zipSettings.Start; currentStart < lastRow; currentStart += currentRowCount)
             {
                 currentDataset = 0;
-                dataStorageSet = new List<DataStorageBase>();
+                dataStorageSet = new List<IDataStorage>();
 
                 if (currentStart + currentRowCount > zipSettings.Start + zipSettings.Block)
                 {
@@ -245,7 +245,7 @@ namespace OneDas.Hdf.Explorer.Core
             return true;
         }
 
-        private SimpleDataStorage LoadDataset(long sourceFileId, string datasetPath, ulong start, ulong stride, ulong block, ulong count)
+        private ISimpleDataStorage LoadDataset(long sourceFileId, string datasetPath, ulong start, ulong stride, ulong block, ulong count)
         {
             long datasetId = -1;
             long typeId = -1;
@@ -256,7 +256,7 @@ namespace OneDas.Hdf.Explorer.Core
             Type genericType;
 
             ExtendedDataStorageBase extendedDataStorage;
-            SimpleDataStorage simpleDataStorage;
+            ISimpleDataStorage simpleDataStorage;
 
             dataset = IOHelper.ReadDataset(sourceFileId, datasetPath, start, stride, block, count);
 

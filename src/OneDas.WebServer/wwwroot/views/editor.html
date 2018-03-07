@@ -247,10 +247,10 @@
                                     <span class="fa fa-exchange mx-1"
                                           data-toggle="tooltip"
                                           title="I/O operation (data-gateway)"></span>
-                                    <!-- ko if: Descripton.InstanceName().length !== 0 -->
-                                    <span data-bind="text: PluginIdentification.Name + ' - ' + Description.InstanceId"></span>
+                                    <!-- ko if: Description.InstanceName().length !== 0 -->
+                                    <span data-bind="text: PluginIdentification.Name + ' - ' + Description.InstanceName()"></span>
                                     <!-- /ko -->
-                                    <!-- ko if: Descripton.InstanceName().length === 0 -->
+                                    <!-- ko if: Description.InstanceName().length === 0 -->
                                     <span data-bind="text: PluginIdentification.Name"></span>
                                     <!-- /ko -->
                                 </a>
@@ -276,7 +276,12 @@
                                     <span class="fa fa-database mx-1"
                                           data-toggle="tooltip"
                                           title="data recording (data-writer)"></span>
+                                    <!-- ko if: Description.InstanceName().length !== 0 -->
+                                    <span data-bind="text: PluginIdentification.Name + ' - ' + Description.InstanceName()"></span>
+                                    <!-- /ko -->
+                                    <!-- ko if: Description.InstanceName().length === 0 -->
                                     <span data-bind="text: PluginIdentification.Name"></span>
+                                    <!-- /ko -->
                                 </a>
                                 <a class="nav-link url"
                                    data-toggle="modal"
@@ -1000,7 +1005,7 @@
         </div>
         <div class="form-group">
             <label class="form-control-label">Instance name:</label>
-            <input class="form-control" data-bind="value: InstanceName">
+            <input class="form-control" data-bind="value: InstanceName" placeholder="optional">
         </div>
         <!-- /ko -->
         <div class="form-group">
@@ -1032,10 +1037,10 @@
                        data-bind="checked: IsEnabled">
                 Enable Plugin
             </label>
-            <div class="form-group">
-                <label class="form-control-label">Instance name:</label>
-                <input class="form-control" data-bind="value: InstanceName">
-            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label">Instance name:</label>
+            <input class="form-control" data-bind="value: InstanceName" placeholder="optional">
         </div>
         <!-- /ko -->
         <div class="form-group">

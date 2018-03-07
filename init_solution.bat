@@ -47,10 +47,10 @@ set list=%list%;popper.js\dist
 set list=%list%;tempusdominus-bootstrap-4\build
 
 for %%a in (%list%) do ( 
-     xcopy /s /y %sourceDirectory%\%%a\. %targetDirectory%\%%a\
+     xcopy /s /y "%sourceDirectory%\%%a\." "%targetDirectory%\%%a\"
 )
 
-set list=%list%;moment\moment.js
+set list=moment\moment.js
 
 for %%a in (%list%) do ( 
      xcopy /s /y "%sourceDirectory%\%%a" "%targetDirectory%\%%a*"

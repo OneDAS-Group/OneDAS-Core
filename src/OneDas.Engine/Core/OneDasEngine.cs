@@ -77,10 +77,9 @@ namespace OneDas.Engine.Core
         private DateTime _utcDateTime_Rounded;
         private DateTime _lastActivationDateTime;
 
-        private Dictionary<SampleRate, IEnumerable<DataStorageContext>> _sampleRateInputDictionary;
-        private Dictionary<SampleRate, IEnumerable<DataStorageContext>> _sampleRateToDataStorageContextMap;
-        private Dictionary<DataWriterPluginLogicBase, List<ChannelHub>> _dataWriterToChannelHubSetMap;
-        private Dictionary<DataWriterPluginLogicBase, List<List<DataStorageBase>>> _dataWriterToStorageSetMap;
+        private Dictionary<SampleRate, List<DataStorageContext>> _sampleRateToDataStorageContextMap;
+        private Dictionary<DataWriterPluginLogicBase, List<VariableDescription>> _dataWriterToVariableDescriptionMap;
+        private Dictionary<DataWriterPluginLogicBase, List<List<IDataStorage>>> _dataWriterToStorageSetMap;
         private Dictionary<DataGatewayPluginLogicBase, bool> _hasValidDataSet;
 
         // overwritten
@@ -298,18 +297,20 @@ namespace OneDas.Engine.Core
 
         private object ReadSnapshotData(ChannelHub channelHub, int currentStorageIndex, long currentChunkIndex)
         {
-            int realChunkIndex;
+            //int realChunkIndex;
 
-            realChunkIndex = Convert.ToInt32(currentChunkIndex / 1);
+            //realChunkIndex = Convert.ToInt32(currentChunkIndex / 1);
 
-            if (channelHub.AssociatedDataStorageSet[currentStorageIndex].GetStatusBuffer()[realChunkIndex] == 1)
-            {
-                return channelHub.AssociatedDataStorageSet[currentStorageIndex].Get(realChunkIndex);
-            }
-            else
-            {
-                return Double.NaN;
-            }
+            //if (channelHub.AssociatedDataStorageSet[currentStorageIndex].GetStatusBuffer()[realChunkIndex] == 1)
+            //{
+            //    return channelHub.AssociatedDataStorageSet[currentStorageIndex].Get(realChunkIndex);
+            //}
+            //else
+            //{
+            //    return Double.NaN;
+            //}
+
+            return Double.NaN;
         }
 
         private void GcNotification_GcOccured(int generation)
@@ -322,12 +323,9 @@ namespace OneDas.Engine.Core
             // clear data that was collected during "ready" state
             if (oldState == OneDasState.Ready && newState == OneDasState.Run)
             {
-                foreach (var sampleRateCategory in _sampleRateInputDictionary)
+                for (int i = 0; i < STORAGE_COUNT; i++)
                 {
-                    foreach (DataStorageContext context in sampleRateCategory.Value)
-                    {
-                        context.ChannelHub.AssociatedDataStorageSet.ForEach(dataStorage => dataStorage.Clear());
-                    }
+                    this.ClearDataStorage(i);
                 }
             }
 
@@ -446,10 +444,9 @@ namespace OneDas.Engine.Core
             _utcDateTime_Rounded = DateTime.MinValue;
             _lastActivationDateTime = DateTime.MinValue;
 
-            _sampleRateInputDictionary = new Dictionary<SampleRate, IEnumerable<DataStorageContext>>();
-            _sampleRateToDataStorageContextMap = new Dictionary<SampleRate, IEnumerable<DataStorageContext>>();
-            _dataWriterToChannelHubSetMap = new Dictionary<DataWriterPluginLogicBase, List<ChannelHub>>();
-            _dataWriterToStorageSetMap = new Dictionary<DataWriterPluginLogicBase, List<List<DataStorageBase>>>();
+            _sampleRateToDataStorageContextMap = new Dictionary<SampleRate, List<DataStorageContext>>();
+            _dataWriterToVariableDescriptionMap = new Dictionary<DataWriterPluginLogicBase, List<VariableDescription>>();
+            _dataWriterToStorageSetMap = new Dictionary<DataWriterPluginLogicBase, List<List<IDataStorage>>>();
             _hasValidDataSet = new Dictionary<DataGatewayPluginLogicBase, bool>();
         }
 
@@ -469,29 +466,20 @@ namespace OneDas.Engine.Core
             this.Project.DataGatewaySet.AsParallel().ForAll(dataGateway => dataGateway.Configure());
         }
 
-        private List<ExtendedDataStorageBase> CreateDataStorages(SampleRate sampleRate, ChannelHub channelHub, int count)
+        private void Step_2_PrepareBuffers()
         {
-            int length;
-            Type type;
+            Dictionary<SampleRate, Dictionary<ChannelHub, HashSet<DataWriterPluginLogicBase>>> sr_to_ch_map;
 
-            length = Convert.ToInt32(_oneDasOptions.NativeSampleRate / Convert.ToInt32(sampleRate) * _oneDasOptions.ChunkPeriod);
-            type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(channelHub.DataType) });
+            sr_to_ch_map = new Dictionary<SampleRate, Dictionary<ChannelHub, HashSet<DataWriterPluginLogicBase>>>();
 
-            return Enumerable.Range(0, count).Select(x => (ExtendedDataStorageBase)Activator.CreateInstance(type, length)).ToList();
-        }
-
-        private List<ChannelHub> FilterChannelHubs(List<ChannelHub> channelHubSet, BufferRequest bufferRequest)
-        {
-            return channelHubSet; // TODO implement filter
-        }
-
-        private void Step_2_PrepareBuffers2()
-        {
-            Dictionary<SampleRate, Dictionary<ChannelHub, List<DataWriterPluginLogicBase>>> srTochMap;
-            Dictionary<SampleRate, List<DataStorageContext>> srTodsMap;
-
-            srTochMap = new Dictionary<SampleRate, Dictionary<ChannelHub, List<DataWriterPluginLogicBase>>>();
-            srTodsMap = new Dictionary<SampleRate, List<DataStorageContext>>();
+            /* ---------------------------------------------- */
+            //                  sr_to_ch_map
+            //           SR1        SR2             SR3
+            //           /           |               \
+            //        ch1->DW1,     ch1->DW1         ch1->DW2
+            //        ch2->DW2,     ch4->DW1, DW5    ch2->DW3
+            //        ch3->DW3,     
+            /* ---------------------------------------------- */
 
             // for each data writer
             this.Project.DataWriterSet.ForEach(dataWriter =>
@@ -499,35 +487,44 @@ namespace OneDas.Engine.Core
                 // for each buffer request
                 dataWriter.Settings.BufferRequestSet.ForEach(bufferRequest =>
                 {
-                    Dictionary<ChannelHub, List<DataWriterPluginLogicBase>> chTodwSet;
+                    Dictionary<ChannelHub, HashSet<DataWriterPluginLogicBase>> ch_to_dw_map;
 
                     // ensure that there is a sample rate entry
-                    if (srTochMap.ContainsKey(bufferRequest.SampleRate))
+                    if (sr_to_ch_map.ContainsKey(bufferRequest.SampleRate))
                     {
-                        chTodwSet = srTochMap[bufferRequest.SampleRate];
+                        ch_to_dw_map = sr_to_ch_map[bufferRequest.SampleRate];
                     }
                     else
                     {
-                        chTodwSet = new Dictionary<ChannelHub, List<DataWriterPluginLogicBase>>();
-                        srTochMap[bufferRequest.SampleRate] = chTodwSet;
+                        ch_to_dw_map = new Dictionary<ChannelHub, HashSet<DataWriterPluginLogicBase>>();
+                        sr_to_ch_map[bufferRequest.SampleRate] = ch_to_dw_map;
                     }
 
                     // add channel hubs
-                    this.FilterChannelHubs(this.Project.ActiveChannelHubSet, bufferRequest).ForEach(channelHub =>
+                    this.FilterChannelHubs(this.Project.ActiveChannelHubSet, bufferRequest.GroupFilter).ForEach(channelHub =>
                     {
-                        // ensure that there is an channel hub entry
-                        if (!chTodwSet.ContainsKey(channelHub))
+                        // ensure that there is a channel hub entry
+                        if (!ch_to_dw_map.ContainsKey(channelHub))
                         {
-                            chTodwSet[channelHub] = new List<DataWriterPluginLogicBase>();
+                            ch_to_dw_map[channelHub] = new HashSet<DataWriterPluginLogicBase>();
                         }
 
-                        chTodwSet[channelHub].Add(dataWriter);
+                        ch_to_dw_map[channelHub].Add(dataWriter);
                     });
                 });
             });
 
+            // prepare _dataWriterToStorageSetMap and _dataWriterToChannelHubSetMap
+            this.Project.DataWriterSet.ForEach(dataWriter =>
+            {
+                _dataWriterToStorageSetMap[dataWriter] = new List<List<IDataStorage>>();
+                Enumerable.Range(0, STORAGE_COUNT).ToList().ForEach(index => _dataWriterToStorageSetMap[dataWriter].Add(new List<IDataStorage>()));
+
+                _dataWriterToVariableDescriptionMap[dataWriter] = new List<VariableDescription>();
+            });
+
             /* ----------------------------------------- */
-            //                Dictionary
+            //     _sampleRateToDataStorageContextMap
             //           SR1     SR2      SR3
             //           /        |        \
             //        ctx1      ctx4       ctx7
@@ -535,16 +532,17 @@ namespace OneDas.Engine.Core
             //        ctx3      ctx6       ctx9
             /* ----------------------------------------- */
 
-            // create data storage context for each entry
-            srTodsMap = srTochMap.ToDictionary(entry => entry.Key, element => element.Value.Select(element2 =>
+            _sampleRateToDataStorageContextMap = sr_to_ch_map.ToDictionary(entry => entry.Key, entry => entry.Value.Select(subEntry =>
             {
+                SampleRate sampleRate;
                 ChannelHub channelHub;
 
-                List<DataStorageBase> dataStorageSet;
+                List<IExtendedDataStorage> dataStorageSet;
                 List<DataWriterPluginLogicBase> dataWriterSet;
 
-                channelHub = element2.Key;
-                dataWriterSet = element2.Value;
+                sampleRate = entry.Key;
+                channelHub = subEntry.Key;
+                dataWriterSet = subEntry.Value.ToList();
 
                 // create data storages
                 dataStorageSet = this.CreateDataStorages(sampleRate, channelHub, STORAGE_COUNT);
@@ -553,74 +551,28 @@ namespace OneDas.Engine.Core
                 dataWriterSet.ForEach(dataWriter =>
                 {
                     // _dataWriterToStorageSetMap
-                    if (!_dataWriterToStorageSetMap.ContainsKey(dataWriter))
+                    for (int i = 0; i < STORAGE_COUNT; i++)
                     {
-                        _dataWriterToStorageSetMap[dataWriter] = new List<List<DataStorageBase>>();
+                        _dataWriterToStorageSetMap[dataWriter][i].Add(dataStorageSet[i]);
                     }
-
-                    _dataWriterToChannelHubSetMap[dataWriter].Add(channelHub);
 
                     // _dataWriterToChannelHubSetMap
-                    if (!_dataWriterToChannelHubSetMap.ContainsKey(dataWriter))
-                    {
-                        _dataWriterToChannelHubSetMap[dataWriter] = new List<ChannelHub>();
-                    }
-
-                    _dataWriterToChannelHubSetMap[dataWriter].Add(channelHub);
+                    _dataWriterToVariableDescriptionMap[dataWriter].Add(new VariableDescription(
+                        channelHub.Guid,
+                        channelHub.Name,
+                        $"{ 100 / (int)sampleRate } Hz",
+                        channelHub.Group,
+                        channelHub.DataType,
+                        OneDasUtilities.GetSamplesPerDayFromSampleRate(sampleRate),
+                        channelHub.Unit,
+                        channelHub.TransferFunctionSet,
+                        typeof(ExtendedDataStorageBase)
+                        )
+                    );
                 });
 
-                return new DataStorageContext(channelHub, channelHub.AssociatedDataInput.AssociatedDataGateway, channelHub.AssociatedDataInput);
-            }).ToList());
-
-            //
-            
-        }
-
-        private void Step_2_PrepareBuffers()
-        {
-            _sampleRateInputDictionary.Clear();
-            _sampleRateToDataStorageContextMap.Clear();
-
-            foreach (SampleRate sampleRate in Enum.GetValues(typeof(SampleRate)).Cast<SampleRate>().ToList())
-            {
-                List<ChannelHub> channelHubSet;
-                List<DataStorageContext> dataStorageContextInputSet;
-                List<DataStorageContext> dataStorageContextOutputSet;
-
-                dataStorageContextInputSet = new List<DataStorageContext>();
-                dataStorageContextOutputSet = new List<DataStorageContext>();
-
-                channelHubSet = new List<ChannelHub>(); // this.Project.Settings.ChannelHubSet.Where(channelHub => channelHub.SampleRate == sampleRate && (channelHub.AssociatedDataInput != null || channelHub.AssociatedDataOutputSet.Any())).ToList();
-
-                channelHubSet.ForEach(channelHub =>
-                {
-                    int length;
-                    Type type;
-                    DataGatewayPluginLogicBase dataGateway;
-
-                    length = Convert.ToInt32(_oneDasOptions.NativeSampleRate / Convert.ToInt32(sampleRate) * _oneDasOptions.ChunkPeriod);
-                    type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(channelHub.DataType) });
-                    channelHub.AssociatedDataStorageSet = Enumerable.Range(0, STORAGE_COUNT).Select(x => (ExtendedDataStorageBase)Activator.CreateInstance(type, length)).ToList();
-
-                    // input
-                    if (channelHub.AssociatedDataInput != null)
-                    {
-                        dataGateway = this.Project.DataGatewaySet.First(y => y == channelHub.AssociatedDataInput.AssociatedDataGateway);
-                        dataStorageContextInputSet.Add(new DataStorageContext(channelHub, dataGateway, channelHub.AssociatedDataInput));
-                    }
-
-                    // output
-                    dataStorageContextOutputSet.AddRange(channelHub.AssociatedDataOutputSet.Select(dataOutput =>
-                    {
-                        dataGateway = this.Project.DataGatewaySet.First(y => y == dataOutput.AssociatedDataGateway);
-
-                        return new DataStorageContext(channelHub, dataGateway, dataOutput);
-                    }));
-                });
-
-                _sampleRateInputDictionary.Add(sampleRate, dataStorageContextInputSet);
-                _sampleRateToDataStorageContextMap.Add(sampleRate, dataStorageContextOutputSet);
-            }
+                return new DataStorageContext(channelHub, dataStorageSet, channelHub.AssociatedDataInput.AssociatedDataGateway, channelHub.AssociatedDataInput);
+            }).ToList());            
         }
 
         private void Step_3_PrepareDataWriter()
@@ -650,17 +602,7 @@ namespace OneDas.Engine.Core
                 dataWriter.Initialize(
                     currentDateTime,
                     new DataWriterContext("OneDAS", baseDirectoryPath, this.Project.Settings.Description, customMetadataEntrySet),
-                    _dataWriterToChannelHubSetMap[dataWriter].Select(channelHub => new VariableDescription(
-                        channelHub.Guid, 
-                        channelHub.Name, 
-                        $"{ 100 / 1 } Hz", 
-                        channelHub.Group, 
-                        channelHub.DataType, 
-                        OneDasUtilities.GetSamplesPerDayFromSampleRate(SampleRate.SampleRate_1), 
-                        channelHub.Unit, 
-                        channelHub.TransferFunctionSet, 
-                        typeof(ExtendedDataStorageBase))
-                        ).ToList()
+                    _dataWriterToVariableDescriptionMap[dataWriter]
                 );
             });
         }
@@ -676,6 +618,22 @@ namespace OneDas.Engine.Core
             timeShift = new TimeSpan(0, 0, 0, 0, TIMER_SHIFT);
 
             _timer_UpdateIo.Start(interval, timeShift, this.UpdateIo, UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
+        }
+
+        private List<IExtendedDataStorage> CreateDataStorages(SampleRate sampleRate, ChannelHub channelHub, int count)
+        {
+            int length;
+            Type type;
+
+            length = Convert.ToInt32(_oneDasOptions.NativeSampleRate / Convert.ToInt32(sampleRate) * _oneDasOptions.ChunkPeriod);
+            type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(channelHub.DataType) });
+
+            return Enumerable.Range(0, count).Select(x => (IExtendedDataStorage)Activator.CreateInstance(type, length)).ToList();
+        }
+
+        private List<ChannelHub> FilterChannelHubs(List<ChannelHub> channelHubSet, string groupFilter)
+        {
+            return channelHubSet; // TODO implement filter
         }
 
         #endregion
@@ -815,16 +773,16 @@ namespace OneDas.Engine.Core
                         }
 
                         // read: data port (input) --> channel hub storage
-                        foreach (var sampleRateCategory in _sampleRateInputDictionary)
+                        foreach (var entry in _sampleRateToDataStorageContextMap)
                         {
                             int realChunkIndex;
 
-                            if (_chunkIndex % (int)sampleRateCategory.Key != 0 || sampleRateCategory.Value.Count() == 0)
+                            if (_chunkIndex % (int)entry.Key != 0 || entry.Value.Count() == 0)
                             {
                                 continue;
                             }
 
-                            realChunkIndex = _chunkIndex / (int)sampleRateCategory.Key;
+                            realChunkIndex = _chunkIndex / (int)entry.Key;
 
                             foreach (DataGatewayPluginLogicBase dataGateway in this.Project.DataGatewaySet)
                             {
@@ -835,16 +793,16 @@ namespace OneDas.Engine.Core
                                 // MaximumDatasetAge = 0                    -> normal behavior (no oversampling)
                                 // MaximumDatasetAge > plugin IO cycle time -> compensate unstable cycle periods (packet drop tolerance)
                                 // MaximumDatasetAge >= sample period       -> allow oversampling (repeat values)
-                                referencePeriod = Math.Max(dataGateway.Settings.MaximumDatasetAge, (int)sampleRateCategory.Key * 10);
+                                referencePeriod = Math.Max(dataGateway.Settings.MaximumDatasetAge, (int)entry.Key * 10);
 
                                 _hasValidDataSet[dataGateway] = dataGateway.LastSuccessfulUpdate?.Elapsed.TotalMilliseconds <= referencePeriod;
                             }
 
-                            foreach (DataStorageContext context in sampleRateCategory.Value)
+                            foreach (DataStorageContext context in entry.Value)
                             {
                                 if (_hasValidDataSet[context.DataGateway])
                                 {
-                                    this.WriteToDataStorage(context.ChannelHub.AssociatedDataStorageSet[_currentStorageIndex], realChunkIndex, context.DataPort, 1);
+                                    this.WriteToDataStorage(context.DataStorageSet[_currentStorageIndex], realChunkIndex, context.DataPort, 1);
                                 }
                                 // Improve: implement more than just 0 / 1 as data quality indicator
                                 //else
@@ -855,20 +813,20 @@ namespace OneDas.Engine.Core
                         }
 
                         // write: channel hub storage --> data port (output)                   // IMPROVE: data will be send in next cycle. maybe LRW is not the best option
-                        foreach (var sampleRateCategory in _sampleRateToDataStorageContextMap)
+                        foreach (var entry in _sampleRateToDataStorageContextMap)
                         {
                             int realChunkIndex;
 
-                            if (_chunkIndex % (int)sampleRateCategory.Key != 0 || sampleRateCategory.Value.Count() == 0)
+                            if (_chunkIndex % (int)entry.Key != 0 || entry.Value.Count() == 0)
                             {
                                 continue;
                             }
 
-                            realChunkIndex = _chunkIndex / (int)sampleRateCategory.Key;
+                            realChunkIndex = _chunkIndex / (int)entry.Key;
 
-                            foreach (DataStorageContext context in sampleRateCategory.Value)
+                            foreach (DataStorageContext context in entry.Value)
                             {
-                                this.WriteToDataPort(context.DataPort, context.ChannelHub.AssociatedDataStorageSet[_currentStorageIndex], realChunkIndex);
+                                this.WriteToDataPort(context.DataPort, context.DataStorageSet[_currentStorageIndex], realChunkIndex);
                             }
                         }
 
@@ -886,7 +844,7 @@ namespace OneDas.Engine.Core
             return DateTime.MinValue;
         }
 
-        public unsafe void WriteToDataStorage(ExtendedDataStorageBase dataStorage, int index, DataPort dataPort, byte status)
+        public unsafe void WriteToDataStorage(IExtendedDataStorage dataStorage, int index, DataPort dataPort, byte status)
         {
             int elementSize;
             byte* sourcePtr;
@@ -934,7 +892,7 @@ namespace OneDas.Engine.Core
             }
         }
 
-        public unsafe void WriteToDataPort(DataPort dataPort, ExtendedDataStorageBase dataStorage, int index)
+        public unsafe void WriteToDataPort(DataPort dataPort, IExtendedDataStorage dataStorage, int index)
         {
             int elementSize;
             byte* sourcePtr;
@@ -986,11 +944,11 @@ namespace OneDas.Engine.Core
 
         public void ClearDataStorage(int index)
         {
-            foreach (var sampleRateCategory in _sampleRateInputDictionary)
+            foreach (var entry in _sampleRateToDataStorageContextMap)
             {
-                foreach (DataStorageContext context in sampleRateCategory.Value)
+                foreach (DataStorageContext context in entry.Value)
                 {
-                    context.ChannelHub.AssociatedDataStorageSet[index].Clear();
+                    context.DataStorageSet[index].Clear();
                 }
             }
         }

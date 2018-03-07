@@ -71,7 +71,7 @@ namespace OneDas.WebServer
             }
             else
             {
-                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WindowHelper.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
+                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WebServerUtilities.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
                 {
                     Environment.Exit(0);
                 }

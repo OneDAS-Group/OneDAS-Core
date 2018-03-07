@@ -13,10 +13,11 @@ namespace OneDas.Plugin
         private DateTime _lastFileStartDateTime;
         private DateTime _lastWrittenDateTime;
 
-        private Dictionary<ulong, List<int>> _samplesPerDayDictionary;
+        private Dictionary<ulong, List<int>> _samplesPerDayToIndexMap;
         private Dictionary<ulong, List<VariableDescription>> _variableDescriptionDictionary;
 
         private ILogger _logger;
+        private object samplesPerDayCategory;
 
         #endregion
 
@@ -57,7 +58,7 @@ namespace OneDas.Plugin
             fileStartDateTime = dateTime.RoundDown(new TimeSpan(0, 0, (int)this.Settings.FileGranularity));
 
             // samples per day dictionary
-            _samplesPerDayDictionary = new Dictionary<ulong, List<int>>();
+            _samplesPerDayToIndexMap = new Dictionary<ulong, List<int>>();
 
             for (int i = 0; i < variableDescriptionSet.Count(); i++)
             {
@@ -65,18 +66,18 @@ namespace OneDas.Plugin
 
                 samplesPerDay = variableDescriptionSet[i].SamplesPerDay;
 
-                if (!_samplesPerDayDictionary.ContainsKey(samplesPerDay))
+                if (!_samplesPerDayToIndexMap.ContainsKey(samplesPerDay))
                 {
-                    _samplesPerDayDictionary[samplesPerDay] = new List<int>();
+                    _samplesPerDayToIndexMap[samplesPerDay] = new List<int>();
                 }
 
-                _samplesPerDayDictionary[samplesPerDay].Add(i);
+                _samplesPerDayToIndexMap[samplesPerDay].Add(i);
             }
 
-            _variableDescriptionDictionary = _samplesPerDayDictionary.ToDictionary
+            _variableDescriptionDictionary = _samplesPerDayToIndexMap.ToDictionary
                 (
-                    samplesPerDayCategory => samplesPerDayCategory.Key,
-                    samplesPerDayCategory => samplesPerDayCategory.Value.Select(index => variableDescriptionSet[index]).ToList()
+                    entry => entry.Key,
+                    entry => entry.Value.Select(index => variableDescriptionSet[index]).ToList()
                 );
 
             this.OnInitialize();
@@ -137,30 +138,30 @@ namespace OneDas.Plugin
                 this.PrepareFile(fileStartDateTime);
 
                 // data storage
-                dataStorageDictionary = _samplesPerDayDictionary.ToDictionary
+                dataStorageDictionary = _samplesPerDayToIndexMap.ToDictionary
                 (
-                    samplesPerDayCategory => samplesPerDayCategory.Key,
-                    samplesPerDayCategory => samplesPerDayCategory.Value.Select(index => dataStorageSet[index]).ToList()
+                    entry => entry.Key,
+                    entry => entry.Value.Select(index => dataStorageSet[index]).ToList()
                 );
 
-                foreach (var sampleRateCategory in _samplesPerDayDictionary)
+                foreach (var entry in _samplesPerDayToIndexMap)
                 {
-                    actualFileOffset = this.TimeSpanToIndex(fileOffset, sampleRateCategory.Key);
-                    actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, sampleRateCategory.Key);
-                    actualPeriod = this.TimeSpanToIndex(period, sampleRateCategory.Key);
+                    actualFileOffset = this.TimeSpanToIndex(fileOffset, entry.Key);
+                    actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, entry.Key);
+                    actualPeriod = this.TimeSpanToIndex(period, entry.Key);
 
                     this.OnWrite(
-                        sampleRateCategory.Key,
+                        entry.Key,
                         actualFileOffset,
                         actualDataStorageOffset,
                         actualPeriod,
-                        _variableDescriptionDictionary[sampleRateCategory.Key],
-                        dataStorageDictionary[sampleRateCategory.Key]
+                        _variableDescriptionDictionary[entry.Key],
+                        dataStorageDictionary[entry.Key]
                     );
 
                     // message
-                    firstChunk = this.ToChunkIndex(actualFileOffset, sampleRateCategory.Key);
-                    lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, sampleRateCategory.Key) - 1;
+                    firstChunk = this.ToChunkIndex(actualFileOffset, entry.Key);
+                    lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, entry.Key) - 1;
 
                     if (firstChunk == lastChunk)
                     {
@@ -213,7 +214,7 @@ namespace OneDas.Plugin
         {
             if (fileStartDateTime != _lastFileStartDateTime)
             {
-                foreach (var sampleRateCategory in _samplesPerDayDictionary)
+                foreach (var sampleRateCategory in _samplesPerDayToIndexMap)
                 {
                     this.OnPrepareFile(fileStartDateTime, sampleRateCategory.Key, _variableDescriptionDictionary[sampleRateCategory.Key]);
                 }

@@ -6,7 +6,7 @@ namespace OneDas.Infrastructure
     /// <summary>
     /// Represents an infrastructure to buffer data.
     /// </summary>
-    public abstract class DataStorageBase : IDisposable
+    public abstract class DataStorageBase : IDataStorage, IDisposable
     {
         #region "Fields"
 
@@ -60,7 +60,7 @@ namespace OneDas.Infrastructure
             this.DataBuffer.Clear();
         }
 
-        public abstract SimpleDataStorage ToSimpleDataStorage();
+        public abstract ISimpleDataStorage ToSimpleDataStorage();
 
         #endregion
 

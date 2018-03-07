@@ -2,7 +2,7 @@
 
 namespace OneDas.Infrastructure
 {
-    public class SimpleDataStorage : DataStorageBase
+    public class SimpleDataStorage : DataStorageBase, ISimpleDataStorage
     {
         #region "Constuctors"
 
@@ -37,7 +37,7 @@ namespace OneDas.Infrastructure
             return this.DataBuffer[index];
         }
 
-        public override SimpleDataStorage ToSimpleDataStorage()
+        public override ISimpleDataStorage ToSimpleDataStorage()
         {
             return this;
         }

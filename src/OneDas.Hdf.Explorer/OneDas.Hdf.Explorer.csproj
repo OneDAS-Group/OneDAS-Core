@@ -5,13 +5,17 @@
     <TargetFramework>net47</TargetFramework>
     <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview1-final" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview1-final" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview2-30258" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30258" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30258" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30258" />
 	  <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6638-31020" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6638-33813" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6641-28531" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="1.0.0-alpha-6638-33851" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6638-33813" />
   </ItemGroup>
@@ -20,6 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="if not exist &quot;$(TargetDir)bin32&quot; md &quot;$(TargetDir)bin32&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin32\*.*&quot; &quot;$(TargetDir)bin32&quot;&#xD;&#xA;if not exist &quot;$(TargetDir)bin64&quot; md &quot;$(TargetDir)bin64&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin64\*.*&quot; &quot;$(TargetDir)bin64&quot;" />

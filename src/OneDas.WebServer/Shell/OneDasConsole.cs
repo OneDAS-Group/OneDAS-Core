@@ -34,7 +34,7 @@ namespace OneDas.WebServer.Shell
         {
             _webServerOptions = options.Value;
 
-            WindowHelper.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
+            WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
             Thread.CurrentThread.Name = "Main thread";
 
             Console.SetWindowSize(80, 25);

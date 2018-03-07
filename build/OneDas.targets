@@ -24,7 +24,7 @@
       <!-- create new properties -->
       <AssemblyVersion>$(Major).0.0.0</AssemblyVersion>
       <FileVersion>$(Major).$(Minor).$(DaysSince2000).$(SecondsSinceMidnight)</FileVersion>
-      <Product>OneDas</Product>
+      <Product>OneDAS</Product>
       <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
       <Version>$(Major).$(Minor).$(Revision)</Version>
 
