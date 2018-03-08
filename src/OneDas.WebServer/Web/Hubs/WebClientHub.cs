@@ -151,13 +151,13 @@ namespace OneDas.WebServer.Web
         public Task<int> UpdateLiveViewSubscription(IList<Guid> channelHubGuidSet)
         {
             int subscriptionId;
-            IList<ChannelHub> channelHubSet;
+            IList<ChannelHubBase> channelHubSettingsSet;
 
             return Task.Run(() =>
             {
                 try
                 {
-                    channelHubSet = channelHubGuidSet.Select(channelHubGuid => _oneDasEngine.Project.ActiveChannelHubSet.First(channelHub => channelHub.Guid == channelHubGuid)).ToList();
+                    channelHubSettingsSet = channelHubGuidSet.Select(channelHubGuid => _oneDasEngine.Project.ActiveChannelHubSet.First(channelHub => channelHub.Settings.Guid == channelHubGuid)).ToList();
                 }
                 catch (Exception)
                 {
@@ -165,7 +165,7 @@ namespace OneDas.WebServer.Web
                 }
 
                 subscriptionId = HomeController.GetNextSubscriptionId();
-                HomeController.LiveViewSubscriptionSet[this.Context.ConnectionId] = (subscriptionId, channelHubSet);
+                HomeController.LiveViewSubscriptionSet[this.Context.ConnectionId] = (subscriptionId, channelHubSettingsSet);
 
                 return subscriptionId;
             });

@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="4.4.0" />
     <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6638-31020" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6641-30329" />
+    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6641-30563" />
   </ItemGroup>
   
   <ItemGroup>

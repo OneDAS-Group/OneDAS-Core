@@ -28,7 +28,7 @@ namespace OneDas.Engine.Core
             int nextId;
             
             this.Description = new OneDasCampaignDescription(Guid.NewGuid(), 0, primaryGroupName, campaignSecondaryGroup, campaignName);
-            this.ChannelHubSet = new List<ChannelHub>();
+            this.ChannelHubSettingsSet = new List<ChannelHubSettings>();
 
             this.DataGatewaySettingsSet = dataGatewaySettingsSet;
             this.DataWriterSettingsSet = dataWriterSettingsSet;
@@ -55,7 +55,7 @@ namespace OneDas.Engine.Core
         public OneDasCampaignDescription Description { get; set; }
 
         [DataMember]
-        public List<ChannelHub> ChannelHubSet { get; private set; }
+        public List<ChannelHubSettings> ChannelHubSettingsSet { get; private set; }
 
         [DataMember]
         public IEnumerable<DataGatewayPluginSettingsBase> DataGatewaySettingsSet { get; private set; }
@@ -75,7 +75,6 @@ namespace OneDas.Engine.Core
         public void Validate()
         {
             IEnumerable<Guid> guidSet;
-            List<ChannelHub> channelHubSet;
 
             string errorDescription;
 
@@ -95,24 +94,17 @@ namespace OneDas.Engine.Core
                 throw new Exception(ErrorMessage.OneDasProject_CampaignNameInvalid);
             }
 
-            if (!this.ChannelHubSet.ToList().TrueForAll(x => OneDasUtilities.CheckNamingConvention(x.Name, out errorDescription)))
+            if (!this.ChannelHubSettingsSet.ToList().TrueForAll(x => OneDasUtilities.CheckNamingConvention(x.Name, out errorDescription)))
             {
                 throw new Exception(ErrorMessage.OneDasProject_ChannelHubNameInvalid);
             }
 
             // -> ChannelHub
-            guidSet = this.ChannelHubSet.Select(x => x.Guid).ToList();
-            channelHubSet = this.ChannelHubSet.Where(channelHub => channelHub.AssociatedDataInput != null).ToList();
+            guidSet = this.ChannelHubSettingsSet.Select(x => x.Guid).ToList();
 
             if (guidSet.Count() > guidSet.Distinct().Count())
             {
                 throw new Exception(ErrorMessage.OneDasProject_ChannelHubNotUnqiue);
-            }
-
-            // -> data type matching
-            if (!channelHubSet.TrueForAll(x => OneDasUtilities.GetBitLength(x.DataType, true) == OneDasUtilities.GetBitLength(x.AssociatedDataInput.DataType, true)))
-            {
-                throw new Exception(ErrorMessage.OneDasProject_DataTypeMismatch);
             }
 
             // -> data gateway settings

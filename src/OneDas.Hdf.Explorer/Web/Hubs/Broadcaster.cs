@@ -180,7 +180,7 @@ namespace OneDas.Hdf.Explorer.Web
                         foreach (string datasetInfo in variableInfo.Value)
                         {
                             datasetId = H5D.open(fileId, $"{ campaignInfo.Key }/{ variableInfo.Key }/{ datasetInfo }");
-                            bytesPerRow += (ulong)Marshal.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
+                            bytesPerRow += (ulong)OneDasUtilities.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
 
                             // clean up
                             H5D.close(datasetId);

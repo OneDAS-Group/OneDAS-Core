@@ -61,119 +61,110 @@ namespace OneDas.Hdf {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not commit data type. ähnelt.
-        /// </summary>
-        internal static string HdfHelper_CouldNotCommitDataType {
-            get {
-                return ResourceManager.GetString("HdfHelper_CouldNotCommitDataType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not create attribute. ähnelt.
-        /// </summary>
-        internal static string HdfHelper_CouldNotCreateAttribute {
-            get {
-                return ResourceManager.GetString("HdfHelper_CouldNotCreateAttribute", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open attribute. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotOpenAttribute {
+        internal static string IOHelper_CouldNotOpenAttribute {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotOpenAttribute", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotOpenAttribute", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open dataset. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotOpenDataset {
+        internal static string IOHelper_CouldNotOpenDataset {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotOpenDataset", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotOpenDataset", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create attribute. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotOpenOrCreateAttribute {
+        internal static string IOHelper_CouldNotOpenOrCreateAttribute {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotOpenOrCreateAttribute", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotOpenOrCreateAttribute", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create dataset. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotOpenOrCreateDataset {
+        internal static string IOHelper_CouldNotOpenOrCreateDataset {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotOpenOrCreateDataset", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotOpenOrCreateDataset", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create group. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotOpenOrCreateGroup {
+        internal static string IOHelper_CouldNotOpenOrCreateGroup {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotOpenOrCreateGroup", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotOpenOrCreateGroup", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not read attribute. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotReadAttribute {
+        internal static string IOHelper_CouldNotReadAttribute {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotReadAttribute", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotReadAttribute", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not read dataset. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotReadDataset {
+        internal static string IOHelper_CouldNotReadDataset {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotReadDataset", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotReadDataset", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not select hyperslab. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotSelectHyperslab {
+        internal static string IOHelper_CouldNotSelectHyperslab {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotSelectHyperslab", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotSelectHyperslab", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not write attribute. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotWriteAttribute {
+        internal static string IOHelper_CouldNotWriteAttribute {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotWriteAttribute", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotWriteAttribute", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not write dataset. ähnelt.
         /// </summary>
-        internal static string HdfHelper_CouldNotWriteDataset {
+        internal static string IOHelper_CouldNotWriteDataset {
             get {
-                return ResourceManager.GetString("HdfHelper_CouldNotWriteDataset", resourceCulture);
+                return ResourceManager.GetString("IOHelper_CouldNotWriteDataset", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Data type mismatch. ähnelt.
         /// </summary>
-        internal static string HdfHelper_DataTypeMismatch {
+        internal static string IOHelper_DataTypeMismatch {
             get {
-                return ResourceManager.GetString("HdfHelper_DataTypeMismatch", resourceCulture);
+                return ResourceManager.GetString("IOHelper_DataTypeMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not commit data type. ähnelt.
+        /// </summary>
+        internal static string ypeConversionHelper_CouldNotCommitDataType {
+            get {
+                return ResourceManager.GetString("ypeConversionHelper_CouldNotCommitDataType", resourceCulture);
             }
         }
     }

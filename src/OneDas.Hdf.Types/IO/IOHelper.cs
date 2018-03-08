@@ -104,7 +104,7 @@ namespace OneDas.Hdf.IO
 
                 if (attributeId < 0)
                 {
-                    throw new Exception(ErrorMessage.HdfHelper_CouldNotOpenAttribute);
+                    throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
                 }
 
                 result = IOHelper.Read<T>(attributeId, DataContainerType.Attribute);
@@ -130,7 +130,7 @@ namespace OneDas.Hdf.IO
 
                 if (attributeId < 0)
                 {
-                    throw new Exception(ErrorMessage.HdfHelper_CouldNotOpenAttribute);
+                    throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
                 }
 
                 typeId = H5A.get_type(attributeId);
@@ -163,7 +163,7 @@ namespace OneDas.Hdf.IO
 
                 if (datasetId < 0)
                 {
-                    throw new Exception(ErrorMessage.HdfHelper_CouldNotOpenDataset);
+                    throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
                 }
 
                 if (start == 0 && stride == 0 && block == 0 && count == 0)
@@ -176,7 +176,7 @@ namespace OneDas.Hdf.IO
 
                     if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { block }, new ulong[] { count }) < 0)
                     {
-                        throw new Exception(ErrorMessage.HdfHelper_CouldNotSelectHyperslab);
+                        throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
                     }
 
                     result = IOHelper.Read<T>(datasetId, DataContainerType.Dataset, dataspaceId);
@@ -205,7 +205,7 @@ namespace OneDas.Hdf.IO
 
                 if (datasetId < 0)
                 {
-                    throw new Exception(ErrorMessage.HdfHelper_CouldNotOpenDataset);
+                    throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
                 }
 
                 typeId = H5D.get_type(datasetId);
@@ -229,7 +229,7 @@ namespace OneDas.Hdf.IO
 
                     if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block }) < 0)
                     {
-                        throw new Exception(ErrorMessage.HdfHelper_CouldNotSelectHyperslab);
+                        throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
                     }
 
                     // invoke HdfHelper.Read
@@ -327,7 +327,7 @@ namespace OneDas.Hdf.IO
 
                         if (H5A.read(dataPortId, typeId, byteLengthPointer) < 0)
                         {
-                            throw new Exception(ErrorMessage.HdfHelper_CouldNotReadAttribute);
+                            throw new Exception(ErrorMessage.IOHelper_CouldNotReadAttribute);
                         }
 
                         break;
@@ -338,7 +338,7 @@ namespace OneDas.Hdf.IO
 
                         if (H5D.read(dataPortId, typeId, dataspaceId_memory, dataspaceId_file, H5P.DEFAULT, byteLengthPointer) < 0)
                         {
-                            throw new Exception(ErrorMessage.HdfHelper_CouldNotReadDataset);
+                            throw new Exception(ErrorMessage.IOHelper_CouldNotReadDataset);
                         }
 
                         break;
@@ -453,7 +453,7 @@ namespace OneDas.Hdf.IO
             }
         }
 
-        public static void Write<T>(long dataTargetId, T[] valueSet, DataContainerType dataContainerType)
+        public static unsafe void Write<T>(long dataTargetId, T[] valueSet, DataContainerType dataContainerType)
         {
             Contract.Requires(valueSet != null, nameof(valueSet));
 
@@ -506,8 +506,7 @@ namespace OneDas.Hdf.IO
                 }
                 else if (elementType.IsValueType && !elementType.IsPrimitive && !elementType.IsEnum)
                 {
-                    valueSetPointer = Marshal.AllocHGlobal(byteLength);
-                    valueSet.ToArray().ToUnmanagedArray(valueSetPointer);
+                    valueSet.CopyTo(new Span<T>(valueSetPointer.ToPointer(), valueSet.Count()));
                 }
                 else
                 {
@@ -520,7 +519,7 @@ namespace OneDas.Hdf.IO
 
                         if (H5A.write(dataTargetId, typeId, valueSetPointer) < 0)
                         {
-                            throw new Exception(ErrorMessage.HdfHelper_CouldNotWriteAttribute);
+                            throw new Exception(ErrorMessage.IOHelper_CouldNotWriteAttribute);
                         }
 
                         break;
@@ -529,7 +528,7 @@ namespace OneDas.Hdf.IO
 
                         if (H5D.write(dataTargetId, typeId, H5S.ALL, H5S.ALL, H5P.DEFAULT, valueSetPointer) < 0)
                         {
-                            throw new Exception(ErrorMessage.HdfHelper_CouldNotWriteDataset);
+                            throw new Exception(ErrorMessage.IOHelper_CouldNotWriteDataset);
                         }
 
                         break;
@@ -612,7 +611,7 @@ namespace OneDas.Hdf.IO
 
                     if (attributeId < 0)
                     {
-                        throw new Exception(ErrorMessage.HdfHelper_CouldNotOpenOrCreateAttribute);
+                        throw new Exception(ErrorMessage.IOHelper_CouldNotOpenOrCreateAttribute);
                     }
                 }
                 finally
@@ -640,7 +639,7 @@ namespace OneDas.Hdf.IO
 
                     if (H5T.equal(attributeTypeId_actual, attributeTypeId) <= 0)
                     {
-                        throw new Exception($"{ErrorMessage.HdfHelper_DataTypeMismatch} Attribute: '{ name }'.");
+                        throw new Exception($"{ErrorMessage.IOHelper_DataTypeMismatch} Attribute: '{ name }'.");
                     }
 
                     isNew = false;
@@ -654,7 +653,7 @@ namespace OneDas.Hdf.IO
 
                 if (attributeId < 0)
                 {
-                    throw new Exception($"{ErrorMessage.HdfHelper_CouldNotOpenOrCreateAttribute} Attribute: '{ name }'.");
+                    throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateAttribute} Attribute: '{ name }'.");
                 }
             }
             finally
@@ -695,7 +694,7 @@ namespace OneDas.Hdf.IO
 
                     if (datasetId < 0)
                     {
-                        throw new Exception($"{ErrorMessage.HdfHelper_CouldNotOpenOrCreateDataset} Dataset: '{ datasetPath }'.");
+                        throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset} Dataset: '{ datasetPath }'.");
                     }
                 }
                 finally
@@ -727,7 +726,7 @@ namespace OneDas.Hdf.IO
 
                     if (H5T.equal(datasetTypeId_actual, datasetTypeId) <= 0)
                     {
-                        throw new Exception($"{ErrorMessage.HdfHelper_DataTypeMismatch} Dataset: '{ datasetPath }'.");
+                        throw new Exception($"{ErrorMessage.IOHelper_DataTypeMismatch} Dataset: '{ datasetPath }'.");
                     }
 
                     isNew = false;
@@ -741,7 +740,7 @@ namespace OneDas.Hdf.IO
 
                 if (datasetId < 0)
                 {
-                    throw new Exception($"{ErrorMessage.HdfHelper_CouldNotOpenOrCreateDataset} Dataset: '{ datasetPath }'.");
+                    throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset} Dataset: '{ datasetPath }'.");
                 }
             }
             finally
@@ -776,7 +775,7 @@ namespace OneDas.Hdf.IO
 
                 if (groupId < 0)
                 {
-                    throw new Exception($"{ErrorMessage.HdfHelper_CouldNotOpenOrCreateGroup} Group name: '{groupPath}'.");
+                    throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateGroup} Group name: '{groupPath}'.");
                 }
             }
             finally

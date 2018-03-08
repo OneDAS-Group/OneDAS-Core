@@ -18,11 +18,11 @@ namespace OneDas.Infrastructure
 
         public unsafe DataStorageBase(Type type, int elementCount)
         {
-            _byteCount = Marshal.SizeOf(type) * elementCount;
+            this.ElementSize = OneDasUtilities.SizeOf(type);
 
-            this.ElementSize = Marshal.SizeOf(type);
+            _byteCount = this.ElementSize * elementCount;
+
             this.DataBufferPtr = Marshal.AllocHGlobal(_byteCount);
-
             this.DataBuffer.Clear();
         }
 
@@ -48,7 +48,7 @@ namespace OneDas.Infrastructure
 
         #region "Methods"
 
-        public abstract object Get(int index);
+        public abstract object GetValue(int index);
 
         public unsafe Span<T> GetDataBuffer<T>() where T : struct
         {

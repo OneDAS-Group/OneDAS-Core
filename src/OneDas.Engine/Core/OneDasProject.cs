@@ -1,5 +1,4 @@
-﻿using OneDas.Infrastructure;
-using OneDas.Plugin;
+﻿using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +21,7 @@ namespace OneDas.Engine.Core
 
             this.DataGatewaySet = this.Settings.DataGatewaySettingsSet.Select(pluginSettings => pluginProvider.BuildLogic<DataGatewayPluginLogicBase>(pluginSettings)).ToList();
             this.DataWriterSet = this.Settings.DataWriterSettingsSet.Select(pluginSettings => pluginProvider.BuildLogic<DataWriterPluginLogicBase>(pluginSettings)).ToList();
+            this.ChannelHubSet = this.Settings.ChannelHubSettingsSet.Select(channelHubSettings => this.CreateChannelHub(channelHubSettings)).ToList();
 
             this.UpdateMapping();
         }
@@ -34,7 +34,9 @@ namespace OneDas.Engine.Core
 
         public List<DataWriterPluginLogicBase> DataWriterSet { get; private set; }
 
-        public List<ChannelHub> ActiveChannelHubSet { get; private set; }
+        public List<ChannelHubBase> ChannelHubSet { get; private set; }
+
+        public List<ChannelHubBase> ActiveChannelHubSet { get; private set; }
 
         public OneDasProjectSettings Settings
         {
@@ -47,6 +49,15 @@ namespace OneDas.Engine.Core
         #endregion
 
         #region "Methods"
+
+        private ChannelHubBase CreateChannelHub(ChannelHubSettings channelHubSettings)
+        {
+            Type type;
+
+            type = typeof(ChannelHub<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(channelHubSettings.DataType) });
+
+            return (ChannelHubBase)Activator.CreateInstance(type, channelHubSettings);
+        }
 
         private void UpdateMapping()
         {
@@ -72,35 +83,35 @@ namespace OneDas.Engine.Core
             });
 
             // update mapping
-            this.Settings.ChannelHubSet.ToList().ForEach(channelHub =>
+            this.ChannelHubSet.ToList().ForEach(channelHub =>
             {
-                string inputId = channelHub.AssociatedDataInputId;
+                string inputId = channelHub.Settings.AssociatedDataInputId;
 
                 if (!string.IsNullOrWhiteSpace(inputId))
                 {
                     DataPort foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == inputId);
 
-                    if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub))
+                    if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub.Settings))
                     {
                         channelHub.SetAssociation(foundDataPort);
                     }
                 }
 
-                foreach (string outputId in channelHub.AssociatedDataOutputIdSet)
+                foreach (string outputId in channelHub.Settings.AssociatedDataOutputIdSet)
                 {
                     DataPort foundDataPort = dataPortSet.FirstOrDefault(dataPort => dataPortIdMap[dataPort] == outputId);
 
-                    if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub))
+                    if (foundDataPort != null && this.IsAssociationAllowed(foundDataPort, channelHub.Settings))
                     {
                         channelHub.SetAssociation(foundDataPort);
                     }
                 }
             });
 
-            this.ActiveChannelHubSet = this.Settings.ChannelHubSet.Where(channelHub => channelHub.AssociatedDataInput != null).ToList();
+            this.ActiveChannelHubSet = this.ChannelHubSet.Where(channelHub => channelHub.AssociatedDataInput != null).ToList();
         }
 
-        private bool IsAssociationAllowed(DataPort dataPort, ChannelHub channelHub)
+        private bool IsAssociationAllowed(DataPort dataPort, ChannelHubSettings channelHub)
         {
             return OneDasUtilities.GetBitLength(dataPort.DataType, true) == OneDasUtilities.GetBitLength(channelHub.DataType, true);
         }

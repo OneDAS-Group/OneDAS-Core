@@ -156,9 +156,6 @@
   <data name="OneDasProject_DataGatewaySettingsIdNotUnique" xml:space="preserve">
     <value>The data gateway settings IDs are not unique.</value>
   </data>
-  <data name="OneDasProject_DataTypeMismatch" xml:space="preserve">
-    <value>The EcSlaveInfo-Channel-Mapping is invalid: The data types are not matching.</value>
-  </data>
   <data name="OneDasProject_DataWriterSettingsIdNotUnique" xml:space="preserve">
     <value>The data writer settings IDs are not unique.</value>
   </data>

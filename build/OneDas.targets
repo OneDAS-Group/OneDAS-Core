@@ -13,7 +13,7 @@
     <PropertyGroup>
 
       <!-- calculation -->
-      <DaysSince2000>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::MinValue.AddTicks(630822816000000000))).TotalDays.ToString(`F0`))</DaysSince2000>
+      <DaysSince2000>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::MinValue.AddTicks(630822816000000000))).TotalDays)))</DaysSince2000>
       <SecondsSinceMidnight>$([MSBuild]::Divide($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::UtcNow.Date)).TotalSeconds), 2).ToString(`F0`))</SecondsSinceMidnight>
 
       <!-- ensure default vaues -->

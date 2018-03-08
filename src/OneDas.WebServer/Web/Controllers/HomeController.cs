@@ -22,7 +22,7 @@ namespace OneDas.WebServer.Web
 
         static HomeController()
         {
-            HomeController.LiveViewSubscriptionSet = new Dictionary<string, (int SubscriptionId, IList<ChannelHub> ChannelHubSet)>();
+            HomeController.LiveViewSubscriptionSet = new Dictionary<string, (int SubscriptionId, IList<ChannelHubBase> ChannelHubSet)>();
 
             _nextSubscriptionId = 1;
         }
@@ -46,7 +46,7 @@ namespace OneDas.WebServer.Web
             }
         }
 
-        public static Dictionary<string, (int SubscriptionId, IList<ChannelHub> ChannelHubSet)> LiveViewSubscriptionSet { get; private set; }
+        public static Dictionary<string, (int SubscriptionId, IList<ChannelHubBase> ChannelHubSet)> LiveViewSubscriptionSet { get; private set; }
 
         public IActionResult Index()
         {

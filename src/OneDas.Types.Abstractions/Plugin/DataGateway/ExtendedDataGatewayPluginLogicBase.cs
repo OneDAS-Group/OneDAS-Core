@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace OneDas.Plugin
@@ -105,7 +106,7 @@ namespace OneDas.Plugin
             moduleEntry.Value.ForEach(dataPort =>
             {
                 dataPort.DataPtr = new IntPtr(bufferOffsetBase + dataPortOffset);
-                dataPortOffset += Marshal.SizeOf(OneDasUtilities.GetTypeFromOneDasDataType(dataPort.DataType));
+                dataPortOffset += OneDasUtilities.SizeOf(dataPort.DataType);
             });
 
             return moduleEntry.Key.GetByteCount();

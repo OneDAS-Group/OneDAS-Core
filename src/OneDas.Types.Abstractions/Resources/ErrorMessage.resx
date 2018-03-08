@@ -123,9 +123,6 @@
   <data name="PluginSettingsBase_PluginDescriptionAttributeNotDefined" xml:space="preserve">
     <value>PluginDescriptionAttribute is not defined.</value>
   </data>
-  <data name="VariableDescription_TypeNotSubclassOfDataStorage" xml:space="preserve">
-    <value>The argument 'dataStorageType' must be a subclass of DataStorageBase.</value>
-  </data>
   <data name="DataWriterPluginLogicBase_DateTimeGranularityTooHigh" xml:space="preserve">
     <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute.</value>
   </data>

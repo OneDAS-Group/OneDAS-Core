@@ -167,14 +167,5 @@ namespace OneDas {
                 return ResourceManager.GetString("PluginSettingsBase_PluginDescriptionAttributeNotDefined", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;dataStorageType&apos; must be a subclass of DataStorageBase. ähnelt.
-        /// </summary>
-        internal static string VariableDescription_TypeNotSubclassOfDataStorage {
-            get {
-                return ResourceManager.GetString("VariableDescription_TypeNotSubclassOfDataStorage", resourceCulture);
-            }
-        }
     }
 }

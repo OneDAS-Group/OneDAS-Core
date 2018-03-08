@@ -55,7 +55,7 @@
 
         this.FormatVersion = projectModel.FormatVersion
         this.Description = new OneDasCampaignDescriptionViewModel(projectModel.Description)
-        this.ChannelHubSet = ko.observableArray<ChannelHubViewModel>(projectModel.ChannelHubSet.map(x => new ChannelHubViewModel(x)))
+        this.ChannelHubSet = ko.observableArray<ChannelHubViewModel>(projectModel.ChannelHubSettingsSet.map(x => new ChannelHubViewModel(x)))
         this.GroupedChannelHubSet = ko.observableArray(ObservableGroupBy(this.ChannelHubSet(), x => x.Name(), x => x.Group(), ""))
         this.DataGatewaySet = ko.observableArray<DataGatewayViewModelBase>()
         this.DataWriterSet = ko.observableArray<DataWriterViewModelBase>()
@@ -315,12 +315,12 @@
         model = {
             FormatVersion: <number>this.FormatVersion,
             Description: <any>this.Description.ToModel(),
-            ChannelHubSet: <any[]>this.ChannelHubSet().map(x => x.ToModel()),
+            ChannelHubSettingsSet: <any[]>this.ChannelHubSet().map(x => x.ToModel()),
             DataGatewaySettingsSet: <any[]>this.DataGatewaySet().map(x => x.ToModel()),
             DataWriterSettingsSet: <any[]>this.DataWriterSet().map(x => x.ToModel())
         }
 
-        model.ChannelHubSet.sort((channelHub1, channelHub2) => this.CompareStrings(channelHub1.Name, channelHub2.Name))
+        model.ChannelHubSettingsSet.sort((channelHub1, channelHub2) => this.CompareStrings(channelHub1.Name, channelHub2.Name))
         
         return model
     }

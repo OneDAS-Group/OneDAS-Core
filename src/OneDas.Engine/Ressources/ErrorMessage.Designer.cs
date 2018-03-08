@@ -142,15 +142,6 @@ namespace OneDas.Engine {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The EcSlaveInfo-Channel-Mapping is invalid: The data types are not matching. ähnelt.
-        /// </summary>
-        internal static string OneDasProject_DataTypeMismatch {
-            get {
-                return ResourceManager.GetString("OneDasProject_DataTypeMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The data writer settings IDs are not unique. ähnelt.
         /// </summary>
         internal static string OneDasProject_DataWriterSettingsIdNotUnique {

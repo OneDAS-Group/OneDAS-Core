@@ -7,9 +7,8 @@
     public CreationDateTime: string
     public Unit: string
     public TransferFunctionSet: any[]
-
-    public SerializerDataInputId: string
-    public SerializerDataOutputIdSet: string[]
+    public AssociatedDataInputId: string
+    public AssociatedDataOutputIdSet: string[]
 
     constructor(name: string, group: string, dataType: OneDasDataTypeEnum)
     {
@@ -20,8 +19,7 @@
         this.CreationDateTime = new Date().toISOString()
         this.Unit = ""
         this.TransferFunctionSet = []
-
-        this.SerializerDataInputId = ""
-        this.SerializerDataOutputIdSet = []
+        this.AssociatedDataInputId = ""
+        this.AssociatedDataOutputIdSet = []
     }
 }

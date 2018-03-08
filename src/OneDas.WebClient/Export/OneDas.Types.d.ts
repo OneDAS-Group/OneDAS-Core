@@ -77,8 +77,8 @@ declare class ChannelHubModel {
     CreationDateTime: string;
     Unit: string;
     TransferFunctionSet: any[];
-    SerializerDataInputId: string;
-    SerializerDataOutputIdSet: string[];
+    AssociatedDataInputId: string;
+    AssociatedDataOutputIdSet: string[];
     constructor(name: string, group: string, dataType: OneDasDataTypeEnum);
 }
 declare class OneDasModuleModel {
@@ -167,8 +167,8 @@ declare class ChannelHubViewModel {
         CreationDateTime: string;
         Unit: string;
         TransferFunctionSet: TransferFunctionModel[];
-        SerializerDataInputId: string;
-        SerializerDataOutputIdSet: string[];
+        AssociatedDataInputId: string;
+        AssociatedDataOutputIdSet: string[];
     };
     AddTransferFunction: () => void;
     DeleteTransferFunction: () => void;

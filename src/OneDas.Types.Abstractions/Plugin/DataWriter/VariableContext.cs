@@ -4,17 +4,18 @@ using System.Collections.Generic;
 
 namespace OneDas.Plugin
 {
-    public class VariableDescription
+    public class VariableContext
     {
+        #region "Fields"
+
+        private IList<IDataStorage> _dataStorageSet;
+
+        #endregion
+
         #region "Constructors"
 
-        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
+        public VariableContext(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, IList<IDataStorage> dataStorageSet)
         {
-            if (!(typeof(IDataStorage).IsAssignableFrom(dataStorageType)))
-            {
-                throw new ArgumentException(ErrorMessage.VariableDescription_TypeNotSubclassOfDataStorage);
-            }
-
             this.Guid = guid;
             this.VariableName = variableName;
             this.DatasetName = datasetName;
@@ -23,7 +24,8 @@ namespace OneDas.Plugin
             this.SamplesPerDay = samplesPerDay;
             this.Unit = unit;
             this.TransferFunctionSet = transferFunctionSet;
-            this.DataStorageType = dataStorageType;
+
+            _dataStorageSet = dataStorageSet;
         }
 
         #endregion
@@ -38,7 +40,15 @@ namespace OneDas.Plugin
         public ulong SamplesPerDay { get; private set; }
         public string Unit { get; private set; }
         public List<TransferFunction> TransferFunctionSet { get; private set; }
-        public Type DataStorageType { get; private set; }
+
+        #endregion
+
+        #region "Methods"
+
+        public IDataStorage GetDataStorage(int index)
+        {
+            return _dataStorageSet[index];
+        }
 
         #endregion
     }

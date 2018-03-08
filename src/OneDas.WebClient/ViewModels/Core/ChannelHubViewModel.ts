@@ -32,8 +32,8 @@
         this.AssociatedDataInput = ko.observable<DataPortViewModel>()
         this.AssociatedDataOutputSet = ko.observableArray<DataPortViewModel>()
 
-        this.AssociatedDataInputId = channelHubModel.SerializerDataInputId
-        this.AssociatedDataOutputIdSet = channelHubModel.SerializerDataOutputIdSet
+        this.AssociatedDataInputId = channelHubModel.AssociatedDataInputId
+        this.AssociatedDataOutputIdSet = channelHubModel.AssociatedDataOutputIdSet
         this.EvaluatedTransferFunctionSet = []
     }
 
@@ -182,8 +182,8 @@
             CreationDateTime: <string>this.CreationDateTime,
             Unit: <string>this.Unit(),
             TransferFunctionSet: <TransferFunctionModel[]>this.TransferFunctionSet().map(tf => tf.ToModel()),
-            SerializerDataInputId: <string>this.AssociatedDataInputId,
-            SerializerDataOutputIdSet: <string[]>this.AssociatedDataOutputIdSet
+            AssociatedDataInputId: <string>this.AssociatedDataInputId,
+            AssociatedDataOutputIdSet: <string[]>this.AssociatedDataOutputIdSet
         }
     }
 

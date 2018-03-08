@@ -32,7 +32,7 @@ namespace OneDas.Infrastructure
 
         #region "Methods"
 
-        public override object Get(int index)
+        public override object GetValue(int index)
         {
             return this.DataBuffer[index];
         }

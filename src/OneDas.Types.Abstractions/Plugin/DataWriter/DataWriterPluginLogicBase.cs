@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace OneDas.Plugin
         private DateTime _lastWrittenDateTime;
 
         private Dictionary<ulong, List<int>> _samplesPerDayToIndexMap;
-        private Dictionary<ulong, List<VariableDescription>> _variableDescriptionDictionary;
+        private Dictionary<ulong, List<VariableContext>> _sampleRateToVariableContextMap;
 
         private ILogger _logger;
         private object samplesPerDayCategory;
@@ -49,7 +48,7 @@ namespace OneDas.Plugin
 
         #region "Methods"
 
-        public void Initialize(DateTime dateTime, DataWriterContext dataWriterContext, IList<VariableDescription> variableDescriptionSet)
+        public void Initialize(DateTime dateTime, DataWriterContext dataWriterContext, IList<VariableContext> variableContextSet)
         {
             DateTime fileStartDateTime;
 
@@ -60,11 +59,11 @@ namespace OneDas.Plugin
             // samples per day dictionary
             _samplesPerDayToIndexMap = new Dictionary<ulong, List<int>>();
 
-            for (int i = 0; i < variableDescriptionSet.Count(); i++)
+            for (int i = 0; i < variableContextSet.Count(); i++)
             {
                 ulong samplesPerDay;
 
-                samplesPerDay = variableDescriptionSet[i].SamplesPerDay;
+                samplesPerDay = variableContextSet[i].SamplesPerDay;
 
                 if (!_samplesPerDayToIndexMap.ContainsKey(samplesPerDay))
                 {
@@ -74,20 +73,14 @@ namespace OneDas.Plugin
                 _samplesPerDayToIndexMap[samplesPerDay].Add(i);
             }
 
-            _variableDescriptionDictionary = _samplesPerDayToIndexMap.ToDictionary
-                (
-                    entry => entry.Key,
-                    entry => entry.Value.Select(index => variableDescriptionSet[index]).ToList()
-                );
+            _sampleRateToVariableContextMap = _samplesPerDayToIndexMap.ToDictionary(entry => entry.Key, entry => entry.Value.Select(index => variableContextSet[index]).ToList());
 
             this.OnInitialize();
             this.PrepareFile(fileStartDateTime);
         }
 
-        public void Write(DateTime dateTime, TimeSpan dataStoragePeriod, IList<IDataStorage> dataStorageSet)
+        public void Write(DateTime dateTime, TimeSpan dataStoragePeriod, int dataStorageIndex)
         {
-            Dictionary<ulong, List<IDataStorage>> dataStorageDictionary;
-
             DateTime currentDateTime;
             DateTime fileStartDateTime;
             TimeSpan dataStorageOffset;
@@ -137,13 +130,6 @@ namespace OneDas.Plugin
 
                 this.PrepareFile(fileStartDateTime);
 
-                // data storage
-                dataStorageDictionary = _samplesPerDayToIndexMap.ToDictionary
-                (
-                    entry => entry.Key,
-                    entry => entry.Value.Select(index => dataStorageSet[index]).ToList()
-                );
-
                 foreach (var entry in _samplesPerDayToIndexMap)
                 {
                     actualFileOffset = this.TimeSpanToIndex(fileOffset, entry.Key);
@@ -155,8 +141,8 @@ namespace OneDas.Plugin
                         actualFileOffset,
                         actualDataStorageOffset,
                         actualPeriod,
-                        _variableDescriptionDictionary[entry.Key],
-                        dataStorageDictionary[entry.Key]
+                        _sampleRateToVariableContextMap[entry.Key],
+                        dataStorageIndex
                     );
 
                     // message
@@ -206,9 +192,9 @@ namespace OneDas.Plugin
         /// </summary>
         /// <param name="startDateTime"></param>
         /// <param name="enforceInitialization"></param>
-        protected abstract void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableDescription> variableDescriptionSet);
+        protected abstract void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet);
 
-        protected abstract void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableDescription> variableDescriptionSet, IList<IDataStorage> dataStorageSet);
+        protected abstract void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet, int dataStorageIndex);
 
         private void PrepareFile(DateTime fileStartDateTime)
         {
@@ -216,7 +202,7 @@ namespace OneDas.Plugin
             {
                 foreach (var sampleRateCategory in _samplesPerDayToIndexMap)
                 {
-                    this.OnPrepareFile(fileStartDateTime, sampleRateCategory.Key, _variableDescriptionDictionary[sampleRateCategory.Key]);
+                    this.OnPrepareFile(fileStartDateTime, sampleRateCategory.Key, _sampleRateToVariableContextMap[sampleRateCategory.Key]);
                 }
 
                 _lastFileStartDateTime = fileStartDateTime;

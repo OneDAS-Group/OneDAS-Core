@@ -173,7 +173,7 @@ namespace OneDas.Hdf.Core
 
                     if (fileId > -1 && H5T.commit(fileId, "string_t", typeId) < 0)
                     {
-                        throw new Exception(ErrorMessage.HdfHelper_CouldNotCommitDataType);
+                        throw new Exception(ErrorMessage.ypeConversionHelper_CouldNotCommitDataType);
                     }
                 }
 
@@ -207,7 +207,7 @@ namespace OneDas.Hdf.Core
 
                     if (fileId > -1 && H5T.commit(fileId, elementType.Name, typeId) < 0)
                     {
-                        throw new Exception(ErrorMessage.HdfHelper_CouldNotCommitDataType);
+                        throw new Exception(ErrorMessage.ypeConversionHelper_CouldNotCommitDataType);
                     }
                 }
 

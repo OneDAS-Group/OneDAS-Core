@@ -2,12 +2,30 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace OneDas
 {
     public static class OneDasUtilities
     {
+        public static int SizeOf(OneDasDataType dataType)
+        {
+            return OneDasUtilities.SizeOf(OneDasUtilities.GetTypeFromOneDasDataType(dataType));
+        }
+
+        public static int SizeOf(Type type)
+        {
+            if (type == typeof(bool))
+            {
+                return 1;
+            }
+            else
+            {
+                return Marshal.SizeOf(type);
+            }
+        }
+
         public static bool ValidateIPv4(string ipAddressString, out IPAddress ipAddress)
         {
             ipAddress = null;

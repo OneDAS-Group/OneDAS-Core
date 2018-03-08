@@ -16,7 +16,7 @@ namespace OneDas.Infrastructure
 
         #region "Methods"
 
-        object Get(int index);
+        object GetValue(int index);
 
         Span<T> GetDataBuffer<T>() where T : struct;
 

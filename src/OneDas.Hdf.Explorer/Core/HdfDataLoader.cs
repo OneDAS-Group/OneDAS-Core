@@ -31,7 +31,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
         {
-            IList<VariableDescription> variableDescriptionSet;
+            IList<VariableContext> variableContextSet;
             IList<CustomMetadataEntry> customMetadataEntrySet;
 
             ZipArchiveEntry zipArchiveEntry;
@@ -47,7 +47,7 @@ namespace OneDas.Hdf.Explorer.Core
             int fileCount;
 
             // build variable descriptions
-            variableDescriptionSet = new List<VariableDescription>();
+            variableContextSet = new List<VariableContext>();
 
             zipSettings.CampaignInfo.Value.ToList().ForEach(variableInfo =>
             {
@@ -83,7 +83,7 @@ namespace OneDas.Hdf.Explorer.Core
                         oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
                         samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
 
-                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, typeof(SimpleDataStorage)));
+                        variableContextSet.Add(new VariableContext(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, typeof(SimpleDataStorage)));
                     }
                     finally
                     {
@@ -133,7 +133,7 @@ namespace OneDas.Hdf.Explorer.Core
             // initialize data writer
             campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
             dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
-            dataWriter.Initialize(zipSettings.DateTimeBegin, dataWriterContext, variableDescriptionSet);
+            dataWriter.Initialize(zipSettings.DateTimeBegin, dataWriterContext, variableContextSet);
 
             // create temp files
             try
