@@ -167,5 +167,23 @@ namespace OneDas {
                 return ResourceManager.GetString("PluginSettingsBase_PluginDescriptionAttributeNotDefined", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data storage type is invalid. ähnelt.
+        /// </summary>
+        internal static string VariableContext_DataStorageTypeInvalid {
+            get {
+                return ResourceManager.GetString("VariableContext_DataStorageTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IDataStorage. ähnelt.
+        /// </summary>
+        internal static string VariableDescription_DataStorageTypeInvalid {
+            get {
+                return ResourceManager.GetString("VariableDescription_DataStorageTypeInvalid", resourceCulture);
+            }
+        }
     }
 }

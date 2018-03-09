@@ -10,16 +10,12 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OneDas.Engine.Core
 {
-    /// <summary>
-    /// Represents the manager of the OneDAS itself. Acts as gateway for incoming requests.
-    /// </summary>
     public partial class OneDasEngine : IDisposable
     {
         #region "Events"
@@ -80,7 +76,8 @@ namespace OneDas.Engine.Core
 
         private List<(DataPort Source, DataPort Target)> _linkedDataPortSet;
         private Dictionary<SampleRate, List<DataStorageContext>> _sampleRateToDataStorageContextMap;
-        private Dictionary<DataWriterPluginLogicBase, List<VariableContext>> _dataWriterToVariableContextMap;
+        private Dictionary<DataWriterPluginLogicBase, List<VariableDescription>> _dataWriterToVariableDescriptionMap;
+        private Dictionary<DataWriterPluginLogicBase, List<List<IDataStorage>>> _dataWriterToStorageSetMap;
         private Dictionary<DataGatewayPluginLogicBase, bool> _hasValidDataSet;
 
         // overwritten
@@ -494,12 +491,16 @@ namespace OneDas.Engine.Core
                 });
             });
 
-            // prepare _dataWriterToVariableContextMap
-            _dataWriterToVariableContextMap = new Dictionary<DataWriterPluginLogicBase, List<VariableContext>>();
+            // prepare _dataWriterToVariableDescriptionMap
+            _dataWriterToVariableDescriptionMap = new Dictionary<DataWriterPluginLogicBase, List<VariableDescription>>();
+            _dataWriterToStorageSetMap = new Dictionary<DataWriterPluginLogicBase, List<List<IDataStorage>>>();
 
             this.Project.DataWriterSet.ForEach(dataWriter =>
             {
-                _dataWriterToVariableContextMap[dataWriter] = new List<VariableContext>();
+                _dataWriterToVariableDescriptionMap[dataWriter] = new List<VariableDescription>();
+                _dataWriterToStorageSetMap[dataWriter] = new List<List<IDataStorage>>();
+
+                Enumerable.Range(0, STORAGE_COUNT).ToList().ForEach(index => _dataWriterToStorageSetMap[dataWriter].Add(new List<IDataStorage>()));
             });
 
             /* ----------------------------------------- */
@@ -528,10 +529,17 @@ namespace OneDas.Engine.Core
                 // create data storages
                 dataStorageSet = this.CreateDataStorages(sampleRate, channelHub.Settings.DataType, STORAGE_COUNT);
 
-                // _dataWriterToChannelHubSetMap
+                // helper dictionaries
                 dataWriterSet.ForEach(dataWriter =>
                 {
-                    _dataWriterToVariableContextMap[dataWriter].Add(new VariableContext(
+                    // _dataWriterToStorageSetMap
+                    for (int i = 0; i < STORAGE_COUNT; i++)
+                    {
+                        _dataWriterToStorageSetMap[dataWriter][i].Add(dataStorageSet[i]);
+                    }
+
+                    // _dataWriterToVariableDescriptionMap
+                    _dataWriterToVariableDescriptionMap[dataWriter].Add(new VariableDescription(
                         channelHubSettings.Guid,
                         channelHubSettings.Name,
                         $"{ 100 / (int)sampleRate } Hz",
@@ -540,9 +548,8 @@ namespace OneDas.Engine.Core
                         OneDasUtilities.GetSamplesPerDayFromSampleRate(sampleRate),
                         channelHubSettings.Unit,
                         channelHubSettings.TransferFunctionSet,
-                        dataStorageSet.Cast<IDataStorage>().ToList()
-                        )
-                    );
+                        typeof(IExtendedDataStorage)
+                    ));
                 });
 
                 return new DataStorageContext(dataStorageSet, channelHub.AssociatedDataInput.AssociatedDataGateway, channelHub.AssociatedDataInput);
@@ -589,11 +596,7 @@ namespace OneDas.Engine.Core
 
                 Directory.CreateDirectory(baseDirectoryPath);
 
-                dataWriter.Initialize(
-                    currentDateTime,
-                    new DataWriterContext("OneDAS", baseDirectoryPath, this.Project.Settings.Description, customMetadataEntrySet),
-                    _dataWriterToVariableContextMap[dataWriter]
-                );
+                dataWriter.Initialize(new DataWriterContext("OneDAS", baseDirectoryPath, this.Project.Settings.Description, customMetadataEntrySet), _dataWriterToVariableDescriptionMap[dataWriter]);
             });
         }
 
@@ -993,7 +996,7 @@ namespace OneDas.Engine.Core
 
                     this.Project.DataWriterSet.AsParallel().ForAll(dataWriter =>
                     {
-                        dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _cachedDataStorageIndex);
+                        dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataWriterToStorageSetMap[dataWriter][_cachedDataStorageIndex]);
                     });
 
                     this.ClearDataStorage(_cachedDataStorageIndex);

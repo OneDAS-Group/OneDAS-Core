@@ -229,6 +229,23 @@ declare class TransferFunctionViewModel {
     constructor(transferFunctionModel: TransferFunctionModel);
     ToModel(): TransferFunctionModel;
 }
+declare class BufferRequestSelectorViewModel {
+    NewBufferRequest: KnockoutObservable<BufferRequestViewModel>;
+    BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>;
+    ErrorMessage: KnockoutObservable<string>;
+    HasError: KnockoutComputed<boolean>;
+    private _onBufferRequestSetChanged;
+    constructor(bufferRequestSet?: BufferRequestViewModel[]);
+    readonly OnBufferRequestSetChanged: IEvent<BufferRequestSelectorViewModel, BufferRequestViewModel[]>;
+    private InternalUpdate();
+    protected Update(): void;
+    protected Validate(): void;
+    protected CreateNewBufferRequest(): BufferRequestViewModel;
+    private InternalCreateNewBufferRequest();
+    private OnBufferRequestPropertyChanged;
+    AddBufferRequest: () => void;
+    DeleteBufferRequest: () => void;
+}
 declare class BufferRequestViewModel {
     SampleRate: KnockoutObservable<SampleRateEnum>;
     GroupFilter: KnockoutObservable<string>;
@@ -312,21 +329,4 @@ declare class PluginIdentificationViewModel {
     ViewResourceName: string;
     ViewModelResourceName: string;
     constructor(pluginIdentificationModel: any);
-}
-declare class BufferRequestSelectorViewModel {
-    NewBufferRequest: KnockoutObservable<BufferRequestViewModel>;
-    BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>;
-    ErrorMessage: KnockoutObservable<string>;
-    HasError: KnockoutComputed<boolean>;
-    private _onBufferRequestSetChanged;
-    constructor(bufferRequestSet?: BufferRequestViewModel[]);
-    readonly OnBufferRequestSetChanged: IEvent<BufferRequestSelectorViewModel, BufferRequestViewModel[]>;
-    private InternalUpdate();
-    protected Update(): void;
-    protected Validate(): void;
-    protected CreateNewBufferRequest(): BufferRequestViewModel;
-    private InternalCreateNewBufferRequest();
-    private OnBufferRequestPropertyChanged;
-    AddBufferRequest: () => void;
-    DeleteBufferRequest: () => void;
 }

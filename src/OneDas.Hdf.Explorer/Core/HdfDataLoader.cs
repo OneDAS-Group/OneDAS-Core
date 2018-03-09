@@ -5,7 +5,6 @@ using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
 using OneDas.Plugin.DataWriter.Csv;
-using OneDas.Plugin.DataWriter.Gam;
 using OneDas.Plugin.DataWriter.Mat73;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 
 namespace OneDas.Hdf.Explorer.Core
@@ -31,7 +29,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
         {
-            IList<VariableContext> variableContextSet;
+            IList<VariableDescription> variableDescriptionSet;
             IList<CustomMetadataEntry> customMetadataEntrySet;
 
             ZipArchiveEntry zipArchiveEntry;
@@ -47,7 +45,7 @@ namespace OneDas.Hdf.Explorer.Core
             int fileCount;
 
             // build variable descriptions
-            variableContextSet = new List<VariableContext>();
+            variableDescriptionSet = new List<VariableDescription>();
 
             zipSettings.CampaignInfo.Value.ToList().ForEach(variableInfo =>
             {
@@ -83,7 +81,7 @@ namespace OneDas.Hdf.Explorer.Core
                         oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
                         samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
 
-                        variableContextSet.Add(new VariableContext(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, typeof(SimpleDataStorage)));
+                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, typeof(ISimpleDataStorage)));
                     }
                     finally
                     {
@@ -133,7 +131,7 @@ namespace OneDas.Hdf.Explorer.Core
             // initialize data writer
             campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
             dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
-            dataWriter.Initialize(zipSettings.DateTimeBegin, dataWriterContext, variableContextSet);
+            dataWriter.Initialize(dataWriterContext, variableDescriptionSet);
 
             // create temp files
             try

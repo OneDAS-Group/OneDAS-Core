@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30258" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview2-30258" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview2-30258" />
+    <PackageReference Include="OneDas.Engine" Version="1.0.0-alpha-6642-34688" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview1-26216-02" />
   </ItemGroup>
   
@@ -39,7 +40,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.Engine\OneDas.Engine.csproj" />
     <ProjectReference Include="..\OneDas.WebClient\OneDas.WebClient.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
