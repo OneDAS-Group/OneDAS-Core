@@ -159,4 +159,7 @@
   <data name="OneDasProject_DataWriterSettingsIdNotUnique" xml:space="preserve">
     <value>The data writer settings IDs are not unique.</value>
   </data>
+  <data name="OneDasEngine_DataWriterHasNoBufferRequests" xml:space="preserve">
+    <value>Data writer {0} has no channel filters configured and will not store any data.</value>
+  </data>
 </root>

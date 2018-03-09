@@ -11,6 +11,8 @@
     public EvaluatedTransferFunctionSet: ((value: number) => number)[]
     public IsSelected: KnockoutObservable<boolean>
 
+    public readonly DataTypeSet: KnockoutObservableArray<OneDasDataTypeEnum>
+
     public readonly AssociatedDataInput: KnockoutObservable<DataPortViewModel>
     public readonly AssociatedDataOutputSet: KnockoutObservableArray<DataPortViewModel>
 
@@ -21,6 +23,7 @@
     {
         this.Name = ko.observable<string>(channelHubModel.Name)
         this.Group = ko.observable<string>(channelHubModel.Group)
+        this.DataTypeSet = ko.observableArray<OneDasDataTypeEnum>(EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'))
         this.DataType = ko.observable<OneDasDataTypeEnum>(channelHubModel.DataType)
         this.Guid = channelHubModel.Guid
         this.CreationDateTime = channelHubModel.CreationDateTime

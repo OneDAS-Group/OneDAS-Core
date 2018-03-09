@@ -17,6 +17,7 @@
     {
         this._model = oneDasModuleModel
 
+        this.DataTypeSet = ko.observableArray<OneDasDataTypeEnum>(EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== OneDasDataTypeEnum.BOOLEAN))
         this.DataType = ko.observable<OneDasDataTypeEnum>(oneDasModuleModel.DataType)
         this.DataDirection = ko.observable<DataDirectionEnum>(oneDasModuleModel.DataDirection)
         this.Endianness = ko.observable<EndiannessEnum>(oneDasModuleModel.Endianness)
@@ -25,7 +26,6 @@
         this.ErrorMessage = ko.observable<string>("")
         this.HasError = ko.computed<boolean>(() => this.ErrorMessage().length > 0)
 
-        this.DataTypeSet = ko.observableArray<OneDasDataTypeEnum>(EnumerationHelper.GetEnumValues('OneDasDataTypeEnum').filter(dataType => dataType !== OneDasDataTypeEnum.BOOLEAN))
         this._onPropertyChanged = new EventDispatcher<OneDasModuleViewModel, any>();
 
         this.DataType.subscribe(newValue => this.OnPropertyChanged())

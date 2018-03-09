@@ -585,9 +585,9 @@
                     <div class="form-group">
                         <label class="form-control-label">Data type:</label>
                         <select class="form-control" disabled
-                                data-bind="options: EnumerationHelper.GetEnumValues('OneDasDataTypeEnum'),
+                                data-bind="options: EditChannelDummyChannel().DataTypeSet,
                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', x) },
-                                           value: EditChannelDummyChannel().OneDasDataType,
+                                           value: EditChannelDummyChannel().DataType,
                                            enable: IsFullEditingEnabled"></select>
                     </div>
                 </form>
@@ -618,10 +618,9 @@
                     <div class="col-12 mr-1">
                         <form>
                             <div class="form-group">
-                                <label class="form-control-label" for="unit">Unit:</label>
+                                <label class="form-control-label">Unit:</label>
                                 <input type="text"
                                        class="form-control modal-input-full-width"
-                                       id="unit"
                                        data-bind="textInput: Unit">
                             </div>
                         </form>
@@ -631,18 +630,16 @@
                     <div class="col-6 mr-1">
                         <form>
                             <div class="form-group">
-                                <label class="form-control-label" for="transfer_function_date_time">Date / Time:</label>
+                                <label class="form-control-label">Date / Time:</label>
                                 <input type="text"
                                        class="form-control modal-input-full-width"
-                                       id="transfer_function_date_time"
                                        data-bind="textInput: SelectedTransferFunction().DateTime"
                                        autofocus>
                             </div>
                             <div class="form-group">
-                                <label class="form-control-label" for="transfer_function_type">Type:</label>
+                                <label class="form-control-label">Type:</label>
                                 <input type="text"
                                        class="form-control modal-input-full-width"
-                                       id="transfer_function_type"
                                        data-bind="textInput: SelectedTransferFunction().Type">
                             </div>
                         </form>
@@ -650,17 +647,15 @@
                     <div class="col-6 ml-1">
                         <form>
                             <div class="form-group">
-                                <label class="form-control-label" for="transfer_function_option">Option:</label>
+                                <label class="form-control-label">Option:</label>
                                 <input type="text"
                                        class="form-control modal-input-full-width"
-                                       id="transfer_function_option"
                                        data-bind="textInput: SelectedTransferFunction().Option">
                             </div>
                             <div class="form-group">
-                                <label class="form-control-label" for="transfer_function_argument">Argument:</label>
+                                <label class="form-control-label">Argument:</label>
                                 <input type="text"
                                        class="form-control modal-input-full-width"
-                                       id="transfer_function_argument"
                                        data-bind="textInput: SelectedTransferFunction().Argument">
                             </div>
                         </form>
@@ -857,6 +852,72 @@
     </div>
 </div>
 
+<script type="text/html" id="Project_BufferRequestSelectorTemplate">
+
+    <div class="card my-2">
+        <div class="card-header">
+            <span>Channel group filters</span>
+        </div>
+        <div class="card-body">
+            <!-- ko template: { name: "Project_BufferRequestTemplate", data: NewBufferRequest } -->
+            <!-- /ko -->
+            <!-- ko if: HasError -->
+            <div class="row mb-1">
+                <div class="col">
+                    <span data-bind="text: ErrorMessage()" style="color:red"></span>
+                </div>
+            </div>
+            <!-- /ko -->
+            <form>
+                <div class="form-group">
+                    <!-- ko if: BufferRequestSet().length > 0 -->
+                    <div class="list-group">
+                        <!-- ko foreach: BufferRequestSet -->
+                        <a class="d-flex list-group-item list-group-item-action noselect" role="button" data-bind="click: $parent.DeleteBufferRequest">
+                            <span data-bind="text: ToString()"></span>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: BufferRequestSet().length === 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no group filter selected -</small></h5>
+                    <!-- /ko -->
+                </div>
+            </form>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="Project_BufferRequestTemplate">
+    <form>
+        <div class="form-group">
+            <div class="row no-gutters">
+                <div class="col-3">
+                    <select class="form-control"
+                            data-bind="options: SampleRateSet,
+                                       optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('SampleRateEnum', x) },
+                                       value: SampleRate"></select>
+                </div>
+                <div class="col-5">
+                    <input type="text" placeholder="e.g. '*', 'G1; G2' or '!G1'"
+                           class="form-control modal-input-full-width"
+                           data-bind="textInput: GroupFilter">
+                </div>
+                <div class="col-4">
+                    <button type="button" class="btn btn-outline-info btn-block" data-bind="click: $parent.AddBufferRequest, disable: $parent.HasError">Add</button>
+                </div>
+            </div>
+            <!-- ko if: HasError -->
+            <div class="row mt-1">
+                <div class="col">
+                    <span data-bind="text: ErrorMessage()" style="color:red"></span>
+                </div>
+            </div>
+            <!-- /ko -->
+        </div>
+    </form>
+</script>
+
 <script type="text/html" id="Project_OneDasModuleSelectorTemplate">
 
     <div class="card my-2">
@@ -898,7 +959,7 @@
     </div>
 </script>
 
-<script type="text/html" id="Project_OneDasModuleSettingsTemplate">
+<script type="text/html" id="Project_OneDasModuleTemplate">
     <form>
         <div class="form-group">
             <div class="row no-gutters">
@@ -1051,6 +1112,11 @@
                                 value: FileGranularity"></select>
         </div>
     </form>
+
+    <!-- ko with: BufferRequestSelector -->
+        <!-- ko template: { name: 'Project_BufferRequestSelectorTemplate' } -->
+        <!-- /ko -->
+    <!-- /ko -->
     <!-- /ko -->
 
     <div id="Project_PluginTemplate_Content"></div>

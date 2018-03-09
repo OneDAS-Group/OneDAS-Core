@@ -61,6 +61,15 @@ namespace OneDas.Engine {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Data writer {0} has no channel filters configured and will not store any data. ähnelt.
+        /// </summary>
+        internal static string OneDasEngine_DataWriterHasNoBufferRequests {
+            get {
+                return ResourceManager.GetString("OneDasEngine_DataWriterHasNoBufferRequests", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The directory contains none or invalid characters. ähnelt.
         /// </summary>
         internal static string OneDasEngine_DirectoryNameInvalid {

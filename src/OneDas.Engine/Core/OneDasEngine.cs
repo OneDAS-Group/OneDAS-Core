@@ -459,6 +459,11 @@ namespace OneDas.Engine.Core
             // for each data writer
             this.Project.DataWriterSet.ForEach(dataWriter =>
             {
+                if (!dataWriter.Settings.BufferRequestSet.Any())
+                {
+                    _oneDasEngineLogger.LogWarning(ErrorMessage.OneDasEngine_DataWriterHasNoBufferRequests, dataWriter.DisplayName);
+                }
+
                 // for each buffer request
                 dataWriter.Settings.BufferRequestSet.ForEach(bufferRequest =>
                 {
@@ -618,7 +623,28 @@ namespace OneDas.Engine.Core
 
         private List<ChannelHubBase> FilterChannelHubs(List<ChannelHubBase> channelHubSet, string groupFilter)
         {
-            return channelHubSet; // TODO implement filter
+            HashSet<ChannelHubBase> filteredChannelHubSet;
+
+            filteredChannelHubSet = new HashSet<ChannelHubBase>();
+
+            groupFilter.Split(';').ToList().ForEach(groupFilterPart =>
+            {
+                string filter;
+
+                filter = groupFilterPart.Replace("*", ".*");
+
+                if (groupFilterPart.StartsWith("!"))
+                {
+                    filter = filter.Replace("!", string.Empty);
+                    channelHubSet.Where(channelHub => !Regex.IsMatch(channelHub.Settings.Group, filter, RegexOptions.IgnoreCase)).ToList().ForEach(channelHub => filteredChannelHubSet.Add(channelHub));
+                }
+                else
+                {
+                    channelHubSet.Where(channelHub => Regex.IsMatch(channelHub.Settings.Group, filter, RegexOptions.IgnoreCase)).ToList().ForEach(channelHub => filteredChannelHubSet.Add(channelHub));
+                }
+            });
+
+            return filteredChannelHubSet.ToList();
         }
 
         #endregion

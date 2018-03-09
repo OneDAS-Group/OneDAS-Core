@@ -145,6 +145,7 @@ declare class ChannelHubViewModel {
     SelectedTransferFunction: KnockoutObservable<TransferFunctionViewModel>;
     EvaluatedTransferFunctionSet: ((value: number) => number)[];
     IsSelected: KnockoutObservable<boolean>;
+    readonly DataTypeSet: KnockoutObservableArray<OneDasDataTypeEnum>;
     readonly AssociatedDataInput: KnockoutObservable<DataPortViewModel>;
     readonly AssociatedDataOutputSet: KnockoutObservableArray<DataPortViewModel>;
     private AssociatedDataInputId;
@@ -231,11 +232,17 @@ declare class TransferFunctionViewModel {
 declare class BufferRequestViewModel {
     SampleRate: KnockoutObservable<SampleRateEnum>;
     GroupFilter: KnockoutObservable<string>;
+    ErrorMessage: KnockoutObservable<string>;
+    HasError: KnockoutComputed<boolean>;
+    SampleRateSet: KnockoutObservableArray<SampleRateEnum>;
+    private _onPropertyChanged;
     constructor(model: BufferRequestModel);
-    ToModel(): {
-        SampleRate: SampleRateEnum;
-        GroupFilter: string;
-    };
+    readonly PropertyChanged: IEvent<BufferRequestViewModel, any>;
+    OnPropertyChanged: () => void;
+    Validate(): void;
+    ToString(): string;
+    ToModel(): any;
+    private CheckGroupFilter(value);
 }
 declare class DataPortViewModel {
     Name: KnockoutObservable<string>;
@@ -284,6 +291,7 @@ declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewM
 declare abstract class DataWriterViewModelBase extends PluginViewModelBase {
     readonly FileGranularity: KnockoutObservable<FileGranularityEnum>;
     readonly BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>;
+    readonly BufferRequestSelector: KnockoutObservable<BufferRequestSelectorViewModel>;
     constructor(model: any, identification: PluginIdentificationViewModel);
     ExtendModel(model: any): void;
 }
@@ -304,4 +312,21 @@ declare class PluginIdentificationViewModel {
     ViewResourceName: string;
     ViewModelResourceName: string;
     constructor(pluginIdentificationModel: any);
+}
+declare class BufferRequestSelectorViewModel {
+    NewBufferRequest: KnockoutObservable<BufferRequestViewModel>;
+    BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>;
+    ErrorMessage: KnockoutObservable<string>;
+    HasError: KnockoutComputed<boolean>;
+    private _onBufferRequestSetChanged;
+    constructor(bufferRequestSet?: BufferRequestViewModel[]);
+    readonly OnBufferRequestSetChanged: IEvent<BufferRequestSelectorViewModel, BufferRequestViewModel[]>;
+    private InternalUpdate();
+    protected Update(): void;
+    protected Validate(): void;
+    protected CreateNewBufferRequest(): BufferRequestViewModel;
+    private InternalCreateNewBufferRequest();
+    private OnBufferRequestPropertyChanged;
+    AddBufferRequest: () => void;
+    DeleteBufferRequest: () => void;
 }

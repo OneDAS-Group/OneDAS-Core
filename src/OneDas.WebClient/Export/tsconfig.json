@@ -38,6 +38,7 @@
     "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
     "./../ViewModels/Core/TransferFunctionViewModel.ts",
 
+    "./../ViewModels/Plugin/BufferRequestSelectorViewModel.ts",
     "./../ViewModels/Plugin/BufferRequestViewModel.ts",
     "./../ViewModels/Plugin/DataPortViewModel.ts",
     "./../ViewModels/Plugin/PluginViewModelBase.ts",

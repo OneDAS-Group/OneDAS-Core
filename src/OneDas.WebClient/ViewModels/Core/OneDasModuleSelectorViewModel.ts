@@ -17,7 +17,7 @@
     {
         this.OneDasModuleSelectorMode = ko.observable<OneDasModuleSelectorModeEnum>(oneDasModuleSelectorMode)
 
-        this.SettingsTemplateName = ko.observable("Project_OneDasModuleSettingsTemplate")
+        this.SettingsTemplateName = ko.observable("Project_OneDasModuleTemplate")
         this.NewModule = ko.observable<OneDasModuleViewModel>();
         this.MaxBytes = ko.observable<number>(Infinity);
         this.RemainingBytes = ko.observable<number>(NaN);
