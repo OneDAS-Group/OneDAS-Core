@@ -28,28 +28,28 @@
             <span>
                 OneDAS (
             </span>
-            <!-- ko if: OneDasState() === 1 -->
+            <!-- ko if: OneDasState() === OneDasStateEnum.Error -->
             <small data-bind="attr: { title: LastError }"
                    data-toggle="tooltip"
                    class="text-danger">
                 ERROR
             </small>
             <!-- /ko -->
-            <!-- ko if: OneDasState() >= 2 && OneDasState() < 6 -->
+            <!-- ko if: OneDasState() >= OneDasStateEnum.Initialization && OneDasState() < OneDasStateEnum.Ready -->
             <small data-toggle="tooltip"
-                   title="OneDAS is intialized and waits for a project file."
+                   title="OneDAS is intialized waiting for a project file."
                    class="text-warning">
                 IDLE
             </small>
             <!-- /ko -->
-            <!-- ko if: OneDasState() === 6 -->
+            <!-- ko if: OneDasState() === OneDasStateEnum.Ready -->
             <small data-toggle="tooltip"
-                  title="OneDAS is running but not recording data."
-                  class="text-warning">
+                   title="OneDAS is running but not recording data."
+                   class="text-warning">
                 READY
             </small>
             <!-- /ko -->
-            <!-- ko if: OneDasState() === 7 -->
+            <!-- ko if: OneDasState() === OneDasStateEnum.Run -->
             <small data-toggle="tooltip"
                    title="OneDAS is running and recording data."
                    class="text-success">
@@ -70,7 +70,7 @@
                 </li>
             </ul>
             <span class="navbar-text">
-                <em>One DAS to rule them all</em>
+                <em>One DAS to rule them all</em> - <em data-bind="text: ProductVersion"></em>
             </span>
         </div>
     </nav>

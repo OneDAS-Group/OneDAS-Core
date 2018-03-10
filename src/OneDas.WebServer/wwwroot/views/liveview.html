@@ -1,12 +1,11 @@
-﻿<!-- ko if: !$root.ActiveProject() -->
+﻿<!-- ko if: $root.OneDasState() <= OneDasStateEnum.Idle -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
     <h1 class="display-4">Activate a project (<a data-bind="page-href: '../' + $root.WorkspaceSet()[1].Address, text: $root.WorkspaceSet()[1].Title"></a>) to get live data!</h1>
     <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
 </div>
 <!-- /ko -->
-
 <!-- ACTIVE PROJECT -->
-<!-- ko if: $root.ActiveProject() && $root.OneDasState() !== 5 -->
+<!-- ko if: $root.OneDasState() >= OneDasStateEnum.Ready -->
 <!-- ko with: $root.ActiveProject -->
 <div id="ActiveProject_Header" class="container">
     <div class="row align-content-end my-5" data-bind="with: Description">
@@ -37,26 +36,26 @@
                                             value: SelectedLiveViewPeriod"></select>
             </div>
             <!-- ko with: $root.ActiveProject -->
-                <form class="form-group">
-                    <div class="input-group mb-2">
-                        <div class="input-group-prepend url"
-                             data-bind="click: ResetSearch">
-                            <div class="input-group-text">
-                                <!-- ko if: SearchString().length > 0 -->
-                                <strong>X</strong>
-                                <!-- /ko -->
-                                <!-- ko ifnot: SearchString().length > 0 -->
-                                <span class="fa fa-search fa-fix"></span>
-                                <!-- /ko -->
-                            </div>
+            <form class="form-group">
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend url"
+                         data-bind="click: ResetSearch">
+                        <div class="input-group-text">
+                            <!-- ko if: SearchString().length > 0 -->
+                            <strong>X</strong>
+                            <!-- /ko -->
+                            <!-- ko ifnot: SearchString().length > 0 -->
+                            <span class="fa fa-search fa-fix"></span>
+                            <!-- /ko -->
                         </div>
-                        <input type="text"
-                               class="form-control"
-                               placeholder="Search ..."
-                               data-bind="textInput: SearchString">
                     </div>
-                </form>
-                <div class="card my-2">
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Search ..."
+                           data-bind="textInput: SearchString">
+                </div>
+            </form>
+            <div class="card my-2">
                 <div class="card-header">
                     Available channels
                 </div>
@@ -71,7 +70,7 @@
                         </a>
                         <div class="list-group collapse show" data-bind="attr: { id: 'lvitem_' + $index() }, foreach: Members().filter(channelHub => channelHub.AssociatedDataInput())">
                             <a class="list-group-item list-group-item-action noselect url"
-                                data-bind="click: $parents[2].ToggleChannelHubIsSelected, style: { 'background-color': IsSelected() ? 'lightgreen' : 'transparent' }">
+                               data-bind="click: $parents[2].ToggleChannelHubIsSelected, style: { 'background-color': IsSelected() ? 'lightgreen' : 'transparent' }">
                                 <small data-bind="text: Name"></small>
                             </a>
                         </div>

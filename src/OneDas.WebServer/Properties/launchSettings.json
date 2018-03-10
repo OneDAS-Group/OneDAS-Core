@@ -1,12 +1,10 @@
-﻿{
+{
   "profiles": {
     "OneDas.WebServer": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:62977",
       "nativeDebugging": true
     }
   }

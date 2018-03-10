@@ -49,11 +49,25 @@
         }
     }
 
+    public PauseOneDas = async () => {
+        try {
+            await ConnectionManager.InvokeWebClientHub("PauseOneDas")
+        }
+        catch (e) {
+            alert(e.message)
+        }
+    }
+
     public StopOneDas = async () =>
     {
         try
         {
-            await ConnectionManager.InvokeWebClientHub("StopOneDas")
+            if (confirm("OneDAS engine will be stopped.")) {
+
+                await ConnectionManager.InvokeWebClientHub("StopOneDas")
+
+                this.ActiveProject(null)
+            }
         }
         catch (e)
         {

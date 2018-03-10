@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Web
@@ -52,6 +53,11 @@ namespace OneDas.WebServer.Web
         public Task StartOneDas()
         {
             return Task.Run(() => _oneDasEngine.Start());
+        }
+
+        public Task PauseOneDas()
+        {
+            return Task.Run(() => _oneDasEngine.Pause());
         }
 
         public Task StopOneDas()
@@ -228,6 +234,10 @@ namespace OneDas.WebServer.Web
             IList<PluginIdentificationAttribute> dataGatewayPluginIdentificationSet;
             IList<PluginIdentificationAttribute> dataWriterPluginIdentificationSet;
 
+            string productVersion;
+
+            productVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+
             dataGatewayPluginIdentificationSet = _pluginProvider.Get<DataGatewayPluginSettingsBase>().Select(dataGatewaySettingsType =>
             {
                 PluginIdentificationAttribute attribute;
@@ -255,6 +265,7 @@ namespace OneDas.WebServer.Web
                     clientSet: new List<string>() { },
                     dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
+                    productVersion: productVersion,
                     lastError: _oneDasEngine.LastError,
                     oneDasState: _oneDasEngine.OneDasState,
                     webServerOptionsLight: new WebServerOptionsLight

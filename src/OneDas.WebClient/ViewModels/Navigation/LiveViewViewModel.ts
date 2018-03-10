@@ -49,9 +49,21 @@
                     }
                     else
                     {
+                        let value: any
+
                         //chartContext.ValueSet.push({ x: dateTime, y: chartContext.ChannelHub.GetTransformedValue(dataSnapshot[index]) })
                         ///////////////////////////
-                        chartContext.ValueSet.push(<any>chartContext.ChannelHub.GetTransformedValue(dataSnapshot[index]))
+
+                        value = <any>chartContext.ChannelHub.GetTransformedValue(dataSnapshot[index]);
+                        chartContext.ValueSet.push(value)
+
+                        if (chartContext.ChannelHub.Unit()) {
+                            chartContext.Chart.config.options.title.text = chartContext.ChannelHub.Name() + " (" + value + " " + chartContext.ChannelHub.Unit() + ")"
+                        }
+                        else
+                        {
+                            chartContext.Chart.config.options.title.text = chartContext.ChannelHub.Name() + " (" + value + ")"
+                        }
                     }
 
                     index++

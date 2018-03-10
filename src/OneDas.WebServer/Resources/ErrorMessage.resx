@@ -117,62 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Application_SingeltonInstance" xml:space="preserve">
-    <value>Only one instance of this application is allowed.</value>
-  </data>
-  <data name="AuthorizationBehaviorAttribute_NotActive" xml:space="preserve">
-    <value>The calling client is not active. Access denied.</value>
-  </data>
-  <data name="AuthorizationBehaviorAttribute_NotRegistered" xml:space="preserve">
-    <value>The calling client is not registered. Access denied.</value>
-  </data>
-  <data name="AuthorizationBehaviorAttribute_UserIsNotInRequiredRole" xml:space="preserve">
-    <value>User is not in required role (access denied).</value>
-  </data>
-  <data name="AuthorizationBehaviorAttribute_WindowsAuthenticationRequired" xml:space="preserve">
-    <value>Windows authentication must be used if role-based authorization is active (access denied).</value>
-  </data>
   <data name="WebClientHub_ChannelHubNotFound" xml:space="preserve">
     <value>The requested channel is inactive or not available in the project.</value>
-  </data>
-  <data name="CsaReader_CsaNotUnique" xml:space="preserve">
-    <value>The configured slave aliases are not unique.</value>
-  </data>
-  <data name="CsaReader_CsaReadingTimeout" xml:space="preserve">
-    <value>A timeout occured while reading the configured slave alias of all boxes.</value>
-  </data>
-  <data name="OneDasController_OneDasStateNotGreaterEqualReady" xml:space="preserve">
-    <value>OneDAS state must be ready or run to get a data snapshot.</value>
-  </data>
-  <data name="OneDasController_OneDasStateNotGreaterOrEqualReady" xml:space="preserve">
-    <value>OneDAS server must be in state OneDasState.Ready or OneDasState.Run to provide the mapped Hd5Variable set.</value>
-  </data>
-  <data name="OneDasController_ReferenceClockNotMonotonouslyRising" xml:space="preserve">
-    <value>The reference clock is not monotonously rising.</value>
-  </data>
-  <data name="OneDasManager_DirectoryNameInvalid" xml:space="preserve">
-    <value>The directory contains none or invalid characters.</value>
-  </data>
-  <data name="OneDasManager_SystemFaultedAcknowledgeFirst" xml:space="preserve">
-    <value>The system is faulted. Acknowledge the error first.</value>
-  </data>
-  <data name="OleMessageFilterBehaviorAttribute_OnlySynchronousMethodsAllowed" xml:space="preserve">
-    <value>The OleMessageFilterBehavior attribute only works for synchronous method invocations.</value>
-  </data>
-  <data name="ProjectUpgrader_ErrorLoadingProject" xml:space="preserve">
-    <value>An error occured load the project.</value>
-  </data>
-  <data name="ProjectUpgrader_InvalidProjectVersion" xml:space="preserve">
-    <value>The project's version is invalid.</value>
-  </data>
-  <data name="RemoteControlService_AlreadyActiveClient" xml:space="preserve">
-    <value>There is already an active client. Request denied.</value>
-  </data>
-  <data name="RemoteControlService_AlreadyRegistered" xml:space="preserve">
-    <value>The client is already registered.</value>
-  </data>
-  <data name="RemoteControlService_OneDasConfigurationNullReference" xml:space="preserve">
-    <value>OneDasConfiguration must not be a null reference.</value>
   </data>
   <data name="WebClientHub_BaseDirectoryPathIsInvalid" xml:space="preserve">
     <value>The specified base directory path is invalid.</value>

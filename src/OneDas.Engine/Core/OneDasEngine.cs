@@ -128,7 +128,7 @@ namespace OneDas.Engine.Core
 
             _storageThread.Start();
 
-            _oneDasState = OneDasState.Unconfigured;
+            _oneDasState = OneDasState.Idle;
         }
 
         #endregion
@@ -151,7 +151,7 @@ namespace OneDas.Engine.Core
             {
                 return _oneDasState;
             }
-            set
+            private set
             {
                 if (this.OneDasState == value)
                 {
@@ -176,9 +176,9 @@ namespace OneDas.Engine.Core
 
                         break;
 
-                    case OneDasState.Unconfigured:
+                    case OneDasState.Idle:
 
-                        if (this.OneDasState == OneDasState.Initialization || this.OneDasState == OneDasState.ApplyConfiguration)
+                        if (this.OneDasState == OneDasState.Initialization || this.OneDasState == OneDasState.ApplyConfiguration || this.OneDasState == OneDasState.Ready)
                         {
                             isTransitionValid = true;
                         }
@@ -187,7 +187,7 @@ namespace OneDas.Engine.Core
 
                     case OneDasState.ApplyConfiguration:
 
-                        if (this.OneDasState == OneDasState.Unconfigured || this.OneDasState == OneDasState.Ready)
+                        if (this.OneDasState == OneDasState.Idle || this.OneDasState == OneDasState.Ready)
                         {
                             isTransitionValid = true;
                         }
@@ -244,18 +244,34 @@ namespace OneDas.Engine.Core
 
         public void Start()
         {
+            for (int i = 0; i < STORAGE_COUNT; i++)
+            {
+                this.ClearDataStorage(i);
+            }
+
             this.OneDasState = OneDasState.Run;
+        }
+
+        public void Pause()
+        {
+            this.OneDasState = OneDasState.Ready;
         }
 
         public void Stop()
         {
-            this.OneDasState = OneDasState.Ready;
+            if (this.OneDasState == OneDasState.Run)
+            {
+                this.Pause();
+            }
+
+            this.OneDasState = OneDasState.Idle;
+            this.Project = null;
         }
 
         public void AcknowledgeError()
         {
             this.OneDasState = OneDasState.Initialization;
-            this.OneDasState = OneDasState.Unconfigured;
+            this.OneDasState = OneDasState.Idle;
         }
 
         public OneDasPerformanceInformation CreatePerformanceInformation()
@@ -279,8 +295,6 @@ namespace OneDas.Engine.Core
                 {
                     if (channelHubSet != null)
                     {
-                        
-
                         return channelHubSet.Select(channelHub => channelHub.GetValue() ?? Double.NaN).ToList();
                     }
                     else
@@ -302,15 +316,6 @@ namespace OneDas.Engine.Core
 
         private void OnOneDasStateChanged(OneDasState oldState, OneDasState newState)
         {
-            // clear data that was collected during "ready" state
-            if (oldState == OneDasState.Ready && newState == OneDasState.Run)
-            {
-                for (int i = 0; i < STORAGE_COUNT; i++)
-                {
-                    this.ClearDataStorage(i);
-                }
-            }
-
             // notify all listeners of new state
             Task.Run(() => this.OneDasStateChanged?.Invoke(this, new OneDasStateChangedEventArgs(oldState, newState)));
         }
@@ -370,13 +375,14 @@ namespace OneDas.Engine.Core
                 {
                     if (i >= retryCount - 1)
                     {
-                        this.OneDasState = OneDasState.Unconfigured;
+                        this.OneDasState = OneDasState.Idle;
                         throw;
                     }
                 }
             }
 
             _oneDasEngineLogger.LogInformation("project activated");
+
             this.OneDasState = OneDasState.Ready;
         }
 
@@ -611,6 +617,15 @@ namespace OneDas.Engine.Core
             timeShift = new TimeSpan(0, 0, 0, 0, TIMER_SHIFT);
 
             _timer_UpdateIo.Start(interval, timeShift, this.UpdateIo, UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
+
+            if (Process.GetCurrentProcess().PriorityClass < ProcessPriorityClass.RealTime)
+            {
+                _oneDasEngineLogger.LogWarning($"process priority is lower than RealTime: { Process.GetCurrentProcess().PriorityClass }");
+            }
+            else
+            {
+                _oneDasEngineLogger.LogInformation($"process priority is: RealTime");
+            }
         }
 
         private List<IExtendedDataStorage> CreateDataStorages(SampleRate sampleRate, OneDasDataType dataType, int count)
@@ -816,7 +831,7 @@ namespace OneDas.Engine.Core
                             {
                                 if (_hasValidDataSet[context.DataGateway])
                                 {
-                                    this.WriteToDataStorage(context.DataStorageSet[_currentStorageIndex], realChunkIndex, context.DataPort, 1);
+                                    this.CopyToDataStorage(context.DataStorageSet[_currentStorageIndex], realChunkIndex, context.DataPort, 1);
                                 }
                                 // Improve: implement more than just 0 / 1 as data quality indicator
                                 //else
@@ -829,7 +844,7 @@ namespace OneDas.Engine.Core
                         // forward data: data port (input) --> data port (output)
                         foreach (var entry in _linkedDataPortSet)
                         {
-                            this.WriteToDataPort(entry.Source, entry.Target);
+                            this.CopyToDataPort(entry.Source, entry.Target);
                         }
 
                         _lastChunkDateTime = _chunkDateTime;
@@ -846,7 +861,7 @@ namespace OneDas.Engine.Core
             return DateTime.MinValue;
         }
 
-        public unsafe void WriteToDataStorage(IExtendedDataStorage dataStorage, int index, DataPort dataPort, byte status)
+        public unsafe void CopyToDataStorage(IExtendedDataStorage dataStorage, int index, DataPort dataPort, byte status)
         {
             int elementSize;
             byte* sourcePtr;
@@ -860,6 +875,7 @@ namespace OneDas.Engine.Core
 
             if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
             {
+                // from bit to byte
                 bool value;
 
                 value = (*sourcePtr & (1 << dataPort.BitOffset)) > 0;
@@ -894,7 +910,7 @@ namespace OneDas.Engine.Core
             }
         }
 
-        public unsafe void WriteToDataPort(DataPort source, DataPort target)
+        public unsafe void CopyToDataPort(DataPort source, DataPort target)
         {
             int elementSize;
             byte* sourcePtr;

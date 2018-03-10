@@ -1,5 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using OneDas.Infrastructure;
+using OneDas.Plugin;
+using System;
 
 namespace OneDas.Engine.Core
 {
@@ -18,9 +19,56 @@ namespace OneDas.Engine.Core
             
         public unsafe override object GetValue()
         {
+            int elementSize;
+            byte* sourcePtr;
+            DataPort dataPort;
+
+            dataPort = this.AssociatedDataInput;
+
             if (this.AssociatedDataInput != null)
             {
-                return new Span<T>(this.AssociatedDataInput.DataPtr.ToPointer(), 1)[0];
+                sourcePtr = (byte*)dataPort.DataPtr.ToPointer();
+                elementSize = OneDasUtilities.SizeOf(typeof(T));
+
+                byte* targetPtr = stackalloc byte[elementSize];
+
+                if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
+                {
+                    // from bit to byte
+                    bool value;
+
+                    value = (*sourcePtr & (1 << dataPort.BitOffset)) > 0;
+                    targetPtr[0] = *(byte*)&value;
+                }
+                else
+                {
+                    switch (dataPort.Endianness)
+                    {
+                        case Endianness.LittleEndian:
+
+                            for (int i = 0; i < elementSize; i++)
+                            {
+                                targetPtr[i] = sourcePtr[i];
+                            }
+
+                            break;
+
+                        case Endianness.BigEndian:
+
+                            for (int i = 0; i < elementSize; i++)
+                            {
+                                targetPtr[i] = sourcePtr[elementSize - i - 1];
+                            }
+
+                            break;
+
+                        default:
+
+                            throw new ArgumentException();
+                    }
+                }
+
+                return new Span<T>(targetPtr, 1)[0];
             }
             else
             {

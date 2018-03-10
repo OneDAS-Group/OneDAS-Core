@@ -16,7 +16,7 @@ namespace OneDas.WebServer
 
             // preset, mutable
             this.AspBaseUrl = "http://127.0.0.1:32768";
-            this.OneDasName = "Prototype";
+            this.OneDasName = "OneDAS";
 
             // preset, immutable
             this.ApplicationName = "OneDAS WebServer";

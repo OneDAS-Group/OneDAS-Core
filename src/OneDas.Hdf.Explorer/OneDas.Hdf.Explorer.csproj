@@ -18,7 +18,7 @@
     <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6642-34729" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Gam" Version="1.0.0-alpha-6638-33851" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6642-34729" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6642-33865" />
+    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6643-22401" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />

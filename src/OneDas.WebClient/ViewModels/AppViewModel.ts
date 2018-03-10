@@ -1,13 +1,14 @@
 ﻿class AppViewModel
 {
+    public ProductVersion: KnockoutObservable<string>
+    public LastError: KnockoutObservable<string>
+    public ClientSet: KnockoutObservableArray<string>
+    public OneDasState: KnockoutObservable<OneDasStateEnum>
     public WorkspaceSet: KnockoutObservableArray<WorkspaceBase>
     public ReducedWorkspaceSet: KnockoutObservableArray<WorkspaceBase>
     public ActiveProject: KnockoutObservable<OneDasProjectViewModel>
-    public ClientSet: KnockoutObservableArray<string>
-    public OneDasState: KnockoutObservable<OneDasStateEnum>
     public WebServerOptionsLight: KnockoutObservable<WebServerOptionsLightViewModel>
     public ClientMessageLog: KnockoutObservableArray<MessageLogEntryViewModel>
-    public LastError: KnockoutObservable<string>
     public PerformanceInformation: KnockoutObservable<OneDasPerformanceInformationViewModel>
 
     public NewWebServerOptionsLightOneDasName: KnockoutObservable<string>
@@ -16,7 +17,7 @@
 
     constructor(appModel: any)
     {
-        this.OneDasState = ko.observable(0) // default
+        this.OneDasState = ko.observable<OneDasStateEnum>(0) // default
         this.WorkspaceSet = ko.observableArray<WorkspaceBase>()
         this.ClientMessageLog = ko.observableArray<MessageLogEntryViewModel>()
         this.PerformanceInformation = ko.observable<OneDasPerformanceInformationViewModel>()
@@ -56,6 +57,7 @@
         EnumerationHelper.Description["SampleRateEnum_SampleRate_1"] = "1 Hz"
 
         // app model      
+        this.ProductVersion = ko.observable<string>(appModel.ProductVersion)
         this.ClientSet = ko.observableArray<string>(appModel.ClientSet)
         this.LastError = ko.observable<string>(appModel.LastError)
         this.OneDasState(appModel.OneDasState)
@@ -65,7 +67,6 @@
         this.WorkspaceSet.push(new ControlViewModel(this.ActiveProject))
         this.WorkspaceSet.push(new LiveViewViewModel(this.ActiveProject))
         this.WorkspaceSet.push(new EditorViewModel(this.ActiveProject))
-        this.WorkspaceSet.push(new DiscoveryViewModel(this.ActiveProject))
         this.WorkspaceSet.push(new ExtensionViewModel(this.ActiveProject))
         this.ReducedWorkspaceSet = ko.observableArray(this.WorkspaceSet().slice(1, this.WorkspaceSet().length))
 

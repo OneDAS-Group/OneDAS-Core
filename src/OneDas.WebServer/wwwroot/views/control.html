@@ -1,4 +1,4 @@
-﻿<!-- ko if: !$root.ActiveProject() && $root.OneDasState() !== OneDasStateEnum.ApplyConfiguration -->
+﻿<!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.ApplyConfiguration -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
     <h1 class="display-4">Activate a project to start ruling OneDAS!</h1>
     <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
@@ -15,7 +15,6 @@
     </div>
 </div>
 <!-- /ko -->
-
 <!-- ko if: $root.OneDasState() === OneDasStateEnum.ApplyConfiguration -->
 <div id="Editor_ApplyConfiguration" class="center-vertically plus-center-horizontally">
     <h1 class="display-4 mb-5 noselect">Activating project ...</h1>
@@ -64,7 +63,7 @@
 </div>
 
 <!-- ACTIVE PROJECT -->
-<!-- ko if: $root.ActiveProject() && $root.OneDasState() !== OneDasStateEnum.ApplyConfiguration -->
+<!-- ko if: ($root.ActiveProject() && $root.OneDasState() == OneDasStateEnum.Error) || $root.OneDasState() >= OneDasStateEnum.Ready -->
 <!-- ko with: $root.ActiveProject -->
 
 <div id="ActiveProject_Header" class="container">
@@ -87,23 +86,26 @@
                     <div class="d-flex">
                         <div class="flex-column">
                             <!-- ko if: $root.OneDasState() === OneDasStateEnum.Ready -->
+                            <span class="fa fa-stop url mr-2 text-white"
+                                  data-bind="click: StopOneDas">
+                            </span>
                             <span class="fa fa-play url mr-2 text-white"
                                   data-bind="click: StartOneDas">
                             </span>
                             <!-- /ko -->
                             <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
                             <span class="fa fa-pause url mr-2 text-white"
-                                  data-bind="click: StopOneDas">
+                                  data-bind="click: PauseOneDas">
                             </span>
                             <!-- /ko -->
                         </div>
 
-                        <!-- ko if: $root.OneDasState() === 1 -->
+                        <!-- ko if: $root.OneDasState() === OneDasStateEnum.Error -->
                         <span class="text-danger">
                             ERROR
                         </span>
                         <!-- /ko -->
-                        <!-- ko if: $root.OneDasState() >= 2 && $root.OneDasState() < 6 -->
+                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.Ready -->
                         <span class="text-warning">
                             IDLE
                         </span>
@@ -154,8 +156,8 @@
                         <!-- /ko -->
                     </div>
                 </div>
-            </div> 
-        </div>       
+            </div>
+        </div>
     </div>
     <div class="row">
         <div class="col-md-8">
@@ -175,24 +177,24 @@
                         </thead>
                         <tbody>
                             <!-- ko if ActiveProject() -->
-                                <!-- ko with: ActiveProject() -->
-                                    <!-- ko if: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()).length > 0 && DataSnapshot().length > 0 -->
-                                        <!-- ko foreach: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()) -->
-                                            <tr data-toggle="tooltip" data-placement="left"
-                                                data-bind="attr: { title: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType()) }">
-                                                <th class="table-row-condensed"><small data-bind="text: $index() + 1"></small></th>
-                                                <td class="table-row-condensed"><small data-bind="text: Name"></small></td>
-                                                <!-- ko if: DataType() === OneDasDataTypeEnum.BOOLEAN -->
-                                                    <td class="table-row-condensed text-right"><small data-bind="text: $parent.DataSnapshot()[$index()]"></small></td>
-                                                <!-- /ko -->
-                                                <!-- ko if: DataType() !== OneDasDataTypeEnum.BOOLEAN -->
-                                                    <td class="table-row-condensed text-right"><small data-bind="text: GetTransformedValue($parent.DataSnapshot()[$index()]).toFixed(2)"></small></td>
-                                                <!-- /ko -->
-                                                <td class="table-row-condensed"><small data-bind="text: Unit"></small></td>
-                                            </tr>
-                                        <!-- /ko -->
-                                    <!-- /ko -->
+                            <!-- ko with: ActiveProject() -->
+                            <!-- ko if: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()).length > 0 && DataSnapshot().length > 0 -->
+                            <!-- ko foreach: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()) -->
+                            <tr data-toggle="tooltip" data-placement="left"
+                                data-bind="attr: { title: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType()) }">
+                                <th class="table-row-condensed"><small data-bind="text: $index() + 1"></small></th>
+                                <td class="table-row-condensed"><small data-bind="text: Name"></small></td>
+                                <!-- ko if: DataType() === OneDasDataTypeEnum.BOOLEAN -->
+                                <td class="table-row-condensed text-right"><small data-bind="text: $parent.DataSnapshot()[$index()]"></small></td>
                                 <!-- /ko -->
+                                <!-- ko if: DataType() !== OneDasDataTypeEnum.BOOLEAN -->
+                                <td class="table-row-condensed text-right"><small data-bind="text: GetTransformedValue($parent.DataSnapshot()[$index()]).toFixed(2)"></small></td>
+                                <!-- /ko -->
+                                <td class="table-row-condensed"><small data-bind="text: Unit"></small></td>
+                            </tr>
+                            <!-- /ko -->
+                            <!-- /ko -->
+                            <!-- /ko -->
                             <!-- /ko -->
                         </tbody>
                     </table>
