@@ -161,7 +161,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             string vdsFilePath;
             string vdsMetaFilePath;
 
-            Dictionary<string, CampaignInfo> campaignInfoSet;
+            List<CampaignInfo> campaignInfoSet;
 
             //
             vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
@@ -188,8 +188,8 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 vdsMetaFileId = H5F.create(vdsMetaFilePath, H5F.ACC_TRUNC, fcPropertyId);
             }
 
-            campaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId);
-            IList<HdfElementBase> currentList = campaignInfoSet.Values.Cast<HdfElementBase>().ToList();
+            campaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId, true);
+            IList<HdfElementBase> currentList = campaignInfoSet.Cast<HdfElementBase>().ToList();
 
             new VdsMetaNavigator(vdsFileId, vdsMetaFileId, "/", currentList);
 

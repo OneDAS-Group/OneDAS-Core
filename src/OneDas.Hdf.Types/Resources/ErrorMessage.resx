@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CampaignInfo" xml:space="preserve">
+    <value>Invalid group identifier.</value>
+  </data>
   <data name="IOHelper_CouldNotOpenAttribute" xml:space="preserve">
     <value>Could not open attribute.</value>
   </data>
@@ -150,7 +153,7 @@
   <data name="IOHelper_DataTypeMismatch" xml:space="preserve">
     <value>Data type mismatch.</value>
   </data>
-  <data name="ypeConversionHelper_CouldNotCommitDataType" xml:space="preserve">
+  <data name="TypeConversionHelper_CouldNotCommitDataType" xml:space="preserve">
     <value>Could not commit data type.</value>
   </data>
 </root>

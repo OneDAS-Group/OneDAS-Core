@@ -61,6 +61,15 @@ namespace OneDas.Hdf {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invalid group identifier. ähnelt.
+        /// </summary>
+        internal static string CampaignInfo {
+            get {
+                return ResourceManager.GetString("CampaignInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open attribute. ähnelt.
         /// </summary>
         internal static string IOHelper_CouldNotOpenAttribute {
@@ -162,9 +171,9 @@ namespace OneDas.Hdf {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not commit data type. ähnelt.
         /// </summary>
-        internal static string ypeConversionHelper_CouldNotCommitDataType {
+        internal static string TypeConversionHelper_CouldNotCommitDataType {
             get {
-                return ResourceManager.GetString("ypeConversionHelper_CouldNotCommitDataType", resourceCulture);
+                return ResourceManager.GetString("TypeConversionHelper_CouldNotCommitDataType", resourceCulture);
             }
         }
     }

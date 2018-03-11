@@ -9,8 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.0-preview1-final" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0-preview1-final" />
-    <PackageReference Include="OneDas.Types.Abstractions" Version="1.0.0-alpha-6643-22165" />
-    <PackageReference Include="System.Memory" Version="4.5.0-preview2-26130-01" />
+    <PackageReference Include="OneDas.Types.Abstractions" Version="1.0.0-alpha-6643-33060" />
     <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
   </ItemGroup>

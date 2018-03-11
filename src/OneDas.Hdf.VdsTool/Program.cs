@@ -85,8 +85,8 @@ namespace OneDas.Hdf.VdsTool
             string lastVariablePath = String.Empty;
             string vdsGroupPath;
 
-            var campaignInfoSet = new Dictionary<string, CampaignInfo>();
-            var sourceFilePathSet = new List<string>();
+            List<CampaignInfo> campaignInfoSet = new List<CampaignInfo>();
+            List<string> sourceFilePathSet = new List<string>();
 
             // fill sourceFilePathSet
             sourceDirectoryPathSet.ToList().ForEach(x =>
@@ -140,17 +140,17 @@ namespace OneDas.Hdf.VdsTool
             // campaign
             foreach (var campaignInfo in campaignInfoSet)
             {
-                Console.WriteLine($"\n{ campaignInfo.Key }");
+                Console.WriteLine($"\n{ campaignInfo.Name }");
 
-                vdsGroupPath = campaignInfo.Key;
+                vdsGroupPath = campaignInfo.GetPath();
                 vdsCampaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, vdsGroupPath).GroupId;
 
                 // variable
-                foreach (var variableInfo in campaignInfo.Value.VariableInfoSet)
+                foreach (var variableInfo in campaignInfo.VariableInfoSet)
                 {                
-                    Console.WriteLine($"\t{variableInfo.Key}");
+                    Console.WriteLine($"\t{ variableInfo.Name }");
 
-                    vdsVariableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variableInfo.Key).GroupId;
+                    vdsVariableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variableInfo.Name).GroupId;
 
                     //// make hard links for each display name
                     ////foreach (string variableName in variableInfo.Value.VariableNameSet)
@@ -158,16 +158,16 @@ namespace OneDas.Hdf.VdsTool
                     ////    H5L.copy(vdsGroupIdSet[vdsGroupIdSet.Count() - 1], variableInfo.Key, vdsGroupIdSet[vdsGroupIdSet.Count() - 2], variableName);
                     ////}
 
-                    IOHelper.PrepareAttribute(vdsVariableGroupId, "name_set", variableInfo.Value.VariableNameSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                    IOHelper.PrepareAttribute(vdsVariableGroupId, "group_set", variableInfo.Value.VariableGroupSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                    IOHelper.PrepareAttribute(vdsVariableGroupId, "unit_set", variableInfo.Value.UnitSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                    IOHelper.PrepareAttribute(vdsVariableGroupId, "transfer_function_set", variableInfo.Value.TransferFunctionSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                    IOHelper.PrepareAttribute(vdsVariableGroupId, "name_set", variableInfo.VariableNameSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                    IOHelper.PrepareAttribute(vdsVariableGroupId, "group_set", variableInfo.VariableGroupSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                    IOHelper.PrepareAttribute(vdsVariableGroupId, "unit_set", variableInfo.UnitSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                    IOHelper.PrepareAttribute(vdsVariableGroupId, "transfer_function_set", variableInfo.TransferFunctionSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
 
                     // dataset
-                    foreach (var datasetInfo in variableInfo.Value.DatasetInfoSet)
+                    foreach (var datasetInfo in variableInfo.DatasetInfoSet)
                     {
-                        Console.WriteLine($"\t\t{ datasetInfo.Key }");
-                        Program.MergeDatasets(vdsVariableGroupId, $"{ vdsGroupPath }/{ variableInfo.Key }", epochStart, epochEnd, datasetInfo.Value, true);
+                        Console.WriteLine($"\t\t{ datasetInfo.Name }");
+                        Program.MergeDatasets(vdsVariableGroupId, $"{ variableInfo.GetPath() }", epochStart, epochEnd, datasetInfo, true);
                     }
 
                     // flush data - necessary to avoid AccessViolationException at H5F.close()
@@ -178,7 +178,7 @@ namespace OneDas.Hdf.VdsTool
                 }
 
                 // don't forget is_chunk_completed_set
-                Program.MergeDatasets(vdsCampaignGroupId, vdsGroupPath, epochStart, epochEnd, campaignInfo.Value.ChunkDatasetInfo, false);
+                Program.MergeDatasets(vdsCampaignGroupId, vdsGroupPath, epochStart, epochEnd, campaignInfo.ChunkDatasetInfo, false);
 
                 // clean up
                 H5G.close(vdsCampaignGroupId);
@@ -540,7 +540,7 @@ namespace OneDas.Hdf.VdsTool
             hdf_aggregate_function_t[] aggregate_function_set;
             SampleRate sampleRate = default;
 
-            var campaignInfoSet = new Dictionary<string, CampaignInfo>();
+            List<CampaignInfo> campaignInfoSet = new List<CampaignInfo>();
 
             int index;
 
@@ -582,7 +582,7 @@ namespace OneDas.Hdf.VdsTool
 
                     // sourceFileId
                     sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-                    campaignInfoSet = GeneralHelper.GetCampaignInfoSet(sourceFileId);
+                    campaignInfoSet = GeneralHelper.GetCampaignInfoSet(sourceFileId, false);
 
                     // targetFileId
                     targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
@@ -615,17 +615,17 @@ namespace OneDas.Hdf.VdsTool
                         index = 0;
 
                         // variableInfo
-                        foreach (var variableInfo in campaignInfo.Value.VariableInfoSet)
+                        foreach (var variableInfo in campaignInfo.VariableInfoSet)
                         {
                             index++;
-                            Console.WriteLine($"{variableInfo.Value.VariableNameSet.Last()} ({index}/{campaignInfo.Value.VariableInfoSet.Count()})");
+                            Console.WriteLine($"{variableInfo.VariableNameSet.Last()} ({ index }/{ campaignInfo.VariableInfoSet.Count() })");
 
-                            //if (variableInfo.Key != "e5d628c9-3592-4245-92a5-deb3e678b788")
+                            //if (variableInfo.Name != "e5d628c9-3592-4245-92a5-deb3e678b788")
                             //{
                             //    continue;
                             //}
 
-                            groupPath = $"{campaignInfo.Value.Name}/{variableInfo.Value.Name}";
+                            groupPath = $"{ campaignInfo.Name }/{ variableInfo.Name }";
 
                             // if meta data entry exists
                             if (IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
@@ -641,11 +641,11 @@ namespace OneDas.Hdf.VdsTool
                                     {
                                         sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz"; // improve: remove magic number
 
-                                        if (variableInfo.Value.DatasetInfoSet.Where(x => x.Value.Name == sourceDatasetName).Any())
+                                        if (variableInfo.DatasetInfoSet.Where(x => x.Name == sourceDatasetName).Any())
                                         {
                                             sampleRate = testedSampleRate;
-                                            sourceDatasetId = H5D.open(sourceFileId, $"{groupPath}/{sourceDatasetName}");
-                                            sourceDatasetId_status = H5D.open(sourceFileId, $"{groupPath}/{sourceDatasetName}_status");
+                                            sourceDatasetId = H5D.open(sourceFileId, $"{ groupPath }/{ sourceDatasetName }");
+                                            sourceDatasetId_status = H5D.open(sourceFileId, $"{ groupPath }/{sourceDatasetName }_status");
                                             typeId = H5D.get_type(sourceDatasetId);
 
                                             break;
@@ -664,7 +664,7 @@ namespace OneDas.Hdf.VdsTool
                                     GeneralHelper.InvokeGenericMethod(typeof(Program), null, nameof(Program.DoAggregationStuff), 
                                                                   BindingFlags.NonPublic | BindingFlags.Static,
                                                                   TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                                  new object[] { variableInfo.Value, groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, aggregate_function_set, messageLog });
+                                                                  new object[] { variableInfo, groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, aggregate_function_set, messageLog });
 
                                     // clean up
                                     H5D.close(sourceDatasetId_status);

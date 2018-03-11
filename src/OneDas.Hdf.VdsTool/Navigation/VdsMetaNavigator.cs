@@ -185,7 +185,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             Console.Clear();
 
             baseDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "DOCUMENTATION");
-            groupNameSet = campaignInfo.VariableInfoSet.Select(variableInfo => variableInfo.Value.VariableGroupSet.Last()).Distinct().ToList();
+            groupNameSet = campaignInfo.VariableInfoSet.Select(variableInfo => variableInfo.VariableGroupSet.Last()).Distinct().ToList();
 
             try
             {
@@ -231,7 +231,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                     {
                         RestructuredTextTable restructuredTextTable;
 
-                        List<KeyValuePair<string, VariableInfo>> groupedVariableInfoSet;
+                        List<VariableInfo> groupedVariableInfoSet;
 
                         List<hdf_transfer_function_t> transferFunctionSet;
                         List<hdf_aggregate_function_t> aggregateFunctionSet;
@@ -242,7 +242,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                         restructuredTextWriter.WriteLine();
 
                         restructuredTextTable = new RestructuredTextTable(new List<string>() { "Name", "Unit", "Guid" });
-                        groupedVariableInfoSet = campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.Value.VariableGroupSet.Last() == groupName).OrderBy(variableInfo => variableInfo.Value.VariableNameSet.Last()).ToList();
+                        groupedVariableInfoSet = campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableGroupSet.Last() == groupName).OrderBy(variableInfo => variableInfo.VariableNameSet.Last()).ToList();
 
                         groupedVariableInfoSet.ForEach(variableInfo =>
                         {
@@ -254,7 +254,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             string unit;
 
                             // name
-                            name = variableInfo.Value.VariableNameSet.Last();
+                            name = variableInfo.VariableNameSet.Last();
 
                             if (name.Count() > 43)
                             {
@@ -262,14 +262,14 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             }
 
                             // guid
-                            guid = $"{ variableInfo.Key.Substring(0, 8) }...";
+                            guid = $"{ variableInfo.Name.Substring(0, 8) }...";
 
                             // unit, transferFunctionSet, aggregateFunctionSet
                             unit = string.Empty;
 
                             try
                             {
-                                groupPath = GeneralHelper.CombinePath(campaignInfo.Name, variableInfo.Key);
+                                groupPath = variableInfo.GetPath();
 
                                 if (IOHelper.CheckLinkExists(_vdsMetaFileId, groupPath))
                                 {
