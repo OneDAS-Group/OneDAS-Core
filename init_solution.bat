@@ -2,6 +2,7 @@ set "baseFolder=%cd%"
 
 cd %baseFolder%\web
 call npm install
+
 set "sourceDirectory=%baseFolder%\web\node_modules"
 
 :: WebServer
