@@ -4,14 +4,14 @@ class AppViewModel
 {
     public IsMainViewRequested: KnockoutObservable<boolean>
     public CampaignInfoSet: KnockoutObservableArray<CampaignInfoViewModel>
-    public CampaignDescriptionSet: Map<string, string>
+    public CampaignDescriptionSet: KnockoutObservable<Map<string, string>>
     public SelectedDatasetInfoSet: KnockoutObservableArray<DatasetInfoViewModel>
     public SampleRateSet: string[]
     public SelectedSampleRate: KnockoutObservable<string>
     public SelectedFileFormat: KnockoutObservable<FileFormatEnum>
     public SelectedFileGranularity: KnockoutObservable<FileGranularityEnum>
     public IsConnected: KnockoutObservable<boolean>
-    public HdfExplorerState: KnockoutObservable<HdfExplorerState>
+    public HdfExplorerState: KnockoutObservable<HdfExplorerStateEnum>
     public ByteCount: KnockoutObservable<number>
     public Progress: KnockoutObservable<number>
     public Message: KnockoutObservable<string>
@@ -31,14 +31,14 @@ class AppViewModel
         let campaignInfoModelSet: any = appModel.CampaignInfoSet;
 
         this.IsMainViewRequested = ko.observable<boolean>(true)
-        this.CampaignDescriptionSet = appModel.CampaignDescriptionSet;
-        this.CampaignInfoSet = ko.observableArray(Object.keys(campaignInfoModelSet).map(key => new CampaignInfoViewModel(campaignInfoModelSet[key])));
+        this.CampaignDescriptionSet = ko.observable(appModel.CampaignDescriptionSet);
+        this.CampaignInfoSet = ko.observableArray(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)));
         this.SelectedDatasetInfoSet = ko.observableArray<DatasetInfoViewModel>()
         this.SelectedSampleRate = ko.observable<string>()
         this.SelectedFileFormat = ko.observable<FileFormatEnum>(FileFormatEnum.CSV)
         this.SelectedFileGranularity = ko.observable<FileGranularityEnum>(FileGranularityEnum.Hour)
         this.IsConnected = ko.observable<boolean>(true)
-        this.HdfExplorerState = ko.observable<HdfExplorerState>(appModel.HdfExplorerState)
+        this.HdfExplorerState = ko.observable<HdfExplorerStateEnum>(appModel.HdfExplorerState)
         this.ByteCount = ko.observable<number>(0)
         this.Progress = ko.observable<number>(0)
         this.Message = ko.observable<string>("")
@@ -169,7 +169,7 @@ class AppViewModel
         })
 
         // callback
-        broadcaster.on("SendState", (hdfExplorerState: HdfExplorerState) =>
+        broadcaster.on("SendState", (hdfExplorerState: HdfExplorerStateEnum) =>
         {
             this.HdfExplorerState(hdfExplorerState)
         })
@@ -203,7 +203,8 @@ class AppViewModel
         this.CanLoadData(
             (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
             this.SelectedDatasetInfoSet().length > 0 &&
-            this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate())
+            this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate()) &&
+            this.HdfExplorerState() === HdfExplorerStateEnum.Idle
         )
     }
 
@@ -423,6 +424,18 @@ class AppViewModel
     })
 
     // commands
+    public UpdateCampaignInfoSet = async () =>
+    {
+        let campaignInfoModelSet: any
+        let campaignDescriptionSet: any
+
+        campaignInfoModelSet = await broadcaster.invoke("UpdateCampaignInfoSet")
+        this.CampaignInfoSet(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)))
+
+        campaignDescriptionSet = await broadcaster.invoke("GetCampaignDescriptionSet")
+        this.CampaignDescriptionSet(campaignDescriptionSet)
+    }
+
     public ShowDataAvailability = (campaignInfo: CampaignInfoViewModel) =>
     {
         this.SelectedCampaignInfo(campaignInfo)

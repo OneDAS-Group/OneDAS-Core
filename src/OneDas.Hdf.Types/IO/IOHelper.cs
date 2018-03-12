@@ -506,7 +506,28 @@ namespace OneDas.Hdf.IO
                 }
                 else if (elementType.IsValueType && !elementType.IsPrimitive && !elementType.IsEnum)
                 {
-                    valueSet.CopyTo(new Span<T>(valueSetPointer.ToPointer(), valueSet.Count()));
+                    IntPtr sourcePtr;
+                    int counter;
+
+                    counter = 0;
+                    valueSetPointer = Marshal.AllocHGlobal(byteLength);
+
+                    valueSet.Cast<ValueType>().ToList().ForEach(x =>
+                    {
+                        Span<byte> source;
+                        Span<byte> target;
+
+                        sourcePtr = Marshal.AllocHGlobal(elementTypeSize);
+                        Marshal.StructureToPtr(x, sourcePtr, false);
+
+                        source = new Span<byte>(sourcePtr.ToPointer(), Marshal.SizeOf<T>());
+                        target = new Span<byte>(IntPtr.Add(valueSetPointer, elementTypeSize * counter).ToPointer(), Marshal.SizeOf<T>());
+
+                        source.CopyTo(target);
+
+                        counter += 1;
+                        Marshal.FreeHGlobal(sourcePtr);
+                    });
                 }
                 else
                 {

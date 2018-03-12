@@ -8,11 +8,7 @@
     {
         super(variableInfoModel.Name, parent)
 
-        let datasetInfoModelSet: any[]
-
-        datasetInfoModelSet = variableInfoModel.DatasetInfoSet
-
-        this.DatasetInfoSet = Object.keys(datasetInfoModelSet).map(key => new DatasetInfoViewModel(datasetInfoModelSet[key], this))
+        this.DatasetInfoSet = variableInfoModel.DatasetInfoSet.map(datasetInfoModel => new DatasetInfoViewModel(datasetInfoModel, this))
         this.VariableNameSet = variableInfoModel.VariableNameSet
         this.VariableGroupSet = variableInfoModel.VariableGroupSet
     }  

@@ -23,6 +23,8 @@ namespace OneDas.Hdf.Core
         {
             _chunkDatasetInfo = new DatasetInfo("is_chunk_completed_set", TypeConversionHelper.GetHdfTypeIdFromType(typeof(bool)), this, this.IsLazyLoading);
             _variableInfoSet = new List<VariableInfo>();
+
+            this.RegisterSyncGroup(nameof(CampaignInfo), new SyncContext(this.UpdateCampaignInfo));
         }
 
         #endregion
@@ -34,7 +36,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(CampaignInfo));
 
                 return _chunkDatasetInfo;
             }
@@ -45,7 +47,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(CampaignInfo));
 
                 return _variableInfoSet;
             }
@@ -70,24 +72,25 @@ namespace OneDas.Hdf.Core
             return this.VariableInfoSet;
         }
 
-        protected override void OnUpdate(FileContext fileContext)
+        protected override long GetId(long fileId)
+        {
+            return H5G.open(fileId, this.GetPath());
+        }
+
+        protected override void CloseId(long id)
+        {
+            if (H5I.is_valid(id) > 0) { H5G.close(id); }
+        }
+
+        private void UpdateCampaignInfo(FileContext fileContext, long campaignGroupId)
         {
             ulong idx;
-            long campaignGroupId;
 
             idx = 0;
-            campaignGroupId = H5G.open(fileContext.FileId, this.GetPath());
 
-            try
-            {
-                _chunkDatasetInfo.Update(fileContext);
+            _chunkDatasetInfo.Update(fileContext);
 
-                GeneralHelper.SuppressErrors(() => H5L.iterate(campaignGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero));
-            }
-            finally
-            {
-                if (H5I.is_valid(campaignGroupId) > 0) { H5G.close(campaignGroupId); }
-            }
+            GeneralHelper.SuppressErrors(() => H5L.iterate(campaignGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero));
 
             int Callback(long campaignGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
             {

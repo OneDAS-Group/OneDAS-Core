@@ -87,3 +87,8 @@
 .collapse {
     display: none;
 }
+
+/* fa fix */
+.fa-fix {
+    font-size: 14px;
+}

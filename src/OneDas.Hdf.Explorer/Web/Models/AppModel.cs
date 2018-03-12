@@ -8,7 +8,7 @@ namespace OneDas.Hdf.Explorer.Web
     [DataContract]
     public class AppModel
     {
-        public AppModel(HdfExplorerState hdfExplorerState, Dictionary<string, CampaignInfo> campaignInfoSet, Dictionary<string, string> campaignDescriptionSet)
+        public AppModel(HdfExplorerState hdfExplorerState, List<CampaignInfo> campaignInfoSet, Dictionary<string, string> campaignDescriptionSet)
         {
             this.HdfExplorerState = hdfExplorerState;
             this.CampaignInfoSet = campaignInfoSet;
@@ -19,7 +19,7 @@ namespace OneDas.Hdf.Explorer.Web
         public HdfExplorerState HdfExplorerState;
 
         [DataMember]
-        public readonly Dictionary<string, CampaignInfo> CampaignInfoSet;
+        public readonly List<CampaignInfo> CampaignInfoSet;
 
         [DataMember]
         public readonly Dictionary<string, string> CampaignDescriptionSet;

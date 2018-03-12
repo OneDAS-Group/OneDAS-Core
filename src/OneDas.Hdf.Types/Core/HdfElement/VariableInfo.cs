@@ -31,6 +31,9 @@ namespace OneDas.Hdf.Core
             _transferFunctionSet = new List<hdf_transfer_function_t>();
 
             _datasetInfoSet = new List<DatasetInfo>();
+
+            this.RegisterSyncGroup(nameof(this.VariableNameSet), new SyncContext(this.UpdateVariableNameSet));
+            this.RegisterSyncGroup(nameof(VariableInfo), new SyncContext(this.UpdateVariableInfo));
         }
 
         #endregion
@@ -42,7 +45,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(this.VariableNameSet));
 
                 return _variableNameSet;
             }
@@ -53,7 +56,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(VariableInfo));
 
                 return _variableGroupSet;
             }
@@ -64,7 +67,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(VariableInfo));
 
                 return _unitSet;
             }
@@ -75,7 +78,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(VariableInfo));
 
                 return _transferFunctionSet;
             }
@@ -86,7 +89,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(VariableInfo));
 
                 return _datasetInfoSet;
             }
@@ -111,32 +114,36 @@ namespace OneDas.Hdf.Core
             return this.DatasetInfoSet;
         }
 
-        protected override void OnUpdate(FileContext fileContext)
+        protected override long GetId(long fileId)
+        {
+            return H5G.open(fileId, this.GetPath());
+        }
+
+        protected override void CloseId(long id)
+        {
+            if (H5I.is_valid(id) > 0) { H5G.close(id); }
+        }
+
+        private void UpdateVariableNameSet(FileContext fileContext, long variableGroupId)
+        {
+            _variableNameSet = IOHelper.UpdateAttributeList(variableGroupId, "name_set", _variableNameSet.ToArray()).ToList();
+        }
+
+        private void UpdateVariableInfo(FileContext fileContext, long variableGroupId)
         {
             ulong idx;
-            long variableGroupId;
 
             idx = 0;
-            variableGroupId = H5G.open(fileContext.FileId, this.GetPath());
 
-            try
+            _variableGroupSet = IOHelper.UpdateAttributeList(variableGroupId, "group_set", _variableGroupSet.ToArray()).ToList();
+
+            if (fileContext.FormatVersion > 1)
             {
-                _variableNameSet = IOHelper.UpdateAttributeList(variableGroupId, "name_set", _variableNameSet.ToArray()).ToList();
-                _variableGroupSet = IOHelper.UpdateAttributeList(variableGroupId, "group_set", _variableGroupSet.ToArray()).ToList();
-
-                if (fileContext.FormatVersion > 1)
-                {
-                    _unitSet = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", _unitSet.ToArray()).ToList();
-                    _transferFunctionSet = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", _transferFunctionSet.ToArray()).ToList();
-                }
-
-                // _databaseInfoSet
-                H5L.iterate(variableGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero);
+                _unitSet = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", _unitSet.ToArray()).ToList();
+                _transferFunctionSet = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", _transferFunctionSet.ToArray()).ToList();
             }
-            finally
-            {
-                if (H5I.is_valid(variableGroupId) > 0) { H5G.close(variableGroupId); }
-            }
+
+            H5L.iterate(variableGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero);
 
             int Callback(long variableGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
             {
@@ -175,7 +182,7 @@ namespace OneDas.Hdf.Core
                 return 0;
             }
         }
-
+        
         #endregion
     }
 }

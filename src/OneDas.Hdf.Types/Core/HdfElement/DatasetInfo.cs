@@ -22,6 +22,8 @@ namespace OneDas.Hdf.Core
             this.TypeId = typeId;
 
             _sourceFileInfoSet = new List<(string filePath, ulong length, DateTime dateTime)>();
+
+            this.RegisterSyncGroup(nameof(DatasetInfo), new SyncContext(this.UpdateDatasetInfo));
         }
 
         #endregion
@@ -34,7 +36,7 @@ namespace OneDas.Hdf.Core
         {
             get
             {
-                this.Update();
+                this.Update(nameof(DatasetInfo));
 
                 return _sourceFileInfoSet;
             }
@@ -54,10 +56,23 @@ namespace OneDas.Hdf.Core
             return this.Name;
         }
 
-        protected override void OnUpdate(FileContext fileContext)
+        public override IEnumerable<HdfElementBase> GetChildSet()
         {
-            long groupId = -1;
-            long datasetId = -1;
+            return new List<DatasetInfo> { };
+        }
+
+        protected override long GetId(long fileId)
+        {
+            return H5D.open(fileId, this.GetPath());
+        }
+
+        protected override void CloseId(long id)
+        {
+            if (H5I.is_valid(id) > 0) { H5D.close(id); }
+        }
+
+        private void UpdateDatasetInfo(FileContext fileContext, long datasetId)
+        {
             long dataspaceId = -1;
 
             ulong[] actualDimenionSet = new ulong[1];
@@ -65,29 +80,16 @@ namespace OneDas.Hdf.Core
 
             try
             {
-                groupId = H5G.open(fileContext.FileId, this.Parent.GetPath());
+                dataspaceId = H5D.get_space(datasetId);
 
-                if (H5L.exists(groupId, this.Name) > 0)
-                {
-                    datasetId = H5D.open(groupId, this.Name);
-                    dataspaceId = H5D.get_space(datasetId);
+                H5S.get_simple_extent_dims(dataspaceId, actualDimenionSet, maximumDimensionSet);
 
-                    H5S.get_simple_extent_dims(dataspaceId, actualDimenionSet, maximumDimensionSet);
-
-                    _sourceFileInfoSet.Add((fileContext.FilePath, actualDimenionSet.First(), fileContext.DateTime));
-                }
+                _sourceFileInfoSet.Add((fileContext.FilePath, actualDimenionSet.First(), fileContext.DateTime));
             }
             finally
             {
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
-                if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
             }
-        }
-
-        public override IEnumerable<HdfElementBase> GetChildSet()
-        {
-            return new List<DatasetInfo> { };
         }
 
         #endregion

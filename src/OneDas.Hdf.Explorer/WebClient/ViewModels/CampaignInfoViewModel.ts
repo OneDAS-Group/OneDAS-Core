@@ -9,10 +9,7 @@ class CampaignInfoViewModel extends HdfElementViewModelBase
     {
         super(campaignInfoModel.Name, null)
 
-        let variableInfoModelSet: any[]
-
-        variableInfoModelSet = campaignInfoModel.VariableInfoSet
-        this.VariableInfoSet = Object.keys(variableInfoModelSet).map(key => new VariableInfoViewModel(variableInfoModelSet[key], this)).sort((a, b) => a.GetDisplayName().localeCompare(b.GetDisplayName()))
+        this.VariableInfoSet = campaignInfoModel.VariableInfoSet.map(variableInfoModel => new VariableInfoViewModel(variableInfoModel, this)).sort((a, b) => a.GetDisplayName().localeCompare(b.GetDisplayName()))
         
         this.GroupedVariableInfoSet = ObservableGroupBy(
             this.VariableInfoSet,

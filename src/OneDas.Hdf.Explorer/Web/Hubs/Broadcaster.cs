@@ -18,15 +18,11 @@ namespace OneDas.Hdf.Explorer.Web
 {
     public class Broadcaster : Hub<IBroadcaster>
     {
-        private static string _vdsFilePath;
-        private static string _vdsMetaFilePath;
         private static Dictionary<string, HdfExplorerState> _hdfExplorerStateSet;
         private static Dictionary<string, CancellationTokenSource> _ctsSet;
 
         static Broadcaster()
         {
-            _vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
-            _vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
             _hdfExplorerStateSet = new Dictionary<string, HdfExplorerState>();
             _ctsSet = new Dictionary<string, CancellationTokenSource>();
         }
@@ -52,58 +48,35 @@ namespace OneDas.Hdf.Explorer.Web
         {
             return Task.Run(() =>
             {
-                AppModel appModel;
-                Dictionary<string, CampaignInfo> campaignInfoSet;
-                Dictionary<string, string> campaignDescriptionSet;
-
-                long vdsFileId = -1;
-                long vdsMetaFileId = -1;
-                long groupId = -1;
-
-                if (File.Exists(_vdsFilePath))
-                {
-                    vdsFileId = H5F.open(_vdsFilePath, H5F.ACC_RDONLY);
-                    vdsMetaFileId = H5F.open(_vdsMetaFilePath, H5F.ACC_RDONLY);
-
-                    campaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId);
-                }
-                else
-                {
-                    campaignInfoSet = new Dictionary<string, CampaignInfo>();
-                }
-                
-                campaignDescriptionSet = campaignInfoSet.ToList().ToDictionary(campaignInfo => campaignInfo.Value.Name, campaignInfo =>
-                {
-                    if (IOHelper.CheckLinkExists(vdsMetaFileId, campaignInfo.Value.Name))
-                    {
-                        groupId = H5G.open(vdsMetaFileId, campaignInfo.Value.Name);
-
-                        if (H5A.exists(groupId, "description") > 0)
-                        {
-                            return IOHelper.ReadAttribute<string>(groupId, "description").First();
-                        }
-                    }
-
-                    return "no description available";
-                });
-
-                appModel = new AppModel(
+                return new AppModel(
                     hdfExplorerState: HdfExplorerState.Idle,
-                    campaignInfoSet: campaignInfoSet,
-                    campaignDescriptionSet: campaignDescriptionSet
+                    campaignInfoSet: Program.CampaignInfoSet,
+                    campaignDescriptionSet: Program.CampaignDescriptionSet
                 );
+            });
+        }
 
-                if (H5I.is_valid(vdsFileId) > 0)
-                {
-                    H5F.close(vdsFileId);
-                }
+        public Task<List<CampaignInfo>> UpdateCampaignInfoSet()
+        {
+            return Task.Run(() =>
+            {
+                _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Updating;
+                this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
 
-                if (H5I.is_valid(vdsMetaFileId) > 0)
-                {
-                    H5F.close(vdsMetaFileId);
-                }
+                Program.UpdateCampaignInfoSet();
 
-                return appModel;
+                _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Idle;
+                this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
+
+                return Program.CampaignInfoSet;
+            });
+        }
+
+        public Task<Dictionary<string, string>> GetCampaignDescriptionSet()
+        {
+            return Task.Run(() =>
+            {
+                return Program.CampaignDescriptionSet;
             });
         }
 
@@ -162,13 +135,13 @@ namespace OneDas.Hdf.Explorer.Web
                 start = start & 0xFFFFFFFF;
 
                 // state check
-                if (_hdfExplorerStateSet[this.Context.ConnectionId] == HdfExplorerState.Busy)
+                if (_hdfExplorerStateSet[this.Context.ConnectionId] == HdfExplorerState.Loading)
                 {
                     throw new Exception("Data request is already in progress.");
                 }
 
                 // open file
-                fileId = H5F.open(_vdsFilePath, H5F.ACC_RDONLY);
+                fileId = H5F.open(Program.VdsFilePath, H5F.ACC_RDONLY);
 
                 // byte count
                 bytesPerRow = 0;
@@ -202,7 +175,7 @@ namespace OneDas.Hdf.Explorer.Web
                 // start
                 try
                 {
-                    _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Busy;
+                    _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Loading;
                     this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
 
                     using (ZipArchive zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
@@ -276,7 +249,7 @@ namespace OneDas.Hdf.Explorer.Web
             return Task.Run(() =>
             {
                 // open file
-                fileId = H5F.open(_vdsFilePath, H5F.ACC_RDONLY);
+                fileId = H5F.open(Program.VdsFilePath, H5F.ACC_RDONLY);
 
                 // epoch & hyperslab
                 epochStart = new DateTime(2017, 01, 01);

@@ -3,6 +3,7 @@
     public enum HdfExplorerState
     {
         Idle = 1,
-        Busy = 2
+        Updating = 2,
+        Loading = 3
     }
 }
