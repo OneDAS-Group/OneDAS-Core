@@ -7,7 +7,13 @@
     Connection to server lost. Trying to reconnect...
 </div>
 
-<!-- ko if: HdfExplorerState() !== HdfExplorerStateEnum.Loading -->
+<!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Inactive -->
+<div class="center-vertically plus-center-horizontally">
+    <h1 class="display-4 text-center mb-5 noselect">The database is offline for scheduled maintenance.</h1>
+</div>
+<!-- /ko -->
+
+<!-- ko if: HdfExplorerState() >= HdfExplorerStateEnum.Idle && HdfExplorerState() <= HdfExplorerStateEnum.Updating -->
 <div>
     <div class="row my-4">
         <div class="col">
@@ -147,57 +153,56 @@
                 </div>
                 <div class="card-body">
                     <!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Idle -->
-                        <!-- ko if: CampaignInfoSet().length === 0 -->
-                        <h5 class="d-block text-center"><small class="text-muted">- no campaigns available -</small></h5>
-                        <!-- /ko -->
-                        <!-- ko if: CampaignInfoSet().length > 0 -->
-                        <div class="list-group list-group-root" data-bind="foreach: CampaignInfoSet">
-                            <div class="d-flex">
-                                <a class="list-group-item list-group-item-action noselect"
-                                   data-toggle="collapse"
-                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
-                                    <span class="fa fa-caret-right"></span><span data-placement="right" data-toggle="tooltip" data-bind="text: GetDisplayName(), attr: { title: $parent.CampaignDescriptionSet()[Name] }"></span>
-                                </a>
-                                <span data-toggle="tooltip" title="Show data availability.">
-                                    <span class="fa fa-bar-chart mr-2 url"
-                                          data-bind="click: $parent.ShowDataAvailability"></span>
-                                </span>
-                            </div>
-                            <div class="list-group collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
+                    <!-- ko if: CampaignInfoSet().length === 0 -->
+                    <h5 class="d-block text-center"><small class="text-muted">- no campaigns available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: CampaignInfoSet().length > 0 -->
+                    <div class="list-group list-group-root" data-bind="foreach: CampaignInfoSet">
+                        <div class="d-flex">
+                            <a class="list-group-item list-group-item-action noselect"
+                               data-toggle="collapse"
+                               data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
+                                <span class="fa fa-caret-right"></span><span data-placement="right" data-toggle="tooltip" data-bind="text: GetDisplayName(), attr: { title: $parent.CampaignDescriptionSet()[Name] }"></span>
+                            </a>
+                            <span data-toggle="tooltip" title="Show data availability.">
+                                <span class="fa fa-bar-chart mr-2 url"
+                                      data-bind="click: $parent.ShowDataAvailability"></span>
+                            </span>
+                        </div>
+                        <div class="list-group collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
+                            <a class="list-group-item list-group-item-action noselect"
+                               role="button"
+                               data-toggle="collapse"
+                               data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$index() + '_' + $index() }">
+                                <span class="fa fa-caret-right"></span><span data-bind="text: Key"></span>
+                            </a>
+                            <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members">
                                 <a class="list-group-item list-group-item-action noselect"
                                    role="button"
                                    data-toggle="collapse"
-                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$index() + '_' + $index() }">
-                                    <span class="fa fa-caret-right"></span><span data-bind="text: Key"></span>
+                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }">
+                                    <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
                                 </a>
-                                <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members">
+                                <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">
                                     <a class="list-group-item list-group-item-action noselect"
                                        role="button"
-                                       data-toggle="collapse"
-                                       data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }">
-                                        <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
-                                    </a>
-                                    <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">
-                                        <a class="list-group-item list-group-item-action noselect"
-                                           role="button"
-                                           data-bind="text: GetDisplayName(),
+                                       data-bind="text: GetDisplayName(),
                                                style: { 'background-color': IsSelected() ? 'lightgreen' : 'transparent' },
                                                click: ToggleIsSelected">
-                                        </a>
-                                    </div>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        <!-- /ko -->
+                    </div>
                     <!-- /ko -->
-
+                    <!-- /ko -->
                     <!-- ko ifnot: HdfExplorerState() === HdfExplorerStateEnum.Idle -->
-                        <div class="text-center">
-                            <img class="mx-auto" src="/images/loading.gif" />
-                        </div>
-                        <div class="text-center my-4">
-                            <em class="mb-3 noselect mx-auto">updating campaigns ...</em>
-                        </div>
+                    <div class="text-center">
+                        <img class="mx-auto" src="/images/loading.gif" />
+                    </div>
+                    <div class="text-center my-4">
+                        <em class="mb-3 noselect mx-auto">updating campaigns ...</em>
+                    </div>
                     <!-- /ko -->
                 </div>
             </div>
@@ -210,6 +215,7 @@
     </div>
 </div>
 <!-- /ko -->
+
 <!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Loading -->
 <div class="center-vertically plus-center-horizontally">
     <h1 class="display-4 text-center mb-5 noselect" data-bind="text: 'Preparing download (' + Math.round(ByteCount() / 1024 / 1024) + ' MB) ...'"></h1>

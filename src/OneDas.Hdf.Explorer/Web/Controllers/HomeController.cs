@@ -2,11 +2,19 @@
 using System.IO;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace OneDas.Hdf.Explorer.Web
 {
     public class HomeController : Controller
     {
+        private HdfExplorerOptions _options;
+
+        public HomeController(IOptions<HdfExplorerOptions> options)
+        {
+            _options = options.Value;
+        }
+
         public IActionResult Index()
         {
             return this.View("~/Web/Views/Home/Index.cshtml");
@@ -21,7 +29,7 @@ namespace OneDas.Hdf.Explorer.Web
         {
             try
             {
-                string basePath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "EXPORT");
+                string basePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT");
                 string filePath = Path.GetFullPath(Path.Combine(basePath, fileName));
 
                 if (filePath.StartsWith(basePath))

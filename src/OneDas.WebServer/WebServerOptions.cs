@@ -15,7 +15,7 @@ namespace OneDas.WebServer
             this.NewBaseDirectoryPath = string.Empty;
 
             // preset, mutable
-            this.AspBaseUrl = "http://127.0.0.1:32768";
+            this.AspBaseUrl = "http://0.0.0.0:32768";
             this.OneDasName = "OneDAS";
 
             // preset, immutable
@@ -56,7 +56,7 @@ namespace OneDas.WebServer
 
         public void Save(string directoryPath)
         {
-            using (StreamWriter streamWriter = new StreamWriter(Path.Combine(directoryPath, "onedassettings.json")))
+            using (StreamWriter streamWriter = new StreamWriter(Path.Combine(directoryPath, "settings.json")))
             {
                 string rawJson;
 

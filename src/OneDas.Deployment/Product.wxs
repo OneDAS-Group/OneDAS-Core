@@ -3,7 +3,7 @@
 
   <!-- VARIABLES -->
   <?define OneDasCompanyName = "OneDas Group" ?>
-  
+
   <?define OneDasName = "OneDas" ?>
   <?define OneDasDisplayName = "OneDAS" ?>
 
@@ -44,8 +44,8 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" Name="Desktop" />
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="CompanyFolder" Name="$(var.OneDasDisplayName)">
-          <Directory Id="INSTALLFOLDER" Name="$(var.WebServerDisplayName)" />
+        <Directory Id="CompanyFolder" Name="$(var.OneDasCompanyName)">
+          <Directory Id="INSTALLFOLDER" Name="$(var.OneDasDisplayName)" />
         </Directory>
       </Directory>
     </Directory>

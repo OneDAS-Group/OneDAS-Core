@@ -1,10 +1,15 @@
 ﻿using HDF.PInvoke;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Timers;
 
 namespace OneDas.Hdf.Explorer
 {
@@ -13,26 +18,45 @@ namespace OneDas.Hdf.Explorer
         private static object _lock;
         private static List<CampaignInfo> _campaignInfoSet;
         private static Dictionary<string, string> _campaignDescriptionSet;
+        private static HdfExplorerOptions _options;
+        private static IConfiguration _configuration;
 
         public static void Main(string[] args)
         {
-            Program.BaseDirectoryPath = @"M:\DATABASE";
+            string configurationDirectoryPath;
+            string configurationFileName;
+
+            IConfigurationBuilder configurationBuilder;
 
             _lock = new object();
 
-            Directory.CreateDirectory(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "EXPORT"));
-            Directory.CreateDirectory(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF Explorer"));
+            // configuration
+            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS Group", "HDF Explorer");
+            configurationFileName = "settings.json";
 
-            Program.VdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
-            Program.VdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
+            Directory.CreateDirectory(configurationDirectoryPath);
+
+            configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
+
+            _configuration = configurationBuilder.Build();
+            _options = _configuration.Get<HdfExplorerOptions>();
+
+            if (_options == null)
+            {
+                _options = new HdfExplorerOptions();
+                _configuration.Bind(_options);
+            }
+
+            _options.Save(configurationDirectoryPath);
+
+            //
+            Directory.CreateDirectory(Path.Combine(_options.SupportDirectoryPath, "EXPORT"));
+            Directory.CreateDirectory(Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer"));
 
             Program.UpdateCampaignInfoSet();
             Program.BuildWebHost(args).Run();
         }
-
-        public static string BaseDirectoryPath { get; private set; }
-        public static string VdsFilePath { get; private set; }
-        public static string VdsMetaFilePath { get; private set; }
 
         public static List<CampaignInfo> CampaignInfoSet
         {
@@ -74,10 +98,10 @@ namespace OneDas.Hdf.Explorer
             {
                 try
                 {
-                    if (File.Exists(Program.VdsFilePath))
+                    if (File.Exists(_options.VdsFilePath))
                     {
-                        vdsFileId = H5F.open(Program.VdsFilePath, H5F.ACC_RDONLY);
-                        vdsMetaFileId = H5F.open(Program.VdsMetaFilePath, H5F.ACC_RDONLY);
+                        vdsFileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
+                        vdsMetaFileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
                         Program.CampaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId, false);
                     }
@@ -109,12 +133,14 @@ namespace OneDas.Hdf.Explorer
             }
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
+        private static IWebHost BuildWebHost(string[] args) =>
             new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://0.0.0.0:32769")
+                .UseUrls(_options.AspBaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
+                .SuppressStatusMessages(true)
+                .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
                 .Build();
     }
 }

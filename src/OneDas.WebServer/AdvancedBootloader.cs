@@ -120,6 +120,7 @@ namespace OneDas.WebServer
                 .UseUrls(_webServerOptions.AspBaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
+                .SuppressStatusMessages(true)
                 .Build();
 
             return webHost;

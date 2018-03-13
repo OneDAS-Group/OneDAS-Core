@@ -31,8 +31,8 @@ namespace OneDas.WebServer
             IConfigurationBuilder configurationBuilder;
 
             // configuration
-            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS");
-            configurationFileName = "onedassettings.json";
+            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS Group", "OneDAS");
+            configurationFileName = "settings.json";
 
             Directory.CreateDirectory(configurationDirectoryPath);
 

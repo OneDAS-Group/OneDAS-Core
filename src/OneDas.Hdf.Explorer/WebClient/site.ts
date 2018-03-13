@@ -59,9 +59,44 @@ window.addEventListener("DOMContentLoaded", () =>
     });
 })
 
-broadcaster = new signalR.HubConnection("/broadcaster");
+async function Connect()
+{
+    try
+    {
+        await broadcaster.start()
 
-broadcaster.onclose(async error =>
+        try
+        {
+            let appModel: any
+            let connection: any
+
+            appModel = await broadcaster.invoke("GetAppModel")
+            appViewModel(new AppViewModel(appModel))
+
+            ko.bindingHandlers.toggleArrow = {
+                init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext: KnockoutBindingContext) {
+                    $(element).on("click", function () {
+                        $(".fa", this)
+                            .toggleClass("fa-caret-right")
+                            .toggleClass("fa-caret-down")
+                    })
+                }
+            }
+
+            ko.applyBindings(appViewModel)
+        }
+        catch (e)
+        {
+            alert(e.message)
+        }
+    }
+    catch (e)
+    {
+        console.log("OneDAS: signalr connection failed")
+    }
+}
+
+async function Reconnect()
 {
     console.log("OneDAS: signalr connection failed")
 
@@ -72,48 +107,28 @@ broadcaster.onclose(async error =>
 
     while (!appViewModel().IsConnected())
     {
-        broadcaster.start().then(async () =>
+        try
         {
-            console.log("OneDAS: signalr reconnected")  
+            let state: HdfExplorerStateEnum;
+
+            await broadcaster.start()
+
+            state = await broadcaster.invoke("GetHdfExplorerState")
+            console.log("OneDAS: signalr reconnected")
+
+            appViewModel().HdfExplorerState(state);
             appViewModel().IsConnected(true);
-        }).catch(() =>
+        }
+        catch (e)
         {
             console.log("OneDAS: trying to reconnect ...")
-        })
+        }
 
         await delay(5000)
     }
-})
+}
 
-broadcaster.start().then(async () =>
-{
-    let appModel: any
-    let connection: any
+broadcaster = new signalR.HubConnection("/broadcaster");
+broadcaster.onclose(() => this.Reconnect())
 
-    try
-    {
-        appModel = await broadcaster.invoke("GetAppModel")
-        appViewModel(new AppViewModel(appModel))
-
-        ko.bindingHandlers.toggleArrow = {
-            init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext: KnockoutBindingContext)
-            {
-                $(element).on("click", function ()
-                {
-                    $(".fa", this)
-                        .toggleClass("fa-caret-right")
-                        .toggleClass("fa-caret-down")
-                })
-            }
-        }
-
-        ko.applyBindings(appViewModel)
-    }
-    catch (e)
-    {
-        alert(e.message)
-    }
-}).catch(() =>
-{
-    console.log("OneDAS: signalr connection failed")
-})
+this.Connect()

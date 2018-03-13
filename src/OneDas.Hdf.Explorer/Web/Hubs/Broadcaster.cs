@@ -1,25 +1,38 @@
-﻿using System;
+﻿using HDF.PInvoke;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OneDas.Hdf.Core;
+using OneDas.Hdf.Explorer.Core;
+using OneDas.Hdf.IO;
+using OneDas.Plugin;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using HDF.PInvoke;
-using Microsoft.AspNetCore.SignalR;
-using OneDas.Hdf.Core;
-using OneDas.Hdf.Explorer.Core;
-using OneDas.Hdf.IO;
-using OneDas.Infrastructure;
-using OneDas.Plugin;
 
 namespace OneDas.Hdf.Explorer.Web
 {
     public class Broadcaster : Hub<IBroadcaster>
     {
+        #region "Fields"
+
+        private bool _isActive;
+        private object _lock;
+        private ILogger _logger;
+        private HdfExplorerOptions _options;
+        private System.Timers.Timer _activityTimer;
+
+        private static int _userCount;
         private static Dictionary<string, HdfExplorerState> _hdfExplorerStateSet;
         private static Dictionary<string, CancellationTokenSource> _ctsSet;
+
+        #endregion
+
+        #region "Constructors"
 
         static Broadcaster()
         {
@@ -27,9 +40,47 @@ namespace OneDas.Hdf.Explorer.Web
             _ctsSet = new Dictionary<string, CancellationTokenSource>();
         }
 
+        public Broadcaster(IOptions<HdfExplorerOptions> options, ILoggerFactory loggerFactory)
+        {
+            _options = options.Value;
+            _logger = loggerFactory.CreateLogger("HDF Explorer");
+
+            _lock = new object();
+        }
+
+        #endregion
+
+        #region "Properties"
+
+        private HdfExplorerState HdfExplorerState
+        {
+            get
+            {
+                return _hdfExplorerStateSet[this.Context.ConnectionId];
+            }
+            set
+            {
+                _hdfExplorerStateSet[this.Context.ConnectionId] = value;
+                this.GetClient().SendState(this.HdfExplorerState);
+            }
+        }
+
+        #endregion
+
+        #region "Methods"
+
         public override Task OnConnectedAsync()
         {
-            _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Idle;
+            this.HandleInactivity(this.GetClient(), this.Context.ConnectionId);
+
+            _hdfExplorerStateSet[this.Context.ConnectionId] = _isActive ? HdfExplorerState.Idle : HdfExplorerState.Inactive;
+
+
+            lock (_lock)
+            {
+                _userCount += 1;
+                _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _userCount } client(s) are connected now.");
+            }
 
             return base.OnConnectedAsync();
         }
@@ -41,6 +92,12 @@ namespace OneDas.Hdf.Explorer.Web
                 _ctsSet[this.Context.ConnectionId].Cancel();
             }
 
+            lock (_lock)
+            {
+                _userCount -= 1;
+                _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) disconnected. { _userCount } client(s) are remaining.");
+            }
+
             return base.OnDisconnectedAsync(exception);
         }
 
@@ -49,10 +106,18 @@ namespace OneDas.Hdf.Explorer.Web
             return Task.Run(() =>
             {
                 return new AppModel(
-                    hdfExplorerState: HdfExplorerState.Idle,
+                    hdfExplorerState: _hdfExplorerStateSet[this.Context.ConnectionId],
                     campaignInfoSet: Program.CampaignInfoSet,
                     campaignDescriptionSet: Program.CampaignDescriptionSet
                 );
+            });
+        }
+
+        public Task<HdfExplorerState> GetHdfExplorerState()
+        {
+            return Task.Run(() =>
+            {
+                return this.HdfExplorerState;
             });
         }
 
@@ -60,13 +125,11 @@ namespace OneDas.Hdf.Explorer.Web
         {
             return Task.Run(() =>
             {
-                _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Updating;
-                this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
+                this.HdfExplorerState = HdfExplorerState.Updating;
 
                 Program.UpdateCampaignInfoSet();
 
-                _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Idle;
-                this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
+                this.HdfExplorerState = HdfExplorerState.Idle;
 
                 return Program.CampaignInfoSet;
             });
@@ -112,7 +175,7 @@ namespace OneDas.Hdf.Explorer.Web
                 }
 
                 // zip file
-                zipFilePath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddTHH-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString().Substring(0, 8) }.zip");
+                zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddTHH-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString().Substring(0, 8) }.zip");
 
                 // sampleRate
                 sampleRate = sampleRateDescription.ToSampleRate();
@@ -135,13 +198,13 @@ namespace OneDas.Hdf.Explorer.Web
                 start = start & 0xFFFFFFFF;
 
                 // state check
-                if (_hdfExplorerStateSet[this.Context.ConnectionId] == HdfExplorerState.Loading)
+                if (this.HdfExplorerState == HdfExplorerState.Loading)
                 {
                     throw new Exception("Data request is already in progress.");
                 }
 
                 // open file
-                fileId = H5F.open(Program.VdsFilePath, H5F.ACC_RDONLY);
+                fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
                 // byte count
                 bytesPerRow = 0;
@@ -161,7 +224,7 @@ namespace OneDas.Hdf.Explorer.Web
                     }
                 }
 
-                this.Clients.Client(this.Context.ConnectionId).SendByteCount(bytesPerRow * block);
+                this.GetClient().SendByteCount(bytesPerRow * block);
 
                 segmentSize = (50 * 1024 * 1024) / bytesPerRow * bytesPerRow;
                 segmentLength = segmentSize / bytesPerRow;
@@ -175,8 +238,7 @@ namespace OneDas.Hdf.Explorer.Web
                 // start
                 try
                 {
-                    _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Loading;
-                    this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
+                    this.HdfExplorerState = HdfExplorerState.Loading;
 
                     using (ZipArchive zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
                     {
@@ -201,13 +263,12 @@ namespace OneDas.Hdf.Explorer.Web
                 }
                 finally
                 {
-                    _hdfExplorerStateSet[this.Context.ConnectionId] = HdfExplorerState.Idle;
-                    this.Clients.Client(this.Context.ConnectionId).SendState(_hdfExplorerStateSet[this.Context.ConnectionId]);
+                    this.HdfExplorerState = HdfExplorerState.Idle;
 
                     if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                 }
 
-                this.WriteLogEntry($"User { "xxx" } requested data from { dateTimeBegin.ToString("yyyy-MM-dd hh:mm:ss") } to { dateTimeEnd.ToString("yyyy-mm-dd hh:MM:ss") } ({ Path.GetFileName(zipFilePath) })", false);
+                this.WriteLogEntry($"{ this.Context.Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd hh:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd hh:mm:ss") }", false);
 
                 return $"home/download/?file={ Path.GetFileName(zipFilePath) }";
             }, _ctsSet[this.Context.ConnectionId].Token);
@@ -249,7 +310,7 @@ namespace OneDas.Hdf.Explorer.Web
             return Task.Run(() =>
             {
                 // open file
-                fileId = H5F.open(Program.VdsFilePath, H5F.ACC_RDONLY);
+                fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
                 // epoch & hyperslab
                 epochStart = new DateTime(2017, 01, 01);
@@ -364,27 +425,23 @@ namespace OneDas.Hdf.Explorer.Web
 
         private void HdfDataLoader_ProgressUpdated(object sender, ProgressUpdatedEventArgs e)
         {
-            this.Clients.Client(this.Context.ConnectionId).SendProgress(e.Progress, e.Message);
+            this.GetClient().SendProgress(e.Progress, e.Message);
         }
 
         private void WriteLogEntry(string message, bool isException)
         {
             string logFilePath;
-            string formatedMessage;
 
             if (isException)
             {
-                logFilePath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF Explorer", "errors.txt");
+                _logger.LogError(message);
+                logFilePath = Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer", "errors.txt");
             }
             else
             {
-                logFilePath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF Explorer", "requests.txt");
+                _logger.LogInformation(message);
+                logFilePath = Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer", "requests.txt");
             }
-
-            formatedMessage = $"{ DateTime.UtcNow.ToString("yyyy-MM:dd hh:mm:ss") }: { message }\n";
-
-            // console
-            Console.WriteLine(formatedMessage);
 
             // file
             try
@@ -393,7 +450,7 @@ namespace OneDas.Hdf.Explorer.Web
                 {
                     using (StreamWriter streamWriter = new StreamWriter(fileStream))
                     {
-                        streamWriter.WriteLine(formatedMessage);
+                        streamWriter.WriteLine($"{ DateTime.UtcNow.ToString("yyyy-MM:dd hh:mm:ss") }: { message }\n");
                     }
                 }
             }
@@ -402,5 +459,66 @@ namespace OneDas.Hdf.Explorer.Web
                 //
             }
         }
+
+        private IBroadcaster GetClient()
+        {
+            return this.Clients.Client(this.Context.ConnectionId);
+        }
+
+        private void HandleInactivity(IBroadcaster client, string connectionId)
+        {
+            TimeSpan startRemaining;
+            TimeSpan stopRemaining;
+
+            _isActive = true; // in case InactivityPeriod is == TimeSpan.Zero
+
+            if (_options.InactivityPeriod > TimeSpan.Zero)
+            {
+                startRemaining = DateTime.UtcNow.Date.Add(_options.InactiveOn) - DateTime.UtcNow;
+                stopRemaining = startRemaining.Add(_options.InactivityPeriod);
+
+                if (startRemaining < TimeSpan.Zero)
+                {
+                    startRemaining = startRemaining.Add(TimeSpan.FromDays(1));
+                }
+
+                if (stopRemaining < TimeSpan.Zero)
+                {
+                    stopRemaining = stopRemaining.Add(TimeSpan.FromDays(1));
+                }
+
+                if (startRemaining < stopRemaining)
+                {
+                    _activityTimer = new System.Timers.Timer() { AutoReset = false, Enabled = true, Interval = startRemaining.TotalMilliseconds };
+                    _isActive = true;
+                }
+                else
+                {
+                    _activityTimer = new System.Timers.Timer() { AutoReset = false, Enabled = true, Interval = stopRemaining.TotalMilliseconds };
+                    _isActive = false;
+
+                    if (_ctsSet.ContainsKey(connectionId))
+                    {
+                        _ctsSet[connectionId].Cancel();
+                    }
+                }
+
+                _activityTimer.Elapsed += (sender, e) =>
+                {
+                    this.HandleInactivity(client, connectionId);
+
+                    if (_isActive)
+                    {
+                        client.SendState(HdfExplorerState.Idle);
+                    }
+                    else
+                    {
+                        client.SendState(HdfExplorerState.Inactive);
+                    }
+                };
+            }
+        }
+
+        #endregion
     }
 }

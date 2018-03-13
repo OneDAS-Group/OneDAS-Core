@@ -6,7 +6,7 @@ class AppViewModel
     public CampaignInfoSet: KnockoutObservableArray<CampaignInfoViewModel>
     public CampaignDescriptionSet: KnockoutObservable<Map<string, string>>
     public SelectedDatasetInfoSet: KnockoutObservableArray<DatasetInfoViewModel>
-    public SampleRateSet: string[]
+    public SampleRateSet: KnockoutObservableArray<string>
     public SelectedSampleRate: KnockoutObservable<string>
     public SelectedFileFormat: KnockoutObservable<FileFormatEnum>
     public SelectedFileGranularity: KnockoutObservable<FileGranularityEnum>
@@ -20,7 +20,7 @@ class AppViewModel
     public DataAvailabilityStatistics: KnockoutObservable<DataAvailabilityStatisticsViewModel>
     public SelectedCampaignInfo: KnockoutObservable<CampaignInfoViewModel>
 
-    public CanLoadData: KnockoutObservable<boolean>
+    public CanLoadData: KnockoutComputed<boolean>
 
     private _variableInfoSet: VariableInfoViewModel[]
     private _datasetInfoSet: DatasetInfoViewModel[]
@@ -30,9 +30,10 @@ class AppViewModel
     {
         let campaignInfoModelSet: any = appModel.CampaignInfoSet;
 
+        this.CampaignInfoSet = ko.observableArray<CampaignInfoViewModel>();
+        this.CampaignDescriptionSet = ko.observable<Map<string, string>>(appModel.CampaignDescriptionSet);
+        this.SampleRateSet = ko.observableArray<string>()
         this.IsMainViewRequested = ko.observable<boolean>(true)
-        this.CampaignDescriptionSet = ko.observable(appModel.CampaignDescriptionSet);
-        this.CampaignInfoSet = ko.observableArray(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)));
         this.SelectedDatasetInfoSet = ko.observableArray<DatasetInfoViewModel>()
         this.SelectedSampleRate = ko.observable<string>()
         this.SelectedFileFormat = ko.observable<FileFormatEnum>(FileFormatEnum.CSV)
@@ -47,7 +48,13 @@ class AppViewModel
         this.DataAvailabilityStatistics = ko.observable<DataAvailabilityStatisticsViewModel>()
         this.SelectedCampaignInfo = ko.observable<CampaignInfoViewModel>()
 
-        this.CanLoadData = ko.observable<boolean>(false)
+        this.CanLoadData = ko.computed<boolean>(() =>
+            (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
+            this.SelectedDatasetInfoSet().length > 0 &&
+            this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate()) &&
+            this.HdfExplorerState() === HdfExplorerStateEnum.Idle &&
+            this.IsConnected()
+        )
 
         // enumeration description
         EnumerationHelper.Description["FileFormatEnum_CSV"] = "Comma-separated (*.csv)"
@@ -59,78 +66,79 @@ class AppViewModel
         EnumerationHelper.Description["FileGranularityEnum_Hour"] = "1 file per hour"
         EnumerationHelper.Description["FileGranularityEnum_Day"] = "1 file per day"
 
-        this._variableInfoSet = MapMany(this.CampaignInfoSet(), campaignInfo => campaignInfo.VariableInfoSet)
-        this._datasetInfoSet = MapMany(this._variableInfoSet, variableInfo => variableInfo.DatasetInfoSet)
-
-        this.SampleRateSet = [...new Set(this._datasetInfoSet.map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) =>
+        // campaign info
+        this.CampaignInfoSet.subscribe(newValue =>
         {
-            switch (true)
-            {
-                case a.includes('Hz') && !b.includes('Hz'):
-                    return -1;
-                case !a.includes('Hz') && b.includes('Hz'):
-                    return 1;
-                case a.includes('Hz') && b.includes('Hz') || !a.includes('Hz') && !b.includes('Hz'):
+            this._variableInfoSet = MapMany(this.CampaignInfoSet(), campaignInfo => campaignInfo.VariableInfoSet)
+            this._datasetInfoSet = MapMany(this._variableInfoSet, variableInfo => variableInfo.DatasetInfoSet)
 
-                    if (a.includes('Hz'))
-                    {
-                        switch (true)
-                        {
-                            case parseFloat(a) < parseFloat(b):
-                                return 1
-                            case parseFloat(a) > parseFloat(b):
-                                return -1
-                            default:
-                                return 0
-                        }
-                    }
-                    else
-                    {
-                        switch (true)
-                        {
-                            case parseFloat(a) < parseFloat(b):
-                                return -1
-                            case parseFloat(a) > parseFloat(b):
-                                return 1
-                            default:
-                                return 0
-                        }
-                    }
-            }
-        })
+            this.SelectedDatasetInfoSet().forEach(datasetInfo => {
+                let newDataSetInfo: DatasetInfoViewModel
 
-        this.CampaignInfoSet().forEach(campaignInfo => 
-        {
-            campaignInfo.VariableInfoSet.forEach(variableInfo =>
-            {
-                variableInfo.DatasetInfoSet.forEach(datasetInfo =>
-                {
-                    datasetInfo.OnIsSelectedChanged.subscribe((sender, isSelected) => 
-                    {
-                        this.UpdateSelectedDatainfoSetSet()
+                newDataSetInfo = this._datasetInfoSet.find(current => current.Parent.Name === datasetInfo.Parent.Name && current.Name === datasetInfo.Name)
+
+                if (newDataSetInfo) {
+                    newDataSetInfo.IsSelected(true)
+                    console.log("selected " + newDataSetInfo.Parent.Name + " " + newDataSetInfo.Name)
+                }
+            })
+
+            this.CampaignInfoSet().forEach(campaignInfo => {
+                campaignInfo.VariableInfoSet.forEach(variableInfo => {
+                    variableInfo.DatasetInfoSet.forEach(datasetInfo => {
+                        datasetInfo.OnIsSelectedChanged.subscribe((sender, isSelected) => {
+                            this.UpdateSelectedDatasetInfoSet()
+                        })
                     })
                 })
             })
+
+            this.SelectedSampleRate(null)
+
+            this.SampleRateSet([...new Set(this._datasetInfoSet.map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) => {
+                switch (true) {
+                    case a.includes('Hz') && !b.includes('Hz'):
+                        return -1;
+                    case !a.includes('Hz') && b.includes('Hz'):
+                        return 1;
+                    case a.includes('Hz') && b.includes('Hz') || !a.includes('Hz') && !b.includes('Hz'):
+
+                        if (a.includes('Hz')) {
+                            switch (true) {
+                                case parseFloat(a) < parseFloat(b):
+                                    return 1
+                                case parseFloat(a) > parseFloat(b):
+                                    return -1
+                                default:
+                                    return 0
+                            }
+                        }
+                        else {
+                            switch (true) {
+                                case parseFloat(a) < parseFloat(b):
+                                    return -1
+                                case parseFloat(a) > parseFloat(b):
+                                    return 1
+                                default:
+                                    return 0
+                            }
+                        }
+                }
+            }))
         })
 
-        this.SelectedSampleRate.subscribe(newValue =>
-        {
-            this._variableInfoSet.forEach(variableInfo => 
-            {
-                variableInfo.DatasetInfoSet.forEach(datasetInfo =>
-                {
+        this.CampaignInfoSet(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)));
+
+        // sample rate
+        this.SelectedSampleRate.subscribe(newValue => {
+            this._variableInfoSet.forEach(variableInfo => {
+                variableInfo.DatasetInfoSet.forEach(datasetInfo => {
                     datasetInfo.IsVisible(datasetInfo.Name.split("_")[0] === this.SelectedSampleRate() && !datasetInfo.Name.endsWith("status"))
                 })
             })
 
-            this.UpdateSelectedDatainfoSetSet()
+            this.UpdateSelectedDatasetInfoSet()
         })
-
-        // validation
-        this.StartDate.subscribe(() => this.Validate())
-        this.EndDate.subscribe(() => this.Validate())
-        this.SelectedSampleRate.subscribe(() => this.Validate())
-        this.SelectedDatasetInfoSet.subscribe(() => this.Validate())
 
         // chart
         this.StartDate.subscribe(async (newValue) =>
@@ -198,16 +206,6 @@ class AppViewModel
     }  
 
     // methods
-    private Validate()
-    {
-        this.CanLoadData(
-            (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
-            this.SelectedDatasetInfoSet().length > 0 &&
-            this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate()) &&
-            this.HdfExplorerState() === HdfExplorerStateEnum.Idle
-        )
-    }
-
     private GetSamplesPerDayFromString = (datasetName: string) =>
     {
         if (!datasetName)
@@ -418,7 +416,7 @@ class AppViewModel
             })
     }
 
-    private UpdateSelectedDatainfoSetSet = (() =>
+    private UpdateSelectedDatasetInfoSet = (() =>
     {
         this.SelectedDatasetInfoSet(this._datasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible() && datasetInfo.IsSelected()))
     })

@@ -2,8 +2,9 @@
 {
     public enum HdfExplorerState
     {
-        Idle = 1,
-        Updating = 2,
-        Loading = 3
+        Inactive = 1,
+        Idle = 2,
+        Updating = 3,
+        Loading = 4
     }
 }
