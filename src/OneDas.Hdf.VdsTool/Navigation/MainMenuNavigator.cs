@@ -118,7 +118,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                     Console.CursorVisible = false;
                     return;
                 }
-                else if (string.IsNullOrWhiteSpace(dateTime) || DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
+                else if (string.IsNullOrWhiteSpace(dateTime) || DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
                 {
                     break;
                 }
@@ -234,7 +234,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                     
                     return;
                 }
-                else if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
+                else if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
                 {
                     break;
                 }

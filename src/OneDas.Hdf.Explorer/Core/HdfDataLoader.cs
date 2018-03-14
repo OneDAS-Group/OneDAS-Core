@@ -76,7 +76,7 @@ namespace OneDas.Hdf.Explorer.Core
                         groupName = IOHelper.ReadAttribute<string>(groupId, "group_set").Last();
                         unit = IOHelper.ReadAttribute<string>(groupId, "unit_set").LastOrDefault();
                         hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
-                        transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", new CultureInfo("en-US")), tf.type, tf.option, tf.argument)).ToList();
+                        transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
 
                         oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
                         samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);

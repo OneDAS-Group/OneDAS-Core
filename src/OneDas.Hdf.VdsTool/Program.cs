@@ -33,7 +33,7 @@ namespace OneDas.Hdf.VdsTool
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
             H5.is_library_threadsafe(ref _isLibraryThreadSafe);
 
@@ -345,12 +345,12 @@ namespace OneDas.Hdf.VdsTool
                 optionSet = new List<string>() { "0001-01-01" };
                 dateTime_tmp = VdsToolUtilities.ReadLine(optionSet, ref isEscaped);
 
-                if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
+                if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
                     hdf_transfer_function.date_time = dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ");
                     break;
                 }
-                else if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-dd", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
+                else if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
                     hdf_transfer_function.date_time = dateTime.ToString("yyyy-MM-ddT00-00-00Z");
                     break;
@@ -450,12 +450,12 @@ namespace OneDas.Hdf.VdsTool
                 optionSet = new List<string>() { "0001-01-01" };
                 dateTime_tmp = VdsToolUtilities.ReadLine(optionSet, ref isEscaped);
 
-                if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
+                if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
                     hdf_tag.date_time = dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ");
                     break;
                 }
-                else if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-dd", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
+                else if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
                     hdf_tag.date_time = dateTime.ToString("yyyy-MM-ddT00-00-00Z");
                     break;

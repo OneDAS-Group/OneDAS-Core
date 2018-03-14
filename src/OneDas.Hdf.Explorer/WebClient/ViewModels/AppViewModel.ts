@@ -12,6 +12,7 @@ class AppViewModel
     public SelectedFileGranularity: KnockoutObservable<FileGranularityEnum>
     public IsConnected: KnockoutObservable<boolean>
     public HdfExplorerState: KnockoutObservable<HdfExplorerStateEnum>
+    public InactivityMessage: KnockoutObservable<string>
     public ByteCount: KnockoutObservable<number>
     public Progress: KnockoutObservable<number>
     public Message: KnockoutObservable<string>
@@ -40,6 +41,7 @@ class AppViewModel
         this.SelectedFileGranularity = ko.observable<FileGranularityEnum>(FileGranularityEnum.Hour)
         this.IsConnected = ko.observable<boolean>(true)
         this.HdfExplorerState = ko.observable<HdfExplorerStateEnum>(appModel.HdfExplorerState)
+        this.InactivityMessage = ko.observable<string>("")
         this.ByteCount = ko.observable<number>(0)
         this.Progress = ko.observable<number>(0)
         this.Message = ko.observable<string>("")
@@ -177,9 +179,27 @@ class AppViewModel
         })
 
         // callback
-        broadcaster.on("SendState", (hdfExplorerState: HdfExplorerStateEnum) =>
+        broadcaster.on("SendState", async (hdfExplorerState: HdfExplorerStateEnum) =>
         {
-            this.HdfExplorerState(hdfExplorerState)
+            let inactivityMessage: string
+
+            try
+            {
+                if (hdfExplorerState === HdfExplorerStateEnum.Inactive)
+                {
+                    inactivityMessage = await broadcaster.invoke("GetInactivityMessage")
+
+                    this.InactivityMessage(inactivityMessage)
+                }
+                else
+                {
+                    this.InactivityMessage("")
+                }
+            }
+            finally
+            {
+                this.HdfExplorerState(hdfExplorerState)
+            }
         })
 
         broadcaster.on("SendProgress", (progress: number, message: string) =>

@@ -8,10 +8,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>3.9</ProductVersion>
-    <ProjectGuid>{a30ffe93-a205-48e6-880b-b8dc17e12af8}</ProjectGuid>
+    <ProjectGuid>{6f96c4c6-f442-4240-9d83-bafe70d63ed3}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputType>Package</OutputType>
-    <Name>OneDas.Deployment</Name>
+    <Name>OneDas.Hdf.Deployment</Name>
     <DefineConstants>Debug</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
     <SuppressIces>ICE60;</SuppressIces>
@@ -55,11 +55,11 @@
   <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateOneDasMetaData">
     
     <PropertyGroup>
-      <WixApplicationName>OneDas.WebServer</WixApplicationName>
+      <WixApplicationName>OneDas.Hdf.Explorer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\bin\build\$(WixApplicationName\PublishOutput</WixHarvestPath>
+      <WixHarvestPath>.\..\..\build\bin\$(WixApplicationName)\PublishOutput</WixHarvestPath>
 	  <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
-      <OutputName>OneDAS-$(Version)</OutputName>
+      <OutputName>OneDAS-HDF-Explorer-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>
     </PropertyGroup>
 	
@@ -72,7 +72,7 @@
       <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(WixRootPath)</WixToolPath>
     </PropertyGroup>
 	
-	<Exec Command="dotnet msbuild ..\$(WixApplicationName)\$(WixApplicationName).csproj /t:publish /p:Configuration=$(WixConfiguration)" />
+    <Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(WixConfiguration) -o $(WixHarvestPath)" />
 	
     <ItemGroup>
       <HarvestDirectory Include="$(WixHarvestPath)">

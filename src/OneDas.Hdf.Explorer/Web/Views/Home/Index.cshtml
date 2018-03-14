@@ -9,7 +9,12 @@
 
 <!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Inactive -->
 <div class="center-vertically plus-center-horizontally">
-    <h1 class="display-4 text-center mb-5 noselect">The database is offline for scheduled maintenance.</h1>
+    <!-- ko if: InactivityMessage().length === 0 -->
+        <h1 class="display-4 text-center mb-5 noselect">The database is offline for scheduled maintenance.</h1>
+    <!-- /ko -->
+    <!-- ko if: InactivityMessage().length > 0 -->
+        <h1 class="display-4 text-center mb-5 noselect" data-bind="text: InactivityMessage"></h1>
+    <!-- /ko -->
 </div>
 <!-- /ko -->
 

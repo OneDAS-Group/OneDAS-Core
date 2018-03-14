@@ -8,6 +8,7 @@ using OneDas.Hdf.IO;
 using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -272,6 +273,20 @@ namespace OneDas.Hdf.Explorer.Web
 
                 return $"home/download/?file={ Path.GetFileName(zipFilePath) }";
             }, _ctsSet[this.Context.ConnectionId].Token);
+        }
+
+        public Task<string> GetInactivityMessage()
+        {
+            return Task.Run(() =>
+            {
+                DateTime startTime;
+                DateTime stopTime;
+
+                startTime = DateTime.UtcNow.Date.Add(_options.InactiveOn);
+                stopTime = startTime.Add(_options.InactivityPeriod);
+
+                return $"The database is offline for scheduled maintenance from { startTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) } to { stopTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) }.";
+            });
         }
 
         public Task CancelGetData()

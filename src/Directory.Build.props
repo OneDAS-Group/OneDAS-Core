@@ -3,6 +3,12 @@
   <Import Project="./../build/OneDas.props" />
 
   <PropertyGroup> 
+    <OutputPath>$(MSBuildThisFileDirectory)..\build\bin\$(MSBuildProjectName)\$(Configuration)</OutputPath>
+	<BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\build\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup> 
     <PackageLicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</PackageProjectUrl>
   </PropertyGroup>

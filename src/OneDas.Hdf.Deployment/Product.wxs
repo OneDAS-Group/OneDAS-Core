@@ -7,8 +7,8 @@
   <?define ProductName = "OneDas" ?>
   <?define ProductDisplayName = "OneDAS" ?>
 
-  <?define ComponentName = "WebServer" ?>
-  <?define ComponentDisplayName = "WebServer" ?>
+  <?define ComponentName = "Hdf.Explorer" ?>
+  <?define ComponentDisplayName = "HDF Explorer" ?>
 
   <?define EventLogName = "$(var.ProductDisplayName)" ?>
   <?define EventLogSourceName = "$(var.ProductDisplayName) $(var.ComponentDisplayName)" ?>
@@ -24,7 +24,7 @@
            Manufacturer="$(var.CompanyName)"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
-    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x86"/>
+    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
     <MediaTemplate EmbedCab="yes"/>
 
@@ -36,7 +36,7 @@
     <Property Id="ARPPRODUCTICON" Value="ICON" />
 
     <FeatureRef Id="AllComponentsFeature" />
-    
+
   </Product>
 
   <!-- DIRECTORIES -->
@@ -63,12 +63,12 @@
   </Fragment>
 
   <!-- COMPONENTS -->
-  <Fragment>   
+  <Fragment>
     <!--<PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
     <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/>-->
     <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
     <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>
-                
+
     <Component Id="ApplicationShortcutDesktopComponent" Guid="*" Directory="DesktopFolder">
 
       <Shortcut Id="ApplicationShortcutDesktop"
@@ -135,7 +135,7 @@
       </Component>
     </ComponentGroup>
     <Component Id="ServiceComponent" Guid="*" Directory="INSTALLFOLDER">
-      
+
       <File Id="ServiceComponentMain"
             Source="$(var.WixHarvestPath)\$(var.WixApplicationName).exe"
             KeyPath="yes"
@@ -166,7 +166,7 @@
                       Remove="uninstall"
                       Name="$(var.ProductName).$(var.ComponentName)"
                       Wait="yes" />
-      
+
     </Component>
   </Fragment>
 
