@@ -1,5 +1,6 @@
 ﻿using HDF.PInvoke;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -7,6 +8,7 @@ using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -49,12 +51,16 @@ namespace OneDas.Hdf.Explorer
 
             _options.Save(configurationDirectoryPath);
 
-            //
-            Directory.CreateDirectory(Path.Combine(_options.SupportDirectoryPath, "EXPORT"));
-            Directory.CreateDirectory(Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer"));
-
             Program.UpdateCampaignInfoSet();
-            Program.BuildWebHost(args).Run();
+
+            if (Environment.UserInteractive)
+            {
+                Program.CreateWebHost().Run();
+            }
+            else
+            {
+                Program.CreateWebHost().RunAsService();
+            }
         }
 
         public static List<CampaignInfo> CampaignInfoSet
@@ -132,14 +138,25 @@ namespace OneDas.Hdf.Explorer
             }
         }
 
-        private static IWebHost BuildWebHost(string[] args) =>
-            new WebHostBuilder()
+        private static IWebHost CreateWebHost()
+        {
+            IWebHost webHost;
+
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
+            {
+                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+            }
+
+            webHost = new WebHostBuilder()
+                .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
                 .UseKestrel()
                 .UseUrls(_options.AspBaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .SuppressStatusMessages(true)
-                .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
                 .Build();
+
+            return webHost;
+        }
     }
 }

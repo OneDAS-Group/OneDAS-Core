@@ -7,8 +7,8 @@
   <?define ProductName = "OneDas" ?>
   <?define ProductDisplayName = "OneDAS" ?>
 
-  <?define ComponentName = "WebServer" ?>
-  <?define ComponentDisplayName = "WebServer" ?>
+  <?define ComponentName = "Core" ?>
+  <?define ComponentDisplayName = "Core" ?>
 
   <?define EventLogName = "$(var.ProductDisplayName)" ?>
   <?define EventLogSourceName = "$(var.ProductDisplayName) $(var.ComponentDisplayName)" ?>
@@ -45,7 +45,7 @@
       <Directory Id="DesktopFolder" Name="Desktop" />
       <Directory Id="ProgramFilesFolder">
         <Directory Id="CompanyFolder" Name="$(var.CompanyName)">
-          <Directory Id="INSTALLFOLDER" Name="$(var.ProductDisplayName)" />
+          <Directory Id="INSTALLFOLDER" Name="$(var.ComponentDisplayName)" />
         </Directory>
       </Directory>
     </Directory>

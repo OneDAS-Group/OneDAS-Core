@@ -43,9 +43,9 @@
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" Name="Desktop" />
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="ProgramFiles64Folder">
         <Directory Id="CompanyFolder" Name="$(var.CompanyName)">
-          <Directory Id="INSTALLFOLDER" Name="$(var.ProductDisplayName)" />
+          <Directory Id="INSTALLFOLDER" Name="$(var.ComponentDisplayName)" />
         </Directory>
       </Directory>
     </Directory>
@@ -149,7 +149,7 @@
                       Type="ownProcess"
                       Vital="yes">
 
-        <ServiceConfig DelayedAutoStart="yes"
+        <ServiceConfig DelayedAutoStart="no"
                        OnInstall="yes"
                        OnReinstall ="yes" />
 

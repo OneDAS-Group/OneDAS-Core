@@ -42,6 +42,8 @@ namespace OneDas.Hdf.Explorer
 
         public void Save(string directoryPath)
         {
+            Directory.CreateDirectory(directoryPath);
+
             using (StreamWriter streamWriter = new StreamWriter(Path.Combine(directoryPath, "settings.json")))
             {
                 string rawJson;

@@ -37,6 +37,7 @@
       <CustomToolNamespace>OneDas.WebServer</CustomToolNamespace>
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Content Update="**\tsconfig.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
   
   <ItemGroup>

@@ -5,14 +5,14 @@
   <Import Project=".\..\Directory.Build.props" />
   
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Configuration>Release</Configuration>
+    <Platform>x86</Platform>
+	<InstallerPlatform>x86</InstallerPlatform>
     <ProductVersion>3.9</ProductVersion>
     <ProjectGuid>{a30ffe93-a205-48e6-880b-b8dc17e12af8}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputType>Package</OutputType>
     <Name>OneDas.Deployment</Name>
-    <DefineConstants>Debug</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
     <SuppressIces>ICE60;</SuppressIces>
     <SuppressPdbOutput>True</SuppressPdbOutput>

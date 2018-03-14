@@ -42,15 +42,7 @@ namespace OneDas.WebServer.Web
             webServerOptions = options.Value;
 
             app.UseResponseCompression();
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+            app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
 

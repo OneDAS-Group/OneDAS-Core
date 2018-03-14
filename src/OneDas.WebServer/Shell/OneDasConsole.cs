@@ -6,6 +6,7 @@ using OneDas.Engine.Core;
 using OneDas.Infrastructure;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,17 +180,15 @@ namespace OneDas.WebServer.Shell
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
-                Console.WriteLine($"|                                     |                                       |");
-                Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                                                             |");
                 Console.WriteLine($"+=============================================================================+");
-                this.WriteColoredLine($"(d)ebug output                                                          (e)xit", ConsoleColor.Cyan);
+                this.WriteColoredLine($"                                                                        (e)xit", ConsoleColor.Cyan);
 
                 // text
                 Console.ForegroundColor = ConsoleColor.Cyan;
 
                 Console.SetCursorPosition(2, 2);
-                Console.Write("Name:");
+                Console.Write("Instance name:");
 
                 Console.SetCursorPosition(2, 3);
                 Console.Write("Status:");
@@ -197,29 +196,20 @@ namespace OneDas.WebServer.Shell
                 Console.SetCursorPosition(2, 4);
                 Console.Write("Process priority:");
 
-                Console.SetCursorPosition(2, 6);
+                Console.SetCursorPosition(2, 5);
                 Console.Write("Windows service:");
 
                 // numbers
                 Console.SetCursorPosition(2 + offset, 2);
-                Console.Write("Clients:");
-
-                Console.SetCursorPosition(2 + offset, 3);
-                Console.Write("Chunk period:");
-
-                Console.SetCursorPosition(2 + offset, 4);
-                Console.Write("Frequency:");
-
-                Console.SetCursorPosition(2 + offset, 5);
                 Console.Write("Late by:");
 
-                Console.SetCursorPosition(2 + offset, 6);
+                Console.SetCursorPosition(2 + offset, 3);
                 Console.Write("Cycle time:");
 
-                Console.SetCursorPosition(2 + offset, 7);
+                Console.SetCursorPosition(2 + offset, 4);
                 Console.Write("Timer drift:");
 
-                Console.SetCursorPosition(2 + offset, 8);
+                Console.SetCursorPosition(2 + offset, 5);
                 Console.Write("Processor time:");
 
                 if (!_isConnected)
@@ -228,7 +218,7 @@ namespace OneDas.WebServer.Shell
                     this.WriteColoredLine("connection lost", ConsoleColor.Red);
                 }
 
-                Console.SetCursorPosition(0, 13);
+                Console.SetCursorPosition(0, 11);
             }
         }
 
@@ -250,8 +240,8 @@ namespace OneDas.WebServer.Shell
                     int offset = 39;
 
                     // text
-                    Console.SetCursorPosition(7, 2);
-                    // empty
+                    Console.SetCursorPosition(37 - _webServerOptions.OneDasName.Length, 2);
+                    Console.Write(_webServerOptions.OneDasName);
 
                     Console.SetCursorPosition(19, 3);
 
@@ -268,37 +258,25 @@ namespace OneDas.WebServer.Shell
                     Console.SetCursorPosition(26, 4);
                     this.WriteColored($"{performanceInformation.ProcessPriorityClass,11}", performanceInformation.ProcessPriorityClass == ProcessPriorityClass.RealTime ? ConsoleColor.White : ConsoleColor.Red);
 
-                    Console.SetCursorPosition(32, 5);
-                    // empty
-
-                    Console.SetCursorPosition(22, 6);
+                    Console.SetCursorPosition(22, 5);
                     ServiceControllerStatus oneDasServiceStatus = BasicBootloader.GetOneDasServiceStatus();
                     string text = oneDasServiceStatus == 0 ? "NotFound" : oneDasServiceStatus.ToString();
                     this.WriteColored($"{text,15}", oneDasServiceStatus == ServiceControllerStatus.Running ? ConsoleColor.White : ConsoleColor.Red);
 
                     // numbers
-                    Console.SetCursorPosition(33 + offset, 2);
-                    // empty
-
-                    Console.SetCursorPosition(33 + offset, 3);
-                    // empty
-
-                    Console.SetCursorPosition(32 + offset, 4);
-                    // empty
-
-                    Console.SetCursorPosition(30 + offset, 5);
+                    Console.SetCursorPosition(30 + offset, 2);
                     Console.Write($"{performanceInformation.LateBy,5:0.0} ms");
 
-                    Console.SetCursorPosition(30 + offset, 6);
+                    Console.SetCursorPosition(30 + offset, 3);
                     Console.Write($"{performanceInformation.CycleTime,5:0.0} ms");
 
-                    Console.SetCursorPosition(28 + offset, 7);
+                    Console.SetCursorPosition(28 + offset, 4);
                     Console.Write($"{(int)(performanceInformation.TimerDrift / 1000),7} µs");
 
-                    Console.SetCursorPosition(28 + offset, 8);
+                    Console.SetCursorPosition(28 + offset, 5);
                     Console.Write($"{performanceInformation.CpuTime,7:0} %");
 
-                    Console.SetCursorPosition(0, 13);
+                    Console.SetCursorPosition(0, 11);
                 }
             }
             catch
@@ -323,8 +301,14 @@ namespace OneDas.WebServer.Shell
 
         private HubConnection BuildHubConnection()
         {
+            UriBuilder uriBuilder;
+
+            uriBuilder = new UriBuilder(_webServerOptions.AspBaseUrl);
+            uriBuilder.Host = IPAddress.Loopback.ToString();
+            uriBuilder.Path = _webServerOptions.ConsoleHubName;
+
             return new HubConnectionBuilder()
-                 .WithUrl($"{ _webServerOptions.AspBaseUrl }/{ _webServerOptions.ConsoleHubName }")
+                 .WithUrl(uriBuilder.ToString())
                  .Build();
         }
 

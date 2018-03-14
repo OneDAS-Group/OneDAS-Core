@@ -51,15 +51,7 @@ namespace OneDas.Hdf.Explorer
                 logger.LogInformation($"Database directory found at path: { options.Value.DataBaseFolderPath }");
             }
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
-
+            app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
             app.UseSignalR(routes =>

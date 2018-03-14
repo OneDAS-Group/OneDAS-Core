@@ -1,16 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  
   <PropertyGroup>
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <TargetFramework>net47</TargetFramework>
     <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
-
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  
   <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="2.6.362" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview2-30258" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview2-30258" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30258" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30258" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30258" />
@@ -20,13 +24,15 @@
     <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6643-25334" />
     <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6643-33157" />
   </ItemGroup>
+  
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
   </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
+    <Content Include="$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\**\*.dll" CopyToPublishDirectory="Always" />
+    <Content Update="**\tsconfig.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="if not exist &quot;$(TargetDir)bin32&quot; md &quot;$(TargetDir)bin32&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin32\*.*&quot; &quot;$(TargetDir)bin32&quot;&#xD;&#xA;if not exist &quot;$(TargetDir)bin64&quot; md &quot;$(TargetDir)bin64&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin64\*.*&quot; &quot;$(TargetDir)bin64&quot;" />
-  </Target>
+  
 </Project>
