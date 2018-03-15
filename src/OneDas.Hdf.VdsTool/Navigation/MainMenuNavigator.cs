@@ -92,18 +92,13 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
         private void Menu_1()
         {
-            bool isTopLevel;
-
             string dateTime;
-            string vdsFilePath;
-            var sourceDirectoryPath = new List<string>();
+            bool isEscaped;
+            DateTime epochStart;
 
-            bool isEscaped = false;
+            isEscaped = false;
+            epochStart = default;
 
-            DateTime epochStart = default;
-            DateTime epochEnd;
-
-            //
             Console.CursorVisible = true;
 
             while (true)
@@ -125,31 +120,9 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-
-            if (epochStart > DateTime.MinValue)
-            {
-                epochEnd = epochStart.AddMonths(1);
-                sourceDirectoryPath.Add(Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPath.Add(Path.Combine(Program.BaseDirectoryPath, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPath.Add(Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
-                vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS", $"{epochStart.ToString("yyyy-MM")}.h5");
-                isTopLevel = false;
-            }
-            else
-            {
-                epochStart = new DateTime(2017, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                sourceDirectoryPath.Add(Path.Combine(Program.BaseDirectoryPath, "VDS"));
-                vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
-                isTopLevel = true;
-            }
-
-            Console.WriteLine();
-            Console.WriteLine($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
-            Console.WriteLine($"Epoch end:   {epochEnd.ToString("yyyy-MM-dd")}");
             Console.WriteLine();
 
-            Program.CreateVirtualDatasetFile(sourceDirectoryPath, vdsFilePath, epochStart, epochEnd, isTopLevel);
+            Program.CreateVirtualDatasetFile(Program.BaseDirectoryPath, epochStart);
         }
 
         private void Menu_2()
@@ -201,25 +174,12 @@ namespace OneDas.Hdf.VdsTool.Navigation
         private void Menu_3()
         {
             string dateTime;
-            string sourceDirectoryPath;
-            string targetDirectoryPath;
-            string logDirectoryPath;
-            string vdsMetaFilePath;
-
             bool isEscaped = false;
 
             DateTime epochStart = default;
-            DateTime epochEnd;
 
             //
             Console.CursorVisible = true;
-
-            vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
-
-            if (!File.Exists(vdsMetaFilePath))
-            {
-                return;
-            }
 
             while (true)
             {
@@ -241,18 +201,9 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-
-            epochEnd = epochStart.AddMonths(1);
-            sourceDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
-            targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
-            logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
-
-            Console.WriteLine();
-            Console.WriteLine($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
-            Console.WriteLine($"Epoch end:   {epochEnd.ToString("yyyy-MM-dd")}");
             Console.WriteLine();
 
-            Program.CreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, logDirectoryPath, vdsMetaFilePath, epochStart, epochEnd);
+            Program.CreateAggregatedFiles(Program.BaseDirectoryPath, epochStart);
         }
 
         private void Menu_4()

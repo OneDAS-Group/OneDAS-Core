@@ -30,12 +30,21 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
+        #region "Methods"
+
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
             H5.is_library_threadsafe(ref _isLibraryThreadSafe);
+
+            if (args.Any())
+            {
+                Program.ParseCommandLineArguments(args);
+
+                return;
+            }
 
             while (true)
             {
@@ -54,11 +63,7 @@ namespace OneDas.Hdf.VdsTool
 
                     Program.BaseDirectoryPath = Console.ReadLine() + @"\";
 
-                    if (Directory.Exists(Program.BaseDirectoryPath) &&
-                        Directory.Exists(Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION")) &&
-                        Directory.Exists(Path.Combine(Program.BaseDirectoryPath, "DB_IMPORT")) &&
-                        Directory.Exists(Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE")) &&
-                        Directory.Exists(Path.Combine(Program.BaseDirectoryPath, "VDS")))
+                    if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
                     {
                         break;
                     }
@@ -70,9 +75,184 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
+        private static bool ValidateDatabaseDirectoryPath(string databaseDirectoryPath)
+        {
+            return Directory.Exists(databaseDirectoryPath) &&
+                   Directory.Exists(Path.Combine(databaseDirectoryPath, "DB_AGGREGATION")) &&
+                   Directory.Exists(Path.Combine(databaseDirectoryPath, "DB_IMPORT")) &&
+                   Directory.Exists(Path.Combine(databaseDirectoryPath, "DB_NATIVE")) &&
+                   Directory.Exists(Path.Combine(databaseDirectoryPath, "VDS"));
+        }
+
+        private static void ParseCommandLineArguments(string[] args)
+        {
+            switch (args[0])
+            {
+                case "vds":
+                    Program.HandleVds(args.Skip(1).ToList());
+                    return;
+                case "aggregate":
+                    Program.HandleAggregations(args.Skip(1).ToList());
+                    return;
+                default:
+                    return;
+            }            
+        }
+
+        private static void HandleVds(List<string> args)
+        {
+            int index;
+
+            // databasePath
+            string databasePath;
+
+            index = -1;
+            databasePath = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-d"); }
+            if (index < 0) { index = args.IndexOf("--database-location"); }
+
+            if (index >= 0)
+            {
+                if (index + 1 < args.Count)
+                {
+                    databasePath = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (!Program.ValidateDatabaseDirectoryPath(databasePath))
+            {
+                return;
+            }
+
+            // epoch start
+            string dateTime;
+            DateTime epochStart;
+
+            index = -1;
+            epochStart = default;
+            dateTime = string.Empty;
+
+            if (index < 0) { index = args.IndexOf("-e"); }
+            if (index < 0) { index = args.IndexOf("--epoch-start"); }
+
+            if (index >= 0)
+            {
+                if (index + 1 < args.Count)
+                {
+                    dateTime = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(dateTime) || DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
+            {
+                Program.CreateVirtualDatasetFile(databasePath, epochStart);
+            }
+        }
+
+        private static void HandleAggregations(List<string> args)
+        {
+            int index;
+
+            // databasePath
+            string databasePath;
+
+            index = -1;
+            databasePath = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-d"); }
+            if (index < 0) { index = args.IndexOf("--database-location"); }
+
+            if (index >= 0)
+            {
+                if (index + 1 < args.Count)
+                {
+                    databasePath = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (!Program.ValidateDatabaseDirectoryPath(databasePath))
+            {
+                return;
+            }
+
+            // epoch start
+            string dateTime;
+            DateTime epochStart;
+
+            index = -1;
+            epochStart = default;
+            dateTime = string.Empty;
+
+            if (index < 0) { index = args.IndexOf("-e"); }
+            if (index < 0) { index = args.IndexOf("--epoch-start"); }
+
+            if (index >= 0)
+            {
+                if (index + 1 < args.Count)
+                {
+                    dateTime = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
+            {
+                Program.CreateAggregatedFiles(databasePath, epochStart);
+            }
+        }
+
+        #endregion
+
         #region "VDS"
 
-        public static unsafe void CreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd, bool isTopLevel)
+        public static void CreateVirtualDatasetFile(string databaseDirectoryPath, DateTime epochStart)
+        {
+            string vdsFilePath;
+            DateTime epochEnd;
+            List<string> sourceDirectoryPathSet;
+
+            sourceDirectoryPathSet = new List<string>();
+
+            if (epochStart > DateTime.MinValue)
+            {
+                epochEnd = epochStart.AddMonths(1);
+                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
+                vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS", $"{epochStart.ToString("yyyy-MM")}.h5");
+            }
+            else
+            {
+                epochStart = new DateTime(2017, 01, 01, 0, 0, 0, DateTimeKind.Utc);
+                epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
+                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "VDS"));
+                vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS.h5");
+            }
+
+            Console.WriteLine($"Epoch start: { epochStart.ToString("yyyy-MM-dd") }");
+            Console.WriteLine($"Epoch end:   { epochEnd.ToString("yyyy-MM-dd") }");
+            Console.WriteLine();
+
+            Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd);
+        }
+
+        private static unsafe void InternalCreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd)
         {        
             long sourceFileId = -1;
             long vdsFileId = -1;
@@ -533,7 +713,35 @@ namespace OneDas.Hdf.VdsTool
 
         #region "AGGREGATION"
 
-        public static void CreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string logDirectoryPath, string vdsMetaFilePath, DateTime epochStart, DateTime epochEnd)
+        public static void CreateAggregatedFiles(string databaseDirectoryPath, DateTime epochStart)
+        {
+            string sourceDirectoryPath;
+            string targetDirectoryPath;
+            string logDirectoryPath;
+            string vdsMetaFilePath;
+
+            DateTime epochEnd;
+
+            vdsMetaFilePath = Path.Combine(databaseDirectoryPath, "VDS_META.h5");
+
+            if (!File.Exists(vdsMetaFilePath))
+            {
+                return;
+            }
+
+            epochEnd = epochStart.AddMonths(1);
+            sourceDirectoryPath = Path.Combine(databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
+            targetDirectoryPath = Path.Combine(databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
+            logDirectoryPath = Path.Combine(databaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
+
+            Console.WriteLine($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
+            Console.WriteLine($"Epoch end:   {epochEnd.ToString("yyyy-MM-dd")}");
+            Console.WriteLine();
+
+            Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, logDirectoryPath, vdsMetaFilePath, epochStart, epochEnd);
+        }
+
+        private static void InternalCreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string logDirectoryPath, string vdsMetaFilePath, DateTime epochStart, DateTime epochEnd)
         {
             IList<string> dateTime;
             IList<string> filePathSet;

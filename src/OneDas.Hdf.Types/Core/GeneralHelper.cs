@@ -12,6 +12,11 @@ namespace OneDas.Hdf.Core
 {
     public static class GeneralHelper
     {
+        public static List<string> GetVariableGuids(this CampaignInfo campaignInfo, string variableName)
+        {
+            return campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableNameSet.Contains(variableName)).Select(variableInfo => variableInfo.Name).ToList();
+        }
+
         public static void UpdateCampaignInfoSet(long fileId, List<CampaignInfo> campaignInfoSet)
         {
             GeneralHelper.InternalUpdateCampaignInfoSet(fileId, false, campaignInfoSet, null);
