@@ -2,7 +2,8 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
   <!-- VARIABLES -->
-  <?define CompanyName = "OneDas Group" ?>
+  <?define CompanyName = "OneDAS Group" ?>
+  <?define CompanyDisplayName = "OneDAS Group" ?>
 
   <?define ProductName = "OneDas" ?>
   <?define ProductDisplayName = "OneDAS" ?>
@@ -21,7 +22,7 @@
            Name="$(var.ProductDisplayName) $(var.ComponentDisplayName)"
            Language="1033"
            Version="$(var.WixFileVersion)"
-           Manufacturer="$(var.CompanyName)"
+           Manufacturer="$(var.CompanyDisplayName)"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
     <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64" />
@@ -44,7 +45,7 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" Name="Desktop" />
       <Directory Id="ProgramFiles64Folder">
-        <Directory Id="CompanyFolder" Name="$(var.CompanyName)">
+        <Directory Id="ProductFolder" Name="$(var.ProductDisplayName)">
           <Directory Id="INSTALLFOLDER" Name="$(var.ComponentDisplayName)" />
         </Directory>
       </Directory>

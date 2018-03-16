@@ -17,7 +17,7 @@
         }
         else
         {
-            throw new Error("No corresponding plugin description found.")
+            throw new Error("No corresponding plugin description for plugin ID '" + pluginModel.Description.Id + "' found.")
         }
     }
 }

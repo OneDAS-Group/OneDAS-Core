@@ -89,6 +89,8 @@ namespace OneDas.WebServer
 
             if (Environment.UserInteractive)
             {
+                BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
+
                 oneDasConsole = _serviceProvider.GetRequiredService<OneDasConsole>();
 
                 _webhost?.StartAsync();
@@ -96,6 +98,8 @@ namespace OneDas.WebServer
             }
             else
             {
+                BasicBootloader.SystemLogger.LogInformation("started in non-interactive mode (service)");
+
                 _webhost?.RunAsService();
             }
         }
@@ -187,7 +191,7 @@ namespace OneDas.WebServer
 
                     try
                     {
-                        oneDasEngine.ActivateProject(oneDasProjectSerializer.Load(_webServerOptions.CurrentProjectFilePath), 4);
+                        oneDasEngine.ActivateProject(oneDasProjectSerializer.Load(projectFilePath), 4);
                         oneDasEngine.Start();
                     }
                     catch (Exception ex)

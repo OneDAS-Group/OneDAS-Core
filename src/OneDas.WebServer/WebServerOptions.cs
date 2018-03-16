@@ -19,13 +19,11 @@ namespace OneDas.WebServer
             this.OneDasName = "OneDAS";
 
             // preset, immutable
-            this.ApplicationName = "OneDAS WebServer";
-            this.ApplicationDisplayName = "OneDas.WebServer";
             this.ConsoleHubName = "consolehub";
             this.EventLogName = "OneDAS";
-            this.EventLogSourceName = this.ApplicationName;
+            this.EventLogSourceName = "OneDAS Core";
             this.MutexName = "{fcacd9a4-dc61-4179-b92c-e11538aaf85b}";
-            this.ServiceName = this.ApplicationDisplayName;
+            this.ServiceName =  "OneDas.Core";
             this.WebClientHubName = "webclienthub";
         }
         
@@ -45,8 +43,6 @@ namespace OneDas.WebServer
         public string OneDasName { get; set; }
 
         // preset, immutable
-        public string ApplicationName { get; private set; }
-        public string ApplicationDisplayName { get; private set; }
         public string ConsoleHubName { get; private set; }
         public string EventLogName { get; private set; }
         public string EventLogSourceName { get; private set; }

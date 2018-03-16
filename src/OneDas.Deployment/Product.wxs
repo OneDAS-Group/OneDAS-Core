@@ -2,7 +2,8 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
   <!-- VARIABLES -->
-  <?define CompanyName = "OneDas Group" ?>
+  <?define CompanyName = "OneDAS Group" ?>
+  <?define CompanyDisplayName = "OneDAS Group" ?>
 
   <?define ProductName = "OneDas" ?>
   <?define ProductDisplayName = "OneDAS" ?>
@@ -21,7 +22,7 @@
            Name="$(var.ProductDisplayName) $(var.ComponentDisplayName)"
            Language="1033"
            Version="$(var.WixFileVersion)"
-           Manufacturer="$(var.CompanyName)"
+           Manufacturer="$(var.CompanyDisplayName)"
            UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
 
     <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x86"/>
@@ -44,7 +45,7 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" Name="Desktop" />
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="CompanyFolder" Name="$(var.CompanyName)">
+        <Directory Id="ProductFolder" Name="$(var.ProductDisplayName)">
           <Directory Id="INSTALLFOLDER" Name="$(var.ComponentDisplayName)" />
         </Directory>
       </Directory>
@@ -64,10 +65,10 @@
 
   <!-- COMPONENTS -->
   <Fragment>   
-    <!--<PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
-    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/>-->
-    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
-    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>
+    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/>
+    <!--<PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>-->
                 
     <Component Id="ApplicationShortcutDesktopComponent" Guid="*" Directory="DesktopFolder">
 
@@ -97,7 +98,7 @@
       </RegistryKey>
     </Component>
     <ComponentGroup Id="EventSourceComponentGroup" Directory="INSTALLFOLDER">
-      <!--<Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
+      <Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
         <Condition>
           <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR]]>
         </Condition>
@@ -114,8 +115,8 @@
                           Name="$(var.EventLogSourceName)"
                           EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR]EventLogMessages.dll"
                           KeyPath="yes" />
-      </Component>-->
-      <Component Id="EventSourceComponentNetFull64" Guid="06fe2dcf-3cd5-4012-ac57-bf6a03caf0bd">
+      </Component>
+      <!--<Component Id="EventSourceComponentNetFull64" Guid="06fe2dcf-3cd5-4012-ac57-bf6a03caf0bd">
         <Condition>
           <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64]]>
         </Condition>
@@ -132,7 +133,7 @@
                           Name="$(var.EventLogSourceName)"
                           EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR64]EventLogMessages.dll"
                           KeyPath="yes" />
-      </Component>
+      </Component>-->
     </ComponentGroup>
     <Component Id="ServiceComponent" Guid="*" Directory="INSTALLFOLDER">
       

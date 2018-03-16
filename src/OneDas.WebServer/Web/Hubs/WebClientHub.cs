@@ -92,7 +92,7 @@ namespace OneDas.WebServer.Web
                 _webServerOptions.OneDasName = webServerOptionsLight.OneDasName;
                 _webServerOptions.AspBaseUrl = webServerOptionsLight.AspBaseUrl;
                 _webServerOptions.NewBaseDirectoryPath = webServerOptionsLight.BaseDirectoryPath;
-                _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
+                _webServerOptions.Save(BasicBootloader.ConfigurationDirectoryPath);
 
                 this.Clients.All.SendWebServerOptionsLight(webServerOptionsLight);
             });
@@ -146,7 +146,7 @@ namespace OneDas.WebServer.Web
                 projectSettings = _projectSerializer.Load(filePath);
 
                 _webServerOptions.CurrentProjectFilePath = filePath;
-                _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
+                _webServerOptions.Save(BasicBootloader.ConfigurationDirectoryPath);
 
                 _oneDasEngine.ActivateProject(projectSettings, 2);
 

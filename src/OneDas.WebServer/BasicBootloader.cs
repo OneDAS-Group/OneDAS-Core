@@ -25,19 +25,18 @@ namespace OneDas.WebServer
         public static void Main(string[] args)
         {
             bool isHosting;
-            string configurationDirectoryPath;
             string configurationFileName;
             IConfigurationRoot configurationRoot;
             IConfigurationBuilder configurationBuilder;
 
             // configuration
-            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS Group", "OneDAS");
+            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
             configurationFileName = "settings.json";
 
-            Directory.CreateDirectory(configurationDirectoryPath);
+            Directory.CreateDirectory(BasicBootloader.ConfigurationDirectoryPath);
 
             configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
+            configurationBuilder.AddJsonFile(new PhysicalFileProvider(BasicBootloader.ConfigurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
             configurationRoot = configurationBuilder.Build();
 
             _webServerOptions = configurationRoot.Get<WebServerOptions>();
@@ -50,7 +49,7 @@ namespace OneDas.WebServer
 
             if (!Directory.Exists(_webServerOptions.BaseDirectoryPath))
             {
-                _webServerOptions.BaseDirectoryPath = configurationDirectoryPath;
+                _webServerOptions.BaseDirectoryPath = BasicBootloader.ConfigurationDirectoryPath;
             }
 
             if (string.IsNullOrWhiteSpace(_webServerOptions.NewBaseDirectoryPath))
@@ -62,7 +61,7 @@ namespace OneDas.WebServer
                 _webServerOptions.BaseDirectoryPath = _webServerOptions.NewBaseDirectoryPath;
             }
 
-            _webServerOptions.Save(_webServerOptions.BaseDirectoryPath);
+            _webServerOptions.Save(BasicBootloader.ConfigurationDirectoryPath);
 
             // determine startup mode
             if (Environment.UserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0)
@@ -157,6 +156,8 @@ namespace OneDas.WebServer
 
         #region "Properties"
 
+		public static string ConfigurationDirectoryPath { get; private set; }
+		
         public static ILogger SystemLogger { get; private set; }
 
         #endregion

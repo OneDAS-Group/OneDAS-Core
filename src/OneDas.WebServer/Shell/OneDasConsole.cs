@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OneDas.Common;
 using OneDas.Engine.Core;
 using OneDas.Infrastructure;
 using System;
@@ -47,7 +45,6 @@ namespace OneDas.WebServer.Shell
             SafeNativeMethods.SetConsoleCtrlHandler(_handlerRoutine, true);
 
             Console.Write("initialization (standard) ... ");
-            BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
         }
 
         #endregion
@@ -75,6 +72,7 @@ namespace OneDas.WebServer.Shell
                         {
                             _consoleHubClient.StartAsync().Wait();
                             _isConnected = true;
+							
                             this.ResetConsole();
                         }
                         catch

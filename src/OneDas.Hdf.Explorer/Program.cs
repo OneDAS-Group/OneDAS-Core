@@ -8,7 +8,6 @@ using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -32,7 +31,7 @@ namespace OneDas.Hdf.Explorer
             _lock = new object();
 
             // configuration
-            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS Group", "HDF Explorer");
+            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "HDF Explorer");
             configurationFileName = "settings.json";
 
             Directory.CreateDirectory(configurationDirectoryPath);

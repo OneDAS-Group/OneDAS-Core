@@ -57,9 +57,9 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.WebServer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\bin\build\$(WixApplicationName\PublishOutput</WixHarvestPath>
+      <WixHarvestPath>.\..\..\build\bin\$(WixApplicationName)\PublishOutput</WixHarvestPath>
 	  <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
-      <OutputName>OneDAS-$(Version)</OutputName>
+      <OutputName>OneDAS-Core-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>
     </PropertyGroup>
 	
@@ -72,7 +72,7 @@
       <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(WixRootPath)</WixToolPath>
     </PropertyGroup>
 	
-	<Exec Command="dotnet msbuild ..\$(WixApplicationName)\$(WixApplicationName).csproj /t:publish /p:Configuration=$(WixConfiguration)" />
+	<Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(WixConfiguration) -o $(WixHarvestPath)" />
 	
     <ItemGroup>
       <HarvestDirectory Include="$(WixHarvestPath)">
