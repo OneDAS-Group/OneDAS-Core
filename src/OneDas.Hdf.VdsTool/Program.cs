@@ -41,9 +41,10 @@ namespace OneDas.Hdf.VdsTool
 
             if (args.Any())
             {
-                Program.ParseCommandLineArguments(args);
-
-                return;
+                if (Program.ParseCommandLineArguments(args))
+                {
+                    return;
+                };
             }
 
             while (true)
@@ -61,7 +62,10 @@ namespace OneDas.Hdf.VdsTool
 
                     Console.WriteLine("Please enter the base directory path of the HDF files:");
 
-                    Program.BaseDirectoryPath = Console.ReadLine() + @"\";
+                    if (string.IsNullOrWhiteSpace(Program.BaseDirectoryPath))
+                    {
+                        Program.BaseDirectoryPath = Console.ReadLine() + @"\";
+                    }
 
                     if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
                     {
@@ -84,19 +88,32 @@ namespace OneDas.Hdf.VdsTool
                    Directory.Exists(Path.Combine(databaseDirectoryPath, "VDS"));
         }
 
-        private static void ParseCommandLineArguments(string[] args)
+        private static bool ParseCommandLineArguments(string[] args)
         {
             switch (args[0])
             {
                 case "vds":
+
                     Program.HandleVds(args.Skip(1).ToList());
-                    return;
+                    break;
+
                 case "aggregate":
+
                     Program.HandleAggregations(args.Skip(1).ToList());
-                    return;
-                default:
-                    return;
-            }            
+                    break;
+
+                case "--database-location":
+
+                    if (args.Count() > 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
+                    {
+                        Program.BaseDirectoryPath = args[1];
+                        return false;
+                    }
+
+                    break;
+            }
+
+            return true;
         }
 
         private static void HandleVds(List<string> args)
@@ -114,7 +131,7 @@ namespace OneDas.Hdf.VdsTool
 
             if (index >= 0)
             {
-                if (index + 1 < args.Count)
+                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
                 {
                     databasePath = args[index + 1];
                 }
@@ -122,11 +139,6 @@ namespace OneDas.Hdf.VdsTool
                 {
                     return;
                 }
-            }
-
-            if (!Program.ValidateDatabaseDirectoryPath(databasePath))
-            {
-                return;
             }
 
             // epoch start
@@ -173,7 +185,7 @@ namespace OneDas.Hdf.VdsTool
 
             if (index >= 0)
             {
-                if (index + 1 < args.Count)
+                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
                 {
                     databasePath = args[index + 1];
                 }
@@ -181,11 +193,6 @@ namespace OneDas.Hdf.VdsTool
                 {
                     return;
                 }
-            }
-
-            if (!Program.ValidateDatabaseDirectoryPath(databasePath))
-            {
-                return;
             }
 
             // epoch start
