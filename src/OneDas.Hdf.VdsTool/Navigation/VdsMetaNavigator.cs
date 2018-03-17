@@ -39,11 +39,12 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
         protected override void OnRedraw()
         {
+			Console.BufferHeight = Math.Max(Console.BufferHeight, _currentList.Count() + 10);
             Console.Clear();
 
-            foreach (var HdfElement in _currentList)
+            foreach (var hdfElement in _currentList)
             {
-                Console.WriteLine($"[ ] {HdfElement.GetDisplayName()}");
+                Console.WriteLine($"[ ] { hdfElement.GetDisplayName() }");
             }
 
             Console.WriteLine();

@@ -64,11 +64,13 @@ namespace OneDas.Hdf.VdsTool
 
                     if (string.IsNullOrWhiteSpace(Program.BaseDirectoryPath))
                     {
-                        Program.BaseDirectoryPath = Console.ReadLine() + @"\";
+                        Program.BaseDirectoryPath = Console.ReadLine();
                     }
 
                     if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
                     {
+                        Program.BaseDirectoryPath += @"\";
+
                         break;
                     }
                 }
@@ -97,6 +99,11 @@ namespace OneDas.Hdf.VdsTool
                     Program.HandleVds(args.Skip(1).ToList());
                     break;
 
+                case "update":
+
+                    Program.HandleUpdate(args.Skip(1).ToList());
+                    break;
+                    
                 case "aggregate":
 
                     Program.HandleAggregations(args.Skip(1).ToList());
@@ -170,6 +177,51 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
+		private static void HandleUpdate(List<string> args)
+        {
+            int index;
+
+            // databasePath
+            string databasePath;
+
+            index = -1;
+            databasePath = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-d"); }
+            if (index < 0) { index = args.IndexOf("--database-location"); }
+
+            if (index >= 0)
+            {
+                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
+                {
+                    databasePath = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // epoch start
+            DateTime date;
+            DateTime epochStart;
+
+            date = DateTime.UtcNow.Date;
+
+            if (date.Day == 1)
+            {
+                epochStart = new DateTime(date.Year, date.Month, 1);
+                epochStart = epochStart.AddMonths(-1);
+                Program.CreateVirtualDatasetFile(databasePath, epochStart);
+            }
+
+            epochStart = new DateTime(date.Year, date.Month, 1);
+            Program.CreateVirtualDatasetFile(databasePath, epochStart);
+
+            epochStart = DateTime.MinValue;
+            Program.CreateVirtualDatasetFile(databasePath, epochStart);
+        }
+		
         private static void HandleAggregations(List<string> args)
         {
             int index;
@@ -468,7 +520,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for type ({hdf_aggregate_function.type}): ");
+                Console.Write($"Enter value for type ({ hdf_aggregate_function.type }): ");
 
                 optionSet = new List<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
 
@@ -487,7 +539,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for argument ({hdf_aggregate_function.argument}): ");
+                Console.Write($"Enter value for argument ({ hdf_aggregate_function.argument }): ");
 
                 optionSet = new List<string>() { "none" };
 
@@ -527,7 +579,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for date/time ({hdf_transfer_function.date_time}): ");
+                Console.Write($"Enter value for date/time ({ hdf_transfer_function.date_time }): ");
 
                 optionSet = new List<string>() { "0001-01-01" };
                 dateTime_tmp = VdsToolUtilities.ReadLine(optionSet, ref isEscaped);
@@ -552,7 +604,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for type ({hdf_transfer_function.type}): ");
+                Console.Write($"Enter value for type ({ hdf_transfer_function.type }): ");
 
                 optionSet = new List<string>() { "polynomial", "function" };
 
@@ -571,7 +623,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for option ({hdf_transfer_function.option}): ");
+                Console.Write($"Enter value for option ({ hdf_transfer_function.option }): ");
 
                 optionSet = new List<string>() { "permanent" };
 
@@ -590,7 +642,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for argument ({hdf_transfer_function.argument}): ");
+                Console.Write($"Enter value for argument ({ hdf_transfer_function.argument }): ");
 
                 optionSet = new List<string>() { };
 
@@ -632,7 +684,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for date/time ({hdf_tag.date_time}): ");
+                Console.Write($"Enter value for date/time ({ hdf_tag.date_time }): ");
 
                 optionSet = new List<string>() { "0001-01-01" };
                 dateTime_tmp = VdsToolUtilities.ReadLine(optionSet, ref isEscaped);
@@ -657,7 +709,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for name ({hdf_tag.name}): ");
+                Console.Write($"Enter value for name ({ hdf_tag.name }): ");
 
                 optionSet = new List<string>() { };
 
@@ -676,7 +728,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for mode ({hdf_tag.mode}): ");
+                Console.Write($"Enter value for mode ({ hdf_tag.mode }): ");
 
                 optionSet = new List<string>() { "none", "start", "end" };
 
@@ -695,7 +747,7 @@ namespace OneDas.Hdf.VdsTool
             while (true)
             {
                 Console.Clear();
-                Console.Write($"Enter value for comment ({hdf_tag.comment}): ");
+                Console.Write($"Enter value for comment ({ hdf_tag.comment }): ");
 
                 optionSet = new List<string>() { "none"};
 
