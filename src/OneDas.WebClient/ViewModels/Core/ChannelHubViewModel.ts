@@ -41,7 +41,7 @@
     }
 
     // methods
-    public GetTransformedValue = (value: any): string => 
+    public GetTransformedValue = (value: any): number => 
     {
         if (value === "NaN")
         {

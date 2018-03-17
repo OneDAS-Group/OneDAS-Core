@@ -143,7 +143,7 @@
 
                     <div class="flex-column ml-4"
                          data-bind="tooltip: { title: $root.OneDasState() === OneDasStateEnum.Run ? 'Stop data recording before activating a new project.' : 'Click here to activate a new project.' }">
-                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Unconfigured && $root.OneDasState() !== OneDasStateEnum.Run -->
+                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Idle && $root.OneDasState() !== OneDasStateEnum.Run -->
                         <span class="fa fa-folder-open-o url text-white"
                               data-bind="click: GetCampaignDescriptions"
                               data-toggle="modal"

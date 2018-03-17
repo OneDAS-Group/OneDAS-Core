@@ -65,9 +65,11 @@ namespace OneDas.WebServer.Web
 
         private static void _updatePerfInfoTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
+            OneDasPerformanceInformation performanceInformation;
+
             if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
-                OneDasPerformanceInformation performanceInformation = _oneDasEngine.CreatePerformanceInformation();
+                performanceInformation = _oneDasEngine.CreatePerformanceInformation();
                 _hubContext?.Clients.All.SendAsync("SendPerformanceInformation", performanceInformation);
             }
         }

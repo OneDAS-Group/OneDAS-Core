@@ -54,7 +54,15 @@
                         //chartContext.ValueSet.push({ x: dateTime, y: chartContext.ChannelHub.GetTransformedValue(dataSnapshot[index]) })
                         ///////////////////////////
 
-                        value = <any>chartContext.ChannelHub.GetTransformedValue(dataSnapshot[index]);
+                        if (chartContext.ChannelHub.DataType() === OneDasDataTypeEnum.BOOLEAN)
+                        {
+                            value = dataSnapshot[index];
+                        }
+                        else
+                        {
+                            value = chartContext.ChannelHub.GetTransformedValue(dataSnapshot[index]).toFixed(2);
+                        }
+
                         chartContext.ValueSet.push(value)
 
                         if (chartContext.ChannelHub.Unit()) {
