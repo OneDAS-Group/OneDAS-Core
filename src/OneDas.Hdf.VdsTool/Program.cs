@@ -94,16 +94,16 @@ namespace OneDas.Hdf.VdsTool
         {
             switch (args[0])
             {
-                case "vds":
-
-                    Program.HandleVds(args.Skip(1).ToList());
-                    break;
-
                 case "update":
 
                     Program.HandleUpdate(args.Skip(1).ToList());
                     break;
-                    
+
+                case "vds":
+
+                    Program.HandleVds(args.Skip(1).ToList());
+                    break;
+                   
                 case "aggregate":
 
                     Program.HandleAggregations(args.Skip(1).ToList());
@@ -123,15 +123,15 @@ namespace OneDas.Hdf.VdsTool
             return true;
         }
 
-        private static void HandleVds(List<string> args)
+        private static void HandleUpdate(List<string> args)
         {
             int index;
 
-            // databasePath
-            string databasePath;
+            // databaseDirectoryPath
+            string databaseDirectoryPath;
 
             index = -1;
-            databasePath = Directory.GetCurrentDirectory();
+            databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (index < 0) { index = args.IndexOf("-d"); }
             if (index < 0) { index = args.IndexOf("--database-location"); }
@@ -140,7 +140,54 @@ namespace OneDas.Hdf.VdsTool
             {
                 if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
                 {
-                    databasePath = args[index + 1];
+                    databaseDirectoryPath = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // epoch start
+            DateTime date;
+            DateTime epochStart;
+
+            date = DateTime.UtcNow.Date;
+
+            if (date.Day == 1)
+            {
+                epochStart = new DateTime(date.Year, date.Month, 1);
+                epochStart = epochStart.AddMonths(-1);
+                Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+                Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
+            }
+
+            epochStart = new DateTime(date.Year, date.Month, 1);
+            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+            Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
+
+            epochStart = DateTime.MinValue;
+            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+        }
+
+        private static void HandleVds(List<string> args)
+        {
+            int index;
+
+            // databaseDirectoryPath
+            string databaseDirectoryPath;
+
+            index = -1;
+            databaseDirectoryPath = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-d"); }
+            if (index < 0) { index = args.IndexOf("--database-location"); }
+
+            if (index >= 0)
+            {
+                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
+                {
+                    databaseDirectoryPath = args[index + 1];
                 }
                 else
                 {
@@ -173,64 +220,19 @@ namespace OneDas.Hdf.VdsTool
 
             if (string.IsNullOrWhiteSpace(dateTime) || DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
             {
-                Program.CreateVirtualDatasetFile(databasePath, epochStart);
+                Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
             }
-        }
-
-		private static void HandleUpdate(List<string> args)
-        {
-            int index;
-
-            // databasePath
-            string databasePath;
-
-            index = -1;
-            databasePath = Directory.GetCurrentDirectory();
-
-            if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database-location"); }
-
-            if (index >= 0)
-            {
-                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
-                {
-                    databasePath = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            // epoch start
-            DateTime date;
-            DateTime epochStart;
-
-            date = DateTime.UtcNow.Date;
-
-            if (date.Day == 1)
-            {
-                epochStart = new DateTime(date.Year, date.Month, 1);
-                epochStart = epochStart.AddMonths(-1);
-                Program.CreateVirtualDatasetFile(databasePath, epochStart);
-            }
-
-            epochStart = new DateTime(date.Year, date.Month, 1);
-            Program.CreateVirtualDatasetFile(databasePath, epochStart);
-
-            epochStart = DateTime.MinValue;
-            Program.CreateVirtualDatasetFile(databasePath, epochStart);
         }
 		
         private static void HandleAggregations(List<string> args)
         {
             int index;
 
-            // databasePath
-            string databasePath;
+            // databaseDirectoryPath
+            string databaseDirectoryPath;
 
             index = -1;
-            databasePath = Directory.GetCurrentDirectory();
+            databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (index < 0) { index = args.IndexOf("-d"); }
             if (index < 0) { index = args.IndexOf("--database-location"); }
@@ -239,7 +241,7 @@ namespace OneDas.Hdf.VdsTool
             {
                 if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
                 {
-                    databasePath = args[index + 1];
+                    databaseDirectoryPath = args[index + 1];
                 }
                 else
                 {
@@ -272,7 +274,7 @@ namespace OneDas.Hdf.VdsTool
 
             if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
             {
-                Program.CreateAggregatedFiles(databasePath, epochStart);
+                Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
             }
         }
 
