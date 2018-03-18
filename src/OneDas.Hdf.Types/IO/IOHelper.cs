@@ -260,13 +260,13 @@ namespace OneDas.Hdf.IO
             int elementTypeSize;
             int byteLength;
 
-            IntPtr byteLengthPointer;
+            IntPtr bufferPtr;
             Type elementType;
             T[] returnValue;
 
             elementTypeSize = 0;
             byteLength = 0;
-            byteLengthPointer = IntPtr.Zero;
+            bufferPtr = IntPtr.Zero;
             elementType = typeof(T);
             returnValue = null;
 
@@ -318,14 +318,14 @@ namespace OneDas.Hdf.IO
 
                 elementCount = H5S.get_select_npoints(dataspaceId);
                 byteLength = (int)elementCount * elementTypeSize;
-                byteLengthPointer = Marshal.AllocHGlobal(byteLength);
+                bufferPtr = Marshal.AllocHGlobal(byteLength);
                 typeId = TypeConversionHelper.GetHdfTypeIdFromType(elementType);
 
                 switch (dataContainerType)
                 {
                     case DataContainerType.Attribute:
 
-                        if (H5A.read(dataPortId, typeId, byteLengthPointer) < 0)
+                        if (H5A.read(dataPortId, typeId, bufferPtr) < 0)
                         {
                             throw new Exception(ErrorMessage.IOHelper_CouldNotReadAttribute);
                         }
@@ -336,7 +336,7 @@ namespace OneDas.Hdf.IO
 
                         dataspaceId_memory = H5S.create_simple(1, new ulong[] { (ulong)elementCount }, new ulong[] { (ulong)elementCount });
 
-                        if (H5D.read(dataPortId, typeId, dataspaceId_memory, dataspaceId_file, H5P.DEFAULT, byteLengthPointer) < 0)
+                        if (H5D.read(dataPortId, typeId, dataspaceId_memory, dataspaceId_file, H5P.DEFAULT, bufferPtr) < 0)
                         {
                             throw new Exception(ErrorMessage.IOHelper_CouldNotReadDataset);
                         }
@@ -357,7 +357,7 @@ namespace OneDas.Hdf.IO
                     gcHandle = GCHandle.Alloc(genericSet, GCHandleType.Pinned);
                     byteSet = new byte[byteLength];
 
-                    Marshal.Copy(byteLengthPointer, byteSet, 0, byteLength);
+                    Marshal.Copy(bufferPtr, byteSet, 0, byteLength);
                     Marshal.Copy(byteSet, 0, gcHandle.AddrOfPinnedObject(), byteLength);
 
                     returnValue = genericSet;
@@ -370,7 +370,7 @@ namespace OneDas.Hdf.IO
 
                     intPtrSet = new IntPtr[(int)elementCount];
 
-                    Marshal.Copy(byteLengthPointer, intPtrSet, 0, (int)elementCount);
+                    Marshal.Copy(bufferPtr, intPtrSet, 0, (int)elementCount);
 
                     returnValue = intPtrSet.Select(x =>
                     {
@@ -389,7 +389,7 @@ namespace OneDas.Hdf.IO
 
                     Enumerable.Range(0, (int)elementCount).ToList().ForEach(x =>
                     {
-                        structSet[x] = Marshal.PtrToStructure<T>(IntPtr.Add(byteLengthPointer, offset));
+                        structSet[x] = Marshal.PtrToStructure<T>(IntPtr.Add(bufferPtr, offset));
                         offset += elementTypeSize;
                     });
 
@@ -402,7 +402,7 @@ namespace OneDas.Hdf.IO
             }
             finally
             {
-                Marshal.FreeHGlobal(byteLengthPointer);
+                Marshal.FreeHGlobal(bufferPtr);
 
                 if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
                 if (H5I.is_valid(dataspaceId_memory) > 0) { H5S.close(dataspaceId_memory); }

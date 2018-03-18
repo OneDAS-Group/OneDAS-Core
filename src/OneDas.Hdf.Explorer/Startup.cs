@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using HDF.PInvoke;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,20 +37,7 @@ namespace OneDas.Hdf.Explorer
 
             logger = loggerFactory.CreateLogger("HDF Explorer");
 
-            logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
-
-            if (string.IsNullOrWhiteSpace(options.Value.DataBaseFolderPath))
-            {
-                logger.LogError($"No database directory path has been configured.");
-            }
-            else if (!Directory.Exists(options.Value.DataBaseFolderPath))
-            {
-                logger.LogWarning($"Configured database directory path { options.Value.DataBaseFolderPath } does not exist.");
-            }
-            else
-            {
-                logger.LogInformation($"Database directory found at path: { options.Value.DataBaseFolderPath }");
-            }
+            this.Validate(logger, options);
 
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
@@ -65,6 +53,38 @@ namespace OneDas.Hdf.Explorer
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        private void Validate(ILogger logger, IOptions<HdfExplorerOptions> options)
+        {
+            uint isLibraryThreadSafe;
+
+            // check thread safety of HDF library
+            isLibraryThreadSafe = 0;
+
+            H5.is_library_threadsafe(ref isLibraryThreadSafe);
+
+            if (isLibraryThreadSafe <= 0)
+            {
+                logger.LogError("The libary 'hdf5.dll' is not thread safe.");
+            }
+
+            // asp base URL
+            logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
+
+            // check if database directory is confiured and existing
+            if (string.IsNullOrWhiteSpace(options.Value.DataBaseFolderPath))
+            {
+                logger.LogError($"No database directory path has been configured.");
+            }
+            else if (!Directory.Exists(options.Value.DataBaseFolderPath))
+            {
+                logger.LogWarning($"Configured database directory path { options.Value.DataBaseFolderPath } does not exist.");
+            }
+            else
+            {
+                logger.LogInformation($"Database directory found at path: { options.Value.DataBaseFolderPath }");
+            }
         }
     }
 }

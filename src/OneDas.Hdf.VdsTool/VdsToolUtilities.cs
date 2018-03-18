@@ -15,7 +15,7 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
-        public static string ReadLine(List<string> optionSet, ref bool isEscaped)
+        public static (string Value, bool IsEscaped) ReadLine(List<string> optionSet)
         {
             Contract.Requires(optionSet != null);
 
@@ -71,15 +71,16 @@ namespace OneDas.Hdf.VdsTool
 
                     case ConsoleKey.Enter:
 
-                        return buffer.ToString();
+                        Console.WriteLine();
+
+                        return (buffer.ToString(), false);
 
                     case ConsoleKey.Escape:
 
                         VdsToolUtilities.RemoveCharacters(buffer.Length);
                         buffer.Clear();
-                        isEscaped = true;
 
-                        return string.Empty;
+                        return (string.Empty, true);
 
                     case ConsoleKey.Backspace:
 

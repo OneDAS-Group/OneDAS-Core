@@ -430,7 +430,7 @@ class AppViewModel
                         text: "Data availability of " + this.SelectedCampaignInfo().GetDisplayName()
                     },
                     tooltips: {
-                        enabled: true
+                        enabled: false
                     }
                 }
             })

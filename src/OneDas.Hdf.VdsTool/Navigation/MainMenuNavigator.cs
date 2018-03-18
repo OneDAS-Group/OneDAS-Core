@@ -96,7 +96,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
             bool isEscaped;
             DateTime epochStart;
 
-            isEscaped = false;
             epochStart = default;
 
             Console.CursorVisible = true;
@@ -106,7 +105,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                dateTime = VdsToolUtilities.ReadLine(new List<string>(), ref isEscaped);
+                (dateTime, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
 
                 if (isEscaped)
                 {
@@ -120,8 +119,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-            Console.WriteLine();
-
             Program.CreateVirtualDatasetFile(Program.BaseDirectoryPath, epochStart);
         }
 
@@ -174,7 +171,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
         private void Menu_3()
         {
             string dateTime;
-            bool isEscaped = false;
+            bool isEscaped;
 
             DateTime epochStart = default;
 
@@ -186,12 +183,12 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                dateTime = VdsToolUtilities.ReadLine(new List<string>(), ref isEscaped);
+                (dateTime, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
 
                 if (isEscaped)
                 {
                     Console.CursorVisible = false;
-                    
+
                     return;
                 }
                 else if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
@@ -201,8 +198,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-            Console.WriteLine();
-
             Program.CreateAggregatedFiles(Program.BaseDirectoryPath, epochStart);
         }
 

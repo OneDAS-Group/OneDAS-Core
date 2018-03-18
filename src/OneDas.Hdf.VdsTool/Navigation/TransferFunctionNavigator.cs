@@ -169,7 +169,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                     if ((_consoleKeyInfo.Modifiers & ConsoleModifiers.Control) != 0)
                     {
-                        _vdsMetaTransferFunctionSet.Add(Program.PromptTransferFunctionData(new hdf_transfer_function_t(DateTime.MinValue.ToString("yyyy-MM-dd"), , "polynomial", "permanent", string.Empty)));
+                        _vdsMetaTransferFunctionSet.Add(Program.PromptTransferFunctionData(new hdf_transfer_function_t(DateTime.MinValue.ToString("yyyy-MM-dd"), "polynomial", "permanent", string.Empty)));
                     }
                     else
                     {
@@ -205,9 +205,9 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                     Console.CursorVisible = true;
                     Console.Clear();
-                    Console.Write($"Enter value for unit ({_unit}): ");
+                    Console.Write($"Enter value for unit ({ _unit }): ");
 
-                    _unit = VdsToolUtilities.ReadLine(_vdsUnitSet, ref _isEscaped);
+                    (_unit, _isEscaped) = VdsToolUtilities.ReadLine(_vdsUnitSet);
 
                     if (!_isEscaped)
                     {

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using HDF.PInvoke;
+using OneDas.Hdf.Core;
+using OneDas.Hdf.IO;
+using OneDas.Hdf.VdsTool.Documentation;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OneDas.Hdf.Core;
-using OneDas.Hdf.IO;
-using HDF.PInvoke;
-using OneDas.Hdf.VdsTool.Documentation;
 
 namespace OneDas.Hdf.VdsTool.Navigation
 {
@@ -39,7 +39,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
         protected override void OnRedraw()
         {
-			Console.BufferHeight = Math.Max(Console.BufferHeight, _currentList.Count() + 10);
+            Console.BufferHeight = Math.Max(Console.BufferHeight, _currentList.Count() + 10);
             Console.Clear();
 
             foreach (var hdfElement in _currentList)
@@ -57,7 +57,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             Console.WriteLine(" aggreg. function: 3");
             Console.WriteLine("    documentation: d");
             Console.WriteLine("            purge: p");
-        } 
+        }
 
         protected override bool OnWaitForUserInput()
         {
@@ -142,14 +142,26 @@ namespace OneDas.Hdf.VdsTool.Navigation
                         H5G.close(_vdsGroupId);
                         this.OnRedraw();
                     }
-                    
+
                     break;
 
                 case ConsoleKey.D:
 
                     if (_currentList[this.SelectedIndex] is CampaignInfo)
                     {
-                        this.WriteCampaignDocumentation((CampaignInfo)_currentList[this.SelectedIndex]);
+                        string directoryPath;
+
+                        try
+                        {
+                            directoryPath = Program.PromptDirectoryPath(Directory.GetCurrentDirectory());
+
+                            this.WriteCampaignDocumentation(directoryPath, (CampaignInfo)_currentList[this.SelectedIndex]);
+                        }
+                        catch
+                        {
+                            //
+                        }
+
                         this.OnRedraw();
                     }
 
@@ -158,7 +170,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 case ConsoleKey.P:
 
                     _vdsGroupId = H5G.open(_vdsLocationId, _currentList[this.SelectedIndex].Name);
-                    new PurgeNavigator(_vdsLocationId,_vdsMetaFileId, _currentPath);
+                    new PurgeNavigator(_vdsLocationId, _vdsMetaFileId, _currentPath);
                     H5G.close(_vdsGroupId);
                     this.OnRedraw();
 
@@ -172,7 +184,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             return false;
         }
 
-        public void WriteCampaignDocumentation(CampaignInfo campaignInfo)
+        public void WriteCampaignDocumentation(string directoryPath, CampaignInfo campaignInfo)
         {
             long campaign_groupId = -1;
 
@@ -185,12 +197,11 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
             Console.Clear();
 
-            baseDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "DOCUMENTATION");
             groupNameSet = campaignInfo.VariableInfoSet.Select(variableInfo => variableInfo.VariableGroupSet.Last()).Distinct().ToList();
 
             try
             {
-                using (StreamWriter streamWriter = new StreamWriter(new FileStream(Path.Combine(baseDirectoryPath, $"{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }.rst"), FileMode.Create, FileAccess.Write, FileShare.Read)))
+                using (StreamWriter streamWriter = new StreamWriter(new FileStream(Path.Combine(directoryPath, $"{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }.rst"), FileMode.Create, FileAccess.Write, FileShare.Read)))
                 {
                     restructuredTextWriter = new RestructuredTextWriter(streamWriter);
 
@@ -298,15 +309,15 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             }
 
                             // 
-                            restructuredTextTable.AddRow(new List<string> { name, unit, guid});
+                            restructuredTextTable.AddRow(new List<string> { name, unit, guid });
                         });
 
                         restructuredTextWriter.WriteTable(restructuredTextTable);
                         restructuredTextWriter.WriteLine();
-                    }               
+                    }
 
-                    //    transferFunctionSet.ForEach(x => streamWriter.Write($"{x.date_time}, {x.type}, {x.option}, {x.argument} | "));
-                    //    aggregateFunctionSet.ForEach(x => streamWriter.Write($"{x.type}, {x.argument} | "));
+                    //    transferFunctionSet.ForEach(x => streamWriter.Write($"{ x.date_time }, { x.type }, { x.option }, { x.argument } | "));
+                    //    aggregateFunctionSet.ForEach(x => streamWriter.Write($"{ x.type }, { x.argument } | "));
                 }
 
                 Console.WriteLine($"The file has been successfully written to:\n{Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool", "hdf_variable_overview.csv")}");

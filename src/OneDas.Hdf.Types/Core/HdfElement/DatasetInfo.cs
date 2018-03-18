@@ -1,5 +1,4 @@
 ﻿using HDF.PInvoke;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -11,7 +10,7 @@ namespace OneDas.Hdf.Core
     {
         #region "Fields"
 
-        List<(string filePath, ulong length, DateTime dateTime)> _sourceFileInfoSet;
+        List<SourceFileInfo> _sourceFileInfoSet;
 
         #endregion
 
@@ -21,7 +20,7 @@ namespace OneDas.Hdf.Core
         {
             this.TypeId = typeId;
 
-            _sourceFileInfoSet = new List<(string filePath, ulong length, DateTime dateTime)>();
+            _sourceFileInfoSet = new List<SourceFileInfo>();
 
             this.RegisterSyncGroup(nameof(DatasetInfo), new SyncContext(this.UpdateDatasetInfo));
         }
@@ -32,7 +31,7 @@ namespace OneDas.Hdf.Core
 
         public long TypeId { get; set; }
 
-        public List<(string filePath, ulong length, DateTime dateTime)> SourceFileInfoSet
+        public List<SourceFileInfo> SourceFileInfoSet
         {
             get
             {
@@ -84,7 +83,7 @@ namespace OneDas.Hdf.Core
 
                 H5S.get_simple_extent_dims(dataspaceId, actualDimenionSet, maximumDimensionSet);
 
-                _sourceFileInfoSet.Add((fileContext.FilePath, actualDimenionSet.First(), fileContext.DateTime));
+                _sourceFileInfoSet.Add(new SourceFileInfo(fileContext.FilePath, actualDimenionSet.First(), fileContext.DateTime));
             }
             finally
             {
