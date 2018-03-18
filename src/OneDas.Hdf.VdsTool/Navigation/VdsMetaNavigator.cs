@@ -187,12 +187,9 @@ namespace OneDas.Hdf.VdsTool.Navigation
         public void WriteCampaignDocumentation(string directoryPath, CampaignInfo campaignInfo)
         {
             long campaign_groupId = -1;
-
             string description;
-            string baseDirectoryPath;
 
             RestructuredTextWriter restructuredTextWriter;
-
             List<string> groupNameSet;
 
             Console.Clear();

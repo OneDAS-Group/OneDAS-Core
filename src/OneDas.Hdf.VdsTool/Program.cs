@@ -97,6 +97,11 @@ namespace OneDas.Hdf.VdsTool
         {
             switch (args[0])
             {
+                case "import":
+
+                    Program.HandleImport(args.Skip(1).ToList());
+                    break;
+
                 case "update":
 
                     Program.HandleUpdate(args.Skip(1).ToList());
@@ -112,7 +117,7 @@ namespace OneDas.Hdf.VdsTool
                     Program.HandleAggregations(args.Skip(1).ToList());
                     break;
 
-                case "--database-location":
+                case "--database":
 
                     if (args.Count() > 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
                     {
@@ -126,6 +131,97 @@ namespace OneDas.Hdf.VdsTool
             return true;
         }
 
+        private static void HandleImport(List<string> args)
+        {
+            int index;
+
+            // databaseDirectoryPath
+            string databaseDirectoryPath;
+
+            index = -1;
+            databaseDirectoryPath = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-d"); }
+            if (index < 0) { index = args.IndexOf("--database"); }
+
+            if (index >= 0)
+            {
+                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
+                {
+                    databaseDirectoryPath = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // sourceDirectoryPath
+            string sourceDirectoryPath;
+
+            index = -1;
+            sourceDirectoryPath = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-s"); }
+            if (index < 0) { index = args.IndexOf("--source"); }
+
+            if (index >= 0)
+            {
+                if (args.Count() > index + 1 && Directory.Exists(sourceDirectoryPath))
+                {
+                    sourceDirectoryPath = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // campaignName
+            string campaignName;
+
+            index = -1;
+            campaignName = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-c"); }
+            if (index < 0) { index = args.IndexOf("--campaign"); }
+
+            if (index >= 0)
+            {
+                if (args.Count() > index + 1)
+                {
+                    campaignName = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // dataWriterId
+            string dataWriterId;
+
+            index = -1;
+            dataWriterId = Directory.GetCurrentDirectory();
+
+            if (index < 0) { index = args.IndexOf("-w"); }
+            if (index < 0) { index = args.IndexOf("--data-writer"); }
+
+            if (index >= 0)
+            {
+                if (args.Count() > index + 1)
+                {
+                    dataWriterId = args[index + 1];
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            Program.ImportFiles(databaseDirectoryPath, sourceDirectoryPath, campaignName, dataWriterId);
+        }
+
         private static void HandleUpdate(List<string> args)
         {
             int index;
@@ -137,7 +233,7 @@ namespace OneDas.Hdf.VdsTool
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database-location"); }
+            if (index < 0) { index = args.IndexOf("--database"); }
 
             if (index >= 0)
             {
@@ -184,7 +280,7 @@ namespace OneDas.Hdf.VdsTool
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database-location"); }
+            if (index < 0) { index = args.IndexOf("--database"); }
 
             if (index >= 0)
             {
@@ -238,7 +334,7 @@ namespace OneDas.Hdf.VdsTool
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database-location"); }
+            if (index < 0) { index = args.IndexOf("--database"); }
 
             if (index >= 0)
             {
@@ -1412,6 +1508,87 @@ namespace OneDas.Hdf.VdsTool
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region "IMPORT"
+
+        private static void ImportFiles(string dataBaseDirectoryPath, string sourceDirectoryPath, string campaignName, string dataWriterId)
+        {
+            string logDirectoryPath;
+            string logFilePath;
+            
+            logDirectoryPath = Path.Combine(dataBaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
+            logFilePath = Path.Combine(logDirectoryPath, $"{ campaignName }.txt");
+
+            try
+            {
+                Directory.GetDirectories(sourceDirectoryPath, $"{ campaignName }_V*").ToList().ForEach(currentDirectory =>
+                {
+                    Program.DownloadData(campaignName, Path.Combine(currentDirectory, dataWriterId), dataBaseDirectoryPath, logFilePath, 10);
+                });
+            }
+            catch
+            {
+                //
+            }
+        }
+
+        private static void DownloadData(string campaignName, string sourceDirectoryPath, string databaseDirectoryPath, string logFilePath, int period)
+        {
+            DateTime dateTimeBegin;
+            DateTime dateTimeEnd;
+
+            dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
+            dateTimeBegin = dateTimeEnd.AddDays(-period);
+
+            //
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
+
+            for (int i = 0; i <= (dateTimeEnd - dateTimeBegin).TotalDays; i++)
+            {
+                DateTime currentDateTime;
+
+                string currentFileName;
+                string currentSourceFilePath;
+                string currentTargetFilePath;
+
+                currentDateTime = dateTimeBegin.AddDays(i);
+                currentFileName = $"{ campaignName }_V*_{ currentDateTime.ToString("yyyy-MM-ddTHH-mm-ssZ") }.h5";
+                currentSourceFilePath = Directory.EnumerateFiles(sourceDirectoryPath, currentFileName).FirstOrDefault();
+
+                if (string.IsNullOrWhiteSpace(currentSourceFilePath))
+                {
+                    continue;
+                }
+
+                currentFileName = Path.GetFileName(currentSourceFilePath);
+                currentTargetFilePath = Path.Combine(databaseDirectoryPath, "DB_NATIVE", currentDateTime.ToString("yyyy-MM"), currentFileName);
+
+                System.Diagnostics.Trace.WriteLine(currentSourceFilePath);
+
+                if (!File.Exists(currentTargetFilePath))
+                {
+                    try
+                    {
+                        Console.Write($"Copying file { currentFileName } ... ");
+                        Directory.CreateDirectory(Path.GetDirectoryName(currentTargetFilePath));
+                        File.Copy(currentSourceFilePath, currentTargetFilePath);
+                        Console.WriteLine($"Done.");
+                        File.AppendAllText(logFilePath, $"\tsuccessful: { currentSourceFilePath }{ Environment.NewLine }");
+                    }
+                    catch (Exception)
+                    {
+                        File.Delete(currentSourceFilePath);
+                        Console.WriteLine($"Failed.");
+                        File.AppendAllText(logFilePath, $"\tfailed: { currentSourceFilePath }{ Environment.NewLine }");
+                    }
+                }
+            }
+
+            File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
         }
 
         #endregion
