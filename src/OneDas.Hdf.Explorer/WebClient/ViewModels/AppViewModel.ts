@@ -20,6 +20,7 @@ class AppViewModel
     public EndDate: KnockoutObservable<Date>   
     public DataAvailabilityStatistics: KnockoutObservable<DataAvailabilityStatisticsViewModel>
     public SelectedCampaignInfo: KnockoutObservable<CampaignInfoViewModel>
+    public ShowChart: KnockoutObservable<boolean>
 
     public CanLoadData: KnockoutComputed<boolean>
 
@@ -45,10 +46,11 @@ class AppViewModel
         this.ByteCount = ko.observable<number>(0)
         this.Progress = ko.observable<number>(0)
         this.Message = ko.observable<string>("")
-        this.StartDate = ko.observable<Date>(moment().add(-1, 'days').startOf('day').toDate())
-        this.EndDate = ko.observable<Date>(moment().add(0, 'days').startOf('day').toDate())
+        this.StartDate = ko.observable<Date>(moment().add(-1, 'days').startOf('day').toDate()).extend({ rateLimit: { timeout: 500, method: "notifyWhenChangesStop" } });
+        this.EndDate = ko.observable<Date>(moment().add(0, 'days').startOf('day').toDate()).extend({ rateLimit: { timeout: 500, method: "notifyWhenChangesStop" } });
         this.DataAvailabilityStatistics = ko.observable<DataAvailabilityStatisticsViewModel>()
         this.SelectedCampaignInfo = ko.observable<CampaignInfoViewModel>()
+        this.ShowChart = ko.observable<boolean>(false)
 
         this.CanLoadData = ko.computed<boolean>(() =>
             (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
@@ -169,12 +171,17 @@ class AppViewModel
 
         this.DataAvailabilityStatistics.subscribe(newValue =>
         {
-            if (newValue)
+            if (newValue && newValue.Data.length > 0)
             {
                 let context: any
 
+                this.ShowChart(true)
                 context = document.getElementById("chart_data_availability");
                 this._chart = this.CreateChart(context, newValue)
+            }
+            else
+            {
+                this.ShowChart(false)
             }
         })
 

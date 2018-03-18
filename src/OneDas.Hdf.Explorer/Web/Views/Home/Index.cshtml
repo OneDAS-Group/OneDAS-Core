@@ -213,11 +213,16 @@
             </div>
         </div>
     </div>
-    <div class="row flex-column" style="display: none"
-         data-bind="style: { display: IsMainViewRequested() ? 'none' : 'inherit' }">
-        <canvas class="mt-2" height="100" id="chart_data_availability"></canvas>
-        <button class="btn btn-primary pull-right" role="button" data-bind="click: ShowMainView">Get back</button>
-    </div>
+    <!-- ko if: ShowChart -->
+        <div class="row flex-column" style="display: none"
+             data-bind="style: { display: IsMainViewRequested() ? 'none' : 'inherit' }">
+            <canvas class="mt-2" height="100" id="chart_data_availability"></canvas>
+            <button class="btn btn-primary pull-right" role="button" data-bind="click: ShowMainView">Get back</button>
+        </div>
+    <!-- /ko -->
+    <!-- ko ifnot: ShowChart -->
+        <h5 class="d-block text-center mt-5 text-muted">select a time period to see availability statistics</h5>
+    <!-- /ko -->
 </div>
 <!-- /ko -->
 

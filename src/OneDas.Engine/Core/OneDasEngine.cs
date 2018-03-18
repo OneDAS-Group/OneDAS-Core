@@ -265,6 +265,8 @@ namespace OneDas.Engine.Core
             }
 
             this.OneDasState = OneDasState.Idle;
+
+            this.Project?.Dispose();
             this.Project = null;
         }
 
