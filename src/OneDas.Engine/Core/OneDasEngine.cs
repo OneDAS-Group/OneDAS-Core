@@ -48,7 +48,8 @@ namespace OneDas.Engine.Core
         private ILogger _systemLogger;
         private ILogger _oneDasEngineLogger;
 
-        OneDasOptions _oneDasOptions;
+        private OneDasOptions _oneDasOptions;
+        private DriveInfo _driveInfo;
 
         // reset required	
         private long _timerDrift;
@@ -92,6 +93,7 @@ namespace OneDas.Engine.Core
         {
             _serviceProvider = serviceProvider;
             _oneDasOptions = options.Value;
+            _driveInfo = new DriveInfo(_oneDasOptions.DataDirectoryPath);
 
             // state
             _oneDasState = OneDasState.Initialization;
@@ -116,7 +118,6 @@ namespace OneDas.Engine.Core
             _storageAutoResetEvent = new AutoResetEvent(false);
             _storageCancellationTokenSource = new CancellationTokenSource();
 
-            //_performanceCounter_Cpu = New PerformanceCounter("Processor", "% Processor Time", "_Total")
             _chunkPeriod = new TimeSpan(0, 0, (int)_oneDasOptions.ChunkPeriod);
             _syncLock = new object();
 
@@ -280,13 +281,15 @@ namespace OneDas.Engine.Core
         {
             return new OneDasPerformanceInformation(
                 DateTime.UtcNow,
-                this.OneDasState, 
+                this.MdasState,
                 Process.GetCurrentProcess().PriorityClass,
                 _lateBy,
                 _cycleTime,
                 _timerDrift,
                 _cpuTime,
-                (int)((DateTime.UtcNow - _lastActivationDateTime).TotalSeconds));
+                (int)((DateTime.UtcNow - _lastActivationDateTime).TotalSeconds),
+                _driveInfo.AvailableFreeSpace,
+                _driveInfo.TotalSize);
         }
 
         public IEnumerable<object> CreateDataSnapshot(IList<ChannelHubBase> channelHubSet = null)

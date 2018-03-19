@@ -1,6 +1,6 @@
 ﻿<!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.ApplyConfiguration -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
-    <h1 class="display-4">Activate a project to start ruling OneDAS!</h1>
+    <h1 class="display-4">Activate a project to start running OneDAS!</h1>
     <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
     <p>&nbsp;</p>
     <div class="btn-group" role="group">
@@ -240,6 +240,15 @@
                         <div data-bind="with: $root.PerformanceInformation">
                             <h1 class="display-small text-muted"
                                 data-bind="numericText: CycleTime, precision: 2, unit: 'ms'"></h1>
+                        </div>
+                    </div>
+                    <div class="progress mt-2"
+                         data-bind="tooltip: { title: 'Consumed disk space.' },
+                                    with: $root.PerformanceInformation">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"
+                             data-bind="style: { width: ConsumedDiskSpace / TotalDiskSize * 100 + '%' },
+                                        text: ConsumedDiskSpace.toFixed(0) + ' GB / ' + TotalDiskSize.toFixed(0) + ' GB'">
                         </div>
                     </div>
                     <div class="progress mt-2"

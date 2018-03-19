@@ -8,7 +8,7 @@ namespace OneDas.Engine.Core
     {
         #region "Contructors"
 
-        public OneDasPerformanceInformation(DateTime dateTime, OneDasState oneDasState, ProcessPriorityClass processPriorityClass, double lateBy, double cycleTime, double timerDrift, float cpuTime, int upTime)
+        public OneDasPerformanceInformation(DateTime dateTime, OneDasState oneDasState, ProcessPriorityClass processPriorityClass, double lateBy, double cycleTime, double timerDrift, float cpuTime, int upTime, long freeDiskSpace, long totalDiskSize)
         {
             this.DateTime = dateTime;
             this.OneDasState = oneDasState;
@@ -18,6 +18,8 @@ namespace OneDas.Engine.Core
             this.TimerDrift = timerDrift;
             this.CpuTime = cpuTime;
             this.UpTime = upTime;
+            this.FreeDiskSpace = freeDiskSpace;
+            this.TotalDiskSize = totalDiskSize;
         }
 
         #endregion
@@ -32,6 +34,8 @@ namespace OneDas.Engine.Core
         public double TimerDrift { get; set; }
         public float CpuTime { get; set; }
         public int UpTime { get; set; }
+        public long FreeDiskSpace { get; set; }
+        public long TotalDiskSize { get; set; }
 
         #endregion
     }

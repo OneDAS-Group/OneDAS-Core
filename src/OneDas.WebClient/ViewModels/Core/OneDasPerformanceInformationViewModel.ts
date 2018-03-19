@@ -5,6 +5,8 @@
     public TimerDrift: number
     public CpuTime: number
     public TimerDriftMicroseconds: number
+    public ConsumedDiskSpace: number
+    public TotalDiskSize: number
 
     public Time: string
 
@@ -25,6 +27,9 @@
         this.CpuTime = performanceInformationModel.CycleTime
 
         this.TimerDriftMicroseconds = Math.abs(this.TimerDrift) / 1000
+
+        this.ConsumedDiskSpace = (performanceInformationModel.TotalDiskSize - performanceInformationModel.FreeDiskSpace) / 1024 / 1024 / 1024
+        this.TotalDiskSize = performanceInformationModel.TotalDiskSize / 1024 / 1024 / 1024
 
         // get current time
         dateTime = new Date(performanceInformationModel.DateTime);
