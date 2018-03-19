@@ -234,15 +234,14 @@ class AppViewModel
             this.ByteCount(byteCount)
         })
 
-        // jQeuery
         $("#start-date").on("change.datetimepicker", (e: any) =>
         {
-            this.StartDate(e.date.toDate())
+            this.StartDate(e.date)
         })
 
         $("#end-date").on("change.datetimepicker", (e: any) =>
         {
-            this.EndDate(e.date.toDate())
+            this.EndDate(e.date)
         })
     }  
 
