@@ -660,7 +660,7 @@ namespace OneDas.Hdf.IO
 
                     if (H5T.equal(attributeTypeId_actual, attributeTypeId) <= 0)
                     {
-                        throw new Exception($"{ErrorMessage.IOHelper_DataTypeMismatch} Attribute: '{ name }'.");
+                        throw new Exception($"{ ErrorMessage.IOHelper_DataTypeMismatch } Attribute: '{ name }'.");
                     }
 
                     isNew = false;
@@ -674,7 +674,7 @@ namespace OneDas.Hdf.IO
 
                 if (attributeId < 0)
                 {
-                    throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateAttribute} Attribute: '{ name }'.");
+                    throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateAttribute } Attribute: '{ name }'.");
                 }
             }
             finally
@@ -715,7 +715,7 @@ namespace OneDas.Hdf.IO
 
                     if (datasetId < 0)
                     {
-                        throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset} Dataset: '{ datasetPath }'.");
+                        throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset } Dataset: '{ datasetPath }'.");
                     }
                 }
                 finally
@@ -747,7 +747,7 @@ namespace OneDas.Hdf.IO
 
                     if (H5T.equal(datasetTypeId_actual, datasetTypeId) <= 0)
                     {
-                        throw new Exception($"{ErrorMessage.IOHelper_DataTypeMismatch} Dataset: '{ datasetPath }'.");
+                        throw new Exception($"{ ErrorMessage.IOHelper_DataTypeMismatch } Dataset: '{ datasetPath }'.");
                     }
 
                     isNew = false;
@@ -761,7 +761,7 @@ namespace OneDas.Hdf.IO
 
                 if (datasetId < 0)
                 {
-                    throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset} Dataset: '{ datasetPath }'.");
+                    throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset } Dataset: '{ datasetPath }'.");
                 }
             }
             finally
@@ -796,7 +796,7 @@ namespace OneDas.Hdf.IO
 
                 if (groupId < 0)
                 {
-                    throw new Exception($"{ErrorMessage.IOHelper_CouldNotOpenOrCreateGroup} Group name: '{groupPath}'.");
+                    throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateGroup } Group name: '{ groupPath }'.");
                 }
             }
             finally
@@ -817,7 +817,7 @@ namespace OneDas.Hdf.IO
 
             for (int i = 0; i < path_splitted.Count(); i++)
             {
-                currentPath = $"{currentPath}/{path_splitted[i]}";
+                currentPath = $"{ currentPath }/{ path_splitted[i] }";
 
                 if (H5L.exists(locationId, currentPath) == 0)
                 {

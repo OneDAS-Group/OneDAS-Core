@@ -269,7 +269,7 @@ namespace OneDas.Hdf.Explorer.Web
                     if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                 }
 
-                this.WriteLogEntry($"{ this.Context.Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd hh:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd hh:mm:ss") }", false);
+                this.WriteLogEntry($"{ this.Context.Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
 
                 return $"home/download/?file={ Path.GetFileName(zipFilePath) }";
             }, _ctsSet[this.Context.ConnectionId].Token);
