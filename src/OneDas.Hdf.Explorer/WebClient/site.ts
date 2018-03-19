@@ -11,53 +11,26 @@ window.addEventListener("DOMContentLoaded", () =>
     {
         (<any>$('[data-toggle="tooltip"]')).tooltip()
     })
-
-    $(function ()
-    {
-        let startDate: Date
-
-        startDate = new Date()
-        startDate.setHours(0, 0, 0, 0);
-        startDate = addDays(startDate, -1);
-
-        let endDate: Date
-
-        endDate = new Date()
-        endDate.setHours(0, 0, 0, 0);
-
-        (<any>$("#start-date")).datetimepicker(
-            {
-                format: "DD/MM/YYYY HH:mm",
-                minDate: new Date("2000-01-01T00:00:00.000Z"),
-                maxDate: new Date("2030-01-01T00:00:00.000Z"),
-                defaultDate: startDate,
-                ignoreReadonly: true,
-                //calendarWeeks: true // not working
-            }
-        );
-
-        (<any>$("#end-date")).datetimepicker(
-            {
-                format: "DD/MM/YYYY HH:mm",
-                minDate: new Date("2000-01-01T00:00:00.000Z"),
-                maxDate: new Date("2030-01-01T00:00:00.000Z"),
-                defaultDate: endDate,
-                ignoreReadonly: true,
-                //calendarWeeks: true // not working
-            }
-        );
-
-        (<any>$("#start-date")).on("change.datetimepicker", function (e)
-        {
-            (<any>$('#end-date')).datetimepicker('minDate', e.date);
-        });
-
-        (<any>$("#end-date")).on("change.datetimepicker", function (e)
-        {
-            (<any>$('#start-date')).datetimepicker('maxDate', e.date);
-        });
-    });
 })
+
+ko.bindingHandlers.callFunction = {
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext: KnockoutBindingContext)
+    {
+        let functionSet = ko.unwrap(valueAccessor())
+
+        if (Array.isArray(functionSet))
+        {
+            functionSet.forEach(x =>
+            {
+                x(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
+            })
+        }
+        else
+        {
+            functionSet(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
+        }
+    }
+}
 
 async function Connect()
 {

@@ -133,6 +133,20 @@ class AppViewModel
 
         this.CampaignInfoSet(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)));
 
+        // start / end date
+        let startDate: Date
+        let endDate: Date
+
+        startDate = new Date()
+        startDate.setHours(0, 0, 0, 0);
+        startDate = addDays(startDate, -1);
+
+        endDate = new Date()
+        endDate.setHours(0, 0, 0, 0);
+
+        this.StartDate(startDate)
+        this.EndDate(endDate)
+
         // sample rate
         this.SelectedSampleRate.subscribe(newValue => {
             this._variableInfoSet.forEach(variableInfo => {
@@ -449,6 +463,41 @@ class AppViewModel
     })
 
     // commands
+    public InitializeDatePicker = () =>
+    {
+        (<any>$("#start-date")).datetimepicker(
+            {
+                format: "DD/MM/YYYY HH:mm",
+                minDate: new Date("2000-01-01T00:00:00.000Z"),
+                maxDate: new Date("2030-01-01T00:00:00.000Z"),
+                defaultDate: this.StartDate(),
+                ignoreReadonly: true,
+                //calendarWeeks: true // not working
+            }
+        );
+
+        (<any>$("#end-date")).datetimepicker(
+            {
+                format: "DD/MM/YYYY HH:mm",
+                minDate: new Date("2000-01-01T00:00:00.000Z"),
+                maxDate: new Date("2030-01-01T00:00:00.000Z"),
+                defaultDate: this.EndDate(),
+                ignoreReadonly: true,
+                //calendarWeeks: true // not working
+            }
+        );
+
+        (<any>$("#start-date")).on("change.datetimepicker", function (e)
+        {
+            (<any>$('#end-date')).datetimepicker('minDate', e.date);
+        });
+
+        (<any>$("#end-date")).on("change.datetimepicker", function (e)
+        {
+            (<any>$('#start-date')).datetimepicker('maxDate', e.date);
+        });
+    }
+
     public UpdateCampaignInfoSet = async () =>
     {
         let campaignInfoModelSet: any
