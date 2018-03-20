@@ -74,7 +74,7 @@
 
       <Shortcut Id="ApplicationShortcutDesktop"
           Name="$(var.ProductDisplayName) $(var.ComponentDisplayName)"
-          Description="free open and flexible measurement data aquisuition system with plugin support"
+          Description="free open and flexible measurement data acquisition system with plugin support"
           Target="[INSTALLFOLDER]$(var.WixApplicationName).exe"
           WorkingDirectory="INSTALLFOLDER"/>
 
@@ -142,7 +142,7 @@
             KeyPath="yes"
             Vital="yes" />
 
-      <ServiceInstall Description="Manage incoming and outgoing measurement data"
+      <ServiceInstall Description="Download and convert data from a OneDAS database"
                       DisplayName="$(var.ServiceDisplayName)"
                       ErrorControl="ignore"
                       Name="$(var.ServiceName)"
