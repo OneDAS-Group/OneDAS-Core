@@ -136,16 +136,8 @@ namespace OneDas.Engine.Core
 
         #region "Properties"
 
-        /// <summary>
-        /// Gets or sets the last error that occured in the OneDAS server.
-        /// </summary>
-        /// <returns>Returns last error that occured in the OneDAS server.</returns>
         public string LastError { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the state of the OneDAS.
-        /// </summary>
-        /// <returns>Returns the state of the OneDAS.</returns>
         public OneDasState OneDasState
         {
             get

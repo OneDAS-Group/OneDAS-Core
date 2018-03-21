@@ -1,8 +1,5 @@
 ﻿namespace OneDas.WebServer.Core
 {
-    /// <summary>
-    /// Specifies the authorization type for functions called by the OneDAS client on the OneDAS server.
-    /// </summary>
     public enum AuthorizationType
     {
         /// <summary>

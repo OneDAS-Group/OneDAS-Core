@@ -95,7 +95,7 @@ namespace OneDas.WebServer.Shell
             _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
 
             // to serve or not to serve?
-            Console.Title = "OneDAS Server";
+            Console.Title = "OneDAS Core";
 
             if (!isHosting)
             {
@@ -171,7 +171,7 @@ namespace OneDas.WebServer.Shell
                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
 
-                Console.Write($"+==============================="); this.WriteColored($" OneDAS Server ", ConsoleColor.Cyan); Console.WriteLine($"===============================+");
+                Console.Write($"+================================"); this.WriteColored($" OneDAS Core ", ConsoleColor.Cyan); Console.WriteLine($"================================+");
                 Console.WriteLine($"|                                                                             |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");

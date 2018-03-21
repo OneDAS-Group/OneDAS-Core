@@ -1,8 +1,5 @@
 ﻿namespace OneDas.Infrastructure
 {
-    /// <summary>
-    /// Specifies the state of the OneDAS server.
-    /// </summary>
     public enum OneDasState
     {
         Error = 1,
