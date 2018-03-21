@@ -4,7 +4,7 @@
 
   <PropertyGroup> 
     <OutputPath>$(MSBuildThisFileDirectory)..\build\bin\$(MSBuildProjectName)\$(Configuration)</OutputPath>
-	<BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\build\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\build\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)</IntermediateOutputPath>
   </PropertyGroup>
   
