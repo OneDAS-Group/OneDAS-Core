@@ -47,7 +47,6 @@ namespace OneDas.WebServer
             {
                 _webhost = this.CreateWebHost();
                 _serviceProvider = _webhost.Services;
-                _pluginProvider = _serviceProvider.GetRequiredService<IPluginProvider>();
 
                 // create directories
                 Directory.CreateDirectory(_webServerOptions.BaseDirectoryPath);
