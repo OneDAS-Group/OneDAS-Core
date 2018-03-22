@@ -995,6 +995,8 @@ namespace OneDas.Hdf.VdsTool
             targetDirectoryPath = Path.Combine(databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
             logDirectoryPath = Path.Combine(databaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
 
+            Directory.CreateDirectory(logDirectoryPath);
+
             if (Console.CursorTop > 0 || Console.CursorLeft > 0)
             {
                 Console.WriteLine();
@@ -1595,7 +1597,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static void ClearCurrentLine()
         {
-            Console.Write($"\r{new string(' ', Console.WindowWidth - 1)}\r");
+            Console.Write($"\r{ new string(' ', Console.WindowWidth - 1) }\r");
         }
     }
 }

@@ -87,9 +87,8 @@ namespace OneDas.Hdf.VdsTool
                         if (buffer.Length > 0)
                         {
                             buffer.Remove(buffer.Length - 1, 1);
+                            VdsToolUtilities.RemoveCharacters(1);
                         }
-
-                        VdsToolUtilities.RemoveCharacters(1);
 
                         optionSet[0] = buffer.ToString();
                         selectedIndex = 0;
