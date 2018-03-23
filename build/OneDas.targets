@@ -16,7 +16,7 @@
       <DaysSince2000>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::MinValue.AddTicks(630822816000000000))).TotalDays)))</DaysSince2000>
       <SecondsSinceMidnight>$([MSBuild]::Divide($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::UtcNow.Date)).TotalSeconds), 2).ToString(`F0`))</SecondsSinceMidnight>
 
-      <!-- ensure default vaues -->
+      <!-- ensure default values -->
       <Authors Condition="$(Authors) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Authors>
       <Company Condition="$(Company) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Company>
       <Copyright Condition="$(Copyright) == ''">OneDAS Group</Copyright>
@@ -44,7 +44,7 @@
   
   <Target Name="PushTarget" AfterTargets="Pack">
     <Exec Command="dotnet nuget push &quot;$(TargetDir)..\$(PackageId).$(PackageVersion).nupkg&quot; --source https://www.myget.org/F/onedas/api/v3/index.json" />
-	<Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
+    <Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
   </Target>
 
 </Project>
