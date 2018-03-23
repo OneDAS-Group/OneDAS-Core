@@ -399,7 +399,7 @@ namespace OneDas.Hdf.VdsTool
             }
             else
             {
-                epochStart = new DateTime(2017, 01, 01, 0, 0, 0, DateTimeKind.Utc);
+                epochStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
                 epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
                 sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "VDS"));
                 vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS.h5");
@@ -1002,8 +1002,8 @@ namespace OneDas.Hdf.VdsTool
                 Console.WriteLine();
             }
 
-            Console.WriteLine($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
-            Console.WriteLine($"Epoch end:   {epochEnd.ToString("yyyy-MM-dd")}");
+            Console.WriteLine($"Epoch start: { epochStart.ToString("yyyy-MM-dd") }");
+            Console.WriteLine($"Epoch end:   { epochEnd.ToString("yyyy-MM-dd") }");
             Console.WriteLine();
 
             Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, logDirectoryPath, vdsMetaFilePath, epochStart, epochEnd);

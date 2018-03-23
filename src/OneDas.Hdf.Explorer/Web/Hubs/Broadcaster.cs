@@ -182,7 +182,7 @@ namespace OneDas.Hdf.Explorer.Web
                 sampleRate = sampleRateDescription.ToSampleRate();
 
                 // epoch & hyperslab
-                epochStart = new DateTime(2017, 01, 01);
+                epochStart = new DateTime(2000, 01, 01);
                 epochEnd = new DateTime(2030, 01, 01);
 
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
@@ -194,9 +194,6 @@ namespace OneDas.Hdf.Explorer.Web
                 stride = 1;
                 block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * sampleRate));
                 count = 1;
-
-                // bugfix
-                start = start & 0xFFFFFFFF;
 
                 // state check
                 if (this.HdfExplorerState == HdfExplorerState.Loading)
@@ -328,7 +325,7 @@ namespace OneDas.Hdf.Explorer.Web
                 fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
                 // epoch & hyperslab
-                epochStart = new DateTime(2017, 01, 01);
+                epochStart = new DateTime(2000, 01, 01);
                 epochEnd = new DateTime(2030, 01, 01);
 
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
