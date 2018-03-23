@@ -65,13 +65,13 @@ async function Connect()
     }
     catch (e)
     {
-        console.log("OneDAS: signalr connection failed")
+        console.log("HDF Explorer: signalr connection failed")
     }
 }
 
 async function Reconnect()
 {
-    console.log("OneDAS: signalr connection failed")
+    console.log("HDF Explorer: signalr connection failed")
 
     if (appViewModel())
     {
@@ -87,14 +87,14 @@ async function Reconnect()
             await broadcaster.start()
 
             state = await broadcaster.invoke("GetHdfExplorerState")
-            console.log("OneDAS: signalr reconnected")
+            console.log("HDF Explorer: signalr reconnected")
 
             appViewModel().HdfExplorerState(state);
             appViewModel().IsConnected(true);
         }
         catch (e)
         {
-            console.log("OneDAS: trying to reconnect ...")
+            console.log("HDF Explorer: trying to reconnect ...")
         }
 
         await delay(5000)

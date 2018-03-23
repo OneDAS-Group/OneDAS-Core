@@ -233,16 +233,6 @@ class AppViewModel
         {
             this.ByteCount(byteCount)
         })
-
-        $("#start-date").on("change.datetimepicker", (e: any) =>
-        {
-            this.StartDate(e.date)
-        })
-
-        $("#end-date").on("change.datetimepicker", (e: any) =>
-        {
-            this.EndDate(e.date)
-        })
     }  
 
     // methods
@@ -486,14 +476,18 @@ class AppViewModel
             }
         );
 
-        (<any>$("#start-date")).on("change.datetimepicker", function (e)
+        (<any>$("#start-date")).on("change.datetimepicker", e =>
         {
             (<any>$('#end-date')).datetimepicker('minDate', e.date);
+
+            this.StartDate(e.date)
         });
 
-        (<any>$("#end-date")).on("change.datetimepicker", function (e)
+        (<any>$("#end-date")).on("change.datetimepicker", e =>
         {
             (<any>$('#start-date')).datetimepicker('maxDate', e.date);
+
+            this.EndDate(e.date)
         });
     }
 
