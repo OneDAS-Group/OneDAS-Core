@@ -321,7 +321,7 @@
         }
 
         model.ChannelHubSettingsSet.sort((channelHub1, channelHub2) => this.CompareStrings(channelHub1.Name, channelHub2.Name))
-        
+
         return model
     }
 
@@ -471,7 +471,7 @@
     private IsDropAllowed = (channelHub: ChannelHubViewModel) =>
     {
         return channelHub.IsAssociationAllowed(this.SelectedDataPort())
-    } 
+    }
 
     // commands
     public ToggleMultiMappingMode()
@@ -493,7 +493,7 @@
 
     public ShowContextMenu = (item: ChannelHubViewModel, e) =>
     {
-        let offset : JQueryCoordinates
+        let offset: JQueryCoordinates
 
         this.SelectedChannelHub_ContextMenu(item)
         this.SelectedChannelHub(item)
@@ -506,11 +506,11 @@
         offset = $("body").offset()
 
         $("#Project_ChannelContextMenu").show().css(
-        {
-            position: "absolute",
-            left: e.pageX - offset.left,
-            top: e.pageY - offset.top
-        })
+            {
+                position: "absolute",
+                left: e.pageX - offset.left,
+                top: e.pageY - offset.top
+            })
     }
 
     public BeginEditChannel = () =>
@@ -671,8 +671,6 @@
 
     private UpdateMapping = () =>
     {
-        console.log("OneDAS: update mapping")
-
         let inputSet: DataPortViewModel[]
         let outputSet: DataPortViewModel[]
         let dataPortIdMap: Map<DataPortViewModel, string>
@@ -692,7 +690,7 @@
                         inputSet.push(y)
                         break
 
-                    case DataDirectionEnum.Output: 
+                    case DataDirectionEnum.Output:
                         outputSet.push(y)
                         break
                 }
@@ -731,5 +729,7 @@
                 }
             })
         })
+
+        console.log("OneDAS: mapping updated")
     }
 }

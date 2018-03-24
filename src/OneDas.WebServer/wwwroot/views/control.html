@@ -143,7 +143,7 @@
 
                     <div class="flex-column ml-4"
                          data-bind="tooltip: { title: $root.OneDasState() === OneDasStateEnum.Run ? 'Stop data recording before activating a new project.' : 'Click here to activate a new project.' }">
-                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Idle && $root.OneDasState() !== OneDasStateEnum.Run -->
+                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Idle && $root.OneDasState() < OneDasStateEnum.Run -->
                         <span class="fa fa-folder-open-o url text-white"
                               data-bind="click: GetCampaignDescriptions"
                               data-toggle="modal"
@@ -160,7 +160,96 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-6">
+            <div class="card my-2">
+                <div class="card-header">
+                    Message Log
+                </div>
+                <div class="card-body">
+                    <div class="message-log">
+                        <ul class="list-group" data-bind="foreach: $root.ClientMessageLog">
+                            <li class="message-log-list-item" data-bind="text: $data.Prefix + ': ' + $data.Message, fadeVisible: true" />
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card my-2 noselect">
+                <div class="card-header d-flex justify-content-between">
+                    Performance
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
+                                    Delay
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="numericText: LateBy, precision: 2, unit: 'ms'"></h1>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Indicates the load.'}">
+                                    Cycle Time
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="numericText: CycleTime, precision: 2, unit: 'ms'"></h1>
+                                </div>
+                            </div>
+                            <div class="progress mt-2"
+                                 data-bind="tooltip: { title: 'Time difference of reference clock and Windows clock.' },
+                                    with: $root.PerformanceInformation">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     data-bind="style: { width: TimerDriftMicroseconds / 1500 * 100 + '%' },
+                                        numericText: TimerDriftMicroseconds, precision: 0, unit: 'µs'">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Time since the current project was activated.' }">
+                                    Local Time
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="text: Time"></h1>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Time since the current project was activated.' }">
+                                    Uptime
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="text: UpTimeHours + ' h ' + UpTimeMinutes + ' m '"></h1>
+                                </div>
+                            </div>
+                            <div class="progress mt-2"
+                                 data-bind="tooltip: { title: 'Consumed disk space.' },
+                                    with: $root.PerformanceInformation">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     data-bind="style: { width: ConsumedDiskSpace / TotalDiskSize * 100 + '%' },
+                                        text: ConsumedDiskSpace.toFixed(0) + ' GB / ' + TotalDiskSize.toFixed(0) + ' GB'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <div class="card my-2">
                 <div class="card-header">
                     Data Snapshot
@@ -198,80 +287,6 @@
                             <!-- /ko -->
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card my-2 noselect">
-                <div class="card-header d-flex justify-content-between">
-                    <div>
-                        Performance
-                    </div>
-                    <div data-bind="with: $root.PerformanceInformation">
-                        <div class="text-muted" data-bind="text: Time"></div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'Time since the current project was activated.' }">
-                            Uptime
-                        </h5>
-                        <div data-bind="with: $root.PerformanceInformation">
-                            <h1 class="display-small text-muted"
-                                data-bind="text: UpTimeHours + ' h ' + UpTimeMinutes + ' m ' + UpTimeSeconds + ' s'"></h1>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'Timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
-                            Delay
-                        </h5>
-                        <div data-bind="with: $root.PerformanceInformation">
-                            <h1 class="display-small text-muted"
-                                data-bind="numericText: LateBy, precision: 2, unit: 'ms'"></h1>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <h5 class="display-small text-muted"
-                            data-bind="tooltip: { title: 'Indicates the load.'}">
-                            Cycle Time
-                        </h5>
-                        <div data-bind="with: $root.PerformanceInformation">
-                            <h1 class="display-small text-muted"
-                                data-bind="numericText: CycleTime, precision: 2, unit: 'ms'"></h1>
-                        </div>
-                    </div>
-                    <div class="progress mt-2"
-                         data-bind="tooltip: { title: 'Consumed disk space.' },
-                                    with: $root.PerformanceInformation">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated"
-                             role="progressbar"
-                             data-bind="style: { width: ConsumedDiskSpace / TotalDiskSize * 100 + '%' },
-                                        text: ConsumedDiskSpace.toFixed(0) + ' GB / ' + TotalDiskSize.toFixed(0) + ' GB'">
-                        </div>
-                    </div>
-                    <div class="progress mt-2"
-                         data-bind="tooltip: { title: 'Time difference of reference clock and Windows clock.' },
-                                    with: $root.PerformanceInformation">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated"
-                             role="progressbar"
-                             data-bind="style: { width: TimerDriftMicroseconds / 1500 * 100 + '%' },
-                                        numericText: TimerDriftMicroseconds, precision: 0, unit: 'µs'">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card my-2">
-                <div class="card-header">
-                    Message Log
-                </div>
-                <div class="card-body">
-                    <div class="message-log">
-                        <ul class="list-group" data-bind="foreach: $root.ClientMessageLog">
-                            <li class="message-log-list-item" data-bind="text: $data.Prefix + ': ' + $data.Message, fadeVisible: true" />
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>

@@ -1,33 +1,28 @@
 ﻿class AppViewModel
 {
     public ProductVersion: KnockoutObservable<string>
-    public LastError: KnockoutObservable<string>
     public ClientSet: KnockoutObservableArray<string>
+    public LastError: KnockoutObservable<string>
     public OneDasState: KnockoutObservable<OneDasStateEnum>
+    public WebServerOptionsLight: KnockoutObservable<WebServerOptionsLightViewModel>
+
     public WorkspaceSet: KnockoutObservableArray<WorkspaceBase>
     public ReducedWorkspaceSet: KnockoutObservableArray<WorkspaceBase>
-    public ActiveProject: KnockoutObservable<OneDasProjectViewModel>
-    public WebServerOptionsLight: KnockoutObservable<WebServerOptionsLightViewModel>
     public ClientMessageLog: KnockoutObservableArray<MessageLogEntryViewModel>
     public PerformanceInformation: KnockoutObservable<OneDasPerformanceInformationViewModel>
+    public IsConnected: KnockoutObservable<boolean>
+
+    public DataGatewayPluginIdentifications: KnockoutObservableArray<PluginIdentificationViewModel>
+    public DataWriterPluginIdentifications: KnockoutObservableArray<PluginIdentificationViewModel>
 
     public NewWebServerOptionsLightOneDasName: KnockoutObservable<string>
     public NewWebServerOptionsLightAspBaseUrl: KnockoutObservable<string>
     public NewWebServerOptionsLightBaseDirectoryPath: KnockoutObservable<string>
 
+    public ActiveProject: KnockoutObservable<OneDasProjectViewModel>
+
     constructor(appModel: any)
     {
-        this.OneDasState = ko.observable<OneDasStateEnum>(0) // default
-        this.WorkspaceSet = ko.observableArray<WorkspaceBase>()
-        this.ClientMessageLog = ko.observableArray<MessageLogEntryViewModel>()
-        this.PerformanceInformation = ko.observable<OneDasPerformanceInformationViewModel>()
-
-        this.NewWebServerOptionsLightOneDasName = ko.observable<string>()
-        this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
-        this.NewWebServerOptionsLightBaseDirectoryPath = ko.observable<string>()
-
-        this.ActiveProject = ko.observable<OneDasProjectViewModel>()
-
         // enumeration description
         EnumerationHelper.Description["DataDirectionEnum_Input"] = "Input"
         EnumerationHelper.Description["DataDirectionEnum_Output"] = "Output"
@@ -56,59 +51,27 @@
         EnumerationHelper.Description["SampleRateEnum_SampleRate_5"] = "5 Hz"
         EnumerationHelper.Description["SampleRateEnum_SampleRate_1"] = "1 Hz"
 
-        // app model      
-        this.ProductVersion = ko.observable<string>(appModel.ProductVersion)
-        this.ClientSet = ko.observableArray<string>(appModel.ClientSet)
-        this.LastError = ko.observable<string>(appModel.LastError)
-        this.OneDasState(appModel.OneDasState)
-        this.WebServerOptionsLight = ko.observable(new WebServerOptionsLightViewModel(appModel.WebServerOptionsLight))
+        // 
+        this.ProductVersion = ko.observable<string>()
+        this.ClientSet = ko.observableArray<string>()
+        this.LastError = ko.observable<string>()
+        this.OneDasState = ko.observable<OneDasStateEnum>()
+        this.WebServerOptionsLight = ko.observable();
 
-        this.WorkspaceSet.push(new StartViewModel(this.ActiveProject))
-        this.WorkspaceSet.push(new ControlViewModel(this.ActiveProject))
-        this.WorkspaceSet.push(new LiveViewViewModel(this.ActiveProject))
-        this.WorkspaceSet.push(new EditorViewModel(this.ActiveProject))
-        this.WorkspaceSet.push(new ExtensionViewModel(this.ActiveProject))
-        this.ReducedWorkspaceSet = ko.observableArray(this.WorkspaceSet().slice(1, this.WorkspaceSet().length))
+        this.WorkspaceSet = ko.observableArray<WorkspaceBase>()
+        this.ClientMessageLog = ko.observableArray<MessageLogEntryViewModel>()
+        this.PerformanceInformation = ko.observable<OneDasPerformanceInformationViewModel>()
+        this.IsConnected = ko.observable<boolean>(true)
 
-        // register components
-        PluginHive.PluginIdentificationSet.set("DataGateway", appModel.DataGatewayPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))
-        PluginHive.PluginIdentificationSet.set("DataWriter", appModel.DataWriterPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))
+        this.DataGatewayPluginIdentifications = ko.observableArray<PluginIdentificationViewModel>()
+        this.DataWriterPluginIdentifications = ko.observableArray<PluginIdentificationViewModel>()
 
-        PluginHive.PluginIdentificationSet.get("DataGateway").forEach(pluginIdentification =>
-        {
-            ko.components.register(pluginIdentification.Id, {
-                template:
-                {
-                    PluginType: "DataGateway", PluginIdentification: pluginIdentification
-                },
-                viewModel:
-                {
-                    createViewModel: (params, componentInfo) => 
-                    {                      
-                        return params.GetDataGatewayCallback(params.Index)
-                    }
-                }
-            })
-        })
+        this.NewWebServerOptionsLightOneDasName = ko.observable<string>()
+        this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
+        this.NewWebServerOptionsLightBaseDirectoryPath = ko.observable<string>()
 
-        PluginHive.PluginIdentificationSet.get("DataWriter").forEach(pluginIdentification =>
-        {
-            ko.components.register(pluginIdentification.Id, {
-                template:
-                {
-                    PluginType: "DataWriter", PluginIdentification: pluginIdentification
-                },
-                viewModel:
-                {
-                    createViewModel: (params, componentInfo) => 
-                    {
-                        return params.GetDataWriterCallback(params.Index)
-                    }
-                }
-            })
-        })
+        this.ActiveProject = ko.observable<OneDasProjectViewModel>()
 
-        // project
         this.ActiveProject.subscribe(newValue =>
         {
             if (newValue)
@@ -144,10 +107,15 @@
             }
         })
 
-        if (appModel.ActiveProjectSettings)
-        {
-            this.InitializeProject(appModel.ActiveProjectSettings)
-        }
+        this.Update(appModel)
+
+        this.WorkspaceSet.push(new StartViewModel(this.ActiveProject))
+        this.WorkspaceSet.push(new ControlViewModel(this.ActiveProject))
+        this.WorkspaceSet.push(new LiveViewViewModel(this.ActiveProject))
+        this.WorkspaceSet.push(new EditorViewModel(this.ActiveProject))
+        this.WorkspaceSet.push(new ExtensionViewModel(this.ActiveProject))
+
+        this.ReducedWorkspaceSet = ko.observableArray(this.WorkspaceSet().slice(1, this.WorkspaceSet().length))
 
         // server callbacks
         ConnectionManager.WebClientHub.on("SendWebServerOptionsLight", oneDasSettingsModel =>
@@ -200,32 +168,102 @@
         ConnectionManager.WebClientHub.on("SendMessage", clientMessage =>
         {
             this.ClientMessageLog.push(new MessageLogEntryViewModel(new Date().toLocaleTimeString('de-DE',
-            {
-                hour12: false,
-                hour: "numeric",
-                minute: "numeric",
-                second: "numeric"
-            }), clientMessage))
+                {
+                    hour12: false,
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric"
+                }), clientMessage))
 
             if (this.ClientMessageLog().length > 10)
             {
                 this.ClientMessageLog.shift()
             }
         })
-    }  
+    }
 
     // methods
+    public Update(appModel: any)
+    {
+        // apply new appModel values
+        this.ProductVersion(appModel.ProductVersion)
+        this.ClientSet(appModel.ClientSet)
+        this.LastError(appModel.LastError)
+        this.OneDasState(appModel.OneDasState)
+        this.WebServerOptionsLight(appModel.WebServerOptionsLight);
+
+        // register data gateways
+        PluginHive.PluginIdentificationSet.set("DataGateway", appModel.DataGatewayPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))
+
+        PluginHive.PluginIdentificationSet.get("DataGateway").forEach(pluginIdentification =>
+        {
+            if (!ko.components.isRegistered(pluginIdentification.Id))
+            {
+                ko.components.register(pluginIdentification.Id, {
+                    template:
+                        {
+                            PluginType: "DataGateway", PluginIdentification: pluginIdentification
+                        },
+                    viewModel:
+                        {
+                            createViewModel: (params, componentInfo) => 
+                            {
+                                return params.GetDataGatewayCallback(params.Index)
+                            }
+                        }
+                })
+            }
+        })
+
+        this.DataGatewayPluginIdentifications(PluginHive.PluginIdentificationSet.get("DataGateway"))
+
+        // register data writers
+        PluginHive.PluginIdentificationSet.set("DataWriter", appModel.DataWriterPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))
+
+        PluginHive.PluginIdentificationSet.get("DataWriter").forEach(pluginIdentification =>
+        {
+            if (!ko.components.isRegistered(pluginIdentification.Id))
+            {
+                ko.components.register(pluginIdentification.Id, {
+                    template:
+                        {
+                            PluginType: "DataWriter", PluginIdentification: pluginIdentification
+                        },
+                    viewModel:
+                        {
+                            createViewModel: (params, componentInfo) => 
+                            {
+                                return params.GetDataWriterCallback(params.Index)
+                            }
+                        }
+                })
+            }
+        })
+
+        this.DataWriterPluginIdentifications(PluginHive.PluginIdentificationSet.get("DataWriter"))
+
+        // initialize project
+        if (appModel.ActiveProjectSettings)
+        {
+            this.InitializeProject(appModel.ActiveProjectSettings)
+        }
+        else
+        {
+            this.ActiveProject(null)
+        }
+    }
+
     public InitializeProject = async (projectModel) =>
     {
         let project: OneDasProjectViewModel
 
         project = new OneDasProjectViewModel(projectModel)
-        
+
         await project.InitializeAsync(projectModel.DataGatewaySettingsSet, projectModel.DataWriterSettingsSet)
 
         this.ActiveProject(project)
 
-        console.log("OneDAS: project activated")
+        console.log("OneDAS: project updated")
     }
 
     // commands

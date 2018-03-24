@@ -5,7 +5,7 @@
 </div>
 <!-- /ko -->
 <!-- ACTIVE PROJECT -->
-<!-- ko if: $root.OneDasState() >= OneDasStateEnum.Ready -->
+<!-- ko if: $root.ActiveProject() && $root.OneDasState() >= OneDasStateEnum.Ready -->
 <!-- ko with: $root.ActiveProject -->
 <div id="ActiveProject_Header" class="container">
     <div class="row align-content-end my-5" data-bind="with: Description">
@@ -15,25 +15,43 @@
 </div>
 <hr />
 <!-- /ko -->
-
 <div id="LiveView_Content">
     <div class="row">
         <div class="col-md-8">
-            <!-- ko if: SelectedChannelHubSet().length === 0 -->
+            <!-- ko if: SelectedChartContextSet().length === 0 -->
             <h5 class="d-block text-center mt-5"><small class="text-muted">- no channel selected -</small></h5>
             <!-- /ko -->
-            <div data-bind="foreach: SelectedChannelHubSet(), callFunction: InitializeCharts">
-                <canvas height="50" data-bind="attr: { id: 'chart_' + Guid }"></canvas>
-                <br />
+            <!-- ko foreach: SelectedChartContextSet -->
+            <div class="row">
+                <div class="col-11 px-0">
+                    <div data-bind="callFunction: InsertCanvas"></div>
+                </div>
+                <div class="col-1 px-0">
+                    <div class="input-group h-100" style="padding-top: 34px; padding-bottom: 5px">
+                        <div class="input-group-append">
+                            <div class="input-group-text flex-column justify-content-between px-0 py-2">
+                                <span class="fa fa-arrows-v url" style="width: 35px"
+                                      data-bind="click: ToggleChartHeight"
+                                      data-toggle="tooltip"
+                                      data-title="Click to toggle the height."></span>
+                                <span class="fa fa-expand url" style="width: 35px"
+                                      data-bind="click: ToggleYAxisLimits"
+                                      data-toggle="tooltip"
+                                      data-title="Click to toggle the y-axis limits."></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <!-- /ko -->
         </div>
         <div class="col-md-4">
             <div class="form-group">
                 <label class="form-control-label">Period:</label>
                 <select class="form-control"
                         data-bind="options: EnumerationHelper.GetEnumValues('LiveViewPeriodEnum'),
-                                            optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('LiveViewPeriodEnum', x) },
-                                            value: SelectedLiveViewPeriod"></select>
+                                                optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('LiveViewPeriodEnum', x) },
+                                                value: SelectedLiveViewPeriod"></select>
             </div>
             <!-- ko with: $root.ActiveProject -->
             <form class="form-group">

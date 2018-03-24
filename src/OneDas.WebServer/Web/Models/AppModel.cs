@@ -19,6 +19,7 @@ namespace OneDas.WebServer.Web
             this.WebServerOptionsLight = webServerOptionsLight;
         }
 
+        // if this list is modified, remember to update "UpdateAppViewModel" in AppViewModel.ts
         public readonly OneDasProjectSettings ActiveProjectSettings;
         public readonly IEnumerable<string> ClientSet;
         public readonly IEnumerable<PluginIdentificationAttribute> DataGatewayPluginIdentificationSet;

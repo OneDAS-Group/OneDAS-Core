@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OneDas.Common;
-using OneDas.Engine.Core;
+﻿using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,26 +13,64 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace OneDas.WebServer.Web
 {
     public class WebClientHub : Hub<IWebClientHub>
     {
         private IPluginProvider _pluginProvider;
-        private OneDasEngine _oneDasEngine;
         private WebServerOptions _webServerOptions;
 
         private ILogger _webServerLogger;
         private IOneDasProjectSerializer _projectSerializer;
 
-        public WebClientHub(IPluginProvider pluginProvider, OneDasEngine oneDasEngine, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
+        private static int _nextSubscriptionId;
+
+        private static Timer _updatePerfInfoTimer;
+        private static Timer _updateDataSnapshotTimer;
+        private static Timer _updateLiveValueDataTimer;
+
+        private static OneDasEngine _oneDasEngine;
+        private static IHubContext<WebClientHub> _hubContext;
+
+        public static Dictionary<string, (int SubscriptionId, IList<ChannelHubBase> ChannelHubSet)> LiveViewSubscriptionSet { get; private set; }
+
+        static WebClientHub()
         {
+            WebClientHub.LiveViewSubscriptionSet = new Dictionary<string, (int SubscriptionId, IList<ChannelHubBase> ChannelHubSet)>();
+
+            _nextSubscriptionId = 1;
+        }
+
+
+        public WebClientHub(IPluginProvider pluginProvider, OneDasEngine oneDasEngine, IHubContext<WebClientHub> hubContext, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
+        {
+            // setup callbacks
+            if (_oneDasEngine == null)
+            {
+                _hubContext = hubContext;
+
+                _oneDasEngine = oneDasEngine;
+                _oneDasEngine.OneDasStateChanged += WebClientHub.OneDasEngine_OneDasStateChanged;
+
+                _updatePerfInfoTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
+                _updateDataSnapshotTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
+                _updateLiveValueDataTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromMilliseconds(200).TotalMilliseconds };
+
+                _updatePerfInfoTimer.Elapsed += _updatePerfInfoTimer_Elapsed;
+                _updateDataSnapshotTimer.Elapsed += _updateDataSnapshotTimer_Elapsed;
+                _updateLiveValueDataTimer.Elapsed += _updateLiveValueDataTimer_Elapsed;
+            }
+
             _pluginProvider = pluginProvider;
             _oneDasEngine = oneDasEngine;
             _webServerOptions = options.Value;
             _webServerLogger = loggerFactory.CreateLogger("WebServer");
             _projectSerializer = oneDasProjectSerializer;
         }
+
+        #region "Methods"
 
         public override Task OnConnectedAsync()
         {
@@ -42,9 +79,9 @@ namespace OneDas.WebServer.Web
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            if (HomeController.LiveViewSubscriptionSet.ContainsKey(this.Context.ConnectionId))
+            if (WebClientHub.LiveViewSubscriptionSet.ContainsKey(this.Context.ConnectionId))
             {
-                HomeController.LiveViewSubscriptionSet.Remove(this.Context.ConnectionId);
+                WebClientHub.LiveViewSubscriptionSet.Remove(this.Context.ConnectionId);
             }
 
             return base.OnDisconnectedAsync(exception);
@@ -170,8 +207,8 @@ namespace OneDas.WebServer.Web
                     throw new Exception(ErrorMessage.WebClientHub_ChannelHubNotFound);
                 }
 
-                subscriptionId = HomeController.GetNextSubscriptionId();
-                HomeController.LiveViewSubscriptionSet[this.Context.ConnectionId] = (subscriptionId, channelHubSettingsSet);
+                subscriptionId = WebClientHub.GetNextSubscriptionId();
+                WebClientHub.LiveViewSubscriptionSet[this.Context.ConnectionId] = (subscriptionId, channelHubSettingsSet);
 
                 return subscriptionId;
             });
@@ -283,7 +320,7 @@ namespace OneDas.WebServer.Web
             {
                 return new OneDasProjectSettings(
                     primaryGroupName,
-                    SecondaryGroupName, 
+                    SecondaryGroupName,
                     configurationName,
                     new List<DataGatewayPluginSettingsBase>(),
                     new List<DataWriterPluginSettingsBase>());
@@ -305,5 +342,62 @@ namespace OneDas.WebServer.Web
                 return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.GetSettings(pluginName));
             });
         }
+
+        #endregion
+
+        #region "Callbacks"
+
+        public static void SendMessage(string message)
+        {
+            _hubContext?.Clients.All.SendAsync("SendMessage", message);
+        }
+
+        private static int GetNextSubscriptionId()
+        {
+            return _nextSubscriptionId++;
+        }
+
+        private static void _updatePerfInfoTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            OneDasPerformanceInformation performanceInformation;
+
+            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
+            {
+                performanceInformation = _oneDasEngine.CreatePerformanceInformation();
+                _hubContext.Clients.All.SendAsync("SendPerformanceInformation", performanceInformation);
+            }
+        }
+
+        private static void _updateDataSnapshotTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            IEnumerable<object> dataSnapshot;
+
+            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
+            {
+                dataSnapshot = _oneDasEngine.CreateDataSnapshot();
+                _hubContext.Clients.All.SendAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
+            }
+        }
+
+        private static void _updateLiveValueDataTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            IEnumerable<object> dataSnapshot;
+
+            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
+            {
+                foreach (var liveViewSubscription in WebClientHub.LiveViewSubscriptionSet)
+                {
+                    dataSnapshot = _oneDasEngine.CreateDataSnapshot(liveViewSubscription.Value.ChannelHubSet);
+                    _hubContext.Clients.Client(liveViewSubscription.Key).SendAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
+                }
+            }
+        }
+
+        private static void OneDasEngine_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)
+        {
+            _hubContext.Clients.All.SendAsync("SendOneDasState", e.NewState);
+        }
+
+        #endregion
     }
 }

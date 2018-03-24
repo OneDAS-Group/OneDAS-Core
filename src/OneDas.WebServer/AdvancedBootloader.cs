@@ -159,7 +159,7 @@ namespace OneDas.WebServer
                 eventLogSettings.Filter = (category, logLevel) => category == "System" && logLevel >= LogLevel.Information;
 
                 // client message log
-                clientMessageLoggerProvider = new ClientMessageLoggerProvider((category, logLevel) => category != "System");
+                clientMessageLoggerProvider = new ClientMessageLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
 
                 // add logger
                 loggingBuilder.AddEventLog(eventLogSettings);

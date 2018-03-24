@@ -121,6 +121,11 @@ class Guid
     }
 }
 
+function delay(ms: number)
+{
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 let CheckNamingConvention = (value: string) =>
 {
     var regExp: any

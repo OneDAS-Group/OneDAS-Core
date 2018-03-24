@@ -1,7 +1,6 @@
 ﻿class LiveViewViewModel extends WorkspaceBase
 {
-    public SelectedChannelHubSet: KnockoutObservableArray<ChannelHubViewModel>
-    public SelectedChartContextSet: KnockoutObservable<Map<string, ChartContext>>
+    public SelectedChartContextSet: KnockoutObservableArray<ChartContext>
     public SelectedLiveViewPeriod: KnockoutObservable<LiveViewPeriodEnum>
 
     private _subscriptionId: number
@@ -15,14 +14,12 @@
         this._speed = 200
         this._iteration = 0
 
-        this.SelectedChannelHubSet = ko.observableArray<ChannelHubViewModel>()
-        this.SelectedChartContextSet = ko.observable<Map<string, ChartContext>>()
+        this.SelectedChartContextSet = ko.observableArray<ChartContext>()
         this.SelectedLiveViewPeriod = ko.observable<LiveViewPeriodEnum>(LiveViewPeriodEnum.Period_60)
 
         this.ActiveProject.subscribe(newValue =>
         {
-            this.SelectedChannelHubSet.removeAll()
-            this.SelectedChartContextSet(new Map<string, ChartContext>())
+            this.SelectedChartContextSet([])
         })
 
         this.SelectedLiveViewPeriod.subscribe(newValue =>
@@ -65,7 +62,8 @@
 
                         chartContext.ValueSet.push(value)
 
-                        if (chartContext.ChannelHub.Unit()) {
+                        if (chartContext.ChannelHub.Unit()) 
+                        {
                             chartContext.Chart.config.options.title.text = chartContext.ChannelHub.Name() + " (" + value + " " + chartContext.ChannelHub.Unit() + ")"
                         }
                         else
@@ -77,7 +75,7 @@
                     index++
                     chartContext.ValueSet.shift()
 
-                    if (this.SelectedLiveViewPeriod() === LiveViewPeriodEnum.Period_60 || this._iteration == 0)
+                    if (this.SelectedLiveViewPeriod() <= LiveViewPeriodEnum.Period_60 || this._iteration == 0)
                     {
                         chartContext.Chart.update()
                     }
@@ -89,26 +87,32 @@
     // methods
     public async ReinitializeCharts(reuseChartSet: boolean, reuseDatasetSet: boolean)
     {
-        let referenceSet: Map<string, ChartContext>
+        let referenceSet: ChartContext[]
         let activeChannelHubSet: ChannelHubViewModel[]
         //let valueSet: Chart.ChartPoint[]
         let valueSet: number[] ///////////////////////////
         let context: any
         let chart: Chart
+        let selectedChannelHubSet: ChannelHubViewModel[]
+        let canvas: HTMLCanvasElement
 
         this._subscriptionId = 0 // important!
 
         referenceSet = this.SelectedChartContextSet()
         activeChannelHubSet = this.ActiveProject().ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput())
+        selectedChannelHubSet = this.ActiveProject().ChannelHubSet().filter(channelHub => channelHub.IsSelected())
 
-        this.SelectedChannelHubSet(this.ActiveProject().ChannelHubSet().filter(channelHub => channelHub.IsSelected()))
-        this.SelectedChartContextSet(new Map<string, ChartContext>())
+        this.SelectedChartContextSet([])
 
-        this.SelectedChannelHubSet().forEach(channelHub =>
+        selectedChannelHubSet.forEach(channelHub =>
         {
-            if (!reuseChartSet && reuseDatasetSet && referenceSet.has(channelHub.Guid))
+            let reference: ChartContext
+
+            reference = referenceSet.find(chartContext => chartContext.ChannelHub === channelHub)
+
+            if (!reuseChartSet && reuseDatasetSet && reference)
             {
-                valueSet = <any[]>referenceSet.get(channelHub.Guid).ValueSet
+                valueSet = <any[]>reference.ValueSet
             }
             else
             {
@@ -117,16 +121,18 @@
                 valueSet.fill(NaN)
             }
 
-            if (reuseChartSet && referenceSet.has(channelHub.Guid))
+            if (reuseChartSet && reference)
             {
-                this.SelectedChartContextSet().set(channelHub.Guid, referenceSet.get(channelHub.Guid))
+                this.SelectedChartContextSet.push(reference)
             }
             else
             {
-                context = document.getElementById("chart_" + channelHub.Guid);
-                chart = this.CreateChart(context, channelHub, <any>valueSet) ///////////////////////////
+                canvas = <HTMLCanvasElement>document.createElement("canvas");
+                canvas.setAttribute("data-bind", "style: { height: ChartHeight() + 'px' }")
 
-                this.SelectedChartContextSet().set(channelHub.Guid, new ChartContext(channelHub, chart, <any>valueSet)) ///////////////////////////
+                chart = this.CreateChart(canvas, channelHub, <any>valueSet)
+
+                this.SelectedChartContextSet.push(new ChartContext(channelHub, chart, canvas, <any>valueSet))
             }
         })
 
@@ -137,7 +143,7 @@
 
         try
         {
-            this._subscriptionId = await ConnectionManager.InvokeWebClientHub("UpdateLiveViewSubscription", this.SelectedChannelHubSet().map(channelHub => channelHub.Guid))
+            this._subscriptionId = await ConnectionManager.InvokeWebClientHub("UpdateLiveViewSubscription", selectedChannelHubSet.map(channelHub => channelHub.Guid))
         }
         catch (e)
         {
@@ -174,6 +180,7 @@
                     legend: {
                         display: false
                     },
+                    maintainAspectRatio: false,
                     scales: {
                         xAxes: [{
                             //type: "time",
@@ -195,7 +202,7 @@
                         }],
                         yAxes: [{
                             type: "linear",
-                            position: "left",   
+                            position: "left",
                             scaleLabel: {
                                 display: true,
                                 labelString: channelHub.Unit()
@@ -221,11 +228,6 @@
     {
         channelHub.IsSelected(!channelHub.IsSelected())
 
-        this.ReinitializeCharts(true, null)
-    }
-
-    public InitializeCharts = () =>
-    {
-        this.ReinitializeCharts(false, true)
+        this.ReinitializeCharts(true, false)
     }
 }

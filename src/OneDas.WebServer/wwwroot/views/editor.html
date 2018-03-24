@@ -145,62 +145,62 @@
 </div>
 
 <!-- ko with: MultiMappingEditor -->
-    <div class="row">
-        <div class="col-sm-6">
-            <form>
-                <div class="form-row">
-                    <div class="col-4">
-                        <label>start variable</label>
-                        <input type="number" class="form-control"
-                               min="0" step="1"
-                               data-bind="value: DataPortStartIndex">
-                    </div>
-                    <div class="col-4">
-                        <label>start channel</label>
-                        <input type="number" class="form-control"
-                               min="0" step="1"
-                               data-bind="value: ChannelHubStartIndex">
-                    </div>
-                    <div class="col-4">
-                        <label>range</label>
-                        <input type="number" class="form-control"
-                               min="0" step="1"
-                               data-bind="value: Length">
-                    </div>
+<div class="row">
+    <div class="col-sm-6">
+        <form>
+            <div class="form-row">
+                <div class="col-4">
+                    <label>start variable</label>
+                    <input type="number" class="form-control"
+                           min="0" step="1"
+                           data-bind="value: DataPortStartIndex">
                 </div>
-            </form>
-        </div>
-        <div class="col-sm-6">
-            <form>
-                <div class="form-row">
-                    <div class="col-6">
-                        <label>channel group</label>
-                        <select class="form-control"
-                                place
-                                data-bind="options: ChannelHubGroupNameSet,
+                <div class="col-4">
+                    <label>start channel</label>
+                    <input type="number" class="form-control"
+                           min="0" step="1"
+                           data-bind="value: ChannelHubStartIndex">
+                </div>
+                <div class="col-4">
+                    <label>range</label>
+                    <input type="number" class="form-control"
+                           min="0" step="1"
+                           data-bind="value: Length">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-6">
+        <form>
+            <div class="form-row">
+                <div class="col-6">
+                    <label>channel group</label>
+                    <select class="form-control"
+                            place
+                            data-bind="options: ChannelHubGroupNameSet,
                                                    value: SelectedGroupName,
                                                    optionsCaption: 'Select a group ...'"></select>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-check"
-                             data-toggle="tooltip"
-                             data-title="enable this option to allow a variable to be mapped to multiple channels (1:n relationship)">
-                            <label class="form-check-label">
-                                <input class="form-check-input" type="checkbox" data-bind="checked: KeepVariableMappings"><span class="noselect">keep variable mappings</span>
-                            </label>
-                        </div>
-                        <button type="button" class="btn btn-primary w-100"
-                                data-bind="disable: !IsValid(), click: Apply">
-                            Apply
-                        </button>
-                    </div>
                 </div>
-            </form>
-        </div>
+                <div class="col-6">
+                    <div class="form-check"
+                         data-toggle="tooltip"
+                         data-title="enable this option to allow a variable to be mapped to multiple channels (1:n relationship)">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" data-bind="checked: KeepVariableMappings"><span class="noselect">keep variable mappings</span>
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-primary w-100"
+                            data-bind="disable: !IsValid(), click: Apply">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
-    <!-- ko ifnot: IsValid -->
-        <div class="alert alert-danger mt-2" role="alert" data-bind="text: ErrorMessage"></div>
-    <!-- /ko -->
+</div>
+<!-- ko ifnot: IsValid -->
+<div class="alert alert-danger mt-2" role="alert" data-bind="text: ErrorMessage"></div>
+<!-- /ko -->
 <!-- /ko -->
 
 <div id="Project_Content" class="row">
@@ -213,20 +213,20 @@
                 <a>
                     <span data-bind="text: CurrentTitle"></span>
                     <!-- ko ifnot: MultiMappingEditor -->
-                        <!-- ko with: SelectedDataGateway -->
-                        <span class="fa fa-cog ml-1 url"
-                              data-title="open settings page"
-                              data-toggle="tooltip"
-                              data-bind="click: ToggleSettingsMode">
-                        </span>
-                        <!-- /ko -->
-                        <!-- ko with: SelectedDataWriter -->
-                        <span class="fa fa-cog ml-1 url"
-                              data-title="open settings page"
-                              data-toggle="tooltip"
-                              data-bind="click: ToggleSettingsMode">
-                        </span>
-                        <!-- /ko -->
+                    <!-- ko with: SelectedDataGateway -->
+                    <span class="fa fa-cog ml-1 url"
+                          data-title="open settings page"
+                          data-toggle="tooltip"
+                          data-bind="click: ToggleSettingsMode">
+                    </span>
+                    <!-- /ko -->
+                    <!-- ko with: SelectedDataWriter -->
+                    <span class="fa fa-cog ml-1 url"
+                          data-title="open settings page"
+                          data-toggle="tooltip"
+                          data-bind="click: ToggleSettingsMode">
+                    </span>
+                    <!-- /ko -->
                     <!-- /ko -->
                 </a>
                 <div class="collapse navbar-collapse" id="navbar-settings">
@@ -315,33 +315,33 @@
                 <!-- ko foreach: DataGatewaySet -->
                 <div data-bind="page: {id: PluginIdentification.Id + '_DG' + Description.InstanceId, afterShow: $parent.SelectDataGateway, title: PluginIdentification.Name}">
                     <!-- ko ifnot: $parents[1].MultiMappingEditor -->
-                        <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetDataGatewayCallback: $parents[1].GetDataGateway } } -->
+                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetDataGatewayCallback: $parents[1].GetDataGateway } } -->
                     <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko if: $parents[1].MultiMappingEditor -->
-                        <!-- ko if: DataPortSet().length === 0 -->
-                            <h5 class="d-block text-center mt-3"><small class="text-muted">- no variables available -</small></h5>
-                        <!-- /ko -->
-                        <!-- ko if: DataPortSet().length > 0 -->
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Variable</th>
-                                        <th>Data Type</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- ko foreach: DataPortSet -->
-                                    <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
-                                        <th class="table-row-condensed" data-bind="text: $index"></th>
-                                        <td class="table-row-condensed" data-bind="text: GetId()"></td>
-                                        <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType)"></td>
-                                    </tr>
-                                    <!-- /ko -->
-                                </tbody>
-                            </table>
-                        <!-- /ko -->
+                    <!-- ko if: DataPortSet().length === 0 -->
+                    <h5 class="d-block text-center mt-3"><small class="text-muted">- no variables available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: DataPortSet().length > 0 -->
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Variable</th>
+                                <th>Data Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- ko foreach: DataPortSet -->
+                            <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
+                                <th class="table-row-condensed" data-bind="text: $index"></th>
+                                <td class="table-row-condensed" data-bind="text: GetId()"></td>
+                                <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType)"></td>
+                            </tr>
+                            <!-- /ko -->
+                        </tbody>
+                    </table>
+                    <!-- /ko -->
                     <!-- /ko -->
                 </div>
                 <!-- /ko -->
@@ -358,101 +358,100 @@
         <div class="card my-2 noselect">
             <div class="card-header" style="padding:1rem 1.25rem">
                 <!-- ko if: SelectedDataGateway -->
-                    <span class="fa fa-arrows-alt mr-1 url"
-                          data-bind="click: ToggleMultiMappingMode, tooltip: { title: 'toggle multi-mapping mode' }">
-                    </span>
+                <span class="fa fa-arrows-alt mr-1 url"
+                      data-bind="click: ToggleMultiMappingMode, tooltip: { title: 'toggle multi-mapping mode' }">
+                </span>
                 <!-- /ko -->
                 Channels
             </div>
             <div class="card-body">
                 <!-- ko ifnot: MultiMappingEditor -->
-                    <div class="input-group mb-2">
-                        <div class="input-group-prepend url"
-                             data-bind="click: ResetSearch">
-                            <div class="input-group-text">
-                                <!-- ko if: SearchString().length > 0 -->
-                                    <strong>X</strong>
-                                <!-- /ko -->
-                                <!-- ko ifnot: SearchString().length > 0 -->
-                                    <span class="fa fa-search fa-fix"></span>
-                                <!-- /ko -->
-                            </div>
-                        </div>
-                        <input type="text"
-                                class="form-control"
-                                placeholder="Search ..."
-                                data-bind="textInput: SearchString">
-                        <div class="input-group-append url"
-                             data-toggle="modal"
-                             data-target="#Project_NewChannelModal"
-                             data-backdrop="static">
-                            <div class="input-group-text">
-                                <span class="fa fa-plus fa-fix"
-                                      data-toggle="tooltip"
-                                      data-title="create new channel"></span>
-                            </div>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend url"
+                         data-bind="click: ResetSearch">
+                        <div class="input-group-text">
+                            <!-- ko if: SearchString().length > 0 -->
+                            <strong>X</strong>
+                            <!-- /ko -->
+                            <!-- ko ifnot: SearchString().length > 0 -->
+                            <span class="fa fa-search fa-fix"></span>
+                            <!-- /ko -->
                         </div>
                     </div>
-                    <!-- ko if: ChannelHubSet().length === 0 -->
-                    <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
-                    <!-- /ko -->
-                    <!-- ko if: ChannelHubSet().length > 0 -->
-                    <div class="list-group list-group-root editor-channel-hub-list" data-bind="foreach: GroupedChannelHubSet">
-                        <a class="list-group-item list-group-item-action noselect" data-toggle="collapse" data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
-                            <span class="fa fa-caret-down"></span><span data-bind="text: Key"></span>
-                        </a>
-                        <div class="list-group collapse show" data-bind="attr: { id: 'item_' + $index() }, foreach: Members">
-                            <a class="list-group-item list-group-item-action url"
-                               data-bind="event: { contextmenu: $parents[1].ShowContextMenu }, callFunction: $parents[1].Dropable">
-                                <div class="d-flex">
-                                    <small class="mb-1 mr-auto" data-bind="text: Name"></small>
-                                    <small data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></small>
-                                </div>
-                                <div class="d-flex" style="font-size:0.6em;">
-                                    <div class="w-50">
-                                        <!-- ko with: AssociatedDataInput -->
-                                        <span class="d-block">
-                                            <span class="fa fa-angle-double-left fa-fw" style="color:green" />
-                                            <em data-bind="text: ToFullQualifiedIdentifier()"></em>
-                                        </span>
-                                        <!-- /ko -->
-                                    </div>
-                                    <div class="w-50">
-                                        <!-- ko foreach: AssociatedDataOutputSet -->
-                                        <span class="text-right d-block"><span class="fa fa-angle-double-left fa-fw" style="color:red" /><em data-bind="text: ToFullQualifiedIdentifier()"></em></span>
-                                        <!-- /ko -->
-                                    </div>
-                                </div>
-                            </a>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Search ..."
+                           data-bind="textInput: SearchString">
+                    <div class="input-group-append url"
+                         data-toggle="modal"
+                         data-target="#Project_NewChannelModal"
+                         data-backdrop="static">
+                        <div class="input-group-text">
+                            <span class="fa fa-plus fa-fix"
+                                  data-toggle="tooltip"
+                                  data-title="create new channel"></span>
                         </div>
                     </div>
-                    <!-- /ko -->
+                </div>
+                <!-- ko if: ChannelHubSet().length === 0 -->
+                <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
                 <!-- /ko -->
-
+                <!-- ko if: ChannelHubSet().length > 0 -->
+                <div class="list-group list-group-root editor-channel-hub-list" data-bind="foreach: GroupedChannelHubSet">
+                    <a class="list-group-item list-group-item-action noselect" data-toggle="collapse" data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
+                        <span class="fa fa-caret-down"></span><span data-bind="text: Key"></span>
+                    </a>
+                    <div class="list-group collapse show" data-bind="attr: { id: 'item_' + $index() }, foreach: Members">
+                        <a class="list-group-item list-group-item-action url"
+                           data-bind="event: { contextmenu: $parents[1].ShowContextMenu }, callFunction: $parents[1].Dropable">
+                            <div class="d-flex">
+                                <small class="mb-1 mr-auto" data-bind="text: Name"></small>
+                                <small data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></small>
+                            </div>
+                            <div class="d-flex" style="font-size:0.6em;">
+                                <div class="w-50">
+                                    <!-- ko with: AssociatedDataInput -->
+                                    <span class="d-block">
+                                        <span class="fa fa-angle-double-left fa-fw" style="color:green" />
+                                        <em data-bind="text: ToFullQualifiedIdentifier()"></em>
+                                    </span>
+                                    <!-- /ko -->
+                                </div>
+                                <div class="w-50">
+                                    <!-- ko foreach: AssociatedDataOutputSet -->
+                                    <span class="text-right d-block"><span class="fa fa-angle-double-left fa-fw" style="color:red" /><em data-bind="text: ToFullQualifiedIdentifier()"></em></span>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- /ko -->
                 <!-- ko with: MultiMappingEditor -->
-                    <!-- ko if: FilteredChannelHubSet().length === 0 -->
-                        <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
-                    <!-- /ko -->
-                    <!-- ko if: FilteredChannelHubSet().length > 0 -->
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Channel</th>
-                                    <th>Data Type</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- ko foreach: FilteredChannelHubSet() -->
-                                <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
-                                    <th class="table-row-condensed" data-bind="text: $index"></th>
-                                    <td class="table-row-condensed" data-bind="text: Name"></td>
-                                    <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></td>
-                                </tr>
-                                <!-- /ko -->
-                            </tbody>
-                        </table>
-                    <!-- /ko -->
+                <!-- ko if: FilteredChannelHubSet().length === 0 -->
+                <h5 class="d-block text-center mt-5"><small class="text-muted">- no channels available -</small></h5>
+                <!-- /ko -->
+                <!-- ko if: FilteredChannelHubSet().length > 0 -->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Channel</th>
+                            <th>Data Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ko foreach: FilteredChannelHubSet() -->
+                        <tr data-bind="style: { color: IsSelected() ? 'green' : 'inherit'}">
+                            <th class="table-row-condensed" data-bind="text: $index"></th>
+                            <td class="table-row-condensed" data-bind="text: Name"></td>
+                            <td class="table-row-condensed" data-bind="text: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType())"></td>
+                        </tr>
+                        <!-- /ko -->
+                    </tbody>
+                </table>
+                <!-- /ko -->
                 <!-- /ko -->
             </div>
         </div>
@@ -572,8 +571,8 @@
                     <div class="form-group">
                         <label class="form-control-label">Group(s):</label>
                         <textarea type="text" rows="2"
-                               class="form-control modal-input-full-width"
-                               data-bind="textInput: EditChannelDummyChannel().Group"></textarea>
+                                  class="form-control modal-input-full-width"
+                                  data-bind="textInput: EditChannelDummyChannel().Group"></textarea>
                         <div class="form-control-feedback"
                              data-bind="visible: EditChannelGroupHasError(), text: EditChannelGroupErrorDescription"></div>
                     </div>
@@ -752,7 +751,7 @@
             <div class="modal-body">
                 <div class="list-group mb-3">
                     <a class="list-group-item active text-white">Data gateway</a>
-                    <!-- ko foreach: PluginHive.PluginIdentificationSet.get('DataGateway') -->
+                    <!-- ko foreach: $root.DataGatewayPluginIdentifications -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-bind="click: $parent.AddNewDataGateway">
                         <div>
@@ -764,7 +763,7 @@
                 </div>
                 <div class="list-group">
                     <a class="list-group-item active text-white">Data writer</a>
-                    <!-- ko foreach: PluginHive.PluginIdentificationSet.get('DataWriter') -->
+                    <!-- ko foreach: $root.DataWriterPluginIdentifications -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-bind="event: { click: $parent.AddNewDataWriter }">
                         <div>
@@ -918,10 +917,10 @@
     <div class="card my-2">
         <div class="card-header">
             <!-- ko if: !isFinite(RemainingBytes()) -->
-                <span>Modules</span>
+            <span>Modules</span>
             <!-- /ko -->
             <!-- ko if: isFinite(RemainingBytes()) -->
-                <span data-bind="text: 'Modules (' + RemainingBytes() + ' bytes left)'"></span>
+            <span data-bind="text: 'Modules (' + RemainingBytes() + ' bytes left)'"></span>
             <!-- /ko -->
         </div>
         <div class="card-body">
@@ -1025,31 +1024,31 @@
 
 <script type="text/html" id="Project_DataPortTemplate">
     <!-- ko with: OriginalData -->
-        <!-- ko if: DataDirection === 1 -->
-        <div class="d-inline-block" style="width:15px; height:15px; border:1px solid green"
-             draggable="true"
-             data-html="true"
-             data-toggle="tooltip"
-             data-bind="dynamicTooltip: LiveDescription,
+    <!-- ko if: DataDirection === 1 -->
+    <div class="d-inline-block" style="width:15px; height:15px; border:1px solid green"
+         draggable="true"
+         data-html="true"
+         data-toggle="tooltip"
+         data-bind="dynamicTooltip: LiveDescription,
                         callFunction: $parent.DraggableCallback,
                         style: { 'background-color': AssociatedChannelHubSet().length &gt; 0 ? 'green' : 'transparent' }">
-        </div>
-        <!-- /ko -->
-        <!-- ko if: DataDirection === 2 -->
-        <div class="d-inline-block" style="width:15px; height:15px; border:1px solid red"
-             draggable="true"
-             data-html="true"
-             data-toggle="tooltip"
-             data-bind="dynamicTooltip: LiveDescription,
+    </div>
+    <!-- /ko -->
+    <!-- ko if: DataDirection === 2 -->
+    <div class="d-inline-block" style="width:15px; height:15px; border:1px solid red"
+         draggable="true"
+         data-html="true"
+         data-toggle="tooltip"
+         data-bind="dynamicTooltip: LiveDescription,
                         callFunction: $parent.DraggableCallback,
                         style: { 'background-color': AssociatedChannelHubSet().length &gt; 0 ? 'red' : 'transparent' }">
-        </div>
-        <!-- /ko -->
+    </div>
+    <!-- /ko -->
     <!-- /ko -->
 </script>
 
 <script type="text/html" id="Project_PluginTemplate_DataGateway">
-<!--ko if: IsInSettingsMode -->
+    <!--ko if: IsInSettingsMode -->
     <form>
         <!-- ko with: Description -->
         <div class="form-check">
@@ -1069,18 +1068,18 @@
             <input class="form-control" type="number" min="0" max="10000" step="1" data-bind="textInput: MaximumDatasetAge">
         </div>
     </form>
-<!-- /ko -->
+    <!-- /ko -->
 
-<div id="Project_PluginTemplate_Content"></div>
+    <div id="Project_PluginTemplate_Content"></div>
 
-<!-- ko if: IsInSettingsMode -->
+    <!-- ko if: IsInSettingsMode -->
     <button type="button"
             class="btn btn-block btn-info"
             role="button"
             data-bind="click: DisableSettingsMode">
         Back
     </button>
-<!-- /ko -->
+    <!-- /ko -->
 </script>
 
 <script type="text/html" id="Project_PluginTemplate_DataWriter">
@@ -1109,8 +1108,8 @@
     </form>
 
     <!-- ko with: BufferRequestSelector -->
-        <!-- ko template: { name: 'Project_BufferRequestSelectorTemplate' } -->
-        <!-- /ko -->
+    <!-- ko template: { name: 'Project_BufferRequestSelectorTemplate' } -->
+    <!-- /ko -->
     <!-- /ko -->
     <!-- /ko -->
 

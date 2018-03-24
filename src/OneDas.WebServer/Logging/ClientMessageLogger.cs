@@ -27,9 +27,9 @@ namespace OneDas.WebServer.Logging
             {
                 Task.Run(() =>
                 {
-                    HomeController.SendMessage($"{ _categoryName }: { formatter(state, exception) }");
+                    WebClientHub.SendMessage($"{ _categoryName }: { formatter(state, exception) }");
                 });
-            }  
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)

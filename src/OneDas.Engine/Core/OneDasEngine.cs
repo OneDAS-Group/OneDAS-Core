@@ -273,7 +273,7 @@ namespace OneDas.Engine.Core
         {
             return new OneDasPerformanceInformation(
                 DateTime.UtcNow,
-                this.MdasState,
+                this.OneDasState,
                 Process.GetCurrentProcess().PriorityClass,
                 _lateBy,
                 _cycleTime,
@@ -308,7 +308,7 @@ namespace OneDas.Engine.Core
 
         private void GcNotification_GcOccured(int generation)
         {
-            _oneDasEngineLogger.LogInformation($"garbage collection ({ generation }. generation)");
+            _oneDasEngineLogger.LogDebug($"garbage collection ({ generation }. generation)");
         }
 
         private void OnOneDasStateChanged(OneDasState oldState, OneDasState newState)

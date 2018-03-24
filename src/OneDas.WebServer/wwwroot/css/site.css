@@ -14,7 +14,7 @@ body {
 }
 
 .url {
-    cursor:pointer;
+    cursor: pointer;
 }
 
 .btn:focus, .btn:active {
@@ -67,8 +67,8 @@ body {
 
 /* client message log style */
 .message-log {
-    height: 250px;
-    max-height: 250px;
+    height: 93px;
+    max-height: 93px;
     overflow: hidden;
 }
 
@@ -109,20 +109,20 @@ body {
     font-size: 1.5em;
 }
 
-.glyphicon-action-bg:hover {
-    color: darkgreen !important;
-    font-size: 1.7em;
-}
+    .glyphicon-action-bg:hover {
+        color: darkgreen !important;
+        font-size: 1.7em;
+    }
 
 .glyphicon-action-sm {
     color: #4b5257 !important;
     font-size: 1.3em;
 }
 
-.glyphicon-action-sm:hover {
-    color: #4b5257 !important;
-    font-size: 1.5em;
-}
+    .glyphicon-action-sm:hover {
+        color: #4b5257 !important;
+        font-size: 1.5em;
+    }
 
 /* alert animation */
 .alert-hidden {
@@ -156,31 +156,30 @@ body {
 }
 
 /* hierachical list group */
-
 .list-group.list-group-root {
     padding: 0;
     overflow: hidden;
 }
 
-.list-group.list-group-root .list-group {
-    margin-bottom: 0;
-}
+    .list-group.list-group-root .list-group {
+        margin-bottom: 0;
+    }
 
-.list-group.list-group-root .list-group-item {
-    border-radius: 0;
-    border-width: 1px 0 0 0;
-    padding: 0.4rem 0 0.4rem 0;
-}
+    .list-group.list-group-root .list-group-item {
+        border-radius: 0;
+        border-width: 1px 0 0 0;
+        padding: 0.4rem 0 0.4rem 0;
+    }
 
-.list-group.list-group-root > .list-group-item:first-child {
-    border-top-width: 0;
-}
+    .list-group.list-group-root > .list-group-item:first-child {
+        border-top-width: 0;
+    }
 
-.list-group.list-group-root > .list-group > .list-group-item {
-    padding-left: 1.4em;
-    padding-top: 0.1em;
-    padding-bottom: 0.1em;
-}
+    .list-group.list-group-root > .list-group > .list-group-item {
+        padding-left: 1.4em;
+        padding-top: 0.1em;
+        padding-bottom: 0.1em;
+    }
 
 .list-group-item .fa {
     margin-right: 0.4em;
@@ -191,19 +190,12 @@ body {
 }
 
 /* disable text selection */
-
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
-}
-
-/* override right padding of container */
-.container-no-padding-right
-{
-    padding-right:0;
 }
 
 /* fa fix */

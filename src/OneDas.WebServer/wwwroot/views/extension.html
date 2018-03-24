@@ -12,23 +12,23 @@
             <tr>
                 <th>Plugin</th>
                 <th>Name</th>
-				<th>Description</th>
+                <th>Description</th>
                 <th>Version</th>
             </tr>
         </thead>
-        <tbody data-bind="foreach: PluginHive.PluginIdentificationSet.get('DataGateway')">
+        <tbody data-bind="foreach: $root.DataGatewayPluginIdentifications">
             <tr>
                 <td>data gateway</td>
                 <td data-bind="text: Name"></td>
-				<td data-bind="text: Description"></td>
+                <td data-bind="text: Description"></td>
                 <td data-bind="text: ProductVersion"></td>
             </tr>
         </tbody>
-        <tbody data-bind="foreach: PluginHive.PluginIdentificationSet.get('DataWriter')">
+        <tbody data-bind="foreach: $root.DataWriterPluginIdentifications">
             <tr>
                 <td>data writer</td>
                 <td data-bind="text: Name"></td>
-				<td data-bind="text: Description"></td>
+                <td data-bind="text: Description"></td>
                 <td data-bind="text: ProductVersion"></td>
             </tr>
         </tbody>

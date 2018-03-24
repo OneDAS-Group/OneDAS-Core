@@ -1,11 +1,11 @@
 ﻿declare var signalR: any
 
-let appViewModel: KnockoutObservable<AppViewModel> = ko.observable<AppViewModel>()
-let broadcaster: any
+let _appViewModel: KnockoutObservable<AppViewModel> = ko.observable<AppViewModel>()
+let _broadcaster: any
 
 window.addEventListener("DOMContentLoaded", () =>
 {
-    (<any>$("body")).tooltip({ selector: "[data-toggle=tooltip]", container: "body" });
+    (<any>$("body")).tooltip({ selector: "[data-toggle=tooltip]", container: "body" })
 
     $(function ()
     {
@@ -32,31 +32,37 @@ ko.bindingHandlers.callFunction = {
     }
 }
 
+ko.bindingHandlers.toggleArrow = {
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext: KnockoutBindingContext)
+    {
+        $(element).on("click", function ()
+        {
+            $(".fa", this)
+                .toggleClass("fa-caret-right")
+                .toggleClass("fa-caret-down")
+        })
+    }
+}
+
 async function Connect()
 {
+    let appModel: any
+    let connection: any
+
     try
     {
-        await broadcaster.start()
+        await _broadcaster.start()
+
+        console.log("HDF Explorer: signalr connected")
 
         try
         {
-            let appModel: any
-            let connection: any
+            appModel = await _broadcaster.invoke("GetAppModel")
+            _appViewModel(new AppViewModel(appModel))
 
-            appModel = await broadcaster.invoke("GetAppModel")
-            appViewModel(new AppViewModel(appModel))
+            console.log("HDF Explorer: app model received")
 
-            ko.bindingHandlers.toggleArrow = {
-                init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext: KnockoutBindingContext) {
-                    $(element).on("click", function () {
-                        $(".fa", this)
-                            .toggleClass("fa-caret-right")
-                            .toggleClass("fa-caret-down")
-                    })
-                }
-            }
-
-            ko.applyBindings(appViewModel)
+            ko.applyBindings(_appViewModel)
         }
         catch (e)
         {
@@ -71,28 +77,29 @@ async function Connect()
 
 async function Reconnect()
 {
+    let state: HdfExplorerStateEnum
+
     console.log("HDF Explorer: signalr connection failed")
 
-    if (appViewModel())
+    if (_appViewModel())
     {
-        appViewModel().IsConnected(false);
+        _appViewModel().IsConnected(false)
     }
 
-    while (!appViewModel().IsConnected())
+    while (!_appViewModel() || !_appViewModel().IsConnected())
     {
         try
         {
-            let state: HdfExplorerStateEnum;
+            await _broadcaster.start()
 
-            await broadcaster.start()
-
-            state = await broadcaster.invoke("GetHdfExplorerState")
             console.log("HDF Explorer: signalr reconnected")
 
-            appViewModel().HdfExplorerState(state);
-            appViewModel().IsConnected(true);
+            state = await _broadcaster.invoke("GetHdfExplorerState")
+
+            _appViewModel().HdfExplorerState(state)
+            _appViewModel().IsConnected(true)
         }
-        catch (e)
+        catch
         {
             console.log("HDF Explorer: trying to reconnect ...")
         }
@@ -101,7 +108,7 @@ async function Reconnect()
     }
 }
 
-broadcaster = new signalR.HubConnection("/broadcaster");
-broadcaster.onclose(() => this.Reconnect())
+_broadcaster = new signalR.HubConnection("/broadcaster")
+_broadcaster.onclose(() => this.Reconnect())
 
 this.Connect()
