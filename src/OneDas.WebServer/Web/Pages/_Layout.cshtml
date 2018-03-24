@@ -23,7 +23,7 @@
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar-main" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" data-bind="page-href: '/home/start'">
+        <a class="navbar-brand" data-bind="page-href: 'start'">
             <img class="logo d-inline-block align-top" src="/images/network_icon.png" />
             <span>
                 OneDAS (
@@ -64,7 +64,7 @@
             <ul class="navbar-nav mr-auto" data-bind="foreach: ReducedWorkspaceSet">
                 <li class="nav-item">
                     <a class="nav-link"
-                       data-bind="page-href: '/home/' + Address, text: Title"
+                       data-bind="page-href: Address, text: Title"
                        data-toggle="collapse"
                        data-target=".navbar-collapse.show"></a>
                 </li>
@@ -75,7 +75,16 @@
         </div>
     </nav>
 
-    <div id="main-container" class="container" data-bind="page: {id: 'home', role: 'start'}">
+    <div id="main-container" class="container">
+        <!-- ko ifnot: IsConnected -->
+        <div class="alert alert-danger url flex-column">
+            <div class="d-flex">
+                <strong>Attention!</strong>
+                <small class="ml-auto">This can be caused by a bad network connection.</small>
+            </div>
+            Connection to server lost. Trying to reconnect...
+        </div>
+        <!-- /ko -->
         <!-- ko if: OneDasState() == 1 -->
         <div class="alert alert-danger url flex-column" data-bind="click: AcknowledgeError">
             <div class="d-flex">
@@ -111,7 +120,9 @@
         <script src="~/lib/chart.js/dist/Chart.min.js"></script>
         <script src="~/lib/mathjs/dist/math.min.js"></script>
         <script src="~/lib/@@aspnet/signalr/dist/browser/signalr.min.js"></script>
-        <script src="~/js/site.min.js" asp-append-version="true"></script>
+        @* // minifier generates invalid javascript *@
+        @*<script src="~/js/site.min.js" asp-append-version="true"></script>*@
+        <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)

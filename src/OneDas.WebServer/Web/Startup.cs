@@ -20,7 +20,10 @@ namespace OneDas.WebServer.Web
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddRazorPagesOptions(options => {
+                options.RootDirectory = "/Web/Pages";
+                options.Conventions.AddPageRoute("/Index", "{*url}");
+            });
 
             services.AddSignalR().AddJsonProtocol(options =>
             {
@@ -52,21 +55,7 @@ namespace OneDas.WebServer.Web
                 routes.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
             });
 
-            app.UseMvc(routes =>
-            {
-                //routes.MapRoute(
-                //    name: "default",
-                //    template: "{controller=Home}/{action=Index}/{id?}");
-
-                routes.MapRoute(
-                    name: "api",
-                    template: "{controller}/{action}/{id?}");
-
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{*url}",
-                    defaults: new { controller = "Home", action = "Index" });
-            });
+            app.UseMvc();
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿<div class="alert alert-danger url flex-column" style="display:none"
+﻿@page
+@model IndexModel
+
+<div class="alert alert-danger url flex-column" style="display:none"
      data-bind="style: { display: IsConnected() ? 'none' : 'inherit' }">
     <div class="d-flex">
         <strong>Attention!</strong>
@@ -10,14 +13,13 @@
 <!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Inactive -->
 <div class="center-vertically plus-center-horizontally">
     <!-- ko if: InactivityMessage().length === 0 -->
-        <h1 class="display-4 text-center mb-5 noselect">The database is offline for scheduled maintenance.</h1>
+    <h1 class="display-4 text-center mb-5 noselect">The database is offline for scheduled maintenance.</h1>
     <!-- /ko -->
     <!-- ko if: InactivityMessage().length > 0 -->
-        <h1 class="display-4 text-center mb-5 noselect" data-bind="text: InactivityMessage"></h1>
+    <h1 class="display-4 text-center mb-5 noselect" data-bind="text: InactivityMessage"></h1>
     <!-- /ko -->
 </div>
 <!-- /ko -->
-
 <!-- ko if: HdfExplorerState() >= HdfExplorerStateEnum.Idle && HdfExplorerState() <= HdfExplorerStateEnum.Updating -->
 <div data-bind="callFunction: InitializeDatePicker">
     <div class="row my-4">
@@ -214,20 +216,19 @@
         </div>
     </div>
     <!-- ko ifnot: IsMainViewRequested -->
-        <!-- ko if: ShowChart -->
-        <div class="row flex-column" style="display: none"
-             data-bind="style: { display: IsMainViewRequested() ? 'none' : 'inherit' }">
-            <canvas class="mt-2" height="100" id="chart_data_availability"></canvas>
-            <button class="btn btn-primary pull-right" role="button" data-bind="click: ShowMainView">Get back</button>
-        </div>
-        <!-- /ko -->
-        <!-- ko ifnot: ShowChart -->
-        <h5 class="d-block text-center mt-5 text-muted">select a time period to see availability statistics</h5>
-        <!-- /ko -->
+    <!-- ko if: ShowChart -->
+    <div class="row flex-column" style="display: none"
+         data-bind="style: { display: IsMainViewRequested() ? 'none' : 'inherit' }">
+        <canvas class="mt-2" height="100" id="chart_data_availability"></canvas>
+        <button class="btn btn-primary pull-right" role="button" data-bind="click: ShowMainView">Get back</button>
+    </div>
+    <!-- /ko -->
+    <!-- ko ifnot: ShowChart -->
+    <h5 class="d-block text-center mt-5 text-muted">select a time period to see availability statistics</h5>
+    <!-- /ko -->
     <!-- /ko -->
 </div>
 <!-- /ko -->
-
 <!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Loading -->
 <div class="center-vertically plus-center-horizontally">
     <h1 class="display-4 text-center mb-5 noselect" data-bind="text: 'Preparing download (' + Math.round(ByteCount() / 1024 / 1024) + ' MB) ...'"></h1>

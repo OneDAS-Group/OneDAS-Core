@@ -76,7 +76,6 @@ namespace OneDas.Hdf.Explorer.Web
 
             _hdfExplorerStateSet[this.Context.ConnectionId] = _isActive ? HdfExplorerState.Idle : HdfExplorerState.Inactive;
 
-
             lock (_lock)
             {
                 _userCount += 1;
@@ -268,7 +267,7 @@ namespace OneDas.Hdf.Explorer.Web
 
                 this.WriteLogEntry($"{ this.Context.Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
 
-                return $"home/download/?file={ Path.GetFileName(zipFilePath) }";
+                return $"download/{ Path.GetFileName(zipFilePath) }";
             }, _ctsSet[this.Context.ConnectionId].Token);
         }
 
