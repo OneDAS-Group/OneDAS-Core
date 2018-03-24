@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using HDF.PInvoke;
-using System.Diagnostics;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 
