@@ -239,7 +239,7 @@ namespace OneDas.Engine.Core
         {
             for (int i = 0; i < STORAGE_COUNT; i++)
             {
-                this.ClearDataStorage(i);
+                this.ClearDataStorages(i);
             }
 
             this.OneDasState = OneDasState.Run;
@@ -979,7 +979,11 @@ namespace OneDas.Engine.Core
             }
         }
 
-        public void ClearDataStorage(int index)
+        #endregion
+
+        #region "Data storage"
+
+        public void ClearDataStorages(int index)
         {
             foreach (var entry in _sampleRateToDataStorageContextMap)
             {
@@ -989,10 +993,6 @@ namespace OneDas.Engine.Core
                 }
             }
         }
-
-        #endregion
-
-        #region "Data storage"
 
         private void StoreData()
         {
@@ -1012,7 +1012,7 @@ namespace OneDas.Engine.Core
                         dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataWriterToStorageSetMap[dataWriter][_cachedDataStorageIndex]);
                     });
 
-                    this.ClearDataStorage(_cachedDataStorageIndex);
+                    this.ClearDataStorages(_cachedDataStorageIndex);
                 }
                 catch (Exception ex)
                 {

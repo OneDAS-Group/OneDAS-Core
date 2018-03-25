@@ -102,7 +102,7 @@ namespace OneDas.Hdf.IO
             {
                 attributeId = H5A.open(locationId, attributeName);
 
-                if (attributeId < 0)
+                if (H5I.is_valid(attributeId) <= 0)
                 {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
                 }
@@ -128,7 +128,7 @@ namespace OneDas.Hdf.IO
             {
                 attributeId = H5A.open(locationId, attributeName);
 
-                if (attributeId < 0)
+                if (H5I.is_valid(attributeId) <= 0)
                 {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
                 }
@@ -161,7 +161,7 @@ namespace OneDas.Hdf.IO
             {
                 datasetId = H5D.open(locationId, datasetPath);
 
-                if (datasetId < 0)
+                if (H5I.is_valid(datasetId) <= 0)
                 {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
                 }
@@ -203,7 +203,7 @@ namespace OneDas.Hdf.IO
             {
                 datasetId = H5D.open(locationId, datasetPath);
 
-                if (datasetId < 0)
+                if (H5I.is_valid(datasetId) <= 0)
                 {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
                 }
@@ -579,7 +579,7 @@ namespace OneDas.Hdf.IO
 
             ulong[] dimensionSet;
             ulong[] dimensionLimitSet;
-            
+
             dimensionSet = new ulong[] { 0 };
             dimensionLimitSet = new ulong[] { 0 };
 
@@ -630,7 +630,7 @@ namespace OneDas.Hdf.IO
                     dataspaceId = H5S.create_simple(1, new ulong[] { length }, dimensionLimitSet);
                     attributeId = H5A.create(locationId, name, attributeTypeId, dataspaceId);
 
-                    if (attributeId < 0)
+                    if (H5I.is_valid(attributeId) <= 0)
                     {
                         throw new Exception(ErrorMessage.IOHelper_CouldNotOpenOrCreateAttribute);
                     }
@@ -639,7 +639,7 @@ namespace OneDas.Hdf.IO
                 {
                     if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
                 }
-                
+
                 return attributeId;
             });
         }
@@ -672,7 +672,7 @@ namespace OneDas.Hdf.IO
                     isNew = true;
                 }
 
-                if (attributeId < 0)
+                if (H5I.is_valid(attributeId) <= 0)
                 {
                     throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateAttribute } Attribute: '{ name }'.");
                 }
@@ -713,7 +713,7 @@ namespace OneDas.Hdf.IO
                     dataspaceId = H5S.create_simple(1, new ulong[] { chunkLength * chunkCount }, null);
                     datasetId = H5D.create(locationId, datasetPath, datasetTypeId, dataspaceId, lcPropertyId, dcPropertyId);
 
-                    if (datasetId < 0)
+                    if (H5I.is_valid(datasetId) <= 0)
                     {
                         throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset } Dataset: '{ datasetPath }'.");
                     }
@@ -759,7 +759,7 @@ namespace OneDas.Hdf.IO
                     isNew = true;
                 }
 
-                if (datasetId < 0)
+                if (H5I.is_valid(datasetId) <= 0)
                 {
                     throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateDataset } Dataset: '{ datasetPath }'.");
                 }
@@ -794,7 +794,7 @@ namespace OneDas.Hdf.IO
                     isNew = true;
                 }
 
-                if (groupId < 0)
+                if (H5I.is_valid(groupId) <= 0)
                 {
                     throw new Exception($"{ ErrorMessage.IOHelper_CouldNotOpenOrCreateGroup } Group name: '{ groupPath }'.");
                 }
@@ -841,7 +841,7 @@ namespace OneDas.Hdf.IO
             {
                 if (H5I.is_valid(attributeId) > 0) { H5A.close(attributeId); }
             }
-            
+
             return referenceValueSet;
         }
 

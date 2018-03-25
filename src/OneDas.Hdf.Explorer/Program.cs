@@ -105,7 +105,7 @@ namespace OneDas.Hdf.Explorer
                     if (File.Exists(_options.VdsFilePath))
                     {
                         vdsFileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
-                        vdsMetaFileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
+                        vdsMetaFileId = H5F.open(_options.VdsMetaFilePath, H5F.ACC_RDONLY);
 
                         Program.CampaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId, false);
                     }
@@ -118,11 +118,18 @@ namespace OneDas.Hdf.Explorer
                     {
                         if (IOHelper.CheckLinkExists(vdsMetaFileId, campaignInfo.Name))
                         {
-                            groupId = H5G.open(vdsMetaFileId, campaignInfo.Name);
-
-                            if (H5A.exists(groupId, "description") > 0)
+                            try
                             {
-                                return IOHelper.ReadAttribute<string>(groupId, "description").First();
+                                groupId = H5G.open(vdsMetaFileId, campaignInfo.Name);
+
+                                if (H5A.exists(groupId, "description") > 0)
+                                {
+                                    return IOHelper.ReadAttribute<string>(groupId, "description").First();
+                                }
+                            }
+                            finally
+                            {
+                                if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
                             }
                         }
 

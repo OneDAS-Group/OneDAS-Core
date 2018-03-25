@@ -65,9 +65,11 @@ namespace OneDas.Hdf.Core
 
             int Callback(long campaignGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
             {
+                ulong idx2 = 0;
+
                 long groupId = -1;
                 long datasetId = -1;
-                ulong idx2 = 0;
+
                 int level;
                 int formatVersion;
 
@@ -104,7 +106,7 @@ namespace OneDas.Hdf.Core
                 // only chance is to modify source code (H5Oget_info_by_name)
                 datasetId = H5D.open(campaignGroupId, name);
 
-                if (datasetId > -1)
+                if (H5I.is_valid(datasetId) > 0)
                 {
                     objectType = H5O.type_t.DATASET;
                 }
@@ -112,7 +114,7 @@ namespace OneDas.Hdf.Core
                 {
                     groupId = H5G.open(campaignGroupId, name);
 
-                    if (groupId > -1)
+                    if (H5I.is_valid(groupId) > 0)
                     {
                         objectType = H5O.type_t.GROUP;
                     }

@@ -5,6 +5,7 @@ using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
+using OneDas.WebServer.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,11 +35,11 @@ namespace OneDas.WebServer.Web
         private static OneDasEngine _oneDasEngine;
         private static IHubContext<WebClientHub> _hubContext;
 
-        public static Dictionary<string, (int SubscriptionId, IList<ChannelHubBase> ChannelHubSet)> LiveViewSubscriptionSet { get; private set; }
+        public static Dictionary<string, LiveViewSubscription> ConnectionToSubscriptionMap { get; private set; }
 
         static WebClientHub()
         {
-            WebClientHub.LiveViewSubscriptionSet = new Dictionary<string, (int SubscriptionId, IList<ChannelHubBase> ChannelHubSet)>();
+            WebClientHub.ConnectionToSubscriptionMap = new Dictionary<string, LiveViewSubscription>();
 
             _nextSubscriptionId = 1;
         }
@@ -79,9 +80,12 @@ namespace OneDas.WebServer.Web
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            if (WebClientHub.LiveViewSubscriptionSet.ContainsKey(this.Context.ConnectionId))
+            lock (WebClientHub.ConnectionToSubscriptionMap)
             {
-                WebClientHub.LiveViewSubscriptionSet.Remove(this.Context.ConnectionId);
+                if (WebClientHub.ConnectionToSubscriptionMap.ContainsKey(this.Context.ConnectionId))
+                {
+                    WebClientHub.ConnectionToSubscriptionMap.Remove(this.Context.ConnectionId);
+                }
             }
 
             return base.OnDisconnectedAsync(exception);
@@ -208,7 +212,11 @@ namespace OneDas.WebServer.Web
                 }
 
                 subscriptionId = WebClientHub.GetNextSubscriptionId();
-                WebClientHub.LiveViewSubscriptionSet[this.Context.ConnectionId] = (subscriptionId, channelHubSettingsSet);
+
+                lock (WebClientHub.ConnectionToSubscriptionMap)
+                {
+                    WebClientHub.ConnectionToSubscriptionMap[this.Context.ConnectionId] = new LiveViewSubscription(subscriptionId, channelHubSettingsSet);
+                }
 
                 return subscriptionId;
             });
@@ -385,10 +393,13 @@ namespace OneDas.WebServer.Web
 
             if (_oneDasEngine.OneDasState >= OneDasState.Ready)
             {
-                foreach (var liveViewSubscription in WebClientHub.LiveViewSubscriptionSet)
+                lock (WebClientHub.ConnectionToSubscriptionMap)
                 {
-                    dataSnapshot = _oneDasEngine.CreateDataSnapshot(liveViewSubscription.Value.ChannelHubSet);
-                    _hubContext.Clients.Client(liveViewSubscription.Key).SendAsync("SendLiveViewData", liveViewSubscription.Value.SubscriptionId, DateTime.UtcNow, dataSnapshot);
+                    foreach (var entry in WebClientHub.ConnectionToSubscriptionMap)
+                    {
+                        dataSnapshot = _oneDasEngine.CreateDataSnapshot(entry.Value.ChannelHubSet);
+                        _hubContext.Clients.Client(entry.Key).SendAsync("SendLiveViewData", entry.Value.Id, DateTime.UtcNow, dataSnapshot);
+                    }
                 }
             }
         }

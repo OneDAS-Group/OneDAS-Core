@@ -200,41 +200,45 @@ namespace OneDas.Hdf.Explorer.Web
                     throw new Exception("Data request is already in progress.");
                 }
 
-                // open file
-                fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
-
-                // byte count
-                bytesPerRow = 0;
-
-                foreach (var campaignInfo in campaignInfoSet)
-                {
-                    foreach (var variableInfo in campaignInfo.Value)
-                    {
-                        foreach (string datasetInfo in variableInfo.Value)
-                        {
-                            datasetId = H5D.open(fileId, $"{ campaignInfo.Key }/{ variableInfo.Key }/{ datasetInfo }");
-                            bytesPerRow += (ulong)OneDasUtilities.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
-
-                            // clean up
-                            H5D.close(datasetId);
-                        }
-                    }
-                }
-
-                this.GetClient().SendByteCount(bytesPerRow * block);
-
-                segmentSize = (50 * 1024 * 1024) / bytesPerRow * bytesPerRow;
-                segmentLength = segmentSize / bytesPerRow;
-
-                // ensure that dataset length is multiple of 1 minute
-                if ((segmentLength / sampleRate) % 60 != 0)
-                {
-                    segmentLength = (ulong)((ulong)(segmentLength / sampleRate / 60) * 60 * sampleRate);
-                }
-
-                // start
                 try
                 {
+                    // open file
+                    fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
+
+                    // byte count
+                    bytesPerRow = 0;
+
+                    foreach (var campaignInfo in campaignInfoSet)
+                    {
+                        foreach (var variableInfo in campaignInfo.Value)
+                        {
+                            foreach (string datasetInfo in variableInfo.Value)
+                            {
+                                try
+                                {
+                                    datasetId = H5D.open(fileId, $"{ campaignInfo.Key }/{ variableInfo.Key }/{ datasetInfo }");
+                                    bytesPerRow += (ulong)OneDasUtilities.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
+                                }
+                                finally
+                                {
+                                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                                }
+                            }
+                        }
+                    }
+
+                    this.GetClient().SendByteCount(bytesPerRow * block);
+
+                    segmentSize = (50 * 1024 * 1024) / bytesPerRow * bytesPerRow;
+                    segmentLength = segmentSize / bytesPerRow;
+
+                    // ensure that dataset length is multiple of 1 minute
+                    if ((segmentLength / sampleRate) % 60 != 0)
+                    {
+                        segmentLength = (ulong)((ulong)(segmentLength / sampleRate / 60) * 60 * sampleRate);
+                    }
+
+                    // start
                     this.HdfExplorerState = HdfExplorerState.Loading;
 
                     using (ZipArchive zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))

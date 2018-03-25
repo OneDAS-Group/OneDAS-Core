@@ -395,7 +395,7 @@ namespace OneDas.Hdf.VdsTool
                 sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
                 sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
                 sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
-                vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS", $"{epochStart.ToString("yyyy-MM")}.h5");
+                vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS", $"{ epochStart.ToString("yyyy-MM") }.h5");
             }
             else
             {
@@ -419,20 +419,27 @@ namespace OneDas.Hdf.VdsTool
 
         private static unsafe void InternalCreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd)
         {
-            long sourceFileId = -1;
             long vdsFileId = -1;
-            long vdsCampaignGroupId = -1;
-            long vdsVariableGroupId = -1;
 
-            ulong[] actualDimenionSet = new ulong[1];
-            ulong[] maximumDimensionSet = new ulong[1];
+            ulong[] actualDimenionSet;
+            ulong[] maximumDimensionSet;
 
-            string lastVariablePath = String.Empty;
+            string lastVariablePath;
+            string tempFilePath;
 
-            List<CampaignInfo> campaignInfoSet = new List<CampaignInfo>();
-            List<string> sourceFilePathSet = new List<string>();
+            List<CampaignInfo> campaignInfoSet;
+            List<string> sourceFilePathSet;
             Dictionary<string, List<byte>> isChunkCompletedMap;
 
+            //
+            actualDimenionSet = new ulong[1];
+            maximumDimensionSet = new ulong[1];
+
+            lastVariablePath = String.Empty;
+            tempFilePath = Path.GetTempFileName();
+
+            campaignInfoSet = new List<CampaignInfo>();
+            sourceFilePathSet = new List<string>();
             isChunkCompletedMap = new Dictionary<string, List<byte>>();
 
             // fill sourceFilePathSet
@@ -444,54 +451,18 @@ namespace OneDas.Hdf.VdsTool
                 }
             });
 
-            // open VDS file
-            vdsFileId = H5F.create(vdsFilePath, H5F.ACC_TRUNC);
-
             try
             {
+                // open VDS file
+                vdsFileId = H5F.create(tempFilePath, H5F.ACC_TRUNC);
+
                 // write attribute
                 IOHelper.PrepareAttribute(vdsFileId, "date_time", new string[] { $"{ epochStart.ToString("yyyy-MM-ddTHH-mm-ss") }Z" }, new ulong[] { 1 }, true);
 
-                // for each source file
+                // create an index of all campaigns, variables and datasets
                 foreach (string sourceFilePath in sourceFilePathSet)
                 {
-                    Console.Write($"Processing file { Path.GetFileName(sourceFilePath) } ... ");
-
-                    sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-
-                    try
-                    {
-                        if (sourceFileId < 0)
-                        {
-                            throw new Exception(ErrorMessage.Program_CouldNotOpenFile);
-                        }
-
-                        GeneralHelper.UpdateCampaignInfoSet(sourceFileId, campaignInfoSet);
-
-                        // load is_chunk_completed_set
-                        campaignInfoSet.ForEach(campaignInfo =>
-                        {
-                            string key;
-                            byte[] isChunkCompletedSet;
-
-                            if (campaignInfo.ChunkDatasetInfo.SourceFileInfoSet.Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
-                            {
-                                key = $"{ sourceFilePath }+{ campaignInfo.GetPath() }";
-
-                                if (!isChunkCompletedMap.ContainsKey(key))
-                                {
-                                    isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{ campaignInfo.GetPath() }/is_chunk_completed_set");
-                                    isChunkCompletedMap[key] = isChunkCompletedSet.ToList();
-                                }
-                            }
-                        });
-
-                        Console.WriteLine("Done.");
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(sourceFileId) > 0) { H5F.close(sourceFileId); }
-                    }
+                    Program.VdsSourceFile(sourceFilePath, campaignInfoSet, isChunkCompletedMap);
                 }
 
                 //foreach (var variableInfo in variableInfoSet)
@@ -508,67 +479,146 @@ namespace OneDas.Hdf.VdsTool
                 //    }
                 //}
 
-                // campaign
+                // write the result into the temporary vds file
                 foreach (var campaignInfo in campaignInfoSet)
                 {
-                    Console.WriteLine($"\n{ campaignInfo.Name }");
-
-                    vdsCampaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaignInfo.GetPath()).GroupId;
-
-                    try
-                    {
-                        // variable
-                        foreach (var variableInfo in campaignInfo.VariableInfoSet)
-                        {
-                            Console.WriteLine($"\t{ variableInfo.Name }");
-
-                            vdsVariableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variableInfo.Name).GroupId;
-
-                            try
-                            {
-                                //// make hard links for each display name
-                                ////foreach (string variableName in variableInfo.Value.VariableNameSet)
-                                ////{
-                                ////    H5L.copy(vdsGroupIdSet[vdsGroupIdSet.Count() - 1], variableInfo.Key, vdsGroupIdSet[vdsGroupIdSet.Count() - 2], variableName);
-                                ////}
-
-                                IOHelper.PrepareAttribute(vdsVariableGroupId, "name_set", variableInfo.VariableNameSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                                IOHelper.PrepareAttribute(vdsVariableGroupId, "group_set", variableInfo.VariableGroupSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                                IOHelper.PrepareAttribute(vdsVariableGroupId, "unit_set", variableInfo.UnitSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                                IOHelper.PrepareAttribute(vdsVariableGroupId, "transfer_function_set", variableInfo.TransferFunctionSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-
-                                // dataset
-                                foreach (var datasetInfo in variableInfo.DatasetInfoSet)
-                                {
-                                    Console.WriteLine($"\t\t{ datasetInfo.Name }");
-                                    Program.MergeDatasets(vdsVariableGroupId, epochStart, epochEnd, datasetInfo, campaignInfo.GetPath(), isChunkCompletedMap, true);
-                                }
-
-                                // flush data - necessary to avoid AccessViolationException at H5F.close()
-                                H5F.flush(vdsFileId, H5F.scope_t.LOCAL);
-                            }
-                            finally
-                            {
-                                if (H5I.is_valid(vdsVariableGroupId) > 0) { H5G.close(vdsVariableGroupId); }
-                            }
-                        }
-
-                        // don't forget is_chunk_completed_set
-                        Program.MergeDatasets(vdsCampaignGroupId, epochStart, epochEnd, campaignInfo.ChunkDatasetInfo, campaignInfo.GetPath(), isChunkCompletedMap, false);
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(vdsCampaignGroupId) > 0) { H5G.close(vdsCampaignGroupId); }
-                    }
+                    Program.VdsCampaign(vdsFileId, campaignInfo, epochStart, epochEnd, isChunkCompletedMap);
                 }
             }
             finally
             {
                 if (H5I.is_valid(vdsFileId) > 0) { H5F.close(vdsFileId); }
             }
+
+            // copy temporary file into target location 
+            try
+            {
+                if (File.Exists(vdsFilePath))
+                {
+                    File.Delete(vdsFilePath);
+                }
+
+                File.Copy(tempFilePath, vdsFilePath);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(tempFilePath);
+                }
+                catch
+                {
+                    //
+                }
+            }
         }
 
-        private static void MergeDatasets(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath, Dictionary<string, List<byte>> isChunkCompletedMap, bool closeType)
+        private static void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaignInfoSet, Dictionary<string, List<byte>> isChunkCompletedMap)
+        {
+            long sourceFileId = -1;
+
+            Console.Write($"Processing file { Path.GetFileName(sourceFilePath) } ... ");
+
+            sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
+
+            try
+            {
+                if (sourceFileId < 0)
+                {
+                    throw new Exception(ErrorMessage.Program_CouldNotOpenFile);
+                }
+
+                GeneralHelper.UpdateCampaignInfoSet(sourceFileId, campaignInfoSet);
+
+                // load is_chunk_completed_set
+                campaignInfoSet.ForEach(campaignInfo =>
+                {
+                    string key;
+                    byte[] isChunkCompletedSet;
+
+                    if (campaignInfo.ChunkDatasetInfo.SourceFileInfoSet.Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
+                    {
+                        key = $"{ sourceFilePath }+{ campaignInfo.GetPath() }";
+
+                        if (!isChunkCompletedMap.ContainsKey(key))
+                        {
+                            isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{ campaignInfo.GetPath() }/is_chunk_completed_set");
+                            isChunkCompletedMap[key] = isChunkCompletedSet.ToList();
+                        }
+                    }
+                });
+
+                Console.WriteLine("Done.");
+            }
+            finally
+            {
+                if (H5I.is_valid(sourceFileId) > 0) { H5F.close(sourceFileId); }
+            }
+        }
+
+        private static void VdsCampaign(long vdsFileId, CampaignInfo campaignInfo, DateTime epochStart, DateTime epochEnd, Dictionary<string, List<byte>> isChunkCompletedMap)
+        {
+            long campaignGroupId = -1;
+
+            Console.WriteLine($"\n{ campaignInfo.Name }");
+
+            campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaignInfo.GetPath()).GroupId;
+
+            try
+            {
+                // variable
+                foreach (var variableInfo in campaignInfo.VariableInfoSet)
+                {
+                    Program.VdsVariable(vdsFileId, campaignGroupId, variableInfo, epochStart, epochEnd, isChunkCompletedMap, campaignInfo.GetPath());
+                }
+
+                // don't forget is_chunk_completed_set
+                Program.VdsDataset(campaignGroupId, epochStart, epochEnd, campaignInfo.ChunkDatasetInfo, campaignInfo.GetPath(), isChunkCompletedMap, false);
+            }
+            finally
+            {
+                if (H5I.is_valid(campaignGroupId) > 0) { H5G.close(campaignGroupId); }
+            }
+        }
+
+        private static void VdsVariable(long vdsFileId, long vdsCampaignGroupId, VariableInfo variableInfo, DateTime epochStart, DateTime epochEnd, Dictionary<string, List<byte>> isChunkCompletedMap, string campaignPath)
+        {
+            long variableGroupId = -1;
+
+            Console.WriteLine($"\t{ variableInfo.Name }");
+
+            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variableInfo.Name).GroupId;
+
+            try
+            {
+                //// make hard links for each display name
+                ////foreach (string variableName in variableInfo.Value.VariableNameSet)
+                ////{
+                ////    H5L.copy(vdsGroupIdSet[vdsGroupIdSet.Count() - 1], variableInfo.Key, vdsGroupIdSet[vdsGroupIdSet.Count() - 2], variableName);
+                ////}
+
+                IOHelper.PrepareAttribute(variableGroupId, "name_set", variableInfo.VariableNameSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "group_set", variableInfo.VariableGroupSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "unit_set", variableInfo.UnitSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "transfer_function_set", variableInfo.TransferFunctionSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+
+                // dataset
+                foreach (var datasetInfo in variableInfo.DatasetInfoSet)
+                {
+                    Console.WriteLine($"\t\t{ datasetInfo.Name }");
+                    Program.VdsDataset(variableGroupId, epochStart, epochEnd, datasetInfo, campaignPath, isChunkCompletedMap, true);
+                }
+
+                // flush data - necessary to avoid AccessViolationException at H5F.close()
+                H5F.flush(vdsFileId, H5F.scope_t.LOCAL);
+            }
+            finally
+            {
+                if (H5I.is_valid(variableGroupId) > 0) { H5G.close(variableGroupId); }
+            }
+        }
+
+        private static void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath, Dictionary<string, List<byte>> isChunkCompletedMap, bool closeType)
         {
             string datasetName;
 
@@ -1082,7 +1132,7 @@ namespace OneDas.Hdf.VdsTool
                             // campaignInfo
                             foreach (var campaignInfo in campaignInfoSet)
                             {
-                                Program.AggregateCampaignInfo(sourceFileId, targetFileId, vdsMetaFileId, campaignInfo, messageLog);
+                                Program.AggregateCampaign(sourceFileId, targetFileId, vdsMetaFileId, campaignInfo, messageLog);
                             }
 
                             Console.CursorTop -= 1;
@@ -1101,7 +1151,7 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
-        private static void AggregateCampaignInfo(long sourceFileId, long targetFileId, long vdsMetaFileId, CampaignInfo campaignInfo, StreamWriter messageLog)
+        private static void AggregateCampaign(long sourceFileId, long targetFileId, long vdsMetaFileId, CampaignInfo campaignInfo, StreamWriter messageLog)
         {
             int index;
             string datasetPath;
@@ -1124,7 +1174,7 @@ namespace OneDas.Hdf.VdsTool
                     index++;
 
                     Console.WriteLine($"{ variableInfo.VariableNameSet.Last() } ({ index }/{ campaignInfo.VariableInfoSet.Count() })");
-                    Program.AggregateVariableInfo(sourceFileId, targetFileId, vdsMetaFileId, variableInfo, messageLog);
+                    Program.AggregateVariable(sourceFileId, targetFileId, vdsMetaFileId, variableInfo, messageLog);
                     Console.CursorTop -= 1;
                     Program.ClearCurrentLine();
                 }
@@ -1135,7 +1185,7 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
-        private static void AggregateVariableInfo(long sourceFileId, long targetFileId, long vdsMetaFileId, VariableInfo variableInfo, StreamWriter messageLog)
+        private static void AggregateVariable(long sourceFileId, long targetFileId, long vdsMetaFileId, VariableInfo variableInfo, StreamWriter messageLog)
         {
             long vdsMetaGroupId = -1;
             long sourceDatasetId = -1;

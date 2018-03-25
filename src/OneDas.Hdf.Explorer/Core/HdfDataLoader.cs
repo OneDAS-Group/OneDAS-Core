@@ -138,7 +138,7 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 if (!this.CreateFiles(dataWriter, zipSettings))
                 {
-                    this.CleanUp();
+                    this.CleanUp(directoryPath);
 
                     return false;
                 }
@@ -170,7 +170,7 @@ namespace OneDas.Hdf.Explorer.Core
                 currentFile++;
             }
 
-            this.CleanUp();
+            this.CleanUp(directoryPath);
 
             return true;
         }
@@ -275,8 +275,8 @@ namespace OneDas.Hdf.Explorer.Core
                 }
                 finally
                 {
-                    H5D.close(datasetId);
-                    H5T.close(typeId);
+                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                    if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
                 }
 
                 simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
@@ -290,13 +290,13 @@ namespace OneDas.Hdf.Explorer.Core
             }
         }
 
-        private void CleanUp()
+        private void CleanUp(string directoryPath)
         {
             try
             {
-                Directory.Delete(Path.Combine(Path.GetTempPath(), "OneDas.Hdf.Explorer"), true);
+                Directory.Delete(directoryPath, true);
             }
-            catch (Exception)
+            catch
             {
                 //
             }
