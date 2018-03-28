@@ -50,6 +50,16 @@ namespace OneDas.Engine.Core
 
         #region "Methods"
 
+        public List<DataGatewayPluginLogicBase> GetEnabledDataGateways()
+        {
+            return this.DataGatewaySet.Where(dataGateway => dataGateway.Settings.Description.IsEnabled).ToList();
+        }
+
+        public List<DataWriterPluginLogicBase> GetEnabledDataWriters()
+        {
+            return this.DataWriterSet.Where(dataWriter => dataWriter.Settings.Description.IsEnabled).ToList();
+        }
+
         private ChannelHubBase CreateChannelHub(ChannelHubSettings channelHubSettings)
         {
             Type type;

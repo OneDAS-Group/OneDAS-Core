@@ -17,7 +17,7 @@ class AppViewModel
     public Progress: KnockoutObservable<number>
     public Message: KnockoutObservable<string>
     public StartDate: KnockoutObservable<Date>
-    public EndDate: KnockoutObservable<Date>
+    public EndDate: KnockoutObservable<Date>   
     public DataAvailabilityStatistics: KnockoutObservable<DataAvailabilityStatisticsViewModel>
     public SelectedCampaignInfo: KnockoutObservable<CampaignInfoViewModel>
     public ShowChart: KnockoutObservable<boolean>
@@ -76,27 +76,21 @@ class AppViewModel
             this._variableInfoSet = MapMany(this.CampaignInfoSet(), campaignInfo => campaignInfo.VariableInfoSet)
             this._datasetInfoSet = MapMany(this._variableInfoSet, variableInfo => variableInfo.DatasetInfoSet)
 
-            this.SelectedDatasetInfoSet().forEach(datasetInfo =>
-            {
+            this.SelectedDatasetInfoSet().forEach(datasetInfo => {
                 let newDataSetInfo: DatasetInfoViewModel
 
                 newDataSetInfo = this._datasetInfoSet.find(current => current.Parent.Name === datasetInfo.Parent.Name && current.Name === datasetInfo.Name)
 
-                if (newDataSetInfo)
-                {
+                if (newDataSetInfo) {
                     newDataSetInfo.IsSelected(true)
                     console.log("selected " + newDataSetInfo.Parent.Name + " " + newDataSetInfo.Name)
                 }
             })
 
-            this.CampaignInfoSet().forEach(campaignInfo =>
-            {
-                campaignInfo.VariableInfoSet.forEach(variableInfo =>
-                {
-                    variableInfo.DatasetInfoSet.forEach(datasetInfo =>
-                    {
-                        datasetInfo.OnIsSelectedChanged.subscribe((sender, isSelected) =>
-                        {
+            this.CampaignInfoSet().forEach(campaignInfo => {
+                campaignInfo.VariableInfoSet.forEach(variableInfo => {
+                    variableInfo.DatasetInfoSet.forEach(datasetInfo => {
+                        datasetInfo.OnIsSelectedChanged.subscribe((sender, isSelected) => {
                             this.UpdateSelectedDatasetInfoSet()
                         })
                     })
@@ -105,20 +99,16 @@ class AppViewModel
 
             this.SelectedSampleRate(null)
 
-            this.SampleRateSet([...new Set(this._datasetInfoSet.map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) =>
-            {
-                switch (true)
-                {
+            this.SampleRateSet([...new Set(this._datasetInfoSet.map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) => {
+                switch (true) {
                     case a.includes('Hz') && !b.includes('Hz'):
                         return -1;
                     case !a.includes('Hz') && b.includes('Hz'):
                         return 1;
                     case a.includes('Hz') && b.includes('Hz') || !a.includes('Hz') && !b.includes('Hz'):
 
-                        if (a.includes('Hz'))
-                        {
-                            switch (true)
-                            {
+                        if (a.includes('Hz')) {
+                            switch (true) {
                                 case parseFloat(a) < parseFloat(b):
                                     return 1
                                 case parseFloat(a) > parseFloat(b):
@@ -127,10 +117,8 @@ class AppViewModel
                                     return 0
                             }
                         }
-                        else
-                        {
-                            switch (true)
-                            {
+                        else {
+                            switch (true) {
                                 case parseFloat(a) < parseFloat(b):
                                     return -1
                                 case parseFloat(a) > parseFloat(b):
@@ -158,14 +146,11 @@ class AppViewModel
 
         this.StartDate(startDate)
         this.EndDate(endDate)
-
+      
         // sample rate
-        this.SelectedSampleRate.subscribe(newValue =>
-        {
-            this._variableInfoSet.forEach(variableInfo =>
-            {
-                variableInfo.DatasetInfoSet.forEach(datasetInfo =>
-                {
+        this.SelectedSampleRate.subscribe(newValue => {
+            this._variableInfoSet.forEach(variableInfo => {
+                variableInfo.DatasetInfoSet.forEach(datasetInfo => {
                     datasetInfo.IsVisible(datasetInfo.Name.split("_")[0] === this.SelectedSampleRate() && !datasetInfo.Name.endsWith("status"))
                 })
             })
@@ -248,7 +233,7 @@ class AppViewModel
         {
             this.ByteCount(byteCount)
         })
-    }
+    }  
 
     // methods
     private GetSamplesPerDayFromString = (datasetName: string) =>
@@ -257,7 +242,7 @@ class AppViewModel
         {
             return 0;
         }
-
+        
         if (datasetName.startsWith("100 Hz"))
         {
             return 86400 * 100;
@@ -307,9 +292,9 @@ class AppViewModel
         try
         {
             this.DataAvailabilityStatistics(await _broadcaster.invoke("GetDataAvailabilityStatistics",
-                this.SelectedCampaignInfo().Name,
-                this.RemoveTimeZoneOffset(this.StartDate()),
-                this.RemoveTimeZoneOffset(this.EndDate())))
+                                                                    this.SelectedCampaignInfo().Name,
+                                                                    this.RemoveTimeZoneOffset(this.StartDate()),
+                                                                    this.RemoveTimeZoneOffset(this.EndDate())))
         } catch (e)
         {
             alert(e.message)
@@ -443,7 +428,7 @@ class AppViewModel
                                 beginAtZero: true,
                                 max: yLimit
                             },
-                            type: "linear"
+                            type: "linear"                           
                         }]
                     },
                     title: {
@@ -583,6 +568,24 @@ class AppViewModel
                 this.SelectedFileGranularity(),
                 campaignInfoSet
             )
+
+            if (downloadLink !== "")
+            {
+                window.open(downloadLink);
+            }
+        } catch (e)
+        {
+            alert(e.message)
+        }
+    }
+
+    public DownloadCampaignDocumentation = async (campaignInfo: CampaignInfoViewModel) =>
+    {
+        let downloadLink: string
+
+        try
+        {
+            downloadLink = await _broadcaster.invoke("GetCampaignDocumentation", campaignInfo.Name)
 
             if (downloadLink !== "")
             {

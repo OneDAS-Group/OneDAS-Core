@@ -19,7 +19,6 @@ namespace OneDas.WebServer.Shell
         private System.Timers.Timer _timer_UpdateConsole;
         private object _syncLock_UpdateConsole;
 
-        private SafeNativeMethods.HandlerRoutine _handlerRoutine;
         private HubConnection _consoleHubClient;
         private WebServerOptions _webServerOptions;
 
@@ -33,16 +32,12 @@ namespace OneDas.WebServer.Shell
         {
             _webServerOptions = options.Value;
 
-            WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
             Thread.CurrentThread.Name = "Main thread";
 
             Console.SetWindowSize(80, 25);
             Console.CursorVisible = false;
 
             _syncLock_UpdateConsole = new object();
-            _handlerRoutine = new SafeNativeMethods.HandlerRoutine(ConsoleCtrlCallback);
-
-            SafeNativeMethods.SetConsoleCtrlHandler(_handlerRoutine, true);
 
             Console.Write("initialization (standard) ... ");
         }
@@ -72,7 +67,7 @@ namespace OneDas.WebServer.Shell
                         {
                             _consoleHubClient.StartAsync().Wait();
                             _isConnected = true;
-							
+
                             this.ResetConsole();
                         }
                         catch
@@ -280,20 +275,6 @@ namespace OneDas.WebServer.Shell
             catch
             {
                 //
-            }
-        }
-
-        private void ConsoleCtrlCallback(CtrlType ctrlType)
-        {
-            switch (ctrlType)
-            {
-                case CtrlType.CTRL_CLOSE_EVENT:
-                case CtrlType.CTRL_BREAK_EVENT:
-                case CtrlType.CTRL_SHUTDOWN_EVENT:
-                    BasicBootloader.Shutdown(0);
-                    break;
-                default:
-                    return;
             }
         }
 

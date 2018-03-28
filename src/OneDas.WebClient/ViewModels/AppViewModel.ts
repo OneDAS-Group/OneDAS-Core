@@ -167,7 +167,7 @@
 
         ConnectionManager.WebClientHub.on("SendMessage", clientMessage =>
         {
-            this.ClientMessageLog.push(new MessageLogEntryViewModel(new Date().toLocaleTimeString('de-DE',
+            this.ClientMessageLog.unshift(new MessageLogEntryViewModel(new Date().toLocaleTimeString('de-DE',
                 {
                     hour12: false,
                     hour: "numeric",
@@ -175,9 +175,9 @@
                     second: "numeric"
                 }), clientMessage))
 
-            if (this.ClientMessageLog().length > 10)
+            if (this.ClientMessageLog().length > 100)
             {
-                this.ClientMessageLog.shift()
+                this.ClientMessageLog.pop()
             }
         })
     }

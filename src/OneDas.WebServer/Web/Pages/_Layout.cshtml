@@ -6,7 +6,7 @@
     <base href="/" />
     <environment names="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.css" />        
+        <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.css" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     </environment>
     <environment names="Staging,Production">
@@ -16,9 +16,8 @@
     </environment>
 </head>
 
-<!-- ko with: $root -->
 <body style="display: none;" data-bind="visible: true">
-
+    <!-- ko with: $root -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar-main" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -126,6 +125,6 @@
     </environment>
 
     @RenderSection("Scripts", required: false)
+    <!-- /ko -->
 </body>
-<!-- /ko -->
 </html>

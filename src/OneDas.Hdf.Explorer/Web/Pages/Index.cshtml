@@ -169,12 +169,25 @@
                             <a class="list-group-item list-group-item-action noselect"
                                data-toggle="collapse"
                                data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $index() }">
-                                <span class="fa fa-caret-right"></span><span data-placement="right" data-toggle="tooltip" data-bind="text: GetDisplayName(), attr: { title: $parent.CampaignDescriptionSet()[Name] }"></span>
+                                <span class="fa fa-caret-right"></span><span data-placement="right" data-bind="text: GetDisplayName()"></span>
                             </a>
-                            <span data-toggle="tooltip" title="Show data availability.">
-                                <span class="fa fa-bar-chart mr-2 url"
-                                      data-bind="click: $parent.ShowDataAvailability"></span>
+
+                            <span class="fa fa-info-circle mx-2 url fa-fix" style="color: #138496"
+                                  data-toggle="tooltip"
+                                  data-bind="attr: { title: $parent.CampaignDescriptionSet()[Name] }"></span>
+
+                            <span class="fa fa-arrow-circle-o-down mr-2 url fa-fix"
+                                  data-toggle="tooltip"
+                                  data-bind="click: $parent.DownloadCampaignDocumentation"
+                                  title="Download campaign information in CSV format.">
                             </span>
+
+                            <span class="fa fa-bar-chart url fa-fix"
+                                  data-toggle="tooltip"
+                                  data-bind="click: $parent.ShowDataAvailability"
+                                  title="Show data availability.">
+                            </span>
+
                         </div>
                         <div class="list-group collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
                             <a class="list-group-item list-group-item-action noselect"

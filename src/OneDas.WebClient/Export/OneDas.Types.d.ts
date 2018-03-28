@@ -122,6 +122,7 @@ declare function MapMany<TArrayElement, TSelect>(array: TArrayElement[], mapFunc
 declare class Guid {
     static NewGuid(): string;
 }
+declare function delay(ms: number): Promise<{}>;
 declare let CheckNamingConvention: (value: string) => {
     HasError: boolean;
     ErrorDescription: string;
@@ -151,7 +152,7 @@ declare class ChannelHubViewModel {
     private AssociatedDataInputId;
     private AssociatedDataOutputIdSet;
     constructor(channelHubModel: ChannelHubModel);
-    GetTransformedValue: (value: any) => string;
+    GetTransformedValue: (value: any) => number;
     private CreateDefaultTransferFunction;
     IsAssociationAllowed(dataPort: DataPortViewModel): boolean;
     UpdateAssociation: (dataPort: DataPortViewModel) => void;

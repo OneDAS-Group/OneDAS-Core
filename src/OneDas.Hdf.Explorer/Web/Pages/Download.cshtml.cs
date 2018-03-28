@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 
 namespace OneDas.Hdf.Explorer.Web.Pages
 {
@@ -18,14 +19,21 @@ namespace OneDas.Hdf.Explorer.Web.Pages
 
         public FileStreamResult OnGet(string fileName)
         {
-            string basePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT");
-            string filePath = Path.GetFullPath(Path.Combine(basePath, fileName));
+            string basePath;
+            string filePath;
+            string realFileName;
+
+            basePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT");
+            filePath = Path.GetFullPath(Path.Combine(basePath, fileName));
+
+            realFileName = Path.GetFileName(filePath);
+            realFileName = Regex.Replace(realFileName, "(_[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})", string.Empty);
 
             if (filePath.StartsWith(basePath))
             {
                 if (System.IO.File.Exists(filePath))
                 {
-                    return this.File(new FileStream(filePath, FileMode.Open, FileAccess.Read), MediaTypeNames.Application.Octet, Path.GetFileName(filePath));
+                    return this.File(new FileStream(filePath, FileMode.Open, FileAccess.Read), MediaTypeNames.Application.Octet, realFileName);
                 }
                 else
                 {
@@ -34,7 +42,7 @@ namespace OneDas.Hdf.Explorer.Web.Pages
             }
             else
             {
-                throw new Exception($"The requested file '{ fileName }' is not within the downloads folder.");
+                throw new Exception($"The path of requested file '{ fileName }' does not point to the download folder.");
             }
         }
     }

@@ -12,6 +12,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -175,7 +176,7 @@ namespace OneDas.Hdf.Explorer.Web
                 }
 
                 // zip file
-                zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddTHH-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString().Substring(0, 8) }.zip");
+                zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddTHH-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString() }.zip");
 
                 // sampleRate
                 sampleRate = sampleRateDescription.ToSampleRate();
@@ -273,6 +274,142 @@ namespace OneDas.Hdf.Explorer.Web
 
                 return $"download/{ Path.GetFileName(zipFilePath) }";
             }, _ctsSet[this.Context.ConnectionId].Token);
+        }
+
+        public Task<string> GetCampaignDocumentation(string campaigInfoName)
+        {
+            long vdsMetaFileId = -1;
+
+            string csvFileName;
+
+            CampaignInfo campaignInfo;
+            List<string> groupNameSet;
+
+            campaignInfo = Program.CampaignInfoSet.First(campaign => campaign.Name == campaigInfoName);
+
+            return Task.Run(() =>
+            {
+                try
+                {
+                    if (File.Exists(_options.VdsMetaFilePath))
+                    {
+                        vdsMetaFileId = H5F.open(_options.VdsMetaFilePath, H5F.ACC_RDONLY);
+                    }
+
+                    csvFileName = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }_{ Guid.NewGuid().ToString() }.csv");
+                    groupNameSet = campaignInfo.VariableInfoSet.SelectMany(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n')).Distinct().ToList();
+
+                    using (StreamWriter streamWriter = new StreamWriter(new FileStream(csvFileName, FileMode.Create, FileAccess.Write, FileShare.Read), Encoding.UTF8))
+                    {
+                        // campaign header
+                        streamWriter.WriteLine($"# { campaignInfo.Name.TrimStart('/').Replace("/", " / ") }");
+
+                        // campaign description
+                        streamWriter.WriteLine($"# { Program.CampaignDescriptionSet[campaigInfoName] }");
+
+                        // header
+                        streamWriter.WriteLine("Group;Name;Unit;Transfer function;Aggregate function;Guid");
+
+                        // groups
+                        foreach (string groupName in groupNameSet)
+                        {
+                            List<VariableInfo> groupedVariableInfoSet;
+
+                            groupedVariableInfoSet = campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n').Contains(groupName)).OrderBy(variableInfo => variableInfo.VariableNameSet.Last()).ToList();
+
+                            // variables
+                            groupedVariableInfoSet.ForEach(variableInfo =>
+                            {
+                                long variable_groupId = -1;
+
+                                string transferFunction;
+                                string aggregateFunction;
+                                string groupPath;
+                                string name;
+                                string guid;
+                                string unit;
+
+                                List<hdf_transfer_function_t> transferFunctionSet;
+                                List<hdf_aggregate_function_t> aggregateFunctionSet;
+
+                                name = variableInfo.VariableNameSet.Last();
+                                guid = variableInfo.Name;
+                                unit = string.Empty;
+                                transferFunctionSet = new List<hdf_transfer_function_t>();
+                                aggregateFunctionSet = new List<hdf_aggregate_function_t>();
+
+                                try
+                                {
+                                    groupPath = GeneralHelper.CombinePath(campaignInfo.Name, variableInfo.Name);
+
+                                    if (H5I.is_valid(vdsMetaFileId) > 0 && IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
+                                    {
+                                        variable_groupId = H5G.open(vdsMetaFileId, groupPath);
+
+                                        if (H5A.exists(variable_groupId, "unit") > 0)
+                                        {
+                                            unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
+                                        }
+
+                                        if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
+                                        {
+                                            transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
+                                        }
+
+                                        if (H5A.exists(variable_groupId, "aggregate_function_set") > 0)
+                                        {
+                                            aggregateFunctionSet = IOHelper.ReadAttribute<hdf_aggregate_function_t>(variable_groupId, "aggregate_function_set").ToList();
+                                        }
+                                    }
+                                }
+                                finally
+                                {
+                                    if (H5I.is_valid(variable_groupId) > 0) { H5G.close(variable_groupId); }
+                                }
+
+                                // transfer function
+                                transferFunction = string.Empty;
+
+                                transferFunctionSet.ForEach(tf =>
+                                {
+                                    if (!string.IsNullOrWhiteSpace(transferFunction))
+                                    {
+                                        transferFunction += " | ";
+                                    }
+
+                                    transferFunction += $"{ tf.date_time }, { tf.type }, { tf.option }, { tf.argument }";
+                                });
+
+                                transferFunction = $"\"{ transferFunction }\"";
+
+                                // aggregate function
+                                aggregateFunction = string.Empty;
+
+                                aggregateFunctionSet.ForEach(af =>
+                                {
+                                    if (!string.IsNullOrWhiteSpace(aggregateFunction))
+                                    {
+                                        aggregateFunction += " | ";
+                                    }
+
+                                    aggregateFunction += $"{ af.type }, { af.argument }";
+                                });
+
+                                aggregateFunction = $"\"{ aggregateFunction  }\"";
+
+                                // write row
+                                streamWriter.WriteLine($"{ groupName };{ name };{ unit };{ transferFunction };{ aggregateFunction };{ guid }");
+                            });
+                        }
+                    }
+
+                    return $"download/{ Path.GetFileName(csvFileName) }";
+                }
+                finally
+                {
+                    if (H5I.is_valid(vdsMetaFileId) > 0) { H5F.close(vdsMetaFileId); }
+                }
+            });
         }
 
         public Task<string> GetInactivityMessage()

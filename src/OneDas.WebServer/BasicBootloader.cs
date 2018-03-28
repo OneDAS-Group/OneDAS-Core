@@ -29,8 +29,10 @@ namespace OneDas.WebServer
             IConfigurationRoot configurationRoot;
             IConfigurationBuilder configurationBuilder;
 
+            WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
+
             // configuration
-            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
+            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Adwen", "OneDAS", "Core");
             configurationFileName = "settings.json";
 
             Directory.CreateDirectory(BasicBootloader.ConfigurationDirectoryPath);
@@ -156,8 +158,8 @@ namespace OneDas.WebServer
 
         #region "Properties"
 
-		public static string ConfigurationDirectoryPath { get; private set; }
-		
+        public static string ConfigurationDirectoryPath { get; private set; }
+
         public static ILogger SystemLogger { get; private set; }
 
         #endregion

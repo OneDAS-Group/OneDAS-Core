@@ -137,7 +137,7 @@ namespace OneDas.Hdf.Core
 
             _variableGroupSet = IOHelper.UpdateAttributeList(variableGroupId, "group_set", _variableGroupSet.ToArray()).ToList();
 
-            if (fileContext.FormatVersion > 1)
+            if (fileContext.FormatVersion != 1)
             {
                 _unitSet = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", _unitSet.ToArray()).ToList();
                 _transferFunctionSet = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", _transferFunctionSet.ToArray()).ToList();
@@ -182,7 +182,7 @@ namespace OneDas.Hdf.Core
                 return 0;
             }
         }
-        
+
         #endregion
     }
 }

@@ -132,40 +132,45 @@ namespace OneDas.Hdf.VdsTool.Navigation
             string vdsMetaFilePath;
 
             List<CampaignInfo> campaignInfoSet;
+            IList<HdfElementBase> currentList;
 
             //
             vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
             vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
 
-            if (File.Exists(vdsFilePath))
+            try
             {
-                vdsFileId = H5F.open(vdsFilePath, H5F.ACC_RDONLY);
+                if (File.Exists(vdsFilePath))
+                {
+                    vdsFileId = H5F.open(vdsFilePath, H5F.ACC_RDONLY);
+                }
+                else
+                {
+                    return;
+                }
+
+                if (File.Exists(vdsMetaFilePath))
+                {
+                    vdsMetaFileId = H5F.open(vdsMetaFilePath, H5F.ACC_RDWR);
+                }
+
+                if (vdsMetaFileId == -1)
+                {
+                    fcPropertyId = H5P.create(H5P.FILE_CREATE);
+                    H5P.set_file_space(fcPropertyId, H5F.file_space_type_t.ALL_PERSIST);
+                    vdsMetaFileId = H5F.create(vdsMetaFilePath, H5F.ACC_TRUNC, fcPropertyId);
+                }
+
+                campaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId, true);
+                currentList = campaignInfoSet.Cast<HdfElementBase>().ToList();
+
+                new VdsMetaNavigator(vdsFileId, vdsMetaFileId, "/", currentList);
             }
-            else
+            finally
             {
-                return;
+                if (H5I.is_valid(vdsFileId) > 0) { H5F.close(vdsFileId); }
+                if (H5I.is_valid(vdsMetaFileId) > 0) { H5F.close(vdsMetaFileId); }
             }
-
-            if (File.Exists(vdsMetaFilePath))
-            {
-                vdsMetaFileId = H5F.open(vdsMetaFilePath, H5F.ACC_RDWR);
-            }
-
-            if (vdsMetaFileId == -1)
-            {
-                fcPropertyId = H5P.create(H5P.FILE_CREATE);
-                H5P.set_file_space(fcPropertyId, H5F.file_space_type_t.ALL_PERSIST);
-                vdsMetaFileId = H5F.create(vdsMetaFilePath, H5F.ACC_TRUNC, fcPropertyId);
-            }
-
-            campaignInfoSet = GeneralHelper.GetCampaignInfoSet(vdsFileId, true);
-            IList<HdfElementBase> currentList = campaignInfoSet.Cast<HdfElementBase>().ToList();
-
-            new VdsMetaNavigator(vdsFileId, vdsMetaFileId, "/", currentList);
-
-            // clean up
-            H5F.close(vdsFileId);
-            H5F.close(vdsMetaFileId);
         }
 
         private void Menu_3()

@@ -6,11 +6,6 @@ namespace OneDas.WebServer
     public static class SafeNativeMethods
     {
         // Console
-        public delegate void HandlerRoutine(CtrlType CtrlType);
-
-        [DllImport("kernel32.dll")]
-        public static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool @add);
-
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GetConsoleWindow();
 

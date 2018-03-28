@@ -39,7 +39,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
         protected override void OnRedraw()
         {
-            Console.BufferHeight = Math.Max(Console.BufferHeight, _currentList.Count() + 10);
+            Console.BufferHeight = Math.Max(Console.BufferHeight, _currentList.Count() + 11);
             Console.Clear();
 
             foreach (var hdfElement in _currentList)
@@ -187,7 +187,9 @@ namespace OneDas.Hdf.VdsTool.Navigation
         public void WriteCampaignDocumentation(string directoryPath, CampaignInfo campaignInfo)
         {
             long campaign_groupId = -1;
+
             string description;
+            string filePath;
 
             RestructuredTextWriter restructuredTextWriter;
             List<string> groupNameSet;
@@ -195,10 +197,11 @@ namespace OneDas.Hdf.VdsTool.Navigation
             Console.Clear();
 
             groupNameSet = campaignInfo.VariableInfoSet.Select(variableInfo => variableInfo.VariableGroupSet.Last()).Distinct().ToList();
+            filePath = Path.Combine(directoryPath, $"{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }.rst");
 
             try
             {
-                using (StreamWriter streamWriter = new StreamWriter(new FileStream(Path.Combine(directoryPath, $"{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }.rst"), FileMode.Create, FileAccess.Write, FileShare.Read)))
+                using (StreamWriter streamWriter = new StreamWriter(new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read)))
                 {
                     restructuredTextWriter = new RestructuredTextWriter(streamWriter);
 
@@ -235,17 +238,13 @@ namespace OneDas.Hdf.VdsTool.Navigation
                         if (H5I.is_valid(campaign_groupId) > 0) { H5G.close(campaign_groupId); }
                     }
 
-                    // variable info tables
+                    // groups
                     foreach (string groupName in groupNameSet)
                     {
                         RestructuredTextTable restructuredTextTable;
 
                         List<VariableInfo> groupedVariableInfoSet;
 
-                        List<hdf_transfer_function_t> transferFunctionSet;
-                        List<hdf_aggregate_function_t> aggregateFunctionSet;
-
-                        //
                         restructuredTextWriter.WriteLine();
                         restructuredTextWriter.WriteHeading(groupName, SectionHeader.SubSection);
                         restructuredTextWriter.WriteLine();
@@ -253,6 +252,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                         restructuredTextTable = new RestructuredTextTable(new List<string>() { "Name", "Unit", "Guid" });
                         groupedVariableInfoSet = campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableGroupSet.Last() == groupName).OrderBy(variableInfo => variableInfo.VariableNameSet.Last()).ToList();
 
+                        // variables
                         groupedVariableInfoSet.ForEach(variableInfo =>
                         {
                             long variable_groupId = -1;
@@ -261,6 +261,9 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             string name;
                             string guid;
                             string unit;
+
+                            List<hdf_transfer_function_t> transferFunctionSet;
+                            List<hdf_aggregate_function_t> aggregateFunctionSet;
 
                             // name
                             name = variableInfo.VariableNameSet.Last();
@@ -307,17 +310,17 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                             // 
                             restructuredTextTable.AddRow(new List<string> { name, unit, guid });
+
+                            //transferFunctionSet.ForEach(x => streamWriter.Write($"{ x.date_time }, { x.type }, { x.option }, { x.argument } | "));
+                            //aggregateFunctionSet.ForEach(x => streamWriter.Write($"{ x.type }, { x.argument } | "));
                         });
 
                         restructuredTextWriter.WriteTable(restructuredTextTable);
                         restructuredTextWriter.WriteLine();
                     }
-
-                    //    transferFunctionSet.ForEach(x => streamWriter.Write($"{ x.date_time }, { x.type }, { x.option }, { x.argument } | "));
-                    //    aggregateFunctionSet.ForEach(x => streamWriter.Write($"{ x.type }, { x.argument } | "));
                 }
 
-                Console.WriteLine($"The file has been successfully written to:\n{Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool", "hdf_variable_overview.csv")}");
+                Console.WriteLine($"The file has been successfully written to:\n{ filePath }");
             }
             catch (Exception ex)
             {

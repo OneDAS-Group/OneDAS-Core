@@ -21,6 +21,7 @@ namespace OneDas.Hdf.VdsTool
         #region "Fields"
 
         private static uint _isLibraryThreadSafe;
+        private static bool _exit;
 
         #endregion
 
@@ -34,7 +35,13 @@ namespace OneDas.Hdf.VdsTool
 
         static void Main(string[] args)
         {
+            bool isEscaped;
+
             Console.CursorVisible = false;
+            Console.Title = "VdsTool";
+
+            VdsToolUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
+
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
             if (args.Any())
@@ -63,12 +70,17 @@ namespace OneDas.Hdf.VdsTool
 
                     if (string.IsNullOrWhiteSpace(Program.BaseDirectoryPath))
                     {
-                        Program.BaseDirectoryPath = Console.ReadLine();
+                        (Program.BaseDirectoryPath, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
+
+                        if (isEscaped && Program.HandleEscape())
+                        {
+                            return;
+                        }
                     }
 
                     if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
                     {
-                        Program.BaseDirectoryPath += @"\";
+                        Console.Title = $"VdsTool - { Program.BaseDirectoryPath }";
 
                         break;
                     }
@@ -81,7 +93,29 @@ namespace OneDas.Hdf.VdsTool
                 Console.CursorVisible = false;
 
                 new MainMenuNavigator();
+
+                if (Program.HandleEscape())
+                {
+                    return;
+                }
             }
+        }
+
+        private static bool HandleEscape()
+        {
+            ConsoleKeyInfo consoleKeyInfo;
+
+            Console.Clear();
+            Console.WriteLine("The application will be closed. Proceed (y/n)?");
+
+            consoleKeyInfo = Console.ReadKey(true);
+
+            if (consoleKeyInfo.Key == ConsoleKey.Y)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static bool ValidateDatabaseDirectoryPath(string databaseDirectoryPath)
@@ -257,13 +291,13 @@ namespace OneDas.Hdf.VdsTool
             {
                 epochStart = new DateTime(date.Year, date.Month, 1);
                 epochStart = epochStart.AddMonths(-1);
-                Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
                 Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
+                Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
             }
 
             epochStart = new DateTime(date.Year, date.Month, 1);
-            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
             Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
+            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
 
             epochStart = DateTime.MinValue;
             Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
@@ -722,7 +756,7 @@ namespace OneDas.Hdf.VdsTool
             string argument;
             string tmp;
             bool isEscaped;
-            List<string> optionSet;
+            HashSet<string> optionSet;
 
             // 
             tmp = string.Empty;
@@ -735,8 +769,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for type ({ hdf_aggregate_function.type }): ");
 
-                optionSet = new List<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
-                (type, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.type))
+                {
+                    optionSet.Add(hdf_aggregate_function.type);
+                }
+
+                (type, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(type) && OneDasUtilities.CheckNamingConvention(type, out tmp))
                 {
@@ -755,8 +795,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for argument ({ hdf_aggregate_function.argument }): ");
 
-                optionSet = new List<string>() { "none" };
-                (argument, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "none" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.argument))
+                {
+                    optionSet.Add(hdf_aggregate_function.argument);
+                }
+
+                (argument, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(argument))
                 {
@@ -783,7 +829,7 @@ namespace OneDas.Hdf.VdsTool
             string argument;
             string option;
             bool isEscaped;
-            List<string> optionSet;
+            HashSet<string> optionSet;
 
             //
             Console.CursorVisible = true;
@@ -794,8 +840,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for date/time ({ hdf_transfer_function.date_time }): ");
 
-                optionSet = new List<string>() { "0001-01-01" };
-                (dateTime_tmp, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "0001-01-01" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.date_time))
+                {
+                    optionSet.Add(hdf_transfer_function.date_time);
+                }
+
+                (dateTime_tmp, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
@@ -819,8 +871,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for type ({ hdf_transfer_function.type }): ");
 
-                optionSet = new List<string>() { "polynomial", "function" };
-                (type, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "polynomial", "function" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.type))
+                {
+                    optionSet.Add(hdf_transfer_function.type);
+                }
+
+                (type, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(type))
                 {
@@ -839,8 +897,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for option ({ hdf_transfer_function.option }): ");
 
-                optionSet = new List<string>() { "permanent" };
-                (option, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "permanent" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.option))
+                {
+                    optionSet.Add(hdf_transfer_function.option);
+                }
+
+                (option, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(option))
                 {
@@ -859,8 +923,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for argument ({ hdf_transfer_function.argument }): ");
 
-                optionSet = new List<string>() { };
-                (argument, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { };
+
+                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.argument))
+                {
+                    optionSet.Add(hdf_transfer_function.argument);
+                }
+
+                (argument, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(argument))
                 {
@@ -889,7 +959,7 @@ namespace OneDas.Hdf.VdsTool
             string comment;
             string tmp = string.Empty;
             bool isEscaped;
-            List<string> optionSet;
+            HashSet<string> optionSet;
 
             //
             Console.CursorVisible = true;
@@ -900,8 +970,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for date/time ({ hdf_tag.date_time }): ");
 
-                optionSet = new List<string>() { "0001-01-01" };
-                (dateTime_tmp, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "0001-01-01" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_tag.date_time))
+                {
+                    optionSet.Add(hdf_tag.date_time);
+                }
+
+                (dateTime_tmp, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
@@ -925,8 +1001,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for name ({ hdf_tag.name }): ");
 
-                optionSet = new List<string>() { };
-                (name, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { };
+
+                if (!string.IsNullOrWhiteSpace(hdf_tag.name))
+                {
+                    optionSet.Add(hdf_tag.name);
+                }
+
+                (name, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(name) && OneDasUtilities.CheckNamingConvention(name, out tmp))
                 {
@@ -945,8 +1027,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for mode ({ hdf_tag.mode }): ");
 
-                optionSet = new List<string>() { "none", "start", "end" };
-                (comment, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "none", "start", "end" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_tag.mode))
+                {
+                    optionSet.Add(hdf_tag.mode);
+                }
+
+                (comment, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(comment))
                 {
@@ -965,8 +1053,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for comment ({ hdf_tag.comment }): ");
 
-                optionSet = new List<string>() { "none" };
-                (mode, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { "none" };
+
+                if (!string.IsNullOrWhiteSpace(hdf_tag.comment))
+                {
+                    optionSet.Add(hdf_tag.comment);
+                }
+
+                (mode, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (mode.Any())
                 {
@@ -989,7 +1083,7 @@ namespace OneDas.Hdf.VdsTool
         {
             string value;
             bool isEscaped;
-            List<string> optionSet;
+            HashSet<string> optionSet;
 
             //
             Console.CursorVisible = true;
@@ -1000,8 +1094,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for output directory ({ directoryPath }): ");
 
-                optionSet = new List<string>() { };
-                (value, isEscaped) = VdsToolUtilities.ReadLine(optionSet);
+                optionSet = new HashSet<string>() { };
+
+                if (!string.IsNullOrWhiteSpace(directoryPath))
+                {
+                    optionSet.Add(directoryPath);
+                }
+
+                (value, isEscaped) = VdsToolUtilities.ReadLine(optionSet.ToList());
 
                 if (Directory.Exists(value))
                 {
@@ -1570,13 +1670,13 @@ namespace OneDas.Hdf.VdsTool
         {
             string logDirectoryPath;
             string logFilePath;
-            
+
             logDirectoryPath = Path.Combine(dataBaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
             logFilePath = Path.Combine(logDirectoryPath, $"{ campaignName }.txt");
 
             try
             {
-                Directory.GetDirectories(sourceDirectoryPath, $"{ campaignName }_V*").ToList().ForEach(currentDirectory =>
+                Directory.GetDirectories(sourceDirectoryPath, campaignName).ToList().ForEach(currentDirectory =>
                 {
                     Program.DownloadData(campaignName, Path.Combine(currentDirectory, dataWriterId), dataBaseDirectoryPath, logFilePath, 10);
                 });
@@ -1618,8 +1718,6 @@ namespace OneDas.Hdf.VdsTool
 
                 currentFileName = Path.GetFileName(currentSourceFilePath);
                 currentTargetFilePath = Path.Combine(databaseDirectoryPath, "DB_NATIVE", currentDateTime.ToString("yyyy-MM"), currentFileName);
-
-                System.Diagnostics.Trace.WriteLine(currentSourceFilePath);
 
                 if (!File.Exists(currentTargetFilePath))
                 {

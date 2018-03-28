@@ -222,11 +222,6 @@ namespace OneDas.Hdf.IO
                 {
                     dataspaceId = H5D.get_space(datasetId);
 
-                    var a = new ulong[] { 0 };
-                    var b = new ulong[] { 0 };
-
-                    H5S.get_simple_extent_dims(dataspaceId, a, b);
-
                     if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block }) < 0)
                     {
                         throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);

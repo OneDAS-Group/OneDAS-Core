@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30258" />
     <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6651-31730" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6643-25333" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6643-25334" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6651-31875" />
     <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6643-33157" />
   </ItemGroup>
   

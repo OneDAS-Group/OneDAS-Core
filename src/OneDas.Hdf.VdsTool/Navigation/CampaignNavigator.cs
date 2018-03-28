@@ -1,8 +1,8 @@
-﻿using System;
+﻿using HDF.PInvoke;
+using OneDas.Hdf.IO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using OneDas.Hdf.IO;
-using HDF.PInvoke;
 
 namespace OneDas.Hdf.VdsTool.Navigation
 {
@@ -82,20 +82,20 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
             if (!string.IsNullOrWhiteSpace(_description))
             {
-                Console.WriteLine($"\"{_description}\"\n");
+                Console.WriteLine($"\"{ _description }\"\n");
                 Console.WriteLine();
             }
 
             _baseOffset = Console.CursorTop;
 
-            Console.WriteLine($"Suggested tags ({_vdsTagSet.Count()}):\n");
+            Console.WriteLine($"Suggested tags ({ _vdsTagSet.Count() }):\n");
 
-            _vdsTagSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.name,-15} | {x.mode,-15} | {x.comment}"));
+            _vdsTagSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.name,-15} | {x.mode,-15} | { x.comment }"));
 
             Console.WriteLine();
-            Console.WriteLine($"Actual tags ({_vdsMetaTagSet.Count()}):\n");
+            Console.WriteLine($"Actual tags ({ _vdsMetaTagSet.Count() }):\n");
 
-            _vdsMetaTagSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.name,-15} | {x.mode,-15} | {x.comment}"));
+            _vdsMetaTagSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.name,-15} | {x.mode,-15} | { x.comment }"));
 
             Console.WriteLine();
             Console.WriteLine("---------------------------------");

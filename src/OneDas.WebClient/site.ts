@@ -245,35 +245,34 @@ async function Connect()
             await ConnectionManager.WebClientHub.start()
 
             console.log("OneDAS: signalr connected")
-
             appModel = await ConnectionManager.WebClientHub.invoke("GetAppModel")
-
-            if (_appViewModel())
-            {
-                _appViewModel().Update(appModel)
-                _appViewModel().IsConnected(true)
-                console.log("OneDAS: appViewModel updated")
-            }
-            else
-            {
-                _appViewModel(new AppViewModel(appModel))
-                console.log("OneDAS: appViewModel created")
-
-                this.Initialize()
-            }
 
             break
         }
-        catch
+        catch (ex)
         {
             console.log("OneDAS: trying to reconnect ...")
 
             await delay(5000)
         }
     }
+
+    if (_appViewModel())
+    {
+        _appViewModel().Update(appModel)
+        _appViewModel().IsConnected(true)
+        console.log("OneDAS: appViewModel updated")
+    }
+    else
+    {
+        _appViewModel(new AppViewModel(appModel))
+        console.log("OneDAS: appViewModel created")
+
+        this.InitializeApp()
+    }
 }
 
-function Initialize()
+function InitializeApp()
 {
     // pagerjs
     pager.Href5.hash = ""
@@ -325,6 +324,7 @@ ConnectionManager.WebClientHub.onclose(() =>
     this.Connect()
 })
 
+// start app
 _appViewModel = ko.observable<AppViewModel>()
 
 this.Connect()

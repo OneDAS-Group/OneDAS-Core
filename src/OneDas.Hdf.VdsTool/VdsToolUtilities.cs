@@ -7,6 +7,11 @@ namespace OneDas.Hdf.VdsTool
 {
     public static class VdsToolUtilities
     {
+        public static void ModifyConsoleMenu(SystemCommand systemCommand, int flags)
+        {
+            SafeNativeMethods.DeleteMenu(SafeNativeMethods.GetSystemMenu(SafeNativeMethods.GetConsoleWindow(), false), (int)systemCommand, flags);
+        }
+
         public static void RemoveCharacters(int count)
         {
             for (int i = 0; i <= count - 1; i++)

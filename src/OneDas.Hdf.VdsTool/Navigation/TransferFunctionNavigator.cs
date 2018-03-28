@@ -73,15 +73,15 @@ namespace OneDas.Hdf.VdsTool.Navigation
         protected override void OnRedraw()
         {
             Console.Clear();
-            Console.WriteLine($"Unit: {_unit}\n");
-            Console.WriteLine($"Suggested transfer functions ({_vdsTransferFunctionSet.Count()}):\n");
+            Console.WriteLine($"Unit: { _unit }\n");
+            Console.WriteLine($"Suggested transfer functions ({ _vdsTransferFunctionSet.Count() }):\n");
 
-            _vdsTransferFunctionSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.type,-15} | {x.option,-15} | {x.argument}"));
+            _vdsTransferFunctionSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.type,-15} | {x.option,-15} | { x.argument }"));
 
             Console.WriteLine();
-            Console.WriteLine($"Actual transfer functions ({_vdsMetaTransferFunctionSet.Count()}):\n");
+            Console.WriteLine($"Actual transfer functions ({ _vdsMetaTransferFunctionSet.Count() }):\n");
 
-            _vdsMetaTransferFunctionSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.type,-15} | {x.option,-15} | {x.argument}"));
+            _vdsMetaTransferFunctionSet.ForEach(x => Console.WriteLine($"[ ] {x.date_time.Replace("T", " "),-20} | {x.type,-15} | {x.option,-15} | { x.argument }"));
 
             Console.WriteLine();
             Console.WriteLine("--------------------------------");

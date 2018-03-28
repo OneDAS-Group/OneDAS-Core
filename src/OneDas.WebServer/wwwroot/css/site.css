@@ -69,7 +69,7 @@ body {
 .message-log {
     height: 93px;
     max-height: 93px;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .message-log-list-item {

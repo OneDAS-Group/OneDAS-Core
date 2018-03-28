@@ -243,11 +243,15 @@ namespace OneDas.Engine.Core
             }
 
             this.OneDasState = OneDasState.Run;
+
+            _oneDasEngineLogger.LogInformation("data recording enabled");
         }
 
         public void Pause()
         {
             this.OneDasState = OneDasState.Ready;
+
+            _oneDasEngineLogger.LogInformation("data recording paused");
         }
 
         public void Stop()
@@ -261,6 +265,8 @@ namespace OneDas.Engine.Core
 
             this.Project?.Dispose();
             this.Project = null;
+
+            _oneDasEngineLogger.LogInformation("cyclic I/O update stopped");
         }
 
         public void AcknowledgeError()
@@ -457,7 +463,7 @@ namespace OneDas.Engine.Core
             /* ---------------------------------------------- */
 
             // for each data writer
-            this.Project.DataWriterSet.ForEach(dataWriter =>
+            this.Project.GetEnabledDataWriters().ForEach(dataWriter =>
             {
                 if (!dataWriter.Settings.BufferRequestSet.Any())
                 {
@@ -1007,7 +1013,7 @@ namespace OneDas.Engine.Core
                         break;
                     }
 
-                    this.Project.DataWriterSet.AsParallel().ForAll(dataWriter =>
+                    this.Project.GetEnabledDataWriters().Where(dataWriter => dataWriter.Settings.Description.IsEnabled).AsParallel().ForAll(dataWriter =>
                     {
                         dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataWriterToStorageSetMap[dataWriter][_cachedDataStorageIndex]);
                     });
