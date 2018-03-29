@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -127,6 +128,50 @@ namespace OneDas.Hdf.VdsTool
                    Directory.Exists(Path.Combine(databaseDirectoryPath, "VDS"));
         }
 
+        private static bool TryGetParameterValue(string parameterName, string parameterShortName, List<string> args, ref string parameterValue, Func<string, bool> validate = null)
+        {
+            int index;
+
+            index = -1;
+
+            if (index < 0)
+            {
+                index = args.IndexOf($"-{ parameterShortName }");
+            }
+
+            if (index < 0)
+            {
+                index = args.IndexOf($"--{ parameterName }");
+            }
+
+            if (validate == null)
+            {
+                validate = value => true;
+            }
+
+            if (index >= 0 && validate.Invoke(args[index + 1]))
+            {
+                if (args.Count() > index + 1)
+                {
+                    parameterValue = args[index + 1];
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if (index < 0 && !string.IsNullOrWhiteSpace(parameterValue) && validate.Invoke(args[index + 1]))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private static bool ParseCommandLineArguments(string[] args)
         {
             switch (args[0])
@@ -167,118 +212,71 @@ namespace OneDas.Hdf.VdsTool
 
         private static void HandleImport(List<string> args)
         {
-            int index;
-
             // databaseDirectoryPath
             string databaseDirectoryPath;
 
-            index = -1;
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
-            if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
             {
-                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
-                {
-                    databaseDirectoryPath = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             // sourceDirectoryPath
-            string sourceDirectoryPath;
+            string sourceDirectoryPath = default;
 
-            index = -1;
-            sourceDirectoryPath = Directory.GetCurrentDirectory();
-
-            if (index < 0) { index = args.IndexOf("-s"); }
-            if (index < 0) { index = args.IndexOf("--source"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("source", "s", args, ref sourceDirectoryPath, value => Directory.Exists(value)))
             {
-                if (args.Count() > index + 1 && Directory.Exists(sourceDirectoryPath))
-                {
-                    sourceDirectoryPath = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             // campaignName
-            string campaignName;
+            string searchPattern = default;
 
-            index = -1;
-            campaignName = Directory.GetCurrentDirectory();
-
-            if (index < 0) { index = args.IndexOf("-c"); }
-            if (index < 0) { index = args.IndexOf("--campaign"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("search-pattern", "s", args, ref searchPattern))
             {
-                if (args.Count() > index + 1)
-                {
-                    campaignName = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
+            }
+
+            // campaignName
+            string campaignName = default;
+
+            if (!Program.TryGetParameterValue("campaign", "C", args, ref campaignName))
+            {
+                return;
             }
 
             // dataWriterId
-            string dataWriterId;
+            string dataWriterId = default;
 
-            index = -1;
-            dataWriterId = Directory.GetCurrentDirectory();
-
-            if (index < 0) { index = args.IndexOf("-w"); }
-            if (index < 0) { index = args.IndexOf("--data-writer"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("data-writer", "w", args, ref dataWriterId))
             {
-                if (args.Count() > index + 1)
-                {
-                    dataWriterId = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
-            Program.ImportFiles(databaseDirectoryPath, sourceDirectoryPath, campaignName, dataWriterId);
+            // days
+            string daysValue = default;
+            int days = default;
+
+            if (!Program.TryGetParameterValue("period", "p", args, ref daysValue, value => int.TryParse(value, out days)))
+            {
+                return;
+            }
+
+            //
+            Program.ImportFiles(searchPattern, campaignName, dataWriterId, databaseDirectoryPath, sourceDirectoryPath, days);
         }
 
         private static void HandleUpdate(List<string> args)
         {
-            int index;
-
             // databaseDirectoryPath
             string databaseDirectoryPath;
 
-            index = -1;
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
-            if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
             {
-                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
-                {
-                    databaseDirectoryPath = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             // epoch start
@@ -291,12 +289,10 @@ namespace OneDas.Hdf.VdsTool
             {
                 epochStart = new DateTime(date.Year, date.Month, 1);
                 epochStart = epochStart.AddMonths(-1);
-                Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
                 Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
             }
 
             epochStart = new DateTime(date.Year, date.Month, 1);
-            Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
             Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
 
             epochStart = DateTime.MinValue;
@@ -305,110 +301,54 @@ namespace OneDas.Hdf.VdsTool
 
         private static void HandleVds(List<string> args)
         {
-            int index;
-
             // databaseDirectoryPath
             string databaseDirectoryPath;
 
-            index = -1;
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
-            if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
             {
-                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
-                {
-                    databaseDirectoryPath = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             // epoch start
-            string dateTime;
-            DateTime epochStart;
+            string dateTime = default;
+            DateTime epochStart = default;
 
-            index = -1;
-            epochStart = default;
-            dateTime = string.Empty;
+            databaseDirectoryPath = Directory.GetCurrentDirectory();
 
-            if (index < 0) { index = args.IndexOf("-e"); }
-            if (index < 0) { index = args.IndexOf("--epoch-start"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
             {
-                if (index + 1 < args.Count)
-                {
-                    dateTime = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
-            if (string.IsNullOrWhiteSpace(dateTime) || DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
-            {
-                Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
-            }
+            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
         }
 
         private static void HandleAggregations(List<string> args)
         {
-            int index;
-
             // databaseDirectoryPath
             string databaseDirectoryPath;
 
-            index = -1;
             databaseDirectoryPath = Directory.GetCurrentDirectory();
 
-            if (index < 0) { index = args.IndexOf("-d"); }
-            if (index < 0) { index = args.IndexOf("--database"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
             {
-                if (args.Count() > index + 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
-                {
-                    databaseDirectoryPath = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             // epoch start
-            string dateTime;
-            DateTime epochStart;
+            string dateTime = default;
+            DateTime epochStart = default;
 
-            index = -1;
-            epochStart = default;
-            dateTime = string.Empty;
+            databaseDirectoryPath = Directory.GetCurrentDirectory();
 
-            if (index < 0) { index = args.IndexOf("-e"); }
-            if (index < 0) { index = args.IndexOf("--epoch-start"); }
-
-            if (index >= 0)
+            if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
             {
-                if (index + 1 < args.Count)
-                {
-                    dateTime = args[index + 1];
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
-            if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
-            {
-                Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
-            }
+            Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
         }
 
         #endregion
@@ -1666,79 +1606,81 @@ namespace OneDas.Hdf.VdsTool
 
         #region "IMPORT"
 
-        private static void ImportFiles(string dataBaseDirectoryPath, string sourceDirectoryPath, string campaignName, string dataWriterId)
-        {
-            string logDirectoryPath;
-            string logFilePath;
-
-            logDirectoryPath = Path.Combine(dataBaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
-            logFilePath = Path.Combine(logDirectoryPath, $"{ campaignName }.txt");
-
-            try
-            {
-                Directory.GetDirectories(sourceDirectoryPath, campaignName).ToList().ForEach(currentDirectory =>
-                {
-                    Program.DownloadData(campaignName, Path.Combine(currentDirectory, dataWriterId), dataBaseDirectoryPath, logFilePath, 10);
-                });
-            }
-            catch
-            {
-                //
-            }
-        }
-
-        private static void DownloadData(string campaignName, string sourceDirectoryPath, string databaseDirectoryPath, string logFilePath, int period)
+        private static void ImportFiles(string searchPattern, string campaignName, string dataWriterId, string dataBaseDirectoryPath, string sourceDirectoryPath, int days)
         {
             DateTime dateTimeBegin;
             DateTime dateTimeEnd;
+            DateTime currentDateTimeBegin;
+
+            string targetDirectoryPath;
+            string logDirectoryPath;
+            string logFilePath;
+
+            string version;
+
+            targetDirectoryPath = Path.Combine(dataBaseDirectoryPath, "DB_NATIVE");
 
             dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
-            dateTimeBegin = dateTimeEnd.AddDays(-period);
+            dateTimeBegin = dateTimeEnd.AddDays(-days);
 
-            //
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
-            File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
-
-            for (int i = 0; i <= (dateTimeEnd - dateTimeBegin).TotalDays; i++)
+            Directory.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
             {
-                DateTime currentDateTime;
+                logDirectoryPath = Path.Combine(dataBaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
+                logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last() }.txt");
 
-                string currentFileName;
-                string currentSourceFilePath;
-                string currentTargetFilePath;
+                Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+                File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
 
-                currentDateTime = dateTimeBegin.AddDays(i);
-                currentFileName = $"{ campaignName }_V*_{ currentDateTime.ToString("yyyy-MM-ddTHH-mm-ssZ") }.h5";
-                currentSourceFilePath = Directory.EnumerateFiles(sourceDirectoryPath, currentFileName).FirstOrDefault();
+                version = Regex.Match(currentSourceDirectoryPath, "V[0-9]+(?!.*V[0-9]+)").Value;
 
-                if (string.IsNullOrWhiteSpace(currentSourceFilePath))
+                currentSourceDirectoryPath = Path.Combine(currentSourceDirectoryPath, dataWriterId);
+
+                for (int i = 0; i <= days; i++)
                 {
-                    continue;
-                }
+                    string fileName;
+                    string sourceFilePath;
+                    string targetFilePath;
 
-                currentFileName = Path.GetFileName(currentSourceFilePath);
-                currentTargetFilePath = Path.Combine(databaseDirectoryPath, "DB_NATIVE", currentDateTime.ToString("yyyy-MM"), currentFileName);
+                    currentDateTimeBegin = dateTimeBegin.AddDays(i);
+                    fileName = $"{ campaignName }_{ version }_{ currentDateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ") }.h5";
 
-                if (!File.Exists(currentTargetFilePath))
-                {
-                    try
+                    sourceFilePath = Path.Combine(currentSourceDirectoryPath, fileName);
+                    targetFilePath = Path.Combine(targetDirectoryPath, currentDateTimeBegin.ToString("yyyy-MM"), fileName);
+
+                    Console.WriteLine($"checking file { fileName }");
+
+                    if (File.Exists(sourceFilePath) && !File.Exists(targetFilePath))
                     {
-                        Console.Write($"Copying file { currentFileName } ... ");
-                        Directory.CreateDirectory(Path.GetDirectoryName(currentTargetFilePath));
-                        File.Copy(currentSourceFilePath, currentTargetFilePath);
-                        Console.WriteLine($"Done.");
-                        File.AppendAllText(logFilePath, $"\tsuccessful: { currentSourceFilePath }{ Environment.NewLine }");
-                    }
-                    catch (Exception)
-                    {
-                        File.Delete(currentSourceFilePath);
-                        Console.WriteLine($"Failed.");
-                        File.AppendAllText(logFilePath, $"\tfailed: { currentSourceFilePath }{ Environment.NewLine }");
+                        Program.CopyFile(sourceFilePath, targetFilePath, logFilePath);
                     }
                 }
+
+                File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
+            });
+        }
+
+        private static void CopyFile(string sourceFilePath, string targetFilePath, string logFilePath)
+        {
+            string fileName;
+
+            fileName = Path.GetFileName(sourceFilePath);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
+
+            try
+            {
+                Console.Write($" copying file { Path.GetFileName(sourceFilePath) } ... ");
+                Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
+                File.Copy(sourceFilePath, targetFilePath);
+                Console.WriteLine($"Done.");
+                File.AppendAllText(logFilePath, $"\tsuccessful: { fileName }{ Environment.NewLine }");
             }
-
-            File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
+            catch
+            {
+                File.Delete(targetFilePath);
+                Console.WriteLine($"Failed.");
+                File.AppendAllText(logFilePath, $"\tfailed: { fileName }{ Environment.NewLine }");
+            }
         }
 
         #endregion
