@@ -1013,7 +1013,7 @@ namespace OneDas.Engine.Core
                         break;
                     }
 
-                    this.Project.GetEnabledDataWriters().Where(dataWriter => dataWriter.Settings.Description.IsEnabled).AsParallel().ForAll(dataWriter =>
+                    this.Project.GetEnabledDataWriters().Where(dataWriter => dataWriter.Settings.Description.IsEnabled).ToList().ForEach(dataWriter =>
                     {
                         dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataWriterToStorageSetMap[dataWriter][_cachedDataStorageIndex]);
                     });
