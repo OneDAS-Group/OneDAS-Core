@@ -23,24 +23,29 @@ class ObservableGroup<T>
     Key: string;
     Members: KnockoutObservableArray<T>
 
-    constructor(key: string)
+    constructor(key: string, members: T[] = new Array<T>())
     {
         this.Key = key
-        this.Members = ko.observableArray([])
+        this.Members = ko.observableArray(members)
     }
 }
 
 function ObservableGroupBy<T>(list: T[], nameGetter: (x: T) => string, groupNameGetter: (x: T) => string, filter: string): ObservableGroup<T>[]
 {
     let result: ObservableGroup<T>[]
+    let regExp: RegExp
 
     result = []
+    regExp = new RegExp(filter, "i")
 
-    list.forEach(x =>
+    list.forEach(element =>
     {
-        if (nameGetter(x).indexOf(filter) > -1)
+        if (regExp.test(nameGetter(element)))
         {
-            AddToGroupedArray(x, groupNameGetter(x), result)
+            groupNameGetter(element).split("\n").forEach(groupName =>
+            {
+                AddToGroupedArray(element, groupName, result)
+            })
         }
     })
 
