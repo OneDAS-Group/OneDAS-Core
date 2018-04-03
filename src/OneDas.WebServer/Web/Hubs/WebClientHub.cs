@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Protocol.Core.Types;
 using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
 using OneDas.WebServer.Core;
+using OneDas.WebServer.PackageManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,6 +22,7 @@ namespace OneDas.WebServer.Web
 {
     public class WebClientHub : Hub<IWebClientHub>
     {
+        private OneDasPackageManager _packageManager;
         private IPluginProvider _pluginProvider;
         private WebServerOptions _webServerOptions;
 
@@ -45,14 +48,21 @@ namespace OneDas.WebServer.Web
         }
 
 
-        public WebClientHub(IPluginProvider pluginProvider, OneDasEngine oneDasEngine, IHubContext<WebClientHub> hubContext, IOptions<WebServerOptions> options, ILoggerFactory loggerFactory, IOneDasProjectSerializer oneDasProjectSerializer)
+        public WebClientHub(
+            OneDasEngine engine,
+            OneDasPackageManager packageManager,
+            IHubContext<WebClientHub> hubContext,
+            IOptions<WebServerOptions> options,
+            IPluginProvider pluginProvider, 
+            ILoggerFactory loggerFactory, 
+            IOneDasProjectSerializer projectSerializer)
         {
             // setup callbacks
             if (_oneDasEngine == null)
             {
                 _hubContext = hubContext;
 
-                _oneDasEngine = oneDasEngine;
+                _oneDasEngine = engine;
                 _oneDasEngine.OneDasStateChanged += WebClientHub.OneDasEngine_OneDasStateChanged;
 
                 _updatePerfInfoTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
@@ -65,10 +75,11 @@ namespace OneDas.WebServer.Web
             }
 
             _pluginProvider = pluginProvider;
-            _oneDasEngine = oneDasEngine;
+            _oneDasEngine = engine;
+            _packageManager = packageManager;
             _webServerOptions = options.Value;
             _webServerLogger = loggerFactory.CreateLogger("WebServer");
-            _projectSerializer = oneDasProjectSerializer;
+            _projectSerializer = projectSerializer;
         }
 
         #region "Methods"
@@ -349,6 +360,11 @@ namespace OneDas.WebServer.Web
             {
                 return (DataWriterPluginSettingsBase)Activator.CreateInstance(_pluginProvider.GetSettings(pluginName));
             });
+        }
+
+        public Task<List<IPackageSearchMetadata>> SearchPlugins(string searchTerm)
+        {
+            return _packageManager.SearchAsync(searchTerm, "https://www.myget.org/F/onedas/api/v3/index.json");
         }
 
         #endregion

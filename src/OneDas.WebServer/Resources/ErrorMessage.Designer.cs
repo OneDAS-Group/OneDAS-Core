@@ -61,6 +61,15 @@ namespace OneDas.WebServer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The package type is invalid. ähnelt.
+        /// </summary>
+        internal static string InstallationCompatiblity_InvalidPackageType {
+            get {
+                return ResourceManager.GetString("InstallationCompatiblity_InvalidPackageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The specified base directory path is invalid. ähnelt.
         /// </summary>
         internal static string WebClientHub_BaseDirectoryPathIsInvalid {

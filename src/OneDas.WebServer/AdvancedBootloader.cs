@@ -4,10 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using NuGet.PackageManagement;
 using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Plugin;
 using OneDas.WebServer.Logging;
+using OneDas.WebServer.PackageManagement;
 using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
@@ -162,9 +164,10 @@ namespace OneDas.WebServer
                 clientMessageLoggerProvider = new ClientMessageLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
 
                 // add logger
-                loggingBuilder.AddEventLog(eventLogSettings);
-                loggingBuilder.AddProvider(clientMessageLoggerProvider);
-                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
+                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."))
+                    .AddDebug()
+                    .AddEventLog(eventLogSettings)
+                    .AddProvider(clientMessageLoggerProvider);
             });
 
             // OneDAS Engine
@@ -176,6 +179,10 @@ namespace OneDas.WebServer
 
             // OneDasConsole
             serviceCollection.AddSingleton<OneDasConsole>();
+
+            // OneDasPackageManager
+            serviceCollection.AddSingleton<IInstallationCompatibility, OneDasInstallationCompatibility>();
+            serviceCollection.AddSingleton<OneDasPackageManager>();
         }
 
         private void TryStartOneDasEngine(OneDasEngine oneDasEngine, string projectFilePath)

@@ -9,6 +9,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0-preview1-final" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview1-final" />
     <PackageReference Include="OneDas.Plugin.DataGateway.Example" Version="1.0.0-alpha-6643-25333" />
+    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6643-33157" />
   </ItemGroup>
 
 </Project>

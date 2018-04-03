@@ -6,31 +6,96 @@
     </div>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-sm table-hover small">
-        <thead class="thead-default">
-            <tr>
-                <th>Plugin</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Version</th>
-            </tr>
-        </thead>
-        <tbody data-bind="foreach: $root.DataGatewayPluginIdentifications">
-            <tr>
-                <td>data gateway</td>
-                <td data-bind="text: Name"></td>
-                <td data-bind="text: Description"></td>
-                <td data-bind="text: ProductVersion"></td>
-            </tr>
-        </tbody>
-        <tbody data-bind="foreach: $root.DataWriterPluginIdentifications">
-            <tr>
-                <td>data writer</td>
-                <td data-bind="text: Name"></td>
-                <td data-bind="text: Description"></td>
-                <td data-bind="text: ProductVersion"></td>
-            </tr>
-        </tbody>
-    </table>
+<div id="Extension_Content">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Loaded extension
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover small">
+                            <thead class="thead-default">
+                                <tr>
+                                    <th>Plugin</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Version</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: $root.DataGatewayPluginIdentifications">
+                                <tr>
+                                    <td>data gateway</td>
+                                    <td data-bind="text: Name"></td>
+                                    <td data-bind="text: Description"></td>
+                                    <td data-bind="text: ProductVersion"></td>
+                                </tr>
+                            </tbody>
+                            <tbody data-bind="foreach: $root.DataWriterPluginIdentifications">
+                                <tr>
+                                    <td>data writer</td>
+                                    <td data-bind="text: Name"></td>
+                                    <td data-bind="text: Description"></td>
+                                    <td data-bind="text: ProductVersion"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <form class="form-group">
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend url"
+                         data-bind="click: ResetSearch">
+                        <div class="input-group-text">
+                            <!-- ko if: SearchString().length > 0 -->
+                            <strong>X</strong>
+                            <!-- /ko -->
+                            <!-- ko ifnot: SearchString().length > 0 -->
+                            <span class="fa fa-search fa-fix"></span>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Search ..."
+                           data-bind="textInput: SearchString">
+                </div>
+            </form>
+            <div class="card my-2">
+                <div class="card-header">
+                    Extension Manager
+                </div>
+                <div class="card-body">
+                    <!-- ko if: SearchPackageMetadataSet().length === 0 -->
+                    <h5 class="d-block text-center mt-5"><small class="text-muted">- no extensions found -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: SearchPackageMetadataSet().length > 0 -->
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover small">
+                            <thead class="thead-default">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Version</th>
+                                </tr>
+                            </thead>
+
+                            <tbody data-bind="foreach: SearchPackageMetadataSet">
+                                <tr>
+                                    <td data-bind="text: Identity.Id"></td>
+                                    <td data-bind="text: Description"></td>
+                                    <td data-bind="text: Identity.Version"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
