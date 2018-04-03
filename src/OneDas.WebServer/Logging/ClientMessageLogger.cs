@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OneDas.WebServer.Web;
 using System;
 using System.Threading.Tasks;
 
@@ -27,7 +26,7 @@ namespace OneDas.WebServer.Logging
             {
                 Task.Run(() =>
                 {
-                    WebClientHub.SendMessage($"{ _categoryName }: { formatter(state, exception) }");
+                    AdvancedBootloader.ClientPushService.SendMessage($"{ _categoryName }: { formatter(state, exception) }");
                 });
             }
         }

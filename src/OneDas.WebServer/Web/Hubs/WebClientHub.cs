@@ -22,64 +22,30 @@ namespace OneDas.WebServer.Web
 {
     public class WebClientHub : Hub<IWebClientHub>
     {
+        private OneDasEngine _engine;
         private OneDasPackageManager _packageManager;
+        private ClientPushService _clientPushService;
         private IPluginProvider _pluginProvider;
         private WebServerOptions _webServerOptions;
 
         private ILogger _webServerLogger;
         private IOneDasProjectSerializer _projectSerializer;
 
-        private static int _nextSubscriptionId;
-
-        private static Timer _updatePerfInfoTimer;
-        private static Timer _updateDataSnapshotTimer;
-        private static Timer _updateLiveValueDataTimer;
-
-        private static OneDasEngine _oneDasEngine;
-        private static IHubContext<WebClientHub> _hubContext;
-
-        public static Dictionary<string, LiveViewSubscription> ConnectionToSubscriptionMap { get; private set; }
-
-        static WebClientHub()
-        {
-            WebClientHub.ConnectionToSubscriptionMap = new Dictionary<string, LiveViewSubscription>();
-
-            _nextSubscriptionId = 1;
-        }
-
-
         public WebClientHub(
             OneDasEngine engine,
             OneDasPackageManager packageManager,
-            IHubContext<WebClientHub> hubContext,
-            IOptions<WebServerOptions> options,
+            ClientPushService clientPushService,
             IPluginProvider pluginProvider, 
             ILoggerFactory loggerFactory, 
-            IOneDasProjectSerializer projectSerializer)
+            IOneDasProjectSerializer projectSerializer,
+            IOptions<WebServerOptions> options)
         {
-            // setup callbacks
-            if (_oneDasEngine == null)
-            {
-                _hubContext = hubContext;
-
-                _oneDasEngine = engine;
-                _oneDasEngine.OneDasStateChanged += WebClientHub.OneDasEngine_OneDasStateChanged;
-
-                _updatePerfInfoTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
-                _updateDataSnapshotTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
-                _updateLiveValueDataTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromMilliseconds(200).TotalMilliseconds };
-
-                _updatePerfInfoTimer.Elapsed += _updatePerfInfoTimer_Elapsed;
-                _updateDataSnapshotTimer.Elapsed += _updateDataSnapshotTimer_Elapsed;
-                _updateLiveValueDataTimer.Elapsed += _updateLiveValueDataTimer_Elapsed;
-            }
-
-            _pluginProvider = pluginProvider;
-            _oneDasEngine = engine;
+            _engine = engine;
             _packageManager = packageManager;
-            _webServerOptions = options.Value;
+            _pluginProvider = pluginProvider;
             _webServerLogger = loggerFactory.CreateLogger("WebServer");
             _projectSerializer = projectSerializer;
+            _webServerOptions = options.Value;
         }
 
         #region "Methods"
@@ -91,40 +57,34 @@ namespace OneDas.WebServer.Web
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            lock (WebClientHub.ConnectionToSubscriptionMap)
-            {
-                if (WebClientHub.ConnectionToSubscriptionMap.ContainsKey(this.Context.ConnectionId))
-                {
-                    WebClientHub.ConnectionToSubscriptionMap.Remove(this.Context.ConnectionId);
-                }
-            }
+            _clientPushService.Unsubscribe(this.Context.ConnectionId);
 
             return base.OnDisconnectedAsync(exception);
         }
 
         public Task StartOneDas()
         {
-            return Task.Run(() => _oneDasEngine.Start());
+            return Task.Run(() => _engine.Start());
         }
 
         public Task PauseOneDas()
         {
-            return Task.Run(() => _oneDasEngine.Pause());
+            return Task.Run(() => _engine.Pause());
         }
 
         public Task StopOneDas()
         {
-            return Task.Run(() => _oneDasEngine.Stop());
+            return Task.Run(() => _engine.Stop());
         }
 
         public Task AcknowledgeError()
         {
-            return Task.Run(() => _oneDasEngine.AcknowledgeError());
+            return Task.Run(() => _engine.AcknowledgeError());
         }
 
         public Task<string> GetLastError()
         {
-            return Task.Run(() => _oneDasEngine.LastError);
+            return Task.Run(() => _engine.LastError);
         }
 
         public Task SaveWebServerOptionsLight(WebServerOptionsLight webServerOptionsLight)
@@ -200,7 +160,7 @@ namespace OneDas.WebServer.Web
                 _webServerOptions.CurrentProjectFilePath = filePath;
                 _webServerOptions.Save(BasicBootloader.ConfigurationDirectoryPath);
 
-                _oneDasEngine.ActivateProject(projectSettings, 2);
+                _engine.ActivateProject(projectSettings, 2);
 
                 this.Clients.All.SendActiveProject(projectSettings);
             });
@@ -208,28 +168,20 @@ namespace OneDas.WebServer.Web
 
         public Task<int> UpdateLiveViewSubscription(IList<Guid> channelHubGuidSet)
         {
-            int subscriptionId;
             IList<ChannelHubBase> channelHubSettingsSet;
 
             return Task.Run(() =>
             {
                 try
                 {
-                    channelHubSettingsSet = channelHubGuidSet.Select(channelHubGuid => _oneDasEngine.Project.ActiveChannelHubSet.First(channelHub => channelHub.Settings.Guid == channelHubGuid)).ToList();
+                    channelHubSettingsSet = channelHubGuidSet.Select(channelHubGuid => _engine.Project.ActiveChannelHubSet.First(channelHub => channelHub.Settings.Guid == channelHubGuid)).ToList();
                 }
                 catch (Exception)
                 {
                     throw new Exception(ErrorMessage.WebClientHub_ChannelHubNotFound);
                 }
 
-                subscriptionId = WebClientHub.GetNextSubscriptionId();
-
-                lock (WebClientHub.ConnectionToSubscriptionMap)
-                {
-                    WebClientHub.ConnectionToSubscriptionMap[this.Context.ConnectionId] = new LiveViewSubscription(subscriptionId, channelHubSettingsSet);
-                }
-
-                return subscriptionId;
+                return _clientPushService.Subscribe(this.Context.ConnectionId, channelHubSettingsSet);
             });
         }
 
@@ -317,13 +269,13 @@ namespace OneDas.WebServer.Web
             return Task.Run(() =>
             {
                 return new AppModel(
-                    activeProjectSettings: _oneDasEngine.Project?.Settings,
+                    activeProjectSettings: _engine.Project?.Settings,
                     clientSet: new List<string>() { },
                     dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
                     productVersion: productVersion,
-                    lastError: _oneDasEngine.LastError,
-                    oneDasState: _oneDasEngine.OneDasState,
+                    lastError: _engine.LastError,
+                    oneDasState: _engine.OneDasState,
                     webServerOptionsLight: new WebServerOptionsLight
                     {
                         OneDasName = _webServerOptions.OneDasName,
@@ -365,64 +317,6 @@ namespace OneDas.WebServer.Web
         public Task<List<IPackageSearchMetadata>> SearchPlugins(string searchTerm)
         {
             return _packageManager.SearchAsync(searchTerm, "https://www.myget.org/F/onedas/api/v3/index.json");
-        }
-
-        #endregion
-
-        #region "Callbacks"
-
-        public static void SendMessage(string message)
-        {
-            _hubContext?.Clients.All.SendAsync("SendMessage", message);
-        }
-
-        private static int GetNextSubscriptionId()
-        {
-            return _nextSubscriptionId++;
-        }
-
-        private static void _updatePerfInfoTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            OneDasPerformanceInformation performanceInformation;
-
-            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
-            {
-                performanceInformation = _oneDasEngine.CreatePerformanceInformation();
-                _hubContext.Clients.All.SendAsync("SendPerformanceInformation", performanceInformation);
-            }
-        }
-
-        private static void _updateDataSnapshotTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            IEnumerable<object> dataSnapshot;
-
-            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
-            {
-                dataSnapshot = _oneDasEngine.CreateDataSnapshot();
-                _hubContext.Clients.All.SendAsync("SendDataSnapshot", DateTime.UtcNow, dataSnapshot);
-            }
-        }
-
-        private static void _updateLiveValueDataTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            IEnumerable<object> dataSnapshot;
-
-            if (_oneDasEngine.OneDasState >= OneDasState.Ready)
-            {
-                lock (WebClientHub.ConnectionToSubscriptionMap)
-                {
-                    foreach (var entry in WebClientHub.ConnectionToSubscriptionMap)
-                    {
-                        dataSnapshot = _oneDasEngine.CreateDataSnapshot(entry.Value.ChannelHubSet);
-                        _hubContext.Clients.Client(entry.Key).SendAsync("SendLiveViewData", entry.Value.Id, DateTime.UtcNow, dataSnapshot);
-                    }
-                }
-            }
-        }
-
-        private static void OneDasEngine_OneDasStateChanged(object sender, OneDasStateChangedEventArgs e)
-        {
-            _hubContext.Clients.All.SendAsync("SendOneDasState", e.NewState);
         }
 
         #endregion

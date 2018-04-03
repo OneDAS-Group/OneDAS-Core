@@ -8,6 +8,7 @@ using NuGet.PackageManagement;
 using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Plugin;
+using OneDas.WebServer.Core;
 using OneDas.WebServer.Logging;
 using OneDas.WebServer.PackageManagement;
 using OneDas.WebServer.Shell;
@@ -25,7 +26,7 @@ namespace OneDas.WebServer
         #region "Fields"
 
         private bool _isHosting;
-        private OneDasEngine _oneDasEngine;
+        private OneDasEngine _engine;
         private WebServerOptions _webServerOptions;
         private IPluginProvider _pluginProvider;
         private IWebHost _webhost;
@@ -65,7 +66,7 @@ namespace OneDas.WebServer
                 _pluginProvider.ScanAssemblies(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"), "OneDAS", minimumVersion);
 
                 // create engine
-                _oneDasEngine = _serviceProvider.GetRequiredService<OneDasEngine>();
+                _engine = _serviceProvider.GetRequiredService<OneDasEngine>();
             }
             else
             {
@@ -73,7 +74,15 @@ namespace OneDas.WebServer
                 this.ConfigureServices(_serviceCollection);
                 _serviceProvider = _serviceCollection.BuildServiceProvider();
             }
+
+            AdvancedBootloader.ClientPushService = _serviceProvider.GetRequiredService<ClientPushService>();
         }
+
+        #endregion
+
+        #region "Properties"
+
+        public static ClientPushService ClientPushService { get; private set; }
 
         #endregion
 
@@ -83,9 +92,9 @@ namespace OneDas.WebServer
         {
             OneDasConsole oneDasConsole;
 
-            if (_oneDasEngine != null && !Environment.UserInteractive)
+            if (_engine != null && !Environment.UserInteractive)
             {
-                this.TryStartOneDasEngine(_oneDasEngine, _webServerOptions.CurrentProjectFilePath);
+                this.TryStartOneDasEngine(_engine, _webServerOptions.CurrentProjectFilePath);
             }
 
             if (Environment.UserInteractive)
@@ -170,7 +179,7 @@ namespace OneDas.WebServer
                     .AddProvider(clientMessageLoggerProvider);
             });
 
-            // OneDAS Engine
+            // OneDasEngine
             serviceCollection.AddOneDas(oneDasOptions =>
             {
                 oneDasOptions.DataDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "data");
@@ -180,6 +189,9 @@ namespace OneDas.WebServer
             // OneDasConsole
             serviceCollection.AddSingleton<OneDasConsole>();
 
+            // ClientPushService
+            serviceCollection.AddSingleton<ClientPushService>();
+            
             // OneDasPackageManager
             serviceCollection.AddSingleton<IInstallationCompatibility, OneDasInstallationCompatibility>();
             serviceCollection.AddSingleton<OneDasPackageManager>();
@@ -219,7 +231,7 @@ namespace OneDas.WebServer
             if (!isDisposed)
             {
                 _webhost?.StopAsync().Wait();
-                _oneDasEngine?.Dispose();
+                _engine?.Dispose();
             }
 
             isDisposed = true;

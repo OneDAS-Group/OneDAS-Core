@@ -249,7 +249,7 @@ namespace OneDas.Hdf.Explorer.Web
                             HdfDataLoader hdfDataLoader;
 
                             hdfDataLoader = new HdfDataLoader(_ctsSet[this.Context.ConnectionId]);
-                            hdfDataLoader.ProgressUpdated += this.HdfDataLoader_ProgressUpdated;
+                            hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
                             if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, sampleRate, start, stride, block, count, segmentLength)))
                             {
@@ -575,7 +575,7 @@ namespace OneDas.Hdf.Explorer.Web
             });
         }
 
-        private void HdfDataLoader_ProgressUpdated(object sender, ProgressUpdatedEventArgs e)
+        private void OnProgressUpdated(object sender, ProgressUpdatedEventArgs e)
         {
             this.GetClient().SendProgress(e.Progress, e.Message);
         }
