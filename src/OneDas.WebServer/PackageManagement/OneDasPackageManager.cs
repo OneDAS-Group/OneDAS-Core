@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -16,6 +18,7 @@ namespace OneDas.WebServer.PackageManagement
 {
     public class OneDasPackageManager
     {
+        NuGetProject _nuGetProject;
         NuGetPackageManager _nuGetPackageManager;
         SourceRepositoryProvider _sourceRepositoryProvider;
         WebServerOptions _webServerOptions;
@@ -29,11 +32,12 @@ namespace OneDas.WebServer.PackageManagement
             _installationCompatibility = installationCompatibility;
             _loggerFactory = loggerFactory;
 
+            _nuGetProject = this.CreateNugetProject(@"O:\dev\Nugetv3 Tests\pack");
             _sourceRepositoryProvider = this.CreateSourceRepositoryProvider();
             _nuGetPackageManager = this.CreateNuGetPackageManager(@"O:\dev\Nugetv3 Tests\pack", _sourceRepositoryProvider);
         }
 
-        public async Task<List<IPackageSearchMetadata>> SearchAsync(string searchTerm, string source)
+        public async Task<List<PackageSearchMetadataLight>> SearchAsync(string searchTerm, string source)
         {
             // aggregate multiple search results:
             // https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Indexing/SearchResultsAggregator.cs
@@ -50,19 +54,19 @@ namespace OneDas.WebServer.PackageManagement
             packageSource = new PackageSource(source);
             sourceRepository = _sourceRepositoryProvider.CreateRepository(packageSource);
             loggerAdapter = new LoggerAdapter(new EmptyNuGetProjectContext());
-            searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _webServerOptions.OneDasName
+            searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _webServerOptions.PluginPackageTypeName
 
             packageSearchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>();
-            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, 0, 100, loggerAdapter, CancellationToken.None);
+            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, 0, 100, loggerAdapter, CancellationToken.None);    
 
-            return searchMetadataSet.ToList();
+            return searchMetadataSet.Select(searchMetadata => new PackageSearchMetadataLight(searchMetadata.Identity.Id, searchMetadata.Description, searchMetadata.Identity.Version.ToString())).ToList();
         }
 
         public async Task Install(string packageId, string source)
         {
             PackageSource packageSource;
             SourceRepository sourceRepository;
-            ResolutionContext resolutionContext;           
+            ResolutionContext resolutionContext;
             INuGetProjectContext projectContext;
 
             resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, VersionConstraints.None);
@@ -70,12 +74,26 @@ namespace OneDas.WebServer.PackageManagement
             packageSource = new PackageSource(source);
             sourceRepository = _sourceRepositoryProvider.CreateRepository(packageSource);
 
+            var a = new PackageSourceProvider(Settings.LoadDefaultSettings(null)).LoadPackageSources().Select(packageSource2 => _sourceRepositoryProvider.CreateRepository(packageSource2)).ToList();
+            a.Add(_sourceRepositoryProvider.CreateRepository(new PackageSource("https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json")));
+
             await _nuGetPackageManager.InstallPackageAsync(
-                        _nuGetPackageManager.PackagesFolderNuGetProject,
+                        _nuGetProject,
                         packageId,
                         resolutionContext,
                         projectContext,
-                        new List<SourceRepository>() { sourceRepository }, null, CancellationToken.None);
+                        new List<SourceRepository>() { sourceRepository }, a, CancellationToken.None);
+        }
+
+        private NuGetProject CreateNugetProject(string packagesDirectoryPath)
+        {
+            NuGetProject nuGetProject;
+            PackagePathResolver packagePathResolver;
+
+            packagePathResolver = new PackagePathResolver(packagesDirectoryPath);
+            nuGetProject = new FolderNuGetProject(packagesDirectoryPath, packagePathResolver, FrameworkConstants.CommonFrameworks.NetStandard20);
+
+            return nuGetProject;
         }
 
         private NuGetPackageManager CreateNuGetPackageManager(string packagesDirectoryPath, SourceRepositoryProvider sourceRepositoryProvider)

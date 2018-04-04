@@ -42,6 +42,7 @@ namespace OneDas.WebServer.Web
         {
             _engine = engine;
             _packageManager = packageManager;
+            _clientPushService = clientPushService;
             _pluginProvider = pluginProvider;
             _webServerLogger = loggerFactory.CreateLogger("WebServer");
             _projectSerializer = projectSerializer;
@@ -314,7 +315,7 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<List<IPackageSearchMetadata>> SearchPlugins(string searchTerm)
+        public Task<List<PackageSearchMetadataLight>> SearchPlugins(string searchTerm)
         {
             return _packageManager.SearchAsync(searchTerm, "https://www.myget.org/F/onedas/api/v3/index.json");
         }

@@ -102,11 +102,18 @@ namespace OneDas.WebServer.PackageManagement
 
         private void EnsurePackageCompatibility(NuGetProject nuGetProject, PackageIdentity packageIdentity, NuspecReader nuspecReader)
         {
+            IReadOnlyList<PackageType> packageTypeSet;
+
             MinClientVersionUtility.VerifyMinClientVersion(nuspecReader);
 
-            if (!nuspecReader.GetPackageTypes().Any(packageType => packageType.Name == _webServerOptions.OneDasName))
+            packageTypeSet = nuspecReader.GetPackageTypes();
+
+            if (packageTypeSet.Any())
             {
-                throw new Exception(ErrorMessage.InstallationCompatiblity_InvalidPackageType);
+                if (!packageTypeSet.Any(packageType => packageType == PackageType.Dependency || packageType.Name == _webServerOptions.PluginPackageTypeName))
+                {
+                    throw new Exception(ErrorMessage.InstallationCompatiblity_InvalidPackageType);
+                }
             }
         }
     }

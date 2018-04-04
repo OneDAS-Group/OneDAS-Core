@@ -23,6 +23,7 @@ namespace OneDas.WebServer
             this.EventLogName = "OneDAS";
             this.EventLogSourceName = "OneDAS Core";
             this.MutexName = "{fcacd9a4-dc61-4179-b92c-e11538aaf85b}";
+            this.PluginPackageTypeName = "OneDasPlugin";
             this.ServiceName =  "OneDas.Core";
             this.WebClientHubName = "webclienthub";
         }
@@ -47,6 +48,7 @@ namespace OneDas.WebServer
         public string EventLogName { get; private set; }
         public string EventLogSourceName { get; private set; }
         public string MutexName { get; private set; }
+        public string PluginPackageTypeName { get; private set; }
         public string ServiceName { get; private set; }
         public string WebClientHubName { get; private set; }
 
