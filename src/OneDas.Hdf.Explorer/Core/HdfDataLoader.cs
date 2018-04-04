@@ -20,11 +20,11 @@ namespace OneDas.Hdf.Explorer.Core
     {
         public event EventHandler<ProgressUpdatedEventArgs> ProgressUpdated;
 
-        private CancellationTokenSource _cts;
+        private CancellationToken _cancellationToken;
 
-        public HdfDataLoader(CancellationTokenSource cancellationTokenSource)
+        public HdfDataLoader(CancellationToken cancellationToken)
         {
-            _cts = cancellationTokenSource;
+            _cancellationToken = cancellationToken;
         }
 
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
@@ -232,7 +232,7 @@ namespace OneDas.Hdf.Explorer.Core
                 dataStorageSet = null;
                 GC.Collect();
 
-                if (_cts.IsCancellationRequested)
+                if (_cancellationToken.IsCancellationRequested)
                 {
                     return false;
                 }

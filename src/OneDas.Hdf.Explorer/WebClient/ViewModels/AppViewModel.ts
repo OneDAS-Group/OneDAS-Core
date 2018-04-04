@@ -41,7 +41,7 @@ class AppViewModel
         this.SelectedFileFormat = ko.observable<FileFormatEnum>(FileFormatEnum.CSV)
         this.SelectedFileGranularity = ko.observable<FileGranularityEnum>(FileGranularityEnum.Hour)
         this.IsConnected = ko.observable<boolean>(true)
-        this.HdfExplorerState = ko.observable<HdfExplorerStateEnum>(appModel.HdfExplorerState)
+        this.HdfExplorerState = ko.observable<HdfExplorerStateEnum>()
         this.InactivityMessage = ko.observable<string>("")
         this.ByteCount = ko.observable<number>(0)
         this.Progress = ko.observable<number>(0)
@@ -69,6 +69,25 @@ class AppViewModel
         EnumerationHelper.Description["FileGranularityEnum_Minute_10"] = "1 file per 10 minutes"
         EnumerationHelper.Description["FileGranularityEnum_Hour"] = "1 file per hour"
         EnumerationHelper.Description["FileGranularityEnum_Day"] = "1 file per day"
+
+        // state
+        this.HdfExplorerState.subscribe(async (newValue) =>
+        {
+            let inactivityMessage: string
+
+            if (newValue === HdfExplorerStateEnum.Inactive)
+            {
+                inactivityMessage = await _broadcaster.invoke("GetInactivityMessage")
+
+                this.InactivityMessage(inactivityMessage)
+            }
+            else
+            {
+                this.InactivityMessage("")
+            }
+        })
+
+        this.HdfExplorerState(appModel.HdfExplorerState)
 
         // campaign info
         this.CampaignInfoSet.subscribe(newValue =>
@@ -200,27 +219,9 @@ class AppViewModel
         })
 
         // callback
-        _broadcaster.on("SendState", async (hdfExplorerState: HdfExplorerStateEnum) =>
+        _broadcaster.on("SendState", (hdfExplorerState: HdfExplorerStateEnum) =>
         {
-            let inactivityMessage: string
-
-            try
-            {
-                if (hdfExplorerState === HdfExplorerStateEnum.Inactive)
-                {
-                    inactivityMessage = await _broadcaster.invoke("GetInactivityMessage")
-
-                    this.InactivityMessage(inactivityMessage)
-                }
-                else
-                {
-                    this.InactivityMessage("")
-                }
-            }
-            finally
-            {
-                this.HdfExplorerState(hdfExplorerState)
-            }
+            this.HdfExplorerState(hdfExplorerState)
         })
 
         _broadcaster.on("SendProgress", (progress: number, message: string) =>

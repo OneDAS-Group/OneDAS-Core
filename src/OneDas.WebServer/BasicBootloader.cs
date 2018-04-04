@@ -32,7 +32,7 @@ namespace OneDas.WebServer
             WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
 
             // configuration
-            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Adwen", "OneDAS", "Core");
+            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
             configurationFileName = "settings.json";
 
             Directory.CreateDirectory(BasicBootloader.ConfigurationDirectoryPath);
