@@ -22,8 +22,8 @@ namespace OneDas.WebServer.PackageManagement
 {
     public class OneDasPackageManager
     {
-        NuGetProject _nuGetProject;
-        NuGetPackageManager _nuGetPackageManager;
+        PackagesConfigNuGetProject _project;
+        NuGetPackageManager _packageManager;
         SourceRepositoryProvider _sourceRepositoryProvider;
         WebServerOptions _webServerOptions;
         LoggerAdapter _loggerAdapter;
@@ -37,9 +37,9 @@ namespace OneDas.WebServer.PackageManagement
             _installationCompatibility = installationCompatibility;
 
             _projectContext = this.CreateNuGetProjectContext();
-            _nuGetProject = this.CreateNugetProject(@"O:\dev\Nugetv3 Tests\pack", FrameworkConstants.CommonFrameworks.AspNetCore);
+            _project = this.CreateNugetProject(_webServerOptions.BaseDirectoryPath, FrameworkConstants.CommonFrameworks.AspNetCore);
             _sourceRepositoryProvider = this.CreateSourceRepositoryProvider();
-            _nuGetPackageManager = this.CreateNuGetPackageManager(@"O:\dev\Nugetv3 Tests\pack", _sourceRepositoryProvider);
+            _packageManager = this.CreateNuGetPackageManager(@"O:\dev\Nugetv3 Tests\pack", _sourceRepositoryProvider);
         }
 
         public async Task<PackageSearchMetadataLight[]> SearchAsync(string searchTerm, string source)
@@ -69,10 +69,18 @@ namespace OneDas.WebServer.PackageManagement
                 bool isUpdateAvailable;
                 IEnumerable<VersionInfo> versionInfoSet;
 
-                versionInfoSet = await searchMetadata.GetVersionsAsync();
-                isInstalled = versionInfoSet.Any(versionInfo => _nuGetPackageManager.PackageExistsInPackagesFolder(new PackageIdentity(searchMetadata.Identity.Id, new NuGetVersion(versionInfo.Version))));
-
                 isUpdateAvailable = false;
+                versionInfoSet = await searchMetadata.GetVersionsAsync();
+
+                var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
+                var installedPackage = installedPackages.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == searchMetadata.Identity.Id);
+
+                isInstalled = installedPackage != null;
+
+                if (isInstalled)
+                {
+                    isUpdateAvailable = versionInfoSet.Last().Version.CompareTo(installedPackage.PackageIdentity.Version, VersionComparison.VersionReleaseMetadata) > 0;
+                }
 
                 return new PackageSearchMetadataLight(searchMetadata.Identity.Id, searchMetadata.Description, searchMetadata.Identity.Version.ToString(), isInstalled, isUpdateAvailable);
             }).ToList();
@@ -83,21 +91,33 @@ namespace OneDas.WebServer.PackageManagement
         public async Task InstallAsync(string packageId)
         {
             ResolutionContext resolutionContext;
+            PackageDownloadContext packageDownloadContext;
             List<SourceRepository> sourceRepositorySet;
 
             resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, VersionConstraints.None);
+            packageDownloadContext = new PackageDownloadContext(NullSourceCacheContext.Instance);
             sourceRepositorySet = _webServerOptions.PackageSourceSet.Select(packageSource => _sourceRepositoryProvider.CreateRepository(new PackageSource(packageSource.Address))).ToList();
 
             try
             {
-                await _nuGetPackageManager.InstallPackageAsync(
-                        _nuGetProject,
+                await _packageManager.InstallPackageAsync(
+                        _project,
                         packageId,
                         resolutionContext,
                         _projectContext,
                         sourceRepositorySet,
                         null,
                         CancellationToken.None);
+
+                var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
+                //var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+
+                await Task.WhenAll(installedPackages.ToList().Select(async packageReference => await _packageManager.RestorePackageAsync(
+                    packageReference.PackageIdentity, 
+                    _projectContext, 
+                    packageDownloadContext, 
+                    sourceRepositorySet, 
+                    CancellationToken.None)));
             }
             catch (Exception ex)
             {
@@ -113,23 +133,26 @@ namespace OneDas.WebServer.PackageManagement
             uninstallationContext = new UninstallationContext();
             sourceRepositorySet = _webServerOptions.PackageSourceSet.Select(packageSource => _sourceRepositoryProvider.CreateRepository(new PackageSource(packageSource.Address))).ToList();
 
-            var installedPackages = await _nuGetProject.GetInstalledPackagesAsync(new CancellationToken());
-            var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
+            var installedPackage = installedPackages.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == packageId);
 
-            try
+            if (installedPackage != null)
             {
-                await _nuGetPackageManager.UninstallPackageAsync(
-                        _nuGetProject,
-                        packageId,
-                        uninstallationContext,
-                        _projectContext,
-                        CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
+                try
+                {
+                    await _project.UninstallPackageAsync(
+                            installedPackage.PackageIdentity,
+                            _projectContext,
+                            CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
 
-                throw;
+                    throw;
+                }
             }
+
+            
         }
 
         private INuGetProjectContext CreateNuGetProjectContext()
@@ -143,22 +166,20 @@ namespace OneDas.WebServer.PackageManagement
             return projectContext;
         }
 
-        private NuGetProject CreateNugetProject(string packagesDirectoryPath, NuGetFramework nuGetFramework)
+        private PackagesConfigNuGetProject CreateNugetProject(string projectDirectoryPath, NuGetFramework nuGetFramework)
         {
-            NuGetProject nuGetProject;
+            PackagesConfigNuGetProject project;
             PackagePathResolver packagePathResolver;
+            Dictionary<string, object> metadata;
 
-            var dict = new Dictionary<string, object>
-                {
-                    { NuGetProjectMetadataKeys.Name, "testy" },
-                    { NuGetProjectMetadataKeys.TargetFramework, nuGetFramework }
-                };
+            metadata = new Dictionary<string, object>();
+            metadata.Add(NuGetProjectMetadataKeys.Name, _webServerOptions.OneDasName);
+            metadata.Add(NuGetProjectMetadataKeys.TargetFramework, nuGetFramework);
 
-            packagePathResolver = new PackagePathResolver(packagesDirectoryPath);
-            nuGetProject = new PackagesConfigNuGetProject(packagesDirectoryPath, dict);
-            //nuGetProject = new FolderNuGetProject(packagesDirectoryPath, packagePathResolver, nuGetFramework);
+            packagePathResolver = new PackagePathResolver(projectDirectoryPath);
+            project = new PackagesConfigNuGetProject(projectDirectoryPath, metadata);
 
-            return nuGetProject;
+            return project;
         }
 
         private NuGetPackageManager CreateNuGetPackageManager(string packagesDirectoryPath, SourceRepositoryProvider sourceRepositoryProvider)
