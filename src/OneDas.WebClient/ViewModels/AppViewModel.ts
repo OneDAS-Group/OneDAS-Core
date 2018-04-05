@@ -190,7 +190,7 @@
         this.ClientSet(appModel.ClientSet)
         this.LastError(appModel.LastError)
         this.OneDasState(appModel.OneDasState)
-        this.WebServerOptionsLight(appModel.WebServerOptionsLight);
+        this.WebServerOptionsLight(new WebServerOptionsLightViewModel(appModel.WebServerOptionsLight));
 
         // register data gateways
         PluginHive.PluginIdentificationSet.set("DataGateway", appModel.DataGatewayPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))

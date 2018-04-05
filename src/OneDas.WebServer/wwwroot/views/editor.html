@@ -370,10 +370,10 @@
                     <div class="input-group-prepend url"
                          data-bind="click: ResetSearch">
                         <div class="input-group-text">
-                            <!-- ko if: SearchString().length > 0 -->
+                            <!-- ko if: SearchTerm().length > 0 -->
                             <strong>X</strong>
                             <!-- /ko -->
-                            <!-- ko ifnot: SearchString().length > 0 -->
+                            <!-- ko ifnot: SearchTerm().length > 0 -->
                             <span class="fa fa-search fa-fix"></span>
                             <!-- /ko -->
                         </div>
@@ -381,7 +381,7 @@
                     <input type="text"
                            class="form-control"
                            placeholder="Search ..."
-                           data-bind="textInput: SearchString">
+                           data-bind="textInput: SearchTerm">
                     <div class="input-group-append url"
                          data-toggle="modal"
                          data-target="#Project_NewChannelModal"

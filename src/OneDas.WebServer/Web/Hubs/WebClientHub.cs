@@ -281,7 +281,8 @@ namespace OneDas.WebServer.Web
                     {
                         OneDasName = _webServerOptions.OneDasName,
                         AspBaseUrl = _webServerOptions.AspBaseUrl,
-                        BaseDirectoryPath = _webServerOptions.BaseDirectoryPath
+                        BaseDirectoryPath = _webServerOptions.BaseDirectoryPath,
+                        PackageSourceSet = _webServerOptions.PackageSourceSet
                     });
             });
         }
@@ -315,9 +316,19 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<List<PackageSearchMetadataLight>> SearchPlugins(string searchTerm)
+        public Task<PackageSearchMetadataLight[]> SearchPlugins(string searchTerm, string address)
         {
-            return _packageManager.SearchAsync(searchTerm, "https://www.myget.org/F/onedas/api/v3/index.json");
+            return _packageManager.SearchAsync(searchTerm, address);
+        }
+
+        public Task InstallPlugin(string packageId)
+        {
+            return _packageManager.InstallAsync(packageId);
+        }
+
+        public Task UninstallPlugin(string packageId)
+        {
+            return _packageManager.UninstallAsync(packageId);
         }
 
         #endregion

@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using OneDas.WebServer.PackageManagement;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -13,6 +15,7 @@ namespace OneDas.WebServer
             this.BaseDirectoryPath = string.Empty;
             this.CurrentProjectFilePath = string.Empty;
             this.NewBaseDirectoryPath = string.Empty;
+            this.PackageSourceSet = new List<OneDasPackageSource>();
 
             // preset, mutable
             this.AspBaseUrl = "http://0.0.0.0:32768";
@@ -24,17 +27,22 @@ namespace OneDas.WebServer
             this.EventLogSourceName = "OneDAS Core";
             this.MutexName = "{fcacd9a4-dc61-4179-b92c-e11538aaf85b}";
             this.PluginPackageTypeName = "OneDasPlugin";
-            this.ServiceName =  "OneDas.Core";
+            this.ServiceName = "OneDas.Core";
             this.WebClientHubName = "webclienthub";
         }
-        
+
         // unset, mutable
         [DataMember]
         public string BaseDirectoryPath { get; set; }
+
         [DataMember]
         public string CurrentProjectFilePath { get; set; }
+
         [DataMember]
         public string NewBaseDirectoryPath { get; set; }
+
+        [DataMember]
+        public List<OneDasPackageSource> PackageSourceSet { get; set; }
 
         // preset, mutable
         [DataMember]

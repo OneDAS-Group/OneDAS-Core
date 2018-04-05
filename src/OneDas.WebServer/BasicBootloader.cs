@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using OneDas.WebServer.PackageManagement;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -47,6 +49,15 @@ namespace OneDas.WebServer
             {
                 _webServerOptions = new WebServerOptions();
                 configurationRoot.Bind(_webServerOptions);
+
+                if (!_webServerOptions.PackageSourceSet.Any())
+                {
+                    _webServerOptions.PackageSourceSet = new List<OneDasPackageSource>()
+                    {
+                        new OneDasPackageSource() { Name = "myget.org/OneDAS", Address = "https://www.myget.org/F/onedas/api/v3/index.json" },
+                        new OneDasPackageSource() { Name = "nuget.org", Address = "https://api.nuget.org/v3/index.json" }
+                    };
+                }
             }
 
             if (!Directory.Exists(_webServerOptions.BaseDirectoryPath))

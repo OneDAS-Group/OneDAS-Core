@@ -24,16 +24,16 @@
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: $root.DataGatewayPluginIdentifications">
-                                <tr data-bind="tooltip: { title: Description}">
+                                <tr>
                                     <td>data gateway</td>
-                                    <td data-bind="text: Name"></td>
+                                    <td data-bind="text: Name, tooltip: { title: Description}"></td>
                                     <td data-bind="text: ProductVersion"></td>
                                 </tr>
                             </tbody>
                             <tbody data-bind="foreach: $root.DataWriterPluginIdentifications">
-                                <tr data-bind="tooltip: { title: Description}">
+                                <tr>
                                     <td>data writer</td>
-                                    <td data-bind="text: Name"></td>
+                                    <td data-bind="text: Name, tooltip: { title: Description}"></td>
                                     <td data-bind="text: ProductVersion"></td>
                                 </tr>
                             </tbody>
@@ -46,43 +46,78 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col">
+                        <div class="col-4">
                             Extension Manager
                         </div>
-                        <div class="col">
+                        <div class="col-4" style="padding-right:0px; padding-left:0px">
+                            <select class="form-control"
+                                    style="margin-top:-8px; margin-bottom:-8px"
+                                    data-bind="options: $root.WebServerOptionsLight().PackageSourceSet,
+                                               optionsText: 'Name',
+                                               value: SelectedPackageSource,
+                                               optionsCaption: 'Select a source ...'">
+                            </select>
+                        </div>
+                        <div class="col-4">
                             <div class="input-group" style="margin-top:-8px; margin-bottom:-8px">
                                 <input type="text"
                                        class="form-control"
                                        placeholder="Search ..."
-                                       data-bind="textInput: SearchString">
+                                       data-bind="textInput: SearchTerm">
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- ko if: SearchPackageMetadataSet().length === 0 -->
-                    <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions found -</small></h5>
+                    <!-- ko ifnot: IsSearching -->
+                        <!-- ko if: PackageSearchMetadataSet().length === 0 -->
+                            <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions found -</small></h5>
+                        <!-- /ko -->
+                        <!-- ko if: PackageSearchMetadataSet().length > 0 -->
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover small">
+                                    <thead class="thead-default">
+                                        <tr>
+                                            <th>Action</th>
+                                            <th>Name</th>
+                                            <th>Version</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: PackageSearchMetadataSet">
+                                        <tr>
+                                            <td>
+                                                <!-- ko ifnot: IsInstalled -->
+                                                <span class="fa fa-plus url"
+                                                      data-bind="click: $parent.InstallPlugin"
+                                                      data-toggle="tooltip"
+                                                      data-title="Install">
+                                                </span>
+                                                <!-- /ko -->
+                                                <!-- ko if: IsUpdateAvailable -->
+                                                <span class="fa fa-cloud-upload url"
+                                                      data-bind="click: $parent.UpdatePlugin"
+                                                      data-toggle="tooltip"
+                                                      data-title="Update">
+                                                </span>
+                                                <!-- /ko -->
+                                                <!-- ko if: IsInstalled -->
+                                                <span class="fa fa-minus url"
+                                                      data-bind="click: $parent.UninstallPlugin"
+                                                      data-toggle="tooltip"
+                                                      data-title="Uninstall">
+                                                </span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td data-bind="text: PackageId, tooltip: { title: Description}"></td>
+                                            <td data-bind="text: Version"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <!-- /ko -->
                     <!-- /ko -->
-                    <!-- ko if: SearchPackageMetadataSet().length > 0 -->
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover small">
-                            <thead class="thead-default">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Version</th>
-                                </tr>
-                            </thead>
-
-                            <tbody data-bind="foreach: SearchPackageMetadataSet">
-                                <tr>
-                                    <td data-bind="text: PackageId"></td>
-                                    <td data-bind="text: Description"></td>
-                                    <td data-bind="text: Version"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <!-- ko if: IsSearching -->
+                        <h5 class="d-block text-center mt-2"><small class="text-muted">Searching ...</small></h5>
                     <!-- /ko -->
                 </div>
             </div>

@@ -7,11 +7,13 @@ namespace OneDas.WebServer.PackageManagement
     {
         #region "Constructors"
 
-        public PackageSearchMetadataLight(string packageId, string description, string version)
+        public PackageSearchMetadataLight(string packageId, string description, string version, bool isInstalled, bool isUpdateAvailable)
         {
             this.PackageId = packageId;
             this.Description = description;
             this.Version = version;
+            this.IsInstalled = isInstalled;
+            this.IsUpdateAvailable = isUpdateAvailable;
         }
 
         #endregion
@@ -26,6 +28,12 @@ namespace OneDas.WebServer.PackageManagement
 
         [DataMember]
         string Version { get; }
+
+        [DataMember]
+        bool IsInstalled { get; }
+
+        [DataMember]
+        bool IsUpdateAvailable { get; }
 
         #endregion
     }
