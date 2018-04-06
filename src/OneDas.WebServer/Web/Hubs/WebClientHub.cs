@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NuGet.Protocol.Core.Types;
 using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
@@ -16,7 +15,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace OneDas.WebServer.Web
 {
@@ -267,10 +265,11 @@ namespace OneDas.WebServer.Web
                 return attribute;
             }).ToList();
 
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 return new AppModel(
                     activeProjectSettings: _engine.Project?.Settings,
+                    installedPackageSet: await _packageManager.GetInstalledPackagesAsync(),
                     clientSet: new List<string>() { },
                     dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
                     dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
@@ -316,14 +315,14 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<PackageSearchMetadataLight[]> SearchPlugins(string searchTerm, string address)
+        public Task<PackageMetaData[]> SearchPlugins(string searchTerm, string address)
         {
             return _packageManager.SearchAsync(searchTerm, address);
         }
 
-        public Task InstallPlugin(string packageId)
+        public Task InstallPlugin(string packageId, string source)
         {
-            return _packageManager.InstallAsync(packageId);
+            return _packageManager.InstallAsync(packageId, source);
         }
 
         public Task UninstallPlugin(string packageId)

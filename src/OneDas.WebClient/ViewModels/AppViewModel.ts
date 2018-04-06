@@ -19,6 +19,7 @@
     public NewWebServerOptionsLightAspBaseUrl: KnockoutObservable<string>
     public NewWebServerOptionsLightBaseDirectoryPath: KnockoutObservable<string>
 
+    public InstalledPackageSet: KnockoutObservableArray<PackageMetadataViewModel>
     public ActiveProject: KnockoutObservable<OneDasProjectViewModel>
 
     constructor(appModel: any)
@@ -70,6 +71,7 @@
         this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
         this.NewWebServerOptionsLightBaseDirectoryPath = ko.observable<string>()
 
+        this.InstalledPackageSet = ko.observableArray<PackageMetadataViewModel>()
         this.ActiveProject = ko.observable<OneDasProjectViewModel>()
 
         this.ActiveProject.subscribe(newValue =>
@@ -241,6 +243,9 @@
         })
 
         this.DataWriterPluginIdentifications(PluginHive.PluginIdentificationSet.get("DataWriter"))
+
+        // installed packages
+        this.InstalledPackageSet(appModel.InstalledPackageSet.map(packageMetadata => new PackageMetadataViewModel(packageMetadata)))
 
         // initialize project
         if (appModel.ActiveProjectSettings)

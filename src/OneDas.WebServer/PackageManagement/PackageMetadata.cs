@@ -3,11 +3,11 @@
 namespace OneDas.WebServer.PackageManagement
 {
     [DataContract]
-    public class PackageSearchMetadataLight
+    public class PackageMetaData
     {
         #region "Constructors"
 
-        public PackageSearchMetadataLight(string packageId, string description, string version, bool isInstalled, bool isUpdateAvailable)
+        public PackageMetaData(string packageId, string description, string version, bool isInstalled, bool isUpdateAvailable)
         {
             this.PackageId = packageId;
             this.Description = description;

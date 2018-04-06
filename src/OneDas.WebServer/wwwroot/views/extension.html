@@ -8,10 +8,44 @@
 
 <div id="Extension_Content">
     <div class="row">
-        <div class="col-lg-5">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Installed extensions
+                </div>
+                <div class="card-body">
+                    <!-- ko if: $root.InstalledPackageSet().length === 0 -->
+                        <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions installed -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko if: $root.InstalledPackageSet().length > 0 -->
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover small">
+                                <thead class="thead-default">
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Name</th>
+                                        <th>Version</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: $root.InstalledPackageSet">
+                                    <tr>
+                                        <td>
+                                            <span class="fa fa-minus url"
+                                                data-bind="click: $parent.UninstallPlugin">
+                                            </span>
+                                        </td>
+                                        <td data-bind="text: PackageId"></td>
+                                        <td data-bind="text: Version"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    <!-- /ko -->
+                </div>
+            </div>
             <div class="card">
                 <div class="card-header">
-                    Loaded extension
+                    Loaded extensions
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -42,7 +76,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-7">
+        <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <div class="row">
@@ -70,10 +104,10 @@
                 </div>
                 <div class="card-body">
                     <!-- ko ifnot: IsSearching -->
-                        <!-- ko if: PackageSearchMetadataSet().length === 0 -->
+                        <!-- ko if: SearchPackageMetadataSet().length === 0 -->
                             <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions found -</small></h5>
                         <!-- /ko -->
-                        <!-- ko if: PackageSearchMetadataSet().length > 0 -->
+                        <!-- ko if: SearchPackageMetadataSet().length > 0 -->
                             <div class="table-responsive">
                                 <table class="table table-sm table-hover small">
                                     <thead class="thead-default">
@@ -83,32 +117,26 @@
                                             <th>Version</th>
                                         </tr>
                                     </thead>
-                                    <tbody data-bind="foreach: PackageSearchMetadataSet">
+                                    <tbody data-bind="foreach: SearchPackageMetadataSet">
                                         <tr>
                                             <td>
                                                 <!-- ko ifnot: IsInstalled -->
                                                 <span class="fa fa-plus url"
-                                                      data-bind="click: $parent.InstallPlugin"
-                                                      data-toggle="tooltip"
-                                                      data-title="Install">
+                                                      data-bind="click: $parent.InstallPlugin">
                                                 </span>
                                                 <!-- /ko -->
                                                 <!-- ko if: IsUpdateAvailable -->
                                                 <span class="fa fa-cloud-upload url"
-                                                      data-bind="click: $parent.UpdatePlugin"
-                                                      data-toggle="tooltip"
-                                                      data-title="Update">
+                                                      data-bind="click: $parent.UpdatePlugin">
                                                 </span>
                                                 <!-- /ko -->
                                                 <!-- ko if: IsInstalled -->
                                                 <span class="fa fa-minus url"
-                                                      data-bind="click: $parent.UninstallPlugin"
-                                                      data-toggle="tooltip"
-                                                      data-title="Uninstall">
+                                                      data-bind="click: $parent.UninstallPlugin">
                                                 </span>
                                                 <!-- /ko -->
                                             </td>
-                                            <td data-bind="text: PackageId, tooltip: { title: Description}"></td>
+                                            <td data-bind="text: PackageId, tooltip: { title: Description()}"></td>
                                             <td data-bind="text: Version"></td>
                                         </tr>
                                     </tbody>
