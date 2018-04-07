@@ -7,8 +7,6 @@
     <TargetFramework>net47</TargetFramework>
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <PlatformTarget>x64</PlatformTarget>
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   
   <ItemGroup>

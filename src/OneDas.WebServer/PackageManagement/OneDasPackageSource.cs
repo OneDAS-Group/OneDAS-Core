@@ -2,15 +2,22 @@
 
 namespace OneDas.WebServer.PackageManagement
 {
-    [DataContract]
     public class OneDasPackageSource
     {
+        #region "Constructors"
+
+        public OneDasPackageSource(string name, string address)
+        {
+            this.Name = name;
+            this.Address = address;
+        }
+
+        #endregion
+
         #region "Properties"
 
-        [DataMember]
         public string Name { get; set; }
 
-        [DataMember]
         public string Address { get; set; }
 
         #endregion

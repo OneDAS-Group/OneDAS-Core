@@ -1,4 +1,6 @@
-﻿using NuGet.PackageManagement;
+﻿#pragma warning disable 67
+
+using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -8,19 +10,7 @@ namespace OneDas.WebServer.PackageManagement
 {
     public class OneDasSolutionManager : ISolutionManager
     {
-        NuGetProject _nuGetProject;
-
-        public string SolutionDirectory
-        {
-            get;
-        }
-
-        public bool IsSolutionOpen
-        {
-            get;
-        }
-
-        public INuGetProjectContext NuGetProjectContext { get; set; }
+        #region "Events"
 
         public event EventHandler SolutionOpening;
         public event EventHandler SolutionOpened;
@@ -34,6 +24,16 @@ namespace OneDas.WebServer.PackageManagement
         public event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
         public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
 
+        #endregion
+
+        #region "Fields"
+
+        NuGetProject _nuGetProject;
+
+        #endregion
+
+        #region "Constructors"
+
         public OneDasSolutionManager(INuGetProjectContext nuGetProjectContext, NuGetProject nuGetProject, string projectDirectoryPath)
         {
             this.SolutionDirectory = projectDirectoryPath;
@@ -43,14 +43,33 @@ namespace OneDas.WebServer.PackageManagement
             this.IsSolutionOpen = true;
         }
 
-        public Task<bool> DoesNuGetSupportsAnyProjectAsync()
-        {
-            return Task.FromResult(true);
-        }
+        #endregion
+
+        #region "Properties"
+
+        public string SolutionDirectory { get; }
+
+        public bool IsSolutionOpen { get; }
+
+        public INuGetProjectContext NuGetProjectContext { get; set; }
+
+        #endregion
+
+        #region "Methods"
 
         public void EnsureSolutionIsLoaded()
         {
             //
+        }
+
+        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
+        {
+            //
+        }
+
+        public Task<bool> DoesNuGetSupportsAnyProjectAsync()
+        {
+            return Task.FromResult(true);
         }
 
         public Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
@@ -75,9 +94,6 @@ namespace OneDas.WebServer.PackageManagement
             return Task.FromResult(true);
         }
 
-        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
-        {
-            //
-        }
+        #endregion
     }
 }

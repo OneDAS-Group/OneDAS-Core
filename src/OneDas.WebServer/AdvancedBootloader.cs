@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
@@ -33,18 +34,20 @@ namespace OneDas.WebServer
         private IConfiguration _configuration;
         private IServiceProvider _serviceProvider;
         private IServiceCollection _serviceCollection;
+        private ISettings _nugetSettings;
 
         #endregion
 
         #region "Constructors"
 
-        public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration)
+        public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration, ISettings nugetSettings)
         {
             Version minimumVersion;
 
             _isHosting = isHosting;
             _webServerOptions = webServerOptions;
             _configuration = configuration;
+            _nugetSettings = nugetSettings;
 
             if (isHosting)
             {
@@ -191,8 +194,9 @@ namespace OneDas.WebServer
 
             // ClientPushService
             serviceCollection.AddSingleton<ClientPushService>();
-            
+
             // OneDasPackageManager
+            serviceCollection.AddSingleton(_nugetSettings);
             serviceCollection.AddSingleton<IInstallationCompatibility, OneDasInstallationCompatibility>();
             serviceCollection.AddSingleton<OneDasPackageManager>();
         }

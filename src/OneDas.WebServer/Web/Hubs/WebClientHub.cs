@@ -281,7 +281,7 @@ namespace OneDas.WebServer.Web
                         OneDasName = _webServerOptions.OneDasName,
                         AspBaseUrl = _webServerOptions.AspBaseUrl,
                         BaseDirectoryPath = _webServerOptions.BaseDirectoryPath,
-                        PackageSourceSet = _webServerOptions.PackageSourceSet
+                        PackageSourceSet = _packageManager.PackageSourceSet.Select(packageSource => new OneDasPackageSource(packageSource.Name, packageSource.Source)).ToList()
                     });
             });
         }

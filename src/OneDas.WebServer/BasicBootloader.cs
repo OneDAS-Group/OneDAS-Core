@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using OneDas.WebServer.PackageManagement;
+using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,6 +30,7 @@ namespace OneDas.WebServer
             string configurationFileName;
             IConfigurationRoot configurationRoot;
             IConfigurationBuilder configurationBuilder;
+            ISettings nugetSettings;
 
             WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
 
@@ -49,15 +50,6 @@ namespace OneDas.WebServer
             {
                 _webServerOptions = new WebServerOptions();
                 configurationRoot.Bind(_webServerOptions);
-
-                if (!_webServerOptions.PackageSourceSet.Any())
-                {
-                    _webServerOptions.PackageSourceSet = new List<OneDasPackageSource>()
-                    {
-                        new OneDasPackageSource() { Name = "myget.org/OneDAS", Address = "https://www.myget.org/F/onedas/api/v3/index.json" },
-                        new OneDasPackageSource() { Name = "nuget.org", Address = "https://api.nuget.org/v3/index.json" }
-                    };
-                }
             }
 
             if (!Directory.Exists(_webServerOptions.BaseDirectoryPath))
@@ -75,6 +67,11 @@ namespace OneDas.WebServer
             }
 
             _webServerOptions.Save(BasicBootloader.ConfigurationDirectoryPath);
+
+            // NuGet settings
+            nugetSettings = new Settings(_webServerOptions.BaseDirectoryPath);
+            nugetSettings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("OneDAS", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
+            nugetSettings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("nuget.org", "https://api.nuget.org/v3/index.json", false) });
 
             // determine startup mode
             if (Environment.UserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0)
@@ -95,7 +92,7 @@ namespace OneDas.WebServer
             BasicBootloader.EnsureAppDomainShadowCopying();
 
             // create advanced bootloader
-            _advancedBootloader = new AdvancedBootloader(isHosting, _webServerOptions, configurationRoot);
+            _advancedBootloader = new AdvancedBootloader(isHosting, _webServerOptions, configurationRoot, nugetSettings);
 
             // logging
             BasicBootloader.SystemLogger = _advancedBootloader.CreateSystemLogger();

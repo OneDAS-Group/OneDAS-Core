@@ -15,7 +15,6 @@ namespace OneDas.WebServer
             this.BaseDirectoryPath = string.Empty;
             this.CurrentProjectFilePath = string.Empty;
             this.NewBaseDirectoryPath = string.Empty;
-            this.PackageSourceSet = new List<OneDasPackageSource>();
 
             // preset, mutable
             this.AspBaseUrl = "http://0.0.0.0:32768";
@@ -40,9 +39,6 @@ namespace OneDas.WebServer
 
         [DataMember]
         public string NewBaseDirectoryPath { get; set; }
-
-        [DataMember]
-        public List<OneDasPackageSource> PackageSourceSet { get; set; }
 
         // preset, mutable
         [DataMember]
