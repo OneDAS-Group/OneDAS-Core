@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace OneDas.WebServer.PackageManagement
+namespace OneDas.WebServer.Nuget
 {
     public class OneDasSolutionManager : ISolutionManager
     {

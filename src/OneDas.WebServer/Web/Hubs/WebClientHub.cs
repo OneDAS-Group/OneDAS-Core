@@ -6,7 +6,7 @@ using OneDas.Engine.Serialization;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
 using OneDas.WebServer.Core;
-using OneDas.WebServer.PackageManagement;
+using OneDas.WebServer.Nuget;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,9 +23,9 @@ namespace OneDas.WebServer.Web
         private OneDasEngine _engine;
         private OneDasPackageManager _packageManager;
         private ClientPushService _clientPushService;
-        private IPluginProvider _pluginProvider;
         private WebServerOptions _webServerOptions;
 
+        private IPluginProvider _pluginProvider;
         private ILogger _webServerLogger;
         private IOneDasProjectSerializer _projectSerializer;
 
@@ -315,19 +315,36 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<PackageMetaData[]> SearchPlugins(string searchTerm, string address)
+        public Task<OneDasPackageMetaData[]> SearchPlugins(string searchTerm, string address, int skip, int take)
         {
-            return _packageManager.SearchAsync(searchTerm, address);
+            return _packageManager.SearchAsync(searchTerm, address, skip, take);
         }
 
         public Task InstallPlugin(string packageId, string source)
         {
-            return _packageManager.InstallAsync(packageId, source);
+            return Task.Run(async () =>
+            {
+                await _packageManager.InstallAsync(packageId, source);
+                await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+            });
+        }
+
+        public Task UpdatePlugin(string packageId, string source)
+        {
+            return Task.Run(async () =>
+            {
+                await _packageManager.UpdateAsync(packageId, source);
+                await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+            });
         }
 
         public Task UninstallPlugin(string packageId)
         {
-            return _packageManager.UninstallAsync(packageId);
+            return Task.Run(async () =>
+            {
+                await _packageManager.UninstallAsync(packageId);
+                await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+            });
         }
 
         #endregion

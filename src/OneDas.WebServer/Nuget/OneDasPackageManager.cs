@@ -3,7 +3,6 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -15,24 +14,21 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
-// https://daveaglick.com/posts/exploring-the-nuget-v3-libraries-part-1
-// https://github.com/NuGet/Home/wiki/NuGet-Restore-No-Op
-
-namespace OneDas.WebServer.PackageManagement
+namespace OneDas.WebServer.Nuget
 {
-    public class OneDasPackageManager
+    public class OneDasPackageManager : INuGetProjectContext
     {
         #region "Fields"
 
-        OneDasNugetProject _oneDasNugetProject;
+        OneDasNugetProject _project;
         NuGetPackageManager _packageManager;
         SourceRepositoryProvider _sourceRepositoryProvider;
         WebServerOptions _webServerOptions;
         LoggerAdapter _loggerAdapter;
-        ISettings _settings;
 
-        INuGetProjectContext _projectContext;
+        ISettings _settings;
         IInstallationCompatibility _installationCompatibility;
 
         #endregion
@@ -45,11 +41,12 @@ namespace OneDas.WebServer.PackageManagement
             _installationCompatibility = installationCompatibility;
 
             _settings = settings;
-            _projectContext = this.CreateNuGetProjectContext();
-            _oneDasNugetProject = this.CreateNugetProject(_webServerOptions.BaseDirectoryPath);
+            _project = new OneDasNugetProject(_webServerOptions.NugetProjectFilePath);
+            _loggerAdapter = new LoggerAdapter(this);
             _sourceRepositoryProvider = this.CreateSourceRepositoryProvider();
             _packageManager = this.CreateNuGetPackageManager(_sourceRepositoryProvider);
 
+            this.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, _loggerAdapter, null);
             this.PackageSourceSet = SettingsUtility.GetEnabledSources(_settings).ToList();
         }
 
@@ -63,26 +60,18 @@ namespace OneDas.WebServer.PackageManagement
 
         #region "Methods"
 
-        public async Task<List<PackageMetaData>> GetInstalledPackagesAsync()
+        public async Task<List<OneDasPackageMetaData>> GetInstalledPackagesAsync()
         {
-            try
-            {
-                var installedPackages = await _oneDasNugetProject.GetInstalledPackagesAsync(new CancellationToken());
+            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
-                var packageMetadataSet = installedPackages.
-                    Where(packageReference => packageReference.IsUserInstalled).
-                    Select(packageReference => new PackageMetaData(packageReference.PackageIdentity.Id, string.Empty, packageReference.PackageIdentity.Version.ToString(), true, false)).ToList();
+            var packageMetadataSet = installedPackages.
+                Where(packageReference => packageReference.IsUserInstalled).
+                Select(packageReference => new OneDasPackageMetaData(packageReference.PackageIdentity.Id, string.Empty, packageReference.PackageIdentity.Version.ToString(), true, false)).ToList();
 
-                return packageMetadataSet;
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
+            return packageMetadataSet;
         }
 
-        public async Task<PackageMetaData[]> SearchAsync(string searchTerm, string source)
+        public async Task<OneDasPackageMetaData[]> SearchAsync(string searchTerm, string source, int skip, int take)
         {
             // aggregate multiple search results:
             // https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Indexing/SearchResultsAggregator.cs
@@ -92,7 +81,7 @@ namespace OneDas.WebServer.PackageManagement
             SearchFilter searchFilter;
 
             PackageSearchResource packageSearchResource;
-            List<Task<PackageMetaData>> taskSet;
+            List<Task<OneDasPackageMetaData>> taskSet;
             IEnumerable<IPackageSearchMetadata> searchMetadataSet;
 
             packageSource = new PackageSource(source);
@@ -100,9 +89,9 @@ namespace OneDas.WebServer.PackageManagement
             searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _webServerOptions.PluginPackageTypeName
 
             packageSearchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>();
-            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, 0, 15, _loggerAdapter, CancellationToken.None);
+            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, skip, take, _loggerAdapter, CancellationToken.None);
 
-            var installedPackages = await _oneDasNugetProject.GetInstalledPackagesAsync(new CancellationToken());
+            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
             taskSet = searchMetadataSet.Select(async searchMetadata =>
             {
@@ -122,13 +111,31 @@ namespace OneDas.WebServer.PackageManagement
                     isUpdateAvailable = versionInfoSet.Last().Version.CompareTo(installedPackage.PackageIdentity.Version, VersionComparison.VersionReleaseMetadata) > 0;
                 }
 
-                return new PackageMetaData(searchMetadata.Identity.Id, searchMetadata.Description, searchMetadata.Identity.Version.ToString(), isInstalled, isUpdateAvailable);
+                return new OneDasPackageMetaData(searchMetadata.Identity.Id, searchMetadata.Description, searchMetadata.Identity.Version.ToString(), isInstalled, isUpdateAvailable);
             }).ToList();
 
             return await Task.WhenAll(taskSet);
         }
 
         public async Task InstallAsync(string packageId, string source)
+        {
+            ResolutionContext resolutionContext;
+            List<SourceRepository> sourceRepositorySet;
+
+            resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, VersionConstraints.None);
+            sourceRepositorySet = this.PackageSourceSet.Select(packageSource => _sourceRepositoryProvider.CreateRepository(new PackageSource(packageSource.Source))).ToList();
+
+            await _packageManager.InstallPackageAsync(
+                         _project,
+                         packageId,
+                         resolutionContext,
+                         this,
+                         sourceRepositorySet,
+                         null,
+                         CancellationToken.None);
+        }
+
+        public async Task UpdateAsync(string packageId, string source)
         {
             ResolutionContext resolutionContext;
             PackageDownloadContext packageDownloadContext;
@@ -138,21 +145,16 @@ namespace OneDas.WebServer.PackageManagement
             packageDownloadContext = new PackageDownloadContext(NullSourceCacheContext.Instance);
             sourceRepositorySet = this.PackageSourceSet.Select(packageSource => _sourceRepositoryProvider.CreateRepository(new PackageSource(packageSource.Source))).ToList();
 
-            try
-            {
-                await _packageManager.InstallPackageAsync(
-                        _oneDasNugetProject,
+            var actions = await _packageManager.PreviewUpdatePackagesAsync(
                         packageId,
+                        new List<NuGetProject>() { _project },
                         resolutionContext,
-                        _projectContext,
+                        this,
                         sourceRepositorySet,
-                        null,
+                        sourceRepositorySet,
                         CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-            }
+
+            await _packageManager.ExecuteNuGetProjectActionsAsync(_project, actions, this, packageDownloadContext, CancellationToken.None);
         }
 
         public async Task UninstallAsync(string packageId)
@@ -161,45 +163,16 @@ namespace OneDas.WebServer.PackageManagement
 
             uninstallationContext = new UninstallationContext();
 
-            var installedPackages = await _oneDasNugetProject.GetInstalledPackagesAsync(new CancellationToken());
+            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
             var installedPackage = installedPackages.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == packageId);
 
             if (installedPackage != null)
             {
-                try
-                {
-                    await _oneDasNugetProject.UninstallPackageAsync(
+                await _project.UninstallPackageAsync(
                             installedPackage.PackageIdentity,
-                            _projectContext,
+                            this,
                             CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-
-                    throw;
-                }
             }
-        }
-
-        private INuGetProjectContext CreateNuGetProjectContext()
-        {
-            EmptyNuGetProjectContext2 projectContext;
-
-            projectContext = new EmptyNuGetProjectContext2();
-            _loggerAdapter = new LoggerAdapter(projectContext);
-
-            projectContext.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, _loggerAdapter, null);
-
-            return projectContext;
-        }
-
-        private OneDasNugetProject CreateNugetProject(string projectDirectoryPath)
-        {
-            OneDasNugetProject project;
-
-            project = new OneDasNugetProject(Path.Combine(projectDirectoryPath, "project.json"));
-
-            return project;
         }
 
         private NuGetPackageManager CreateNuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider)
@@ -209,10 +182,13 @@ namespace OneDas.WebServer.PackageManagement
             OneDasSolutionManager solutionManager;
             OneDasDeleteOnRestartManager deleteOnRestartManager;
 
-            solutionManager = new OneDasSolutionManager(_projectContext, _oneDasNugetProject, _webServerOptions.BaseDirectoryPath);
+            solutionManager = new OneDasSolutionManager(this, _project, _webServerOptions.NugetDirectoryPath);
             deleteOnRestartManager = new OneDasDeleteOnRestartManager();
             packageSourceProvider = (PackageSourceProvider)sourceRepositoryProvider.PackageSourceProvider;
-            packageManager = new NuGetPackageManager(sourceRepositoryProvider, _settings, solutionManager, deleteOnRestartManager) { InstallationCompatibility = _installationCompatibility };
+            packageManager = new NuGetPackageManager(sourceRepositoryProvider, _settings, solutionManager, deleteOnRestartManager)
+            {
+                InstallationCompatibility = _installationCompatibility
+            };
 
             return packageManager;
         }
@@ -228,6 +204,49 @@ namespace OneDas.WebServer.PackageManagement
             sourceRepositoryProvider = new SourceRepositoryProvider(_settings, providerSet);
 
             return sourceRepositoryProvider;
+        }
+
+        #endregion
+
+        #region "INugetProjectContext"
+
+        public PackageExtractionContext PackageExtractionContext { get; set; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
+
+        public Guid OperationId { get; set; }
+
+        public NuGetActionType ActionType { get; set; }
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public NuGet.ProjectManagement.ExecutionContext ExecutionContext
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public void Log(MessageLevel level, string message, params object[] args)
+        {
+            AdvancedBootloader.ClientPushService.SendNugetMessage(string.Format(message, args));
+        }
+
+        public void ReportError(string message)
+        {
+            AdvancedBootloader.ClientPushService.SendNugetMessage(message);
+        }
+
+        public FileConflictAction ResolveFileConflict(string message)
+        {
+            return FileConflictAction.IgnoreAll;
         }
 
         #endregion

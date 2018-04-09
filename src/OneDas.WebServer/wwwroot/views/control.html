@@ -166,7 +166,7 @@
                     Message Log
                 </div>
                 <div class="card-body" style="overflow: hidden">
-                    <div id="control-message-log" class="message-log" style="margin-right: -36px; padding-right: 36px;">
+                    <div class="message-log" style="margin-right: -36px; padding-right: 36px;">
                         <ul class="list-group" data-bind="foreach: $root.ClientMessageLog">
                             <li class="message-log-list-item" data-bind="text: $data.Prefix + ': ' + $data.Message, fadeVisible: true" />
                         </ul>

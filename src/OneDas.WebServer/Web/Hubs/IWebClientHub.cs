@@ -1,5 +1,6 @@
 ﻿using OneDas.Engine.Core;
 using OneDas.Infrastructure;
+using OneDas.WebServer.Nuget;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace OneDas.WebServer.Web
         Task SendPerformanceInformation(OneDasPerformanceInformation performanceInformation);
         Task SendDataSnapshot(DateTime dateTime, IEnumerable<object> dataSnapshot);
         Task SendLiveViewData(int subscriptionId, DateTime dateTime, IEnumerable<object> dataSnapshot);
-        Task SendMessage(string message);
+        Task SendClientMessage(string message);
+        Task SendNugetMessage(string message);
+        Task SendInstalledPackages(List<OneDasPackageMetaData> packageMetadata);
     }
 }

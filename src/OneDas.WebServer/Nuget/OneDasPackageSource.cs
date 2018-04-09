@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace OneDas.WebServer.PackageManagement
+﻿namespace OneDas.WebServer.Nuget
 {
     public class OneDasPackageSource
     {

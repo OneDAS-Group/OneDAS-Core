@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using OneDas.WebServer.PackageManagement;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -55,6 +53,23 @@ namespace OneDas.WebServer
         public string PluginPackageTypeName { get; private set; }
         public string ServiceName { get; private set; }
         public string WebClientHubName { get; private set; }
+
+        // calculated
+        public string NugetDirectoryPath
+        {
+            get
+            {
+                return Path.Combine(this.BaseDirectoryPath, "nuget");
+            }
+        }
+
+        public string NugetProjectFilePath
+        {
+            get
+            {
+                return Path.Combine(this.NugetDirectoryPath, "project.json");
+            }
+        }
 
         public void Save(string directoryPath)
         {

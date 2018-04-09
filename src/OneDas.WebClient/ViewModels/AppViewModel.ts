@@ -167,7 +167,7 @@
             }
         })
 
-        ConnectionManager.WebClientHub.on("SendMessage", clientMessage =>
+        ConnectionManager.WebClientHub.on("SendClientMessage", clientMessage =>
         {
             this.ClientMessageLog.unshift(new MessageLogEntryViewModel(new Date().toLocaleTimeString('de-DE',
                 {
@@ -181,6 +181,11 @@
             {
                 this.ClientMessageLog.pop()
             }
+        })
+
+        ConnectionManager.WebClientHub.on("SendInstalledPackages", installedPackageSet =>
+        {
+            this.InstalledPackageSet(installedPackageSet.map(packageMetadata => new PackageMetadataViewModel(packageMetadata)))
         })
     }
 

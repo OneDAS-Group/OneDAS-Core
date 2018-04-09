@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Logging
 {
-    public class ClientMessageLogger : ILogger
+    public class WebClientLogger : ILogger
     {
         private string _categoryName;
         private Func<string, LogLevel, bool> _filter;
 
-        public ClientMessageLogger(string categoryName, Func<string, LogLevel, bool> filter)
+        public WebClientLogger(string categoryName, Func<string, LogLevel, bool> filter)
         {
             _categoryName = categoryName;
             _filter = filter;
@@ -24,10 +24,7 @@ namespace OneDas.WebServer.Logging
         {
             if (this.IsEnabled(logLevel))
             {
-                Task.Run(() =>
-                {
-                    AdvancedBootloader.ClientPushService.SendMessage($"{ _categoryName }: { formatter(state, exception) }");
-                });
+                AdvancedBootloader.ClientPushService.SendClientMessage($"{ _categoryName }: { formatter(state, exception) }");
             }
         }
 

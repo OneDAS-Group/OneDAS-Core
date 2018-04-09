@@ -3,27 +3,32 @@
   <PropertyGroup>
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <TargetFramework>net47</TargetFramework>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.6.362" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview3-32122" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview3-32122" />
+    <PackageReference Include="BuildBundlerMinifier" Version="2.6.375" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview3-32169" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview3-32169" />
     <PackageReference Include="NuGet.PackageManagement.NetStandard" Version="4.6.0" />
-    <PackageReference Include="OneDas.Engine" Version="1.0.0-alpha-6663-28138" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview2-26308-02" />
+    <PackageReference Include="OneDas.Engine" Version="1.0.0-alpha-6673-15606" />
   </ItemGroup>
   
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <Content Update="bundleconfig.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -31,14 +36,13 @@
       <DependentUpon>ErrorMessage.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <CustomToolNamespace>OneDas.WebServer</CustomToolNamespace>
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Content Update="**\tsconfig.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
   
   <ItemGroup>

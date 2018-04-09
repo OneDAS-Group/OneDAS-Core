@@ -11,7 +11,7 @@ using OneDas.Engine.Serialization;
 using OneDas.Plugin;
 using OneDas.WebServer.Core;
 using OneDas.WebServer.Logging;
-using OneDas.WebServer.PackageManagement;
+using OneDas.WebServer.Nuget;
 using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
@@ -59,7 +59,7 @@ namespace OneDas.WebServer
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "backup"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "config"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "data"));
-                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"));
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "nuget"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "project"));
 
                 // load plugins
@@ -154,7 +154,7 @@ namespace OneDas.WebServer
             serviceCollection.AddLogging(loggingBuilder =>
             {
                 EventLogSettings eventLogSettings;
-                ClientMessageLoggerProvider clientMessageLoggerProvider;
+                WebClientLoggerProvider clientMessageLoggerProvider;
 
                 // event log
                 if (Environment.UserInteractive)
@@ -173,7 +173,7 @@ namespace OneDas.WebServer
                 eventLogSettings.Filter = (category, logLevel) => category == "System" && logLevel >= LogLevel.Information;
 
                 // client message log
-                clientMessageLoggerProvider = new ClientMessageLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
+                clientMessageLoggerProvider = new WebClientLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
 
                 // add logger
                 loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."))

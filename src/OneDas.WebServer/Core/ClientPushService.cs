@@ -50,9 +50,14 @@ namespace OneDas.WebServer.Core
 
         #region "Methods"
 
-        public void SendMessage(string message)
+        public void SendClientMessage(string message)
         {
-            _hubContext?.Clients.All.SendAsync("SendMessage", message);
+            _hubContext?.Clients.All.SendAsync("SendClientMessage", message);
+        }
+
+        public void SendNugetMessage(string message)
+        {
+            _hubContext?.Clients.All.SendAsync("SendNugetMessage", message);
         }
 
         public int Subscribe(string connectionId, IList<ChannelHubBase> channelHubSettingsSet)

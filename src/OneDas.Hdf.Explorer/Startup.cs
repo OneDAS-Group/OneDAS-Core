@@ -22,7 +22,10 @@ namespace OneDas.Hdf.Explorer
                     options.RootDirectory = "/Web/Pages";
                 });
 
-            services.AddSignalR().AddJsonProtocol(options =>
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            }).AddJsonProtocol(options =>
             {
                 options.PayloadSerializerSettings = new JsonSerializerSettings();
             });

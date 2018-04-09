@@ -1,13 +1,13 @@
 ﻿using System.Runtime.Serialization;
 
-namespace OneDas.WebServer.PackageManagement
+namespace OneDas.WebServer.Nuget
 {
     [DataContract]
-    public class PackageMetaData
+    public class OneDasPackageMetaData
     {
         #region "Constructors"
 
-        public PackageMetaData(string packageId, string description, string version, bool isInstalled, bool isUpdateAvailable)
+        public OneDasPackageMetaData(string packageId, string description, string version, bool isInstalled, bool isUpdateAvailable)
         {
             this.PackageId = packageId;
             this.Description = description;

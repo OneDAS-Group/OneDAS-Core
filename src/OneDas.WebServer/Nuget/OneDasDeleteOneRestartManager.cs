@@ -1,10 +1,12 @@
-﻿using NuGet.PackageManagement;
+﻿#pragma warning disable 67
+
+using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 
-namespace OneDas.WebServer.PackageManagement
+namespace OneDas.WebServer.Nuget
 {
     public class OneDasDeleteOnRestartManager : IDeleteOnRestartManager
     {

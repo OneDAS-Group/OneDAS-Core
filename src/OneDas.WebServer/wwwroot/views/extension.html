@@ -9,15 +9,28 @@
 <div id="Extension_Content">
     <div class="row">
         <div class="col-lg-6">
-            <div class="card mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Message Log
+                </div>
+                <div class="card-body" style="overflow: hidden">
+                    <div class="message-log" style="margin-right: -36px; padding-right: 36px;">
+                        <ul class="list-group" data-bind="foreach: MessageLog">
+                            <li class="message-log-list-item" data-bind="text: $data" />
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card my-4">
                 <div class="card-header">
                     Installed extensions
                 </div>
                 <div class="card-body">
-                    <!-- ko if: $root.InstalledPackageSet().length === 0 -->
+                    <!-- ko ifnot: IsProcessing -->
+                        <!-- ko if: $root.InstalledPackageSet().length === 0 -->
                         <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions installed -</small></h5>
-                    <!-- /ko -->
-                    <!-- ko if: $root.InstalledPackageSet().length > 0 -->
+                        <!-- /ko -->
+                        <!-- ko if: $root.InstalledPackageSet().length > 0 -->
                         <div class="table-responsive">
                             <table class="table table-sm table-hover small">
                                 <thead class="thead-default">
@@ -30,8 +43,8 @@
                                 <tbody data-bind="foreach: $root.InstalledPackageSet">
                                     <tr>
                                         <td>
-                                            <span class="fa fa-minus url"
-                                                data-bind="click: $parent.UninstallPlugin">
+                                            <span class="fa fa-times url"
+                                                  data-bind="click: $parent.UninstallPlugin">
                                             </span>
                                         </td>
                                         <td data-bind="text: PackageId"></td>
@@ -40,6 +53,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- /ko -->
+                    <!-- /ko -->
+                        
+                    <!-- ko if: IsProcessing -->
+                        <h5 class="d-block text-center mt-2"><small class="text-muted">Processing ...</small></h5>
                     <!-- /ko -->
                 </div>
             </div>
@@ -103,49 +121,66 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- ko ifnot: IsSearching -->
-                        <!-- ko if: SearchPackageMetadataSet().length === 0 -->
-                            <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions found -</small></h5>
+                    <!-- ko ifnot: IsProcessing -->
+                        <!-- ko ifnot: IsSearching -->
+                            <!-- ko if: SearchPackageMetadataSet().length === 0 -->
+                                <h5 class="d-block text-center mt-2"><small class="text-muted">- no extensions found -</small></h5>
+                            <!-- /ko -->
+                            <!-- ko if: SearchPackageMetadataSet().length > 0 -->
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover small">
+                                        <thead class="thead-default">
+                                            <tr>
+                                                <th>Action</th>
+                                                <th>Name</th>
+                                                <th>Version</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: SearchPackageMetadataSet">
+                                            <tr>
+                                                <td>
+                                                    <!-- ko if: IsInstalled() && !IsUpdateAvailable() -->
+                                                    <span class="fa fa-plus url" style="color:darkgray">
+                                                    </span>
+                                                    <!-- /ko -->
+                                                    <!-- ko ifnot: IsInstalled -->
+                                                    <span class="fa fa-plus url"
+                                                          data-bind="click: $parent.InstallPlugin">
+                                                    </span>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: IsUpdateAvailable -->
+                                                    <span class="fa fa-cloud-upload url"
+                                                          data-bind="click: $parent.UpdatePlugin">
+                                                    </span>
+                                                    <!-- /ko -->
+                                                </td>
+                                                <td data-bind="text: PackageId, tooltip: { title: Description()}"></td>
+                                                <td data-bind="text: Version"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <!-- /ko -->
+                                <div class="d-flex">
+                                    <!-- ko if: CanClickPrevious-->
+                                    <div class="btn btn-outline-info" data-bind="click: PreviousPage">
+                                        <span class="fa fa-arrow-left"></span>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: CanClickNext -->
+                                    <div class="btn btn-outline-info ml-auto" data-bind="click: NextPage">
+                                        <span class="fa fa-arrow-right"></span>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
                         <!-- /ko -->
-                        <!-- ko if: SearchPackageMetadataSet().length > 0 -->
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover small">
-                                    <thead class="thead-default">
-                                        <tr>
-                                            <th>Action</th>
-                                            <th>Name</th>
-                                            <th>Version</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody data-bind="foreach: SearchPackageMetadataSet">
-                                        <tr>
-                                            <td>
-                                                <!-- ko ifnot: IsInstalled -->
-                                                <span class="fa fa-plus url"
-                                                      data-bind="click: $parent.InstallPlugin">
-                                                </span>
-                                                <!-- /ko -->
-                                                <!-- ko if: IsUpdateAvailable -->
-                                                <span class="fa fa-cloud-upload url"
-                                                      data-bind="click: $parent.UpdatePlugin">
-                                                </span>
-                                                <!-- /ko -->
-                                                <!-- ko if: IsInstalled -->
-                                                <span class="fa fa-minus url"
-                                                      data-bind="click: $parent.UninstallPlugin">
-                                                </span>
-                                                <!-- /ko -->
-                                            </td>
-                                            <td data-bind="text: PackageId, tooltip: { title: Description()}"></td>
-                                            <td data-bind="text: Version"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <!-- ko if: IsSearching -->
+                            <h5 class="d-block text-center mt-2"><small class="text-muted">Searching ...</small></h5>
                         <!-- /ko -->
                     <!-- /ko -->
-                    <!-- ko if: IsSearching -->
-                        <h5 class="d-block text-center mt-2"><small class="text-muted">Searching ...</small></h5>
+                        
+                    <!-- ko if: IsProcessing -->
+                        <h5 class="d-block text-center mt-2"><small class="text-muted">Processing ...</small></h5>
                     <!-- /ko -->
                 </div>
             </div>

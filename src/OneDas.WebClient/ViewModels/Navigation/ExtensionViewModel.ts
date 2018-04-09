@@ -4,6 +4,12 @@
     public SearchPackageMetadataSet: KnockoutObservableArray<PackageMetadataViewModel>
     public SelectedPackageSource: KnockoutObservable<OneDasPackageSourceViewModel>
     public IsSearching: KnockoutObservable<boolean>
+    public IsProcessing: KnockoutObservable<boolean>
+    public MessageLog: KnockoutObservableArray<string>
+    public Skip: KnockoutObservable<number>
+    public Take: KnockoutObservable<number>
+    public CanClickPrevious: KnockoutComputed<boolean>
+    public CanClickNext: KnockoutComputed<boolean>
 
     constructor(activeProject: KnockoutObservable<OneDasProjectViewModel>)
     {
@@ -13,15 +19,33 @@
         this.SearchPackageMetadataSet = ko.observableArray<PackageMetadataViewModel>()
         this.SelectedPackageSource = ko.observable<OneDasPackageSourceViewModel>()
         this.IsSearching = ko.observable<boolean>(false)
+        this.IsProcessing = ko.observable<boolean>(false)
+        this.MessageLog = ko.observableArray<string>()
+
+        this.Skip = ko.observable<number>(0);
+        this.Take = ko.observable<number>(15);
 
         // search
+        this.CanClickPrevious = ko.pureComputed(() =>
+        {
+            return this.Skip() > 0
+        })
+
+        this.CanClickNext = ko.pureComputed(() =>
+        {
+            return this.SearchPackageMetadataSet().length == this.Take();
+        })
+
         this.SearchTerm.subscribe(newValue =>
         {
+            this.Skip(0);
             this.SearchPlugins(this.SearchTerm())
         })
 
         this.SelectedPackageSource.subscribe(newValue =>
         {
+            this.Skip(0);
+
             if (newValue)
             {
                 this.SearchPlugins(this.SearchTerm())
@@ -30,6 +54,11 @@
             {
                 this.SearchPackageMetadataSet([])
             }
+        })
+
+        ConnectionManager.WebClientHub.on("SendNugetMessage", nugetMessage =>
+        {
+            this.MessageLog.unshift(nugetMessage)
         })
     }
 
@@ -46,10 +75,13 @@
             try
             {
                 this.IsSearching(true)
-
-                packageMetaDataSet = await ConnectionManager.InvokeWebClientHub("SearchPlugins", searchTerm, packageSource.Address)
+                packageMetaDataSet = await ConnectionManager.InvokeWebClientHub("SearchPlugins", searchTerm, packageSource.Address, this.Skip(), this.Take())
                 this.SearchPackageMetadataSet(packageMetaDataSet.map(packageMetaData => new PackageMetadataViewModel(packageMetaData)))
             } 
+            catch (e)
+            {
+                alert(e.message)
+            }
             finally
             {
                 this.IsSearching(false)
@@ -62,11 +94,19 @@
     {
         try
         {
+            this.IsProcessing(true)
+            this.MessageLog.removeAll()
+
             await ConnectionManager.InvokeWebClientHub("InstallPlugin", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
+            await this.SearchPlugins(this.SearchTerm())
         }
         catch (e)
         {
             alert(e.message)
+        }
+        finally
+        {
+            this.IsProcessing(false)
         }
     }
 
@@ -74,11 +114,19 @@
     {
         try
         {
-            await ConnectionManager.InvokeWebClientHub("UpdatePlugin", packageMetaData.PackageId())
+            this.IsProcessing(true)
+            this.MessageLog.removeAll()
+
+            await ConnectionManager.InvokeWebClientHub("UpdatePlugin", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
+            await this.SearchPlugins(this.SearchTerm())
         }
         catch (e)
         {
             alert(e.message)
+        }
+        finally
+        {
+            this.IsProcessing(false)
         }
     }
 
@@ -86,7 +134,28 @@
     {
         try
         {
+            this.IsProcessing(true)
+            this.MessageLog.removeAll()
+
             await ConnectionManager.InvokeWebClientHub("UninstallPlugin", packageMetaData.PackageId())
+            await this.SearchPlugins(this.SearchTerm())
+        }
+        catch (e)
+        {
+            alert(e.message)
+        }
+        finally
+        {
+            this.IsProcessing(false)
+        }
+    }
+
+    public PreviousPage = async () =>
+    {
+        try
+        {
+            this.Skip(math.max(0, this.Skip() - this.Take()))
+            await this.SearchPlugins(this.SearchTerm())
         }
         catch (e)
         {
@@ -94,8 +163,16 @@
         }
     }
 
-    public ResetSearch = () =>
+    public NextPage = async () =>
     {
-        this.SearchTerm("")
+        try
+        {
+            this.Skip(this.Skip() + this.Take())
+            await this.SearchPlugins(this.SearchTerm())
+        }
+        catch (e)
+        {
+            alert(e.message)
+        }
     }
 }
