@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -77,10 +79,9 @@ namespace OneDas.WebServer
 
             if (!File.Exists(_options.NugetProjectFilePath))
             {
-                jobject = new JObject(
-                    new JProperty("frameworks", new JObject(new JProperty("netstandard2.0", new JObject())))
-                );
+                jobject = new JObject();
 
+                JsonConfigUtility.AddFramework(jobject, FrameworkConstants.CommonFrameworks.NetStandard20);
                 File.WriteAllText(_options.NugetProjectFilePath, jobject.ToString(Formatting.Indented));
             }
 
@@ -143,6 +144,7 @@ namespace OneDas.WebServer
         public static string ConfigurationDirectoryPath { get; private set; }
 
         public static ILogger SystemLogger { get; private set; }
+        public static JObject NugetFramework { get; private set; }
 
         #endregion
 

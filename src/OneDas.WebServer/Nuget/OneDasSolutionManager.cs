@@ -1,6 +1,4 @@
-﻿#pragma warning disable 67
-
-using NuGet.PackageManagement;
+﻿using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -11,6 +9,8 @@ namespace OneDas.WebServer.Nuget
     public class OneDasSolutionManager : ISolutionManager
     {
         #region "Events"
+
+#pragma warning disable 0067
 
         public event EventHandler SolutionOpening;
         public event EventHandler SolutionOpened;
@@ -23,6 +23,8 @@ namespace OneDas.WebServer.Nuget
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectUpdated;
         public event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
         public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
+
+#pragma warning restore 0067
 
         #endregion
 

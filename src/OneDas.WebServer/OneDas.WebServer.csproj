@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview3-32169" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview3-32169" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-preview3-32169" />
-    <PackageReference Include="NuGet.PackageManagement.NetStandard" Version="4.6.0" />
+    <PackageReference Include="NuGet.PackageManagement" Version="4.7.0-rtm.5081" />
     <PackageReference Include="OneDas.Engine" Version="1.0.0-alpha-6673-15606" />
   </ItemGroup>
   

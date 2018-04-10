@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.Options;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -12,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -46,7 +51,7 @@ namespace OneDas.WebServer.Nuget
             _sourceRepositoryProvider = this.CreateSourceRepositoryProvider();
             _packageManager = this.CreateNuGetPackageManager(_sourceRepositoryProvider);
 
-            this.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, _loggerAdapter, null);
+            this.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, _loggerAdapter, null, null);
             this.PackageSourceSet = SettingsUtility.GetEnabledSources(_settings).ToList();
         }
 
@@ -59,6 +64,56 @@ namespace OneDas.WebServer.Nuget
         #endregion
 
         #region "Methods"
+
+        public List<Assembly> LoadAssemblies()
+        {
+            List<Assembly> assemblySet;
+
+            assemblySet = new List<Assembly>();
+
+            var lockFile = this.GetLockFile();
+            var target = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
+
+            if (target != null)
+            {
+                target.Libraries.ToList().ForEach(library =>
+                {
+                    try
+                    {
+                        assemblySet.Add(Assembly.Load(library.Name));
+                        Debug.WriteLine("Loaded lib: " + library.Name);
+                    }
+                    catch
+                    {
+                        var lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
+                        var pathBase = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
+
+                        lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
+                        {
+                            var absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(pathBase, relativeFilePath));
+
+                            try
+                            {
+                                assemblySet.Add(Assembly.LoadFile(absoluteFilePath));
+                                Debug.WriteLine("Loaded file: " + absoluteFilePath);
+                            }
+                            catch
+                            {
+                                Debug.WriteLine("Failed to load file: " + absoluteFilePath);
+                            }
+                        });
+                    }
+
+                });
+            }
+
+            return assemblySet;
+        }
+
+        private LockFile GetLockFile()
+        {
+            return LockFileUtilities.GetLockFile(_project.GetAssetsFilePathAsync().Result, _loggerAdapter);
+        }
 
         public async Task<List<OneDasPackageMetaData>> GetInstalledPackagesAsync()
         {
@@ -168,10 +223,7 @@ namespace OneDas.WebServer.Nuget
 
             if (installedPackage != null)
             {
-                await _project.UninstallPackageAsync(
-                            installedPackage.PackageIdentity,
-                            this,
-                            CancellationToken.None);
+                await _packageManager.UninstallPackageAsync(_project, packageId, uninstallationContext, this, CancellationToken.None);
             }
         }
 
@@ -185,6 +237,7 @@ namespace OneDas.WebServer.Nuget
             solutionManager = new OneDasSolutionManager(this, _project, _webServerOptions.NugetDirectoryPath);
             deleteOnRestartManager = new OneDasDeleteOnRestartManager();
             packageSourceProvider = (PackageSourceProvider)sourceRepositoryProvider.PackageSourceProvider;
+
             packageManager = new NuGetPackageManager(sourceRepositoryProvider, _settings, solutionManager, deleteOnRestartManager)
             {
                 InstallationCompatibility = _installationCompatibility

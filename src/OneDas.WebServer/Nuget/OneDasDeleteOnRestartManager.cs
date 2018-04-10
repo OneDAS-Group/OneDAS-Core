@@ -1,6 +1,4 @@
-﻿#pragma warning disable 67
-
-using NuGet.PackageManagement;
+﻿using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using System;
@@ -10,7 +8,11 @@ namespace OneDas.WebServer.Nuget
 {
     public class OneDasDeleteOnRestartManager : IDeleteOnRestartManager
     {
+#pragma warning disable 0067
+
         public event EventHandler<PackagesMarkedForDeletionEventArgs> PackagesMarkedForDeletionFound;
+
+#pragma warning restore 0067
 
         public void CheckAndRaisePackageDirectoriesMarkedForDeletion()
         {
