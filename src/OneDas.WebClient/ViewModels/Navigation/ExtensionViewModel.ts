@@ -39,7 +39,7 @@
         this.SearchTerm.subscribe(newValue =>
         {
             this.Skip(0);
-            this.SearchPlugins(this.SearchTerm())
+            this.SearchPackages(this.SearchTerm())
         })
 
         this.SelectedPackageSource.subscribe(newValue =>
@@ -48,7 +48,7 @@
 
             if (newValue)
             {
-                this.SearchPlugins(this.SearchTerm())
+                this.SearchPackages(this.SearchTerm())
             }
             else
             {
@@ -63,7 +63,7 @@
     }
 
     // method
-    public SearchPlugins = async (searchTerm: string) =>
+    public SearchPackages = async (searchTerm: string) =>
     {
         let packageSource: OneDasPackageSourceViewModel
         let packageMetaDataSet: any[]
@@ -75,7 +75,7 @@
             try
             {
                 this.IsSearching(true)
-                packageMetaDataSet = await ConnectionManager.InvokeWebClientHub("SearchPlugins", searchTerm, packageSource.Address, this.Skip(), this.Take())
+                packageMetaDataSet = await ConnectionManager.InvokeWebClientHub("SearchPackages", searchTerm, packageSource.Address, this.Skip(), this.Take())
                 this.SearchPackageMetadataSet(packageMetaDataSet.map(packageMetaData => new PackageMetadataViewModel(packageMetaData)))
             } 
             catch (e)
@@ -90,15 +90,15 @@
     }
 
     // command
-    public InstallPlugin = async (packageMetaData) =>
+    public InstallPackage = async (packageMetaData) =>
     {
         try
         {
             this.IsProcessing(true)
             this.MessageLog.removeAll()
 
-            await ConnectionManager.InvokeWebClientHub("InstallPlugin", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
-            await this.SearchPlugins(this.SearchTerm())
+            await ConnectionManager.InvokeWebClientHub("InstallPackage", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
+            await this.SearchPackages(this.SearchTerm())
         }
         catch (e)
         {
@@ -110,15 +110,15 @@
         }
     }
 
-    public UpdatePlugin = async (packageMetaData) =>
+    public UpdatePackage = async (packageMetaData) =>
     {
         try
         {
             this.IsProcessing(true)
             this.MessageLog.removeAll()
 
-            await ConnectionManager.InvokeWebClientHub("UpdatePlugin", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
-            await this.SearchPlugins(this.SearchTerm())
+            await ConnectionManager.InvokeWebClientHub("UpdatePackage", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
+            await this.SearchPackages(this.SearchTerm())
         }
         catch (e)
         {
@@ -130,15 +130,15 @@
         }
     }
 
-    public UninstallPlugin = async (packageMetaData) =>
+    public UninstallPackage = async (packageMetaData) =>
     {
         try
         {
             this.IsProcessing(true)
             this.MessageLog.removeAll()
 
-            await ConnectionManager.InvokeWebClientHub("UninstallPlugin", packageMetaData.PackageId())
-            await this.SearchPlugins(this.SearchTerm())
+            await ConnectionManager.InvokeWebClientHub("UninstallPackage", packageMetaData.PackageId())
+            await this.SearchPackages(this.SearchTerm())
         }
         catch (e)
         {
@@ -155,7 +155,7 @@
         try
         {
             this.Skip(math.max(0, this.Skip() - this.Take()))
-            await this.SearchPlugins(this.SearchTerm())
+            await this.SearchPackages(this.SearchTerm())
         }
         catch (e)
         {
@@ -168,7 +168,7 @@
         try
         {
             this.Skip(this.Skip() + this.Take())
-            await this.SearchPlugins(this.SearchTerm())
+            await this.SearchPackages(this.SearchTerm())
         }
         catch (e)
         {

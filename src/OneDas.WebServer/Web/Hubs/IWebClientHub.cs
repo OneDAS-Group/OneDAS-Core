@@ -1,5 +1,6 @@
 ﻿using OneDas.Engine.Core;
 using OneDas.Infrastructure;
+using OneDas.Plugin;
 using OneDas.WebServer.Nuget;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,6 @@ namespace OneDas.WebServer.Web
         Task SendClientMessage(string message);
         Task SendNugetMessage(string message);
         Task SendInstalledPackages(List<OneDasPackageMetaData> packageMetadata);
+        Task SendPluginIdentifications(List<PluginIdentificationAttribute> dataGatewayPluginIdentificationSet, List<PluginIdentificationAttribute> dataWriterPluginIdentificationSet);
     }
 }

@@ -30,17 +30,18 @@ namespace OneDas.WebServer.Nuget
 
         #region "Fields"
 
-        NuGetProject _nuGetProject;
+        NuGetProject _project;
 
         #endregion
 
         #region "Constructors"
 
-        public OneDasSolutionManager(INuGetProjectContext nuGetProjectContext, NuGetProject nuGetProject, string projectDirectoryPath)
+        public OneDasSolutionManager(INuGetProjectContext projectContext, NuGetProject project, string projectDirectoryPath)
         {
             this.SolutionDirectory = projectDirectoryPath;
-            this.NuGetProjectContext = nuGetProjectContext;
-            _nuGetProject = nuGetProject;
+            this.NuGetProjectContext = projectContext;
+
+            _project = project;
 
             this.IsSolutionOpen = true;
         }
@@ -76,19 +77,21 @@ namespace OneDas.WebServer.Nuget
 
         public Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
         {
-            return Task.FromResult(_nuGetProject);
+            return Task.FromResult(_project);
         }
 
         public Task<string> GetNuGetProjectSafeNameAsync(NuGetProject nuGetProject)
         {
-            return Task.FromResult("YoYoYo");
+            return Task.FromResult((string)_project.Metadata[NuGetProjectMetadataKeys.UniqueName]);
         }
 
         public Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
-            IEnumerable<NuGetProject> list = new List<NuGetProject>() { _nuGetProject };
+            IEnumerable<NuGetProject> projectSet;
 
-            return Task.FromResult(list);
+            projectSet = new List<NuGetProject>() { _project };
+
+            return Task.FromResult(projectSet);
         }
 
         public Task<bool> IsSolutionAvailableAsync()

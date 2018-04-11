@@ -41,10 +41,7 @@ namespace OneDas.WebServer
 
         public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration, ISettings nugetSettings)
         {
-            Version minimumVersion;
-
             OneDasPackageManager packageManager;
-            IPluginProvider pluginProvider;
 
             _isHosting = isHosting;
             _webServerOptions = webServerOptions;
@@ -66,13 +63,7 @@ namespace OneDas.WebServer
 
                 // package manager 
                 packageManager = _serviceProvider.GetRequiredService<OneDasPackageManager>();
-                packageManager.LoadAssemblies();
-
-                // load plugins
-                minimumVersion = new Version(new Version(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion).Major, 0, 0, 0);
-
-                pluginProvider = _serviceProvider.GetRequiredService<IPluginProvider>();
-                pluginProvider.ScanAssemblies(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"), "OneDAS", minimumVersion);
+                packageManager.ReloadPackages();
 
                 // create engine
                 _engine = _serviceProvider.GetRequiredService<OneDasEngine>();

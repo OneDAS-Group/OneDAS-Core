@@ -17,12 +17,22 @@ namespace OneDas.WebServer.Nuget
 {
     public class OneDasInstallationCompatibility : IInstallationCompatibility
     {
-        WebServerOptions _webServerOptions;
+        #region "Fields"
+
+        WebServerOptions _options;
+
+        #endregion
+
+        #region "Constructors"
 
         public OneDasInstallationCompatibility(IOptions<WebServerOptions> webServerOptions)
         {
-            _webServerOptions = webServerOptions.Value;
+            _options = webServerOptions.Value;
         }
+
+        #endregion
+
+        #region "Methods"
 
         public void EnsurePackageCompatibility(NuGetProject nuGetProject, INuGetPathContext pathContext, IEnumerable<NuGetProjectAction> nuGetProjectActions, RestoreResult restoreResult)
         {
@@ -36,7 +46,7 @@ namespace OneDas.WebServer.Nuget
             HashSet<string> requestedPackageIds;
             IEnumerable<PackageIdentity> installedIdentities;
 
-            // Find all of the installed package identities.
+            // find all of the installed package identities.
             requestedPackageIds = new HashSet<string>(nuGetProjectActions.Where(action => action.NuGetProjectActionType == NuGetProjectActionType.Install).Select(action => action.PackageIdentity.Id), StringComparer.OrdinalIgnoreCase);
 
             installedIdentities = restoreResult
@@ -47,7 +57,7 @@ namespace OneDas.WebServer.Nuget
                 .Distinct()
                 .Where(identity => requestedPackageIds.Contains(identity.Id));
 
-            // Read the .nuspec on disk and ensure package compatibility.
+            // read the .nuspec on disk and ensure package compatibility.
             resolver = new FallbackPackagePathResolver(pathContext);
 
             foreach (PackageIdentity identity in installedIdentities)
@@ -110,11 +120,13 @@ namespace OneDas.WebServer.Nuget
 
             if (packageTypeSet.Any())
             {
-                if (!packageTypeSet.Any(packageType => packageType == PackageType.Dependency || packageType.Name == _webServerOptions.PluginPackageTypeName))
+                if (!packageTypeSet.Any(packageType => packageType == PackageType.Dependency || packageType.Name == _options.PluginPackageTypeName))
                 {
                     throw new Exception(ErrorMessage.InstallationCompatiblity_InvalidPackageType);
                 }
             }
         }
+
+        #endregion
     }
 }

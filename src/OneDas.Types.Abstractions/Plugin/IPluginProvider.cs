@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace OneDas.Plugin
 {
@@ -7,19 +8,15 @@ namespace OneDas.Plugin
     {
         #region "Hive"
 
-        void ScanAssemblies(string directoryPath, string productName, Version minimumVersion);
-
-        void ScanAssembly(string filePath);
-
-        List<Type> LoadAssemblies(string directoryPath, string productName, Version minimumVersion);
-
-        List<Type> LoadAssemby(string filePath);
-
         Type GetSettings(string pluginId);
 
         Type GetLogic(string pluginId);
 
         IEnumerable<Type> Get<TPluginBase>();
+
+        IEnumerable<PluginIdentificationAttribute> GetIdentifications<TPluginSettings>() where TPluginSettings : PluginSettingsBase;
+
+        void ScanAssembly(Assembly assembly);
 
         void Add(Type pluginType);
 

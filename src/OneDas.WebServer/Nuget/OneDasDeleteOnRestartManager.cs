@@ -24,14 +24,14 @@ namespace OneDas.WebServer.Nuget
             //
         }
 
-        public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
-        {
-            return new List<string>();
-        }
-
         public void MarkPackageDirectoryForDeletion(PackageIdentity package, string packageDirectory, INuGetProjectContext projectContext)
         {
             //
+        }
+
+        public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
+        {
+            return new List<string>();
         }
     }
 }

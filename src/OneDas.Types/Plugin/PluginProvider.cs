@@ -28,40 +28,15 @@ namespace OneDas.Plugin
 
         #endregion
 
-        #region "Hive"
+        #region "Hive"      
 
-        public void ScanAssemblies(string directoryPath, string productName, Version minimumVersion)
+        public void ScanAssembly(Assembly assembly)
         {
-            List<Type> typeSet;
+            List<Type> foundTypeSet;
 
-            typeSet = this.LoadAssemblies(directoryPath, productName, minimumVersion);
-            this.InternalScanAssembly(typeSet);
-        }
+            foundTypeSet = assembly.ExportedTypes.Where(type => type.IsClass && !type.IsAbstract && (type.IsSubclassOf(typeof(PluginSettingsBase)) || type.IsSubclassOf(typeof(PluginLogicBase)))).ToList();
 
-        public void ScanAssembly(string filePath)
-        {
-            List<Type> typeSet;
-
-            typeSet = this.LoadAssemby(filePath);
-            this.InternalScanAssembly(typeSet);
-        }
-
-        public List<Type> LoadAssemblies(string directoryPath, string productName, Version minimumVersion)
-        {
-            List<string> dllFilePathSet;
-
-            dllFilePathSet = Directory.GetFiles(directoryPath, "*.dll", SearchOption.AllDirectories).ToList();
-
-            return dllFilePathSet.Where(filePath => this.CheckAssembly(filePath, productName, minimumVersion)).SelectMany(filePath => this.LoadAssemby(filePath)).ToList();
-        }
-
-        public List<Type> LoadAssemby(string filePath)
-        {
-            Assembly assembly;
-
-            assembly = Assembly.LoadFrom(filePath);
-
-            return assembly.ExportedTypes.ToList();
+            this.AddRange(foundTypeSet);
         }
 
         public Type GetSettings(string pluginId)
@@ -77,6 +52,19 @@ namespace OneDas.Plugin
         public IEnumerable<Type> Get<TPluginBase>()
         {
             return _pluginSet.Where(type => type.IsSubclassOf(typeof(TPluginBase))).ToList();
+        }
+
+        public IEnumerable<PluginIdentificationAttribute> GetIdentifications<TPluginSettings>() where TPluginSettings : PluginSettingsBase
+        {
+            return this.Get<TPluginSettings>().Select(settingsType =>
+            {
+                PluginIdentificationAttribute attribute;
+
+                attribute = settingsType.GetFirstAttribute<PluginIdentificationAttribute>();
+                attribute.ProductVersion = FileVersionInfo.GetVersionInfo(settingsType.Assembly.Location).ProductVersion;
+
+                return attribute;
+            }).ToList();
         }
 
         public void Add(Type pluginType)
@@ -101,35 +89,6 @@ namespace OneDas.Plugin
         public void Clear()
         {
             _pluginSet.Clear();
-        }
-
-        private void InternalScanAssembly(List<Type> typeSet)
-        {
-            List<Type> pluginConcreteTypeSet;
-
-            pluginConcreteTypeSet = typeSet.Where(type => type.IsClass && !type.IsAbstract && (type.IsSubclassOf(typeof(PluginSettingsBase)) || type.IsSubclassOf(typeof(PluginLogicBase)))).ToList();
-
-            this.AddRange(pluginConcreteTypeSet);
-        }
-
-        private bool CheckAssembly(string filePath, string productName, Version minimumVersion)
-        {
-            Version productVersion;
-            FileVersionInfo fileVersionInfo;
-
-            fileVersionInfo = FileVersionInfo.GetVersionInfo(filePath);
-
-            if (!string.IsNullOrEmpty(fileVersionInfo.FileVersion))
-            {
-                productVersion = new Version(fileVersionInfo.FileVersion);
-
-                if (fileVersionInfo.ProductName == productName && productVersion.CompareTo(minimumVersion) >= 0)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         #endregion

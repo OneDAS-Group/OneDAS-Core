@@ -12,8 +12,8 @@
     public PerformanceInformation: KnockoutObservable<OneDasPerformanceInformationViewModel>
     public IsConnected: KnockoutObservable<boolean>
 
-    public DataGatewayPluginIdentifications: KnockoutObservableArray<PluginIdentificationViewModel>
-    public DataWriterPluginIdentifications: KnockoutObservableArray<PluginIdentificationViewModel>
+    public DataGatewayPluginIdentificationSet: KnockoutObservableArray<PluginIdentificationViewModel>
+    public DataWriterPluginIdentificationSet: KnockoutObservableArray<PluginIdentificationViewModel>
 
     public NewWebServerOptionsLightOneDasName: KnockoutObservable<string>
     public NewWebServerOptionsLightAspBaseUrl: KnockoutObservable<string>
@@ -64,8 +64,8 @@
         this.PerformanceInformation = ko.observable<OneDasPerformanceInformationViewModel>()
         this.IsConnected = ko.observable<boolean>(true)
 
-        this.DataGatewayPluginIdentifications = ko.observableArray<PluginIdentificationViewModel>()
-        this.DataWriterPluginIdentifications = ko.observableArray<PluginIdentificationViewModel>()
+        this.DataGatewayPluginIdentificationSet = ko.observableArray<PluginIdentificationViewModel>()
+        this.DataWriterPluginIdentificationSet = ko.observableArray<PluginIdentificationViewModel>()
 
         this.NewWebServerOptionsLightOneDasName = ko.observable<string>()
         this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
@@ -187,6 +187,12 @@
         {
             this.InstalledPackageSet(installedPackageSet.map(packageMetadata => new PackageMetadataViewModel(packageMetadata)))
         })
+
+        ConnectionManager.WebClientHub.on("SendPluginIdentifications", (dataGatewayPluginIdentificationSet, dataWriterPluginIdentificationSet) =>
+        {
+            this.RegisterPlugins("DataGateway", dataGatewayPluginIdentificationSet, this.DataGatewayPluginIdentificationSet)
+            this.RegisterPlugins("DataWriter", dataWriterPluginIdentificationSet, this.DataWriterPluginIdentificationSet)
+        })
     }
 
     // methods
@@ -199,56 +205,10 @@
         this.OneDasState(appModel.OneDasState)
         this.WebServerOptionsLight(new WebServerOptionsLightViewModel(appModel.WebServerOptionsLight));
 
-        // register data gateways
-        PluginHive.PluginIdentificationSet.set("DataGateway", appModel.DataGatewayPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))
-
-        PluginHive.PluginIdentificationSet.get("DataGateway").forEach(pluginIdentification =>
-        {
-            if (!ko.components.isRegistered(pluginIdentification.Id))
-            {
-                ko.components.register(pluginIdentification.Id, {
-                    template:
-                        {
-                            PluginType: "DataGateway", PluginIdentification: pluginIdentification
-                        },
-                    viewModel:
-                        {
-                            createViewModel: (params, componentInfo) => 
-                            {
-                                return params.GetDataGatewayCallback(params.Index)
-                            }
-                        }
-                })
-            }
-        })
-
-        this.DataGatewayPluginIdentifications(PluginHive.PluginIdentificationSet.get("DataGateway"))
-
-        // register data writers
-        PluginHive.PluginIdentificationSet.set("DataWriter", appModel.DataWriterPluginIdentificationSet.map(x => new PluginIdentificationViewModel(x)))
-
-        PluginHive.PluginIdentificationSet.get("DataWriter").forEach(pluginIdentification =>
-        {
-            if (!ko.components.isRegistered(pluginIdentification.Id))
-            {
-                ko.components.register(pluginIdentification.Id, {
-                    template:
-                        {
-                            PluginType: "DataWriter", PluginIdentification: pluginIdentification
-                        },
-                    viewModel:
-                        {
-                            createViewModel: (params, componentInfo) => 
-                            {
-                                return params.GetDataWriterCallback(params.Index)
-                            }
-                        }
-                })
-            }
-        })
-
-        this.DataWriterPluginIdentifications(PluginHive.PluginIdentificationSet.get("DataWriter"))
-
+        // register plugins
+        this.RegisterPlugins("DataGateway", appModel.DataGatewayPluginIdentificationSet, this.DataGatewayPluginIdentificationSet)
+        this.RegisterPlugins("DataWriter", appModel.DataWriterPluginIdentificationSet, this.DataWriterPluginIdentificationSet)
+        
         // installed packages
         this.InstalledPackageSet(appModel.InstalledPackageSet.map(packageMetadata => new PackageMetadataViewModel(packageMetadata)))
 
@@ -261,6 +221,40 @@
         {
             this.ActiveProject(null)
         }
+    }
+
+    public RegisterPlugins(pluginType: string, pluginIdentificationModelSet: any[], pluginIdentificationSet: KnockoutObservableArray<PluginIdentificationViewModel>)
+    {
+        pluginIdentificationSet().forEach(pluginIdentification =>
+        {
+            if (ko.components.isRegistered(pluginIdentification.Id))
+            {
+                ko.components.unregister(pluginIdentification.Id)
+            }
+        })
+
+        PluginHive.PluginIdentificationSet.set(pluginType, pluginIdentificationModelSet.map(x => new PluginIdentificationViewModel(x)))
+
+        PluginHive.PluginIdentificationSet.get(pluginType).forEach(pluginIdentification =>
+        {
+            ko.components.register(pluginIdentification.Id, {
+                template:
+                    {
+                        PluginType: pluginType, PluginIdentification: pluginIdentification
+                    },
+                viewModel:
+                    {
+                        createViewModel: (params, componentInfo) => 
+                        {
+                            return params.GetCallback(params.Index)
+                        }
+                    }
+            })
+        })
+
+        pluginIdentificationSet(PluginHive.PluginIdentificationSet.get(pluginType))
+
+        console.log("OneDAS: " + pluginType + " plugins registered (" + PluginHive.PluginIdentificationSet.get(pluginType).length + ")")
     }
 
     public InitializeProject = async (projectModel) =>

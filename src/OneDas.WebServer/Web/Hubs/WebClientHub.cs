@@ -238,32 +238,9 @@ namespace OneDas.WebServer.Web
 
         public Task<AppModel> GetAppModel()
         {
-            IList<PluginIdentificationAttribute> dataGatewayPluginIdentificationSet;
-            IList<PluginIdentificationAttribute> dataWriterPluginIdentificationSet;
-
             string productVersion;
 
             productVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
-            dataGatewayPluginIdentificationSet = _pluginProvider.Get<DataGatewayPluginSettingsBase>().Select(dataGatewaySettingsType =>
-            {
-                PluginIdentificationAttribute attribute;
-
-                attribute = dataGatewaySettingsType.GetFirstAttribute<PluginIdentificationAttribute>();
-                attribute.ProductVersion = FileVersionInfo.GetVersionInfo(dataGatewaySettingsType.Assembly.Location).ProductVersion;
-
-                return attribute;
-            }).ToList();
-
-            dataWriterPluginIdentificationSet = _pluginProvider.Get<DataWriterPluginSettingsBase>().Select(dataWriterSettingsType =>
-            {
-                PluginIdentificationAttribute attribute;
-
-                attribute = dataWriterSettingsType.GetFirstAttribute<PluginIdentificationAttribute>();
-                attribute.ProductVersion = FileVersionInfo.GetVersionInfo(dataWriterSettingsType.Assembly.Location).ProductVersion;
-
-                return attribute;
-            }).ToList();
 
             return Task.Run(async () =>
             {
@@ -271,8 +248,8 @@ namespace OneDas.WebServer.Web
                     activeProjectSettings: _engine.Project?.Settings,
                     installedPackageSet: await _packageManager.GetInstalledPackagesAsync(),
                     clientSet: new List<string>() { },
-                    dataGatewayPluginIdentificationSet: dataGatewayPluginIdentificationSet,
-                    dataWriterPluginIdentificationSet: dataWriterPluginIdentificationSet,
+                    dataGatewayPluginIdentificationSet: _pluginProvider.GetIdentifications<DataGatewayPluginSettingsBase>().ToList(),
+                    dataWriterPluginIdentificationSet: _pluginProvider.GetIdentifications<DataWriterPluginSettingsBase>().ToList(),
                     productVersion: productVersion,
                     lastError: _engine.LastError,
                     oneDasState: _engine.OneDasState,
@@ -315,36 +292,48 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<OneDasPackageMetaData[]> SearchPlugins(string searchTerm, string address, int skip, int take)
+        public Task<OneDasPackageMetaData[]> SearchPackages(string searchTerm, string address, int skip, int take)
         {
             return _packageManager.SearchAsync(searchTerm, address, skip, take);
         }
 
-        public Task InstallPlugin(string packageId, string source)
+        public Task InstallPackage(string packageId, string source)
         {
             return Task.Run(async () =>
             {
                 await _packageManager.InstallAsync(packageId, source);
-                await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+                await this.UpdateClientPackagesInformation();
             });
         }
 
-        public Task UpdatePlugin(string packageId, string source)
+        public Task UpdatePackage(string packageId, string source)
         {
             return Task.Run(async () =>
             {
                 await _packageManager.UpdateAsync(packageId, source);
-                await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+                await this.UpdateClientPackagesInformation();
             });
         }
 
-        public Task UninstallPlugin(string packageId)
+        public Task UninstallPackage(string packageId)
         {
             return Task.Run(async () =>
             {
                 await _packageManager.UninstallAsync(packageId);
-                await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+                await this.UpdateClientPackagesInformation();
             });
+        }
+
+        private async Task UpdateClientPackagesInformation()
+        {
+            await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
+            await _packageManager.ReloadPackagesAsync();
+
+            Console.WriteLine(_pluginProvider.GetIdentifications<DataGatewayPluginSettingsBase>().ToList().Count);
+
+            await this.Clients.All.SendPluginIdentifications(
+                _pluginProvider.GetIdentifications<DataGatewayPluginSettingsBase>().ToList(),
+                _pluginProvider.GetIdentifications<DataWriterPluginSettingsBase>().ToList());
         }
 
         #endregion

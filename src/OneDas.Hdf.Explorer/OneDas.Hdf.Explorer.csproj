@@ -11,15 +11,15 @@
   
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="2.6.375" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview3-32122" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview3-32122" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview3-32169" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview3-32169" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview3-32122" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview3-32169" />
     <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6651-31730" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6643-25333" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6651-31875" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6673-15582" />
+    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6675-24410" />
   </ItemGroup>
   
   <ItemGroup>
@@ -31,6 +31,36 @@
     <Content Include="$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\**\*.dll" CopyToPublishDirectory="Always">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="WebClient\Core\EventDispatcher.ts" />
+    <None Remove="WebClient\Core\HdfExplorerStateEnum.ts" />
+    <None Remove="WebClient\Core\IEvent.ts" />
+    <None Remove="WebClient\OneDas.Hdf.Explorer\DataAvailabilityGranularityEnum.ts" />
+    <None Remove="WebClient\OneDas.Hdf.Explorer\FileFormatEnum.ts" />
+    <None Remove="WebClient\OneDas\FileGranularityEnum.ts" />
+    <None Remove="WebClient\site.ts" />
+    <None Remove="WebClient\Static\EnumerationHelper.ts" />
+    <None Remove="WebClient\Static\Helper.ts" />
+    <None Remove="WebClient\ViewModels\AppViewModel.ts" />
+    <None Remove="WebClient\ViewModels\CampaignInfoViewModel.ts" />
+    <None Remove="WebClient\ViewModels\DataAvailabilityStatisticsViewModel.ts" />
+    <None Remove="WebClient\ViewModels\DatasetInfoViewModel.ts" />
+    <None Remove="WebClient\ViewModels\HdfElementViewModelBase.ts" />
+    <None Remove="WebClient\ViewModels\VariableInfoViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\Core\EventDispatcher.ts" />
+    <TypeScriptCompile Include="WebClient\Core\HdfExplorerStateEnum.ts" />
+    <TypeScriptCompile Include="WebClient\Core\IEvent.ts" />
+    <TypeScriptCompile Include="WebClient\OneDas.Hdf.Explorer\DataAvailabilityGranularityEnum.ts" />
+    <TypeScriptCompile Include="WebClient\OneDas.Hdf.Explorer\FileFormatEnum.ts" />
+    <TypeScriptCompile Include="WebClient\OneDas\FileGranularityEnum.ts" />
+    <TypeScriptCompile Include="WebClient\site.ts" />
+    <TypeScriptCompile Include="WebClient\Static\EnumerationHelper.ts" />
+    <TypeScriptCompile Include="WebClient\Static\Helper.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\AppViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\CampaignInfoViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\DataAvailabilityStatisticsViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\DatasetInfoViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\HdfElementViewModelBase.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\VariableInfoViewModel.ts" />
     <Content Update="**\tsconfig.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
   

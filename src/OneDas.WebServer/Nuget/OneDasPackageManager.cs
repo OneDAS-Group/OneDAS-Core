@@ -11,6 +11,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using OneDas.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,35 +24,36 @@ using System.Xml.Linq;
 
 namespace OneDas.WebServer.Nuget
 {
-    public class OneDasPackageManager : INuGetProjectContext
+    public class OneDasPackageManager
     {
         #region "Fields"
 
+        WebServerOptions _webServerOptions;
         OneDasNugetProject _project;
         NuGetPackageManager _packageManager;
         SourceRepositoryProvider _sourceRepositoryProvider;
-        WebServerOptions _webServerOptions;
-        LoggerAdapter _loggerAdapter;
+        OneDasNuGetProjectContext _projectContext;
 
         ISettings _settings;
+        IPluginProvider _pluginProvider;
         IInstallationCompatibility _installationCompatibility;
 
         #endregion
 
         #region "Constructors"
 
-        public OneDasPackageManager(ISettings settings, IInstallationCompatibility installationCompatibility, IOptions<WebServerOptions> webServerOptions)
+        public OneDasPackageManager(IPluginProvider pluginProvider, ISettings settings, IInstallationCompatibility installationCompatibility, IOptions<WebServerOptions> webServerOptions)
         {
-            _webServerOptions = webServerOptions.Value;
-            _installationCompatibility = installationCompatibility;
-
+            _pluginProvider = pluginProvider;
             _settings = settings;
+            _installationCompatibility = installationCompatibility;
+            _webServerOptions = webServerOptions.Value;
+
             _project = new OneDasNugetProject(_webServerOptions.NugetProjectFilePath);
-            _loggerAdapter = new LoggerAdapter(this);
+            _projectContext = new OneDasNuGetProjectContext();
             _sourceRepositoryProvider = this.CreateSourceRepositoryProvider();
             _packageManager = this.CreateNuGetPackageManager(_sourceRepositoryProvider);
 
-            this.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, _loggerAdapter, null, null);
             this.PackageSourceSet = SettingsUtility.GetEnabledSources(_settings).ToList();
         }
 
@@ -65,78 +67,51 @@ namespace OneDas.WebServer.Nuget
 
         #region "Methods"
 
-        public List<Assembly> LoadAssemblies()
+        public Task ReloadPackagesAsync()
+        {
+            return Task.Run(() =>
+            {
+                this.ReloadPackages();
+            });
+        }
+
+        public void ReloadPackages()
         {
             List<Assembly> assemblySet;
 
-            assemblySet = new List<Assembly>();
+            _pluginProvider.Clear();
 
-            var lockFile = this.GetLockFile();
-            var target = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
+            assemblySet = this.LoadPackages();
 
-            if (target != null)
+            assemblySet.ToList().ForEach(assembly =>
             {
-                target.Libraries.ToList().ForEach(library =>
-                {
-                    try
-                    {
-                        assemblySet.Add(Assembly.Load(library.Name));
-                        Debug.WriteLine("Loaded lib: " + library.Name);
-                    }
-                    catch
-                    {
-                        var lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
-                        var pathBase = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
-
-                        lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
-                        {
-                            var absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(pathBase, relativeFilePath));
-
-                            try
-                            {
-                                assemblySet.Add(Assembly.LoadFile(absoluteFilePath));
-                                Debug.WriteLine("Loaded file: " + absoluteFilePath);
-                            }
-                            catch
-                            {
-                                Debug.WriteLine("Failed to load file: " + absoluteFilePath);
-                            }
-                        });
-                    }
-
-                });
-            }
-
-            return assemblySet;
-        }
-
-        private LockFile GetLockFile()
-        {
-            return LockFileUtilities.GetLockFile(_project.GetAssetsFilePathAsync().Result, _loggerAdapter);
+                _pluginProvider.ScanAssembly(assembly);
+            });
         }
 
         public async Task<List<OneDasPackageMetaData>> GetInstalledPackagesAsync()
         {
-            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
+            IEnumerable<PackageReference> installedPackageSet;
+            List<OneDasPackageMetaData> packageMetadataSet;
 
-            var packageMetadataSet = installedPackages.
-                Where(packageReference => packageReference.IsUserInstalled).
-                Select(packageReference => new OneDasPackageMetaData(packageReference.PackageIdentity.Id, string.Empty, packageReference.PackageIdentity.Version.ToString(), true, false)).ToList();
+            installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
+
+            packageMetadataSet = installedPackageSet.
+                    Where(packageReference => packageReference.IsUserInstalled).
+                    Select(packageReference => new OneDasPackageMetaData(packageReference.PackageIdentity.Id, string.Empty, packageReference.PackageIdentity.Version.ToString(), true, false)).ToList();
 
             return packageMetadataSet;
         }
 
         public async Task<OneDasPackageMetaData[]> SearchAsync(string searchTerm, string source, int skip, int take)
         {
-            // aggregate multiple search results:
-            // https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Indexing/SearchResultsAggregator.cs
-            // sourceRepositorySet = new PackageSourceProvider(settings).LoadPackageSources().Select(packageSource => new SourceRepository(packageSource, providerSet)).ToList();
             PackageSource packageSource;
             SourceRepository sourceRepository;
             SearchFilter searchFilter;
 
             PackageSearchResource packageSearchResource;
             List<Task<OneDasPackageMetaData>> taskSet;
+            IEnumerable<PackageReference> installedPackageSet;
             IEnumerable<IPackageSearchMetadata> searchMetadataSet;
 
             packageSource = new PackageSource(source);
@@ -144,21 +119,20 @@ namespace OneDas.WebServer.Nuget
             searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _webServerOptions.PluginPackageTypeName
 
             packageSearchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>();
-            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, skip, take, _loggerAdapter, CancellationToken.None);
+            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);
 
-            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
+            installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
             taskSet = searchMetadataSet.Select(async searchMetadata =>
             {
                 bool isInstalled;
                 bool isUpdateAvailable;
+                PackageReference installedPackage;
                 IEnumerable<VersionInfo> versionInfoSet;
 
                 isUpdateAvailable = false;
                 versionInfoSet = await searchMetadata.GetVersionsAsync();
-
-                var installedPackage = installedPackages.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == searchMetadata.Identity.Id);
-
+                installedPackage = installedPackageSet.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == searchMetadata.Identity.Id);
                 isInstalled = installedPackage != null;
 
                 if (isInstalled)
@@ -184,7 +158,7 @@ namespace OneDas.WebServer.Nuget
                          _project,
                          packageId,
                          resolutionContext,
-                         this,
+                         _projectContext,
                          sourceRepositorySet,
                          null,
                          CancellationToken.None);
@@ -195,35 +169,38 @@ namespace OneDas.WebServer.Nuget
             ResolutionContext resolutionContext;
             PackageDownloadContext packageDownloadContext;
             List<SourceRepository> sourceRepositorySet;
+            IEnumerable<NuGetProjectAction> actionSet;
 
             resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, VersionConstraints.None);
             packageDownloadContext = new PackageDownloadContext(NullSourceCacheContext.Instance);
             sourceRepositorySet = this.PackageSourceSet.Select(packageSource => _sourceRepositoryProvider.CreateRepository(new PackageSource(packageSource.Source))).ToList();
 
-            var actions = await _packageManager.PreviewUpdatePackagesAsync(
+            actionSet = await _packageManager.PreviewUpdatePackagesAsync(
                         packageId,
                         new List<NuGetProject>() { _project },
                         resolutionContext,
-                        this,
+                        _projectContext,
                         sourceRepositorySet,
                         sourceRepositorySet,
                         CancellationToken.None);
 
-            await _packageManager.ExecuteNuGetProjectActionsAsync(_project, actions, this, packageDownloadContext, CancellationToken.None);
+            await _packageManager.ExecuteNuGetProjectActionsAsync(_project, actionSet, _projectContext, packageDownloadContext, CancellationToken.None);
         }
 
         public async Task UninstallAsync(string packageId)
         {
             UninstallationContext uninstallationContext;
+            PackageReference installedPackage;
+            IEnumerable<PackageReference> installedPackageSet;
 
             uninstallationContext = new UninstallationContext();
 
-            var installedPackages = await _project.GetInstalledPackagesAsync(new CancellationToken());
-            var installedPackage = installedPackages.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == packageId);
+            installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
+            installedPackage = installedPackageSet.FirstOrDefault(packageReference => packageReference.PackageIdentity.Id == packageId);
 
             if (installedPackage != null)
             {
-                await _packageManager.UninstallPackageAsync(_project, packageId, uninstallationContext, this, CancellationToken.None);
+                await _packageManager.UninstallPackageAsync(_project, packageId, uninstallationContext, _projectContext, CancellationToken.None);
             }
         }
 
@@ -234,7 +211,7 @@ namespace OneDas.WebServer.Nuget
             OneDasSolutionManager solutionManager;
             OneDasDeleteOnRestartManager deleteOnRestartManager;
 
-            solutionManager = new OneDasSolutionManager(this, _project, _webServerOptions.NugetDirectoryPath);
+            solutionManager = new OneDasSolutionManager(_projectContext, _project, _webServerOptions.NugetDirectoryPath);
             deleteOnRestartManager = new OneDasDeleteOnRestartManager();
             packageSourceProvider = (PackageSourceProvider)sourceRepositoryProvider.PackageSourceProvider;
 
@@ -259,47 +236,61 @@ namespace OneDas.WebServer.Nuget
             return sourceRepositoryProvider;
         }
 
-        #endregion
-
-        #region "INugetProjectContext"
-
-        public PackageExtractionContext PackageExtractionContext { get; set; }
-
-        public XDocument OriginalPackagesConfig { get; set; }
-
-        public Guid OperationId { get; set; }
-
-        public NuGetActionType ActionType { get; set; }
-
-        public ISourceControlManagerProvider SourceControlManagerProvider
+        private List<Assembly> LoadPackages()
         {
-            get
+            LockFile lockFile;
+            LockFileTarget lockFileTarget;
+            HashSet<Assembly> assemblySet;
+
+            assemblySet = new HashSet<Assembly>();
+
+            lockFile = this.GetLockFile();
+            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
+
+            if (lockFileTarget != null)
             {
-                return null;
+                lockFileTarget.Libraries.ToList().ForEach(library =>
+                {
+                    string basePath;
+                    string absoluteFilePath;
+
+                    LockFileLibrary lockFileLibrary;
+
+                    try
+                    {
+                        assemblySet.Add(Assembly.Load(library.Name));
+                        _projectContext.Log(MessageLevel.Debug, "Loaded lib: " + library.Name);
+                    }
+                    catch
+                    {
+                        lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
+                        basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
+
+                        lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.StartsWith("lib/netstandard2.0") && relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
+                        {
+                            absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, relativeFilePath));
+
+                            try
+                            {
+                                assemblySet.Add(Assembly.LoadFrom(absoluteFilePath));
+                                _projectContext.Log(MessageLevel.Debug, "Loaded file: " + absoluteFilePath);
+                            }
+                            catch
+                            {
+                                _projectContext.Log(MessageLevel.Debug, "Failed to load file: " + absoluteFilePath);
+                                throw;
+                            }
+                        });
+                    }
+                });
             }
+
+            return assemblySet.ToList();
         }
 
-        public NuGet.ProjectManagement.ExecutionContext ExecutionContext
+        private LockFile GetLockFile()
         {
-            get
-            {
-                return null;
-            }
-        }
-
-        public void Log(MessageLevel level, string message, params object[] args)
-        {
-            AdvancedBootloader.ClientPushService.SendNugetMessage(string.Format(message, args));
-        }
-
-        public void ReportError(string message)
-        {
-            AdvancedBootloader.ClientPushService.SendNugetMessage(message);
-        }
-
-        public FileConflictAction ResolveFileConflict(string message)
-        {
-            return FileConflictAction.IgnoreAll;
+            return LockFileUtilities.GetLockFile(_project.GetAssetsFilePathAsync().Result, _projectContext.LoggerAdapter);
         }
 
         #endregion
