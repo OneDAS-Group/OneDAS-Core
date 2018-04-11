@@ -1,11 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.ProjectManagement;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.ServiceProcess;
 
 namespace OneDas.WebServer
@@ -14,7 +19,7 @@ namespace OneDas.WebServer
     {
         #region "Fields"
 
-        private static WebServerOptions _webServerOptions;
+        private static WebServerOptions _options;
         private static ServiceController _oneDasServiceController;
         private static AdvancedBootloader _advancedBootloader;
 
@@ -26,13 +31,15 @@ namespace OneDas.WebServer
         {
             bool isHosting;
             string configurationFileName;
+            JObject jobject;
             IConfigurationRoot configurationRoot;
             IConfigurationBuilder configurationBuilder;
+            ISettings nugetSettings;
 
             WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
 
             // configuration
-            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Adwen", "OneDAS", "Core");
+            BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
             configurationFileName = "settings.json";
 
             Directory.CreateDirectory(BasicBootloader.ConfigurationDirectoryPath);
@@ -41,29 +48,42 @@ namespace OneDas.WebServer
             configurationBuilder.AddJsonFile(new PhysicalFileProvider(BasicBootloader.ConfigurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
             configurationRoot = configurationBuilder.Build();
 
-            _webServerOptions = configurationRoot.Get<WebServerOptions>();
+            _options = configurationRoot.Get<WebServerOptions>();
 
-            if (_webServerOptions == null)
+            if (_options == null)
             {
-                _webServerOptions = new WebServerOptions();
-                configurationRoot.Bind(_webServerOptions);
+                _options = new WebServerOptions();
+                configurationRoot.Bind(_options);
             }
 
-            if (!Directory.Exists(_webServerOptions.BaseDirectoryPath))
+            if (!Directory.Exists(_options.BaseDirectoryPath))
             {
-                _webServerOptions.BaseDirectoryPath = BasicBootloader.ConfigurationDirectoryPath;
+                _options.BaseDirectoryPath = BasicBootloader.ConfigurationDirectoryPath;
             }
 
-            if (string.IsNullOrWhiteSpace(_webServerOptions.NewBaseDirectoryPath))
+            if (string.IsNullOrWhiteSpace(_options.NewBaseDirectoryPath))
             {
-                _webServerOptions.NewBaseDirectoryPath = _webServerOptions.BaseDirectoryPath;
+                _options.NewBaseDirectoryPath = _options.BaseDirectoryPath;
             }
-            else if (!string.Equals(_webServerOptions.BaseDirectoryPath, _webServerOptions.NewBaseDirectoryPath, StringComparison.OrdinalIgnoreCase))
+            else if (!string.Equals(_options.BaseDirectoryPath, _options.NewBaseDirectoryPath, StringComparison.OrdinalIgnoreCase))
             {
-                _webServerOptions.BaseDirectoryPath = _webServerOptions.NewBaseDirectoryPath;
+                _options.BaseDirectoryPath = _options.NewBaseDirectoryPath;
             }
 
-            _webServerOptions.Save(BasicBootloader.ConfigurationDirectoryPath);
+            _options.Save(BasicBootloader.ConfigurationDirectoryPath);
+
+            // NuGet settings
+            nugetSettings = new Settings(_options.NugetDirectoryPath);
+            nugetSettings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("OneDAS", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
+            nugetSettings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("nuget.org", "https://api.nuget.org/v3/index.json", false) });
+
+            if (!File.Exists(_options.NugetProjectFilePath))
+            {
+                jobject = new JObject();
+
+                JsonConfigUtility.AddFramework(jobject, FrameworkConstants.CommonFrameworks.NetStandard20);
+                File.WriteAllText(_options.NugetProjectFilePath, jobject.ToString(Formatting.Indented));
+            }
 
             // determine startup mode
             if (Environment.UserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0)
@@ -72,7 +92,7 @@ namespace OneDas.WebServer
             }
             else
             {
-                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_webServerOptions.MutexName), () => WebServerUtilities.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
+                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_options.MutexName), () => WebServerUtilities.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
                 {
                     Environment.Exit(0);
                 }
@@ -80,11 +100,8 @@ namespace OneDas.WebServer
                 isHosting = true;
             }
 
-            // ensure AppDomain shadow copying
-            BasicBootloader.EnsureAppDomainShadowCopying();
-
             // create advanced bootloader
-            _advancedBootloader = new AdvancedBootloader(isHosting, _webServerOptions, configurationRoot);
+            _advancedBootloader = new AdvancedBootloader(isHosting, _options, configurationRoot, nugetSettings);
 
             // logging
             BasicBootloader.SystemLogger = _advancedBootloader.CreateSystemLogger();
@@ -96,45 +113,11 @@ namespace OneDas.WebServer
             _advancedBootloader.Run();
         }
 
-        private static void EnsureAppDomainShadowCopying()
-        {
-            if (!AppDomain.CurrentDomain.ShadowCopyFiles)
-            {
-                string assemblyFilePath;
-                string directoryPath;
-                string cacheFilePath;
-                string configFilePath;
-
-                AppDomain appDomain;
-                AppDomainSetup appDomainSetup;
-
-                assemblyFilePath = Assembly.GetExecutingAssembly().Location;
-                directoryPath = Path.GetDirectoryName(assemblyFilePath);
-
-                cacheFilePath = Path.Combine(_webServerOptions.BaseDirectoryPath, ".cache");
-                configFilePath = $"{ assemblyFilePath }.config";
-
-                appDomainSetup = new AppDomainSetup()
-                {
-                    CachePath = cacheFilePath,
-                    ConfigurationFile = configFilePath,
-                    ShadowCopyDirectories = Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"),
-                    ShadowCopyFiles = "true"
-                };
-
-                appDomain = AppDomain.CreateDomain("ShadowCopyTest", AppDomain.CurrentDomain.Evidence, appDomainSetup);
-                appDomain.ExecuteAssembly(assemblyFilePath);
-                AppDomain.Unload(appDomain);
-                //Directory.Delete(cacheFilePath, true);
-                Environment.Exit(0);
-            }
-        }
-
         public static ServiceControllerStatus GetOneDasServiceStatus()
         {
             if (_oneDasServiceController == null)
             {
-                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == _webServerOptions.ServiceName);
+                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == _options.ServiceName);
             }
 
             if (_oneDasServiceController != null)
@@ -161,6 +144,7 @@ namespace OneDas.WebServer
         public static string ConfigurationDirectoryPath { get; private set; }
 
         public static ILogger SystemLogger { get; private set; }
+        public static JObject NugetFramework { get; private set; }
 
         #endregion
 

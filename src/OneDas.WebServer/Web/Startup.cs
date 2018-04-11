@@ -25,7 +25,10 @@ namespace OneDas.WebServer.Web
                 options.Conventions.AddPageRoute("/Index", "{*url}");
             });
 
-            services.AddSignalR().AddJsonProtocol(options =>
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            }).AddJsonProtocol(options =>
             {
                 var settings = new JsonSerializerSettings()
                 {

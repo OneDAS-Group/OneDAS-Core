@@ -23,15 +23,18 @@ namespace OneDas.WebServer
             this.EventLogName = "OneDAS";
             this.EventLogSourceName = "OneDAS Core";
             this.MutexName = "{fcacd9a4-dc61-4179-b92c-e11538aaf85b}";
-            this.ServiceName =  "OneDas.Core";
+            this.PluginPackageTypeName = "OneDasPlugin";
+            this.ServiceName = "OneDas.Core";
             this.WebClientHubName = "webclienthub";
         }
-        
+
         // unset, mutable
         [DataMember]
         public string BaseDirectoryPath { get; set; }
+
         [DataMember]
         public string CurrentProjectFilePath { get; set; }
+
         [DataMember]
         public string NewBaseDirectoryPath { get; set; }
 
@@ -47,8 +50,26 @@ namespace OneDas.WebServer
         public string EventLogName { get; private set; }
         public string EventLogSourceName { get; private set; }
         public string MutexName { get; private set; }
+        public string PluginPackageTypeName { get; private set; }
         public string ServiceName { get; private set; }
         public string WebClientHubName { get; private set; }
+
+        // calculated
+        public string NugetDirectoryPath
+        {
+            get
+            {
+                return Path.Combine(this.BaseDirectoryPath, "nuget");
+            }
+        }
+
+        public string NugetProjectFilePath
+        {
+            get
+            {
+                return Path.Combine(this.NugetDirectoryPath, "project.json");
+            }
+        }
 
         public void Save(string directoryPath)
         {

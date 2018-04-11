@@ -36,7 +36,7 @@
     public MultiMappingEditor: KnockoutObservable<MultiMappingEditorViewModel>
 
     // search string
-    public SearchString: KnockoutObservable<string>
+    public SearchTerm: KnockoutObservable<string>
 
     // helper
     public SelectedDataPort: KnockoutObservable<DataPortViewModel>
@@ -82,8 +82,8 @@
 
         this.MultiMappingEditor = ko.observable<MultiMappingEditorViewModel>()
 
-        this.SearchString = ko.observable("")
-        this.SearchString.extend({ rateLimit: { timeout: 300, method: "notifyWhenChangesStop" } })
+        this.SearchTerm = ko.observable("")
+        this.SearchTerm.extend({ rateLimit: { timeout: 300, method: "notifyWhenChangesStop" } })
 
         this.SelectedDataPort = ko.observable<DataPortViewModel>()
         this.SelectedChannelHub = ko.observable<ChannelHubViewModel>()
@@ -243,7 +243,7 @@
         }, null, "arrayChange")
 
         // search
-        this.SearchString.subscribe(value =>
+        this.SearchTerm.subscribe(value =>
         {
             this.UpdateGroupedChannelHubSet(false)
         })
@@ -335,7 +335,7 @@
         return this.DataWriterSet()[index]
     }
 
-    private UpdateGroupedChannelHubSet(resetSearchString: boolean)
+    private UpdateGroupedChannelHubSet(resetSearchTerm: boolean)
     {
         let groupedChannelHubSet: ObservableGroup<ChannelHubViewModel>[]
 
@@ -346,12 +346,12 @@
 
         this.IsUpdating = true
 
-        if (resetSearchString)
+        if (resetSearchTerm)
         {
-            this.SearchString("")
+            this.SearchTerm("")
         }
 
-        groupedChannelHubSet = ObservableGroupBy(this.ChannelHubSet(), x => x.Name(), x => x.Group(), this.SearchString())
+        groupedChannelHubSet = ObservableGroupBy(this.ChannelHubSet(), x => x.Name(), x => x.Group(), this.SearchTerm())
         groupedChannelHubSet.forEach(channelHubSet => channelHubSet.Members.sort((channelHub1, channelHub2) => this.CompareStrings(channelHub1.Name(), channelHub2.Name())))
         groupedChannelHubSet.sort((channelHubSet1, channelHubSet2) => this.CompareStrings(channelHubSet1.Key, channelHubSet2.Key))
 
@@ -488,7 +488,7 @@
 
     public ResetSearch = () =>
     {
-        this.SearchString("")
+        this.SearchTerm("")
     }
 
     public ShowContextMenu = (item: ChannelHubViewModel, e) =>

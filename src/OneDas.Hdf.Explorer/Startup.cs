@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OneDas.Hdf.Explorer.Core;
 using OneDas.Hdf.Explorer.Web;
 using System.IO;
 
@@ -21,7 +22,10 @@ namespace OneDas.Hdf.Explorer
                     options.RootDirectory = "/Web/Pages";
                 });
 
-            services.AddSignalR().AddJsonProtocol(options =>
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            }).AddJsonProtocol(options =>
             {
                 options.PayloadSerializerSettings = new JsonSerializerSettings();
             });
@@ -32,6 +36,8 @@ namespace OneDas.Hdf.Explorer
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
             });
+
+            services.AddSingleton<HdfExplorerStateManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

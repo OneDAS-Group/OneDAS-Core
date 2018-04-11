@@ -315,7 +315,7 @@
                 <!-- ko foreach: DataGatewaySet -->
                 <div data-bind="page: {id: PluginIdentification.Id + '_DG' + Description.InstanceId, afterShow: $parent.SelectDataGateway, title: PluginIdentification.Name}">
                     <!-- ko ifnot: $parents[1].MultiMappingEditor -->
-                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetDataGatewayCallback: $parents[1].GetDataGateway } } -->
+                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetCallback: $parents[1].GetDataGateway } } -->
                     <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko if: $parents[1].MultiMappingEditor -->
@@ -347,7 +347,7 @@
                 <!-- /ko -->
                 <!-- ko foreach: DataWriterSet -->
                 <div data-bind="page: {id: PluginIdentification.Id + '_DW' + Description.InstanceId, afterShow: $parent.SelectDataWriter, title: PluginIdentification.Name}">
-                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetDataWriterCallback: $parents[1].GetDataWriter } } -->
+                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetCallback: $parents[1].GetDataWriter } } -->
                     <!-- /ko -->
                 </div>
                 <!-- /ko -->
@@ -370,10 +370,10 @@
                     <div class="input-group-prepend url"
                          data-bind="click: ResetSearch">
                         <div class="input-group-text">
-                            <!-- ko if: SearchString().length > 0 -->
+                            <!-- ko if: SearchTerm().length > 0 -->
                             <strong>X</strong>
                             <!-- /ko -->
-                            <!-- ko ifnot: SearchString().length > 0 -->
+                            <!-- ko ifnot: SearchTerm().length > 0 -->
                             <span class="fa fa-search fa-fix"></span>
                             <!-- /ko -->
                         </div>
@@ -381,7 +381,7 @@
                     <input type="text"
                            class="form-control"
                            placeholder="Search ..."
-                           data-bind="textInput: SearchString">
+                           data-bind="textInput: SearchTerm">
                     <div class="input-group-append url"
                          data-toggle="modal"
                          data-target="#Project_NewChannelModal"
@@ -751,7 +751,7 @@
             <div class="modal-body">
                 <div class="list-group mb-3">
                     <a class="list-group-item active text-white">Data gateway</a>
-                    <!-- ko foreach: $root.DataGatewayPluginIdentifications -->
+                    <!-- ko foreach: $root.DataGatewayPluginIdentificationSet -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-bind="click: $parent.AddNewDataGateway">
                         <div>
@@ -763,7 +763,7 @@
                 </div>
                 <div class="list-group">
                     <a class="list-group-item active text-white">Data writer</a>
-                    <!-- ko foreach: $root.DataWriterPluginIdentifications -->
+                    <!-- ko foreach: $root.DataWriterPluginIdentificationSet -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-bind="event: { click: $parent.AddNewDataWriter }">
                         <div>

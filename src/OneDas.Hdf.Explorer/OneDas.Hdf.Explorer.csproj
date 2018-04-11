@@ -5,23 +5,21 @@
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <TargetFramework>net47</TargetFramework>
-    <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <PlatformTarget>x64</PlatformTarget>
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.6.362" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview2-30258" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview2-30258" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30258" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30258" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30258" />
+    <PackageReference Include="BuildBundlerMinifier" Version="2.6.375" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview3-32169" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview3-32169" />
     <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6651-31730" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6643-25333" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6651-31875" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6643-33157" />
+    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6675-24410" />
   </ItemGroup>
   
   <ItemGroup>

@@ -123,4 +123,7 @@
   <data name="WebClientHub_BaseDirectoryPathIsInvalid" xml:space="preserve">
     <value>The specified base directory path is invalid.</value>
   </data>
+  <data name="InstallationCompatiblity_InvalidPackageType" xml:space="preserve">
+    <value>The package type is invalid.</value>
+  </data>
 </root>

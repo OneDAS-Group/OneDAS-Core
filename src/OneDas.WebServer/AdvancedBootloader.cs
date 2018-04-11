@@ -4,10 +4,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
 using OneDas.Engine.Core;
 using OneDas.Engine.Serialization;
 using OneDas.Plugin;
+using OneDas.WebServer.Core;
 using OneDas.WebServer.Logging;
+using OneDas.WebServer.Nuget;
 using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
@@ -23,25 +27,26 @@ namespace OneDas.WebServer
         #region "Fields"
 
         private bool _isHosting;
-        private OneDasEngine _oneDasEngine;
+        private OneDasEngine _engine;
         private WebServerOptions _webServerOptions;
-        private IPluginProvider _pluginProvider;
         private IWebHost _webhost;
         private IConfiguration _configuration;
         private IServiceProvider _serviceProvider;
         private IServiceCollection _serviceCollection;
+        private ISettings _nugetSettings;
 
         #endregion
 
         #region "Constructors"
 
-        public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration)
+        public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration, ISettings nugetSettings)
         {
-            Version minimumVersion;
+            OneDasPackageManager packageManager;
 
             _isHosting = isHosting;
             _webServerOptions = webServerOptions;
             _configuration = configuration;
+            _nugetSettings = nugetSettings;
 
             if (isHosting)
             {
@@ -53,17 +58,15 @@ namespace OneDas.WebServer
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "backup"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "config"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "data"));
-                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"));
+                Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "nuget"));
                 Directory.CreateDirectory(Path.Combine(_webServerOptions.BaseDirectoryPath, "project"));
 
-                // load plugins
-                minimumVersion = new Version(new Version(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion).Major, 0, 0, 0);
-
-                _pluginProvider = _serviceProvider.GetRequiredService<IPluginProvider>();
-                _pluginProvider.ScanAssemblies(Path.Combine(_webServerOptions.BaseDirectoryPath, "plugin"), "OneDAS", minimumVersion);
+                // package manager 
+                packageManager = _serviceProvider.GetRequiredService<OneDasPackageManager>();
+                packageManager.ReloadPackages();
 
                 // create engine
-                _oneDasEngine = _serviceProvider.GetRequiredService<OneDasEngine>();
+                _engine = _serviceProvider.GetRequiredService<OneDasEngine>();
             }
             else
             {
@@ -71,7 +74,15 @@ namespace OneDas.WebServer
                 this.ConfigureServices(_serviceCollection);
                 _serviceProvider = _serviceCollection.BuildServiceProvider();
             }
+
+            AdvancedBootloader.ClientPushService = _serviceProvider.GetRequiredService<ClientPushService>();
         }
+
+        #endregion
+
+        #region "Properties"
+
+        public static ClientPushService ClientPushService { get; private set; }
 
         #endregion
 
@@ -81,9 +92,9 @@ namespace OneDas.WebServer
         {
             OneDasConsole oneDasConsole;
 
-            if (_oneDasEngine != null && !Environment.UserInteractive)
+            if (_engine != null && !Environment.UserInteractive)
             {
-                this.TryStartOneDasEngine(_oneDasEngine, _webServerOptions.CurrentProjectFilePath);
+                this.TryStartOneDasEngine(_engine, _webServerOptions.CurrentProjectFilePath);
             }
 
             if (Environment.UserInteractive)
@@ -140,7 +151,7 @@ namespace OneDas.WebServer
             serviceCollection.AddLogging(loggingBuilder =>
             {
                 EventLogSettings eventLogSettings;
-                ClientMessageLoggerProvider clientMessageLoggerProvider;
+                WebClientLoggerProvider clientMessageLoggerProvider;
 
                 // event log
                 if (Environment.UserInteractive)
@@ -159,15 +170,16 @@ namespace OneDas.WebServer
                 eventLogSettings.Filter = (category, logLevel) => category == "System" && logLevel >= LogLevel.Information;
 
                 // client message log
-                clientMessageLoggerProvider = new ClientMessageLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
+                clientMessageLoggerProvider = new WebClientLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
 
                 // add logger
-                loggingBuilder.AddEventLog(eventLogSettings);
-                loggingBuilder.AddProvider(clientMessageLoggerProvider);
-                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
+                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."))
+                    .AddDebug()
+                    .AddEventLog(eventLogSettings)
+                    .AddProvider(clientMessageLoggerProvider);
             });
 
-            // OneDAS Engine
+            // OneDasEngine
             serviceCollection.AddOneDas(oneDasOptions =>
             {
                 oneDasOptions.DataDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "data");
@@ -176,6 +188,14 @@ namespace OneDas.WebServer
 
             // OneDasConsole
             serviceCollection.AddSingleton<OneDasConsole>();
+
+            // ClientPushService
+            serviceCollection.AddSingleton<ClientPushService>();
+
+            // OneDasPackageManager
+            serviceCollection.AddSingleton(_nugetSettings);
+            serviceCollection.AddSingleton<IInstallationCompatibility, OneDasInstallationCompatibility>();
+            serviceCollection.AddSingleton<OneDasPackageManager>();
         }
 
         private void TryStartOneDasEngine(OneDasEngine oneDasEngine, string projectFilePath)
@@ -212,7 +232,7 @@ namespace OneDas.WebServer
             if (!isDisposed)
             {
                 _webhost?.StopAsync().Wait();
-                _oneDasEngine?.Dispose();
+                _engine?.Dispose();
             }
 
             isDisposed = true;

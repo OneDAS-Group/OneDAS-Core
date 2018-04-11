@@ -22,49 +22,19 @@ namespace OneDas.Hdf.Explorer.Web
     {
         #region "Fields"
 
-        private bool _isActive;
-        private object _lock;
         private ILogger _logger;
         private HdfExplorerOptions _options;
-        private System.Timers.Timer _activityTimer;
-
-        private static int _userCount;
-        private static Dictionary<string, HdfExplorerState> _hdfExplorerStateSet;
-        private static Dictionary<string, CancellationTokenSource> _ctsSet;
+        private HdfExplorerStateManager _stateManager;
 
         #endregion
 
         #region "Constructors"
 
-        static Broadcaster()
+        public Broadcaster(HdfExplorerStateManager stateManager, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
-            _hdfExplorerStateSet = new Dictionary<string, HdfExplorerState>();
-            _ctsSet = new Dictionary<string, CancellationTokenSource>();
-        }
-
-        public Broadcaster(IOptions<HdfExplorerOptions> options, ILoggerFactory loggerFactory)
-        {
+            _stateManager = stateManager;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger("HDF Explorer");
-
-            _lock = new object();
-        }
-
-        #endregion
-
-        #region "Properties"
-
-        private HdfExplorerState HdfExplorerState
-        {
-            get
-            {
-                return _hdfExplorerStateSet[this.Context.ConnectionId];
-            }
-            set
-            {
-                _hdfExplorerStateSet[this.Context.ConnectionId] = value;
-                this.GetClient().SendState(this.HdfExplorerState);
-            }
         }
 
         #endregion
@@ -73,31 +43,16 @@ namespace OneDas.Hdf.Explorer.Web
 
         public override Task OnConnectedAsync()
         {
-            this.HandleInactivity(this.GetClient(), this.Context.ConnectionId);
-
-            _hdfExplorerStateSet[this.Context.ConnectionId] = _isActive ? HdfExplorerState.Idle : HdfExplorerState.Inactive;
-
-            lock (_lock)
-            {
-                _userCount += 1;
-                _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _userCount } client(s) are connected now.");
-            }
+            _stateManager.Register(this.Context.ConnectionId);
+            _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _stateManager.UserCount } client(s) are connected now.");
 
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            if (_ctsSet.ContainsKey(this.Context.ConnectionId))
-            {
-                _ctsSet[this.Context.ConnectionId].Cancel();
-            }
-
-            lock (_lock)
-            {
-                _userCount -= 1;
-                _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) disconnected. { _userCount } client(s) are remaining.");
-            }
+            _stateManager.Unregister(this.Context.ConnectionId);
+            _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) disconnected. { _stateManager.UserCount } client(s) are remaining.");
 
             return base.OnDisconnectedAsync(exception);
         }
@@ -107,7 +62,7 @@ namespace OneDas.Hdf.Explorer.Web
             return Task.Run(() =>
             {
                 return new AppModel(
-                    hdfExplorerState: _hdfExplorerStateSet[this.Context.ConnectionId],
+                    hdfExplorerState: _stateManager.GetState(this.Context.ConnectionId),
                     campaignInfoSet: Program.CampaignInfoSet,
                     campaignDescriptionSet: Program.CampaignDescriptionSet
                 );
@@ -118,7 +73,7 @@ namespace OneDas.Hdf.Explorer.Web
         {
             return Task.Run(() =>
             {
-                return this.HdfExplorerState;
+                return _stateManager.GetState(this.Context.ConnectionId);
             });
         }
 
@@ -126,11 +81,13 @@ namespace OneDas.Hdf.Explorer.Web
         {
             return Task.Run(() =>
             {
-                this.HdfExplorerState = HdfExplorerState.Updating;
+                this.CheckState();
+
+                _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Updating);
 
                 Program.UpdateCampaignInfoSet();
 
-                this.HdfExplorerState = HdfExplorerState.Idle;
+                _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Idle);
 
                 return Program.CampaignInfoSet;
             });
@@ -166,10 +123,10 @@ namespace OneDas.Hdf.Explorer.Web
             string zipFilePath;
 
             // task 
-            _ctsSet[this.Context.ConnectionId] = new CancellationTokenSource();
-
             return Task.Run(() =>
             {
+                this.CheckState();
+
                 if (!campaignInfoSet.Any())
                 {
                     return string.Empty;
@@ -194,12 +151,6 @@ namespace OneDas.Hdf.Explorer.Web
                 stride = 1;
                 block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * sampleRate));
                 count = 1;
-
-                // state check
-                if (this.HdfExplorerState == HdfExplorerState.Loading)
-                {
-                    throw new Exception("Data request is already in progress.");
-                }
 
                 try
                 {
@@ -240,7 +191,7 @@ namespace OneDas.Hdf.Explorer.Web
                     }
 
                     // start
-                    this.HdfExplorerState = HdfExplorerState.Loading;
+                    _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Loading);
 
                     using (ZipArchive zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
                     {
@@ -248,8 +199,8 @@ namespace OneDas.Hdf.Explorer.Web
                         {
                             HdfDataLoader hdfDataLoader;
 
-                            hdfDataLoader = new HdfDataLoader(_ctsSet[this.Context.ConnectionId]);
-                            hdfDataLoader.ProgressUpdated += this.HdfDataLoader_ProgressUpdated;
+                            hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(this.Context.ConnectionId));
+                            hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
                             if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, sampleRate, start, stride, block, count, segmentLength)))
                             {
@@ -265,7 +216,7 @@ namespace OneDas.Hdf.Explorer.Web
                 }
                 finally
                 {
-                    this.HdfExplorerState = HdfExplorerState.Idle;
+                    _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Idle);
 
                     if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                 }
@@ -273,7 +224,7 @@ namespace OneDas.Hdf.Explorer.Web
                 this.WriteLogEntry($"{ this.Context.Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
 
                 return $"download/{ Path.GetFileName(zipFilePath) }";
-            }, _ctsSet[this.Context.ConnectionId].Token);
+            }, _stateManager.GetToken(this.Context.ConnectionId));
         }
 
         public Task<string> GetCampaignDocumentation(string campaigInfoName)
@@ -289,6 +240,8 @@ namespace OneDas.Hdf.Explorer.Web
 
             return Task.Run(() =>
             {
+                this.CheckState();
+
                 try
                 {
                     if (File.Exists(_options.VdsMetaFilePath))
@@ -422,18 +375,7 @@ namespace OneDas.Hdf.Explorer.Web
                 startTime = DateTime.UtcNow.Date.Add(_options.InactiveOn);
                 stopTime = startTime.Add(_options.InactivityPeriod);
 
-                return $"The database is offline for scheduled maintenance from { startTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) } to { stopTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) }.";
-            });
-        }
-
-        public Task CancelGetData()
-        {
-            return Task.Run(() =>
-            {
-                if (_ctsSet.ContainsKey(this.Context.ConnectionId))
-                {
-                    _ctsSet[this.Context.ConnectionId].Cancel();
-                }
+                return $"The database is offline for scheduled maintenance from { startTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) } to { stopTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) } UTC.";
             });
         }
 
@@ -461,6 +403,8 @@ namespace OneDas.Hdf.Explorer.Web
 
             return Task.Run(() =>
             {
+                this.CheckState();
+
                 // open file
                 fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
@@ -575,7 +519,38 @@ namespace OneDas.Hdf.Explorer.Web
             });
         }
 
-        private void HdfDataLoader_ProgressUpdated(object sender, ProgressUpdatedEventArgs e)
+        public Task CancelGetData()
+        {
+            return Task.Run(() =>
+            {
+                _stateManager.Cancel(this.Context.ConnectionId);
+            });
+        }
+
+        private void CheckState()
+        {
+            switch (_stateManager.GetState(this.Context.ConnectionId))
+            {
+                case HdfExplorerState.Inactive:
+                    throw new Exception("HDF Explorer is in scheduled inactivity mode.");
+
+                case HdfExplorerState.Updating:
+                    throw new Exception("The database is currently being updated.");
+
+                case HdfExplorerState.Loading:
+                    throw new Exception("Data request is already in progress.");
+
+                default:
+                    break;
+            }
+        }
+
+        private IBroadcaster GetClient()
+        {
+            return this.Clients.Client(this.Context.ConnectionId);
+        }
+
+        private void OnProgressUpdated(object sender, ProgressUpdatedEventArgs e)
         {
             this.GetClient().SendProgress(e.Progress, e.Message);
         }
@@ -609,65 +584,6 @@ namespace OneDas.Hdf.Explorer.Web
             catch (Exception)
             {
                 //
-            }
-        }
-
-        private IBroadcaster GetClient()
-        {
-            return this.Clients.Client(this.Context.ConnectionId);
-        }
-
-        private void HandleInactivity(IBroadcaster client, string connectionId)
-        {
-            TimeSpan startRemaining;
-            TimeSpan stopRemaining;
-
-            _isActive = true; // in case InactivityPeriod is == TimeSpan.Zero
-
-            if (_options.InactivityPeriod > TimeSpan.Zero)
-            {
-                startRemaining = DateTime.UtcNow.Date.Add(_options.InactiveOn) - DateTime.UtcNow;
-                stopRemaining = startRemaining.Add(_options.InactivityPeriod);
-
-                if (startRemaining < TimeSpan.Zero)
-                {
-                    startRemaining = startRemaining.Add(TimeSpan.FromDays(1));
-                }
-
-                if (stopRemaining < TimeSpan.Zero)
-                {
-                    stopRemaining = stopRemaining.Add(TimeSpan.FromDays(1));
-                }
-
-                if (startRemaining < stopRemaining)
-                {
-                    _activityTimer = new System.Timers.Timer() { AutoReset = false, Enabled = true, Interval = startRemaining.TotalMilliseconds };
-                    _isActive = true;
-                }
-                else
-                {
-                    _activityTimer = new System.Timers.Timer() { AutoReset = false, Enabled = true, Interval = stopRemaining.TotalMilliseconds };
-                    _isActive = false;
-
-                    if (_ctsSet.ContainsKey(connectionId))
-                    {
-                        _ctsSet[connectionId].Cancel();
-                    }
-                }
-
-                _activityTimer.Elapsed += (sender, e) =>
-                {
-                    this.HandleInactivity(client, connectionId);
-
-                    if (_isActive)
-                    {
-                        client.SendState(HdfExplorerState.Idle);
-                    }
-                    else
-                    {
-                        client.SendState(HdfExplorerState.Inactive);
-                    }
-                };
             }
         }
 
