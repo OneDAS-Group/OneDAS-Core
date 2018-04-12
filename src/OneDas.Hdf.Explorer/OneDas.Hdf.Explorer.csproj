@@ -19,7 +19,6 @@
     <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6651-31730" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6643-25333" />
     <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6651-31875" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6675-24410" />
   </ItemGroup>
   
   <ItemGroup>
@@ -46,6 +45,7 @@
     <None Remove="WebClient\ViewModels\DatasetInfoViewModel.ts" />
     <None Remove="WebClient\ViewModels\HdfElementViewModelBase.ts" />
     <None Remove="WebClient\ViewModels\VariableInfoViewModel.ts" />
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
     <TypeScriptCompile Include="WebClient\Core\EventDispatcher.ts" />
     <TypeScriptCompile Include="WebClient\Core\HdfExplorerStateEnum.ts" />
     <TypeScriptCompile Include="WebClient\Core\IEvent.ts" />

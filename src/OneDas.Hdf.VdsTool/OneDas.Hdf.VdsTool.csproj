@@ -7,8 +7,11 @@
   
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="4.4.0" />
-    <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6651-31730" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6675-24410" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
   
   <ItemGroup>

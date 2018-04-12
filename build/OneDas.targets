@@ -1,11 +1,5 @@
 <Project>
 
-  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-    </ItemGroup>
-  </Target>
-
   <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
 
     <!-- validation -->
@@ -20,7 +14,6 @@
 
       <!-- calculation -->
       <DaysSince2000>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::MinValue.AddTicks(630822816000000000))).TotalDays)))</DaysSince2000>
-      <SecondsSinceMidnight>$([MSBuild]::Divide($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::UtcNow.Date)).TotalSeconds), 2).ToString(`F0`))</SecondsSinceMidnight>
 
       <!-- ensure default values -->
       <Authors Condition="$(Authors) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Authors>
@@ -29,7 +22,7 @@
 
       <!-- create new properties -->
       <AssemblyVersion>$(Major).0.0.0</AssemblyVersion>
-      <FileVersion>$(Major).$(Minor).$(DaysSince2000).$(SecondsSinceMidnight)</FileVersion>
+      <FileVersion>$(Major).$(Minor).$(Revision).$(DaysSince2000)</FileVersion>
       <Product>OneDAS</Product>
       <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
       <Version>$(Major).$(Minor).$(Revision)</Version>
@@ -38,7 +31,7 @@
 
     <!-- build Version -->
     <PropertyGroup Condition="$(VersionSuffix) != ''">
-      <Version>$(Version)-$(VersionSuffix)-$(DaysSince2000)-$(SecondsSinceMidnight)</Version>
+      <Version>$(Version)-$(VersionSuffix)-$(DaysSince2000)</Version>
     </PropertyGroup>
 
     <!-- build PackageVersion -->
@@ -48,9 +41,4 @@
 
   </Target>
   
-  <Target Name="PushTarget" AfterTargets="Pack">
-    <Exec Command="dotnet nuget push &quot;$(TargetDir)..\$(PackageId).$(PackageVersion).nupkg&quot; --source https://www.myget.org/F/onedas/api/v3/index.json" />
-    <Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
-  </Target>
-
 </Project>

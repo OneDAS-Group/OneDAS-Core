@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);CreateOneDasMetaData</GetPackageVersionDependsOn>
   </PropertyGroup>
-
+  
 </Project>
