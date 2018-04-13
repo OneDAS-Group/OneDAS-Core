@@ -44,7 +44,7 @@ namespace OneDas.Hdf.Explorer.Web
         public override Task OnConnectedAsync()
         {
             _stateManager.Register(this.Context.ConnectionId);
-            _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _stateManager.UserCount } client(s) are connected now.");
+            _logger.LogInformation($"{ this.Context.GetHttpContext().Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _stateManager.UserCount } client(s) are connected now.");
 
             return base.OnConnectedAsync();
         }
@@ -52,7 +52,7 @@ namespace OneDas.Hdf.Explorer.Web
         public override Task OnDisconnectedAsync(Exception exception)
         {
             _stateManager.Unregister(this.Context.ConnectionId);
-            _logger.LogInformation($"{ this.Context.Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) disconnected. { _stateManager.UserCount } client(s) are remaining.");
+            _logger.LogInformation($"{ this.Context.GetHttpContext().Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) disconnected. { _stateManager.UserCount } client(s) are remaining.");
 
             return base.OnDisconnectedAsync(exception);
         }
@@ -221,7 +221,7 @@ namespace OneDas.Hdf.Explorer.Web
                     if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                 }
 
-                this.WriteLogEntry($"{ this.Context.Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
+                this.WriteLogEntry($"{ this.Context.GetHttpContext().Connection.RemoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
 
                 return $"download/{ Path.GetFileName(zipFilePath) }";
             }, _stateManager.GetToken(this.Context.ConnectionId));
