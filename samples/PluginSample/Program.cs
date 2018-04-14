@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OneDas.Infrastructure;
 using OneDas.Plugin;
-using OneDas.Plugin.DataGateway.Example;
+using OneDas.Plugin.DataGateway.DataGatewaySample;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -27,25 +27,25 @@ namespace EngineSample
             var provider = services.BuildServiceProvider();
             var pluginProvider = provider.GetRequiredService<IPluginProvider>();
 
-            pluginProvider.Add(typeof(ExampleGateway));
+            pluginProvider.Add(typeof(DataGatewaySampleGateway));
 
-            var modbusTcpModel = new ExampleSettings();
-            modbusTcpModel.ModuleSet.Add(new OneDasModule(OneDasDataType.FLOAT32, DataDirection.Input, Endianness.LittleEndian, 10));
-            modbusTcpModel.Validate();
+            var settings = new DataGatewaySampleSettings();
+            settings.ModuleSet.Add(new OneDasModule(OneDasDataType.FLOAT32, DataDirection.Input, Endianness.LittleEndian, 10));
+            settings.Validate();
 
             Console.CursorVisible = false;
 
             Task.Run(() =>
             {
-                using (var exampleGateway = pluginProvider.BuildLogic<ExampleGateway>(modbusTcpModel))
+                using (var gateway = pluginProvider.BuildLogic<DataGatewaySampleGateway>(settings))
                 {
-                    exampleGateway.Configure();
+                    gateway.Configure();
 
                     while (true)
                     {
-                        exampleGateway.UpdateIo(DateTime.Now);
+                        gateway.UpdateIo(DateTime.Now);
 
-                        var values = MemoryMarshal.Cast<byte, float>(exampleGateway.GetInputBuffer());
+                        var values = MemoryMarshal.Cast<byte, float>(gateway.GetInputBuffer());
 
                         Console.Clear();
 

@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>OneDas.Plugin.DataGateway.DataGatewaySample</AssemblyName>
+    <Description>For testing only.</Description>
+    <PackageTags>OneDAS data aquisition measurement plugin Test</PackageTags>
+    <RootNamespace>OneDas.Plugin.DataGateway.DataGatewaySample</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <Major>1</Major>
+    <Minor>0</Minor>
+    <Revision>0</Revision>
+    <VersionSuffix>alpha</VersionSuffix>
+  </PropertyGroup>
+      
+  <ItemGroup>
+    <EmbeddedResource Include="WebClient\DataGatewaySample.js" />
+    <EmbeddedResource Include="WebClient\DataGatewaySampleView.html" />
+    <Content Include="WebClient\tsconfig.json">
+      <Pack>false</Pack>
+    </Content>
+  </ItemGroup>
+    
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OneDas.Types.Abstractions\OneDas.Types.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>OneDas.Plugin.DataGateway.DataGatewaySample</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+</Project>

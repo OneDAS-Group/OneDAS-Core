@@ -8,8 +8,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0-preview2-final" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview2-final" />
-    <PackageReference Include="OneDas.Plugin.DataGateway.Example" Version="1.0.0-alpha-6677" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6677" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
+    <ProjectReference Include="..\DataGatewaySample\DataGatewaySample.csproj" />
   </ItemGroup>
 
 </Project>

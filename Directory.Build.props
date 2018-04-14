@@ -1,10 +1,10 @@
 <Project>
 
-  <Import Project="./../build/OneDas.props" />
+  <Import Project="./build/OneDas.props" />
 
   <PropertyGroup> 
-    <OutputPath>$(MSBuildThisFileDirectory)..\build\bin\$(MSBuildProjectName)\$(Configuration)</OutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\build\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)build\bin\$(MSBuildProjectName)\$(Configuration)</OutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)build\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)</IntermediateOutputPath>
   </PropertyGroup>
   
