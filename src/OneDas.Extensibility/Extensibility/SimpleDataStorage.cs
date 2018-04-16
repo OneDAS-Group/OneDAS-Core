@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OneDas.Infrastructure
+namespace OneDas.Extensibility
 {
     public class SimpleDataStorage : DataStorageBase, ISimpleDataStorage
     {

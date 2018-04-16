@@ -123,10 +123,10 @@
   <data name="ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined" xml:space="preserve">
     <value>ExtensionDescriptionAttribute is not defined.</value>
   </data>
-  <data name="DataWriterPluginLogicBase_DateTimeGranularityTooHigh" xml:space="preserve">
+  <data name="DataWriterExtensionLogicBase_DateTimeGranularityTooHigh" xml:space="preserve">
     <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute.</value>
   </data>
-  <data name="DataWriterPluginLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
+  <data name="DataWriterExtensionLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
     <value>The requested period has already been written before.</value>
   </data>
   <data name="ActionRequest_InstanceIdInvalid" xml:space="preserve">
@@ -135,7 +135,7 @@
   <data name="DataWriterExtensionSettingsBase_FileGranularityInvalid" xml:space="preserve">
     <value>The file granularity value is invalid.</value>
   </data>
-  <data name="DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
+  <data name="DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
     <value>The MaximumDatasetAge is must be between zero and 10000.</value>
   </data>
   <data name="VariableContext_DataStorageTypeInvalid" xml:space="preserve">

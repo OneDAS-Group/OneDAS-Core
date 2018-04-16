@@ -1,7 +1,7 @@
 ﻿<!-- ko if: !Project() -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
     <h1 class="display-4">Open a project or create a new one!</h1>
-    <p>Here you can you can change plugin settings, specify channels and edit the input-output variable mapping.</p>
+    <p>Here you can you can change extension settings, specify channels and edit the input-output variable mapping.</p>
     <p>&nbsp;</p>
     <div class="btn-group" role="group">
         <button class="btn btn-outline-primary btn-wide"
@@ -243,15 +243,15 @@
                             data-target=".navbar-collapse.show">
                             <div class="container row">
                                 <a class="nav-link mr-auto"
-                                   data-bind="page-href: PluginIdentification.Id + '_DG' + Description.InstanceId">
+                                   data-bind="page-href: ExtensionIdentification.Id + '_DG' + Description.InstanceId">
                                     <span class="fa fa-exchange mx-1"
                                           data-toggle="tooltip"
                                           title="I/O operation (data-gateway)"></span>
                                     <!-- ko if: Description.InstanceName().length !== 0 -->
-                                    <span data-bind="text: PluginIdentification.Name + ' - ' + Description.InstanceName()"></span>
+                                    <span data-bind="text: ExtensionIdentification.Name + ' - ' + Description.InstanceName()"></span>
                                     <!-- /ko -->
                                     <!-- ko if: Description.InstanceName().length === 0 -->
-                                    <span data-bind="text: PluginIdentification.Name"></span>
+                                    <span data-bind="text: ExtensionIdentification.Name"></span>
                                     <!-- /ko -->
                                 </a>
                                 <a class="nav-link url"
@@ -259,7 +259,7 @@
                                    data-toggle="modal"
                                    data-target="#Project_DeleteDataGatewayModal"
                                    data-backdrop="static"
-                                   data-bind="click: $parent.SelectPlugin">
+                                   data-bind="click: $parent.SelectExtension">
                                     <span class="fa fa-times" />
                                 </a>
                             </div>
@@ -272,22 +272,22 @@
                             data-target=".navbar-collapse.show">
                             <div class="container row align-content-center">
                                 <a class="nav-link mr-auto"
-                                   data-bind="page-href: PluginIdentification.Id + '_DW' + Description.InstanceId">
+                                   data-bind="page-href: ExtensionIdentification.Id + '_DW' + Description.InstanceId">
                                     <span class="fa fa-database mx-1"
                                           data-toggle="tooltip"
                                           title="data recording (data-writer)"></span>
                                     <!-- ko if: Description.InstanceName().length !== 0 -->
-                                    <span data-bind="text: PluginIdentification.Name + ' - ' + Description.InstanceName()"></span>
+                                    <span data-bind="text: ExtensionIdentification.Name + ' - ' + Description.InstanceName()"></span>
                                     <!-- /ko -->
                                     <!-- ko if: Description.InstanceName().length === 0 -->
-                                    <span data-bind="text: PluginIdentification.Name"></span>
+                                    <span data-bind="text: ExtensionIdentification.Name"></span>
                                     <!-- /ko -->
                                 </a>
                                 <a class="nav-link url"
                                    data-toggle="modal"
                                    data-target="#Project_DeleteDataWriterModal"
                                    data-backdrop="static"
-                                   data-bind="click: $parent.SelectPlugin">
+                                   data-bind="click: $parent.SelectExtension">
                                     <span class="fa fa-times" />
                                 </a>
                             </div>
@@ -299,7 +299,7 @@
                             <a class="nav-link d-flex url"
                                style="height:2.64em;"
                                data-toggle="modal"
-                               data-target="#Project_NewPluginModal"
+                               data-target="#Project_NewExtensionModal"
                                data-backdrop="static">
                                 <span class="fa fa-plus m-auto"></span>
                             </a>
@@ -313,9 +313,9 @@
                 </div>
 
                 <!-- ko foreach: DataGatewaySet -->
-                <div data-bind="page: {id: PluginIdentification.Id + '_DG' + Description.InstanceId, afterShow: $parent.SelectDataGateway, title: PluginIdentification.Name}">
+                <div data-bind="page: {id: ExtensionIdentification.Id + '_DG' + Description.InstanceId, afterShow: $parent.SelectDataGateway, title: ExtensionIdentification.Name}">
                     <!-- ko ifnot: $parents[1].MultiMappingEditor -->
-                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetCallback: $parents[1].GetDataGateway } } -->
+                    <!-- ko component: { name: ExtensionIdentification.Id, params: { Index: $index(), GetCallback: $parents[1].GetDataGateway } } -->
                     <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko if: $parents[1].MultiMappingEditor -->
@@ -346,8 +346,8 @@
                 </div>
                 <!-- /ko -->
                 <!-- ko foreach: DataWriterSet -->
-                <div data-bind="page: {id: PluginIdentification.Id + '_DW' + Description.InstanceId, afterShow: $parent.SelectDataWriter, title: PluginIdentification.Name}">
-                    <!-- ko component: { name: PluginIdentification.Id, params: { Index: $index(), GetCallback: $parents[1].GetDataWriter } } -->
+                <div data-bind="page: {id: ExtensionIdentification.Id + '_DW' + Description.InstanceId, afterShow: $parent.SelectDataWriter, title: ExtensionIdentification.Name}">
+                    <!-- ko component: { name: ExtensionIdentification.Id, params: { Index: $index(), GetCallback: $parents[1].GetDataWriter } } -->
                     <!-- /ko -->
                 </div>
                 <!-- /ko -->
@@ -741,17 +741,17 @@
     </div>
 </div>
 
-<div id="Project_NewPluginModal" class="modal fade" role="dialog">
+<div id="Project_NewExtensionModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg center-vertically">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Create new plugin instance</h5>
+                <h5 class="modal-title">Create new extension instance</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="list-group mb-3">
                     <a class="list-group-item active text-white">Data gateway</a>
-                    <!-- ko foreach: $root.DataGatewayPluginIdentificationSet -->
+                    <!-- ko foreach: $root.DataGatewayExtensionIdentificationSet -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-bind="click: $parent.AddNewDataGateway">
                         <div>
@@ -763,7 +763,7 @@
                 </div>
                 <div class="list-group">
                     <a class="list-group-item active text-white">Data writer</a>
-                    <!-- ko foreach: $root.DataWriterPluginIdentificationSet -->
+                    <!-- ko foreach: $root.DataWriterExtensionIdentificationSet -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-bind="event: { click: $parent.AddNewDataWriter }">
                         <div>
@@ -1047,7 +1047,7 @@
     <!-- /ko -->
 </script>
 
-<script type="text/html" id="Project_PluginTemplate_DataGateway">
+<script type="text/html" id="Project_ExtensionTemplate_DataGateway">
     <!--ko if: IsInSettingsMode -->
     <form>
         <!-- ko with: Description -->
@@ -1055,7 +1055,7 @@
             <label class="form-check-label">
                 <input class="form-check-input" type="checkbox" value=""
                        data-bind="checked: IsEnabled">
-                Enable Plugin
+                Enable Extension
             </label>
         </div>-->
         <div class="form-group">
@@ -1070,7 +1070,7 @@
     </form>
     <!-- /ko -->
 
-    <div id="Project_PluginTemplate_Content"></div>
+    <div id="Project_ExtensionTemplate_Content"></div>
 
     <!-- ko if: IsInSettingsMode -->
     <button type="button"
@@ -1082,7 +1082,7 @@
     <!-- /ko -->
 </script>
 
-<script type="text/html" id="Project_PluginTemplate_DataWriter">
+<script type="text/html" id="Project_ExtensionTemplate_DataWriter">
     <!--ko if: IsInSettingsMode -->
     <form>
         <!-- ko with: Description -->
@@ -1090,7 +1090,7 @@
             <label class="form-check-label">
                 <input class="form-check-input" type="checkbox" value=""
                        data-bind="checked: IsEnabled">
-                Enable Plugin
+                Enable Extension
             </label>
         </div>
         <div class="form-group">
@@ -1113,7 +1113,7 @@
     <!-- /ko -->
     <!-- /ko -->
 
-    <div id="Project_PluginTemplate_Content"></div>
+    <div id="Project_ExtensionTemplate_Content"></div>
 
     <!-- ko if: IsInSettingsMode -->
     <button type="button"

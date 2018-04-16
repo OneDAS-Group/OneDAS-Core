@@ -6,7 +6,7 @@ call npm install
 set "sourceDirectory=%baseFolder%\web\node_modules"
 
 :: WebServer
-set "targetDirectory=%baseFolder%\src\OneDas.WebServer\wwwroot\lib"
+set "targetDirectory=%baseFolder%\src\OneDas.Core.WebServer\wwwroot\lib"
 if exist "%targetDirectory%" rd "%targetDirectory%" /q /s
 
 set list=@aspnet\signalr\dist\browser

@@ -1,4 +1,4 @@
-﻿class PluginDescriptionViewModel
+﻿class ExtensionDescriptionViewModel
 {
     public ProductVersion: number
     public Id: string
@@ -6,13 +6,13 @@
     public InstanceName: KnockoutObservable<string>
     public IsEnabled: KnockoutObservable<boolean>
 
-    constructor(pluginDescriptionModel: any)
+    constructor(extensionDescriptionModel: any)
     {
-        this.ProductVersion = pluginDescriptionModel.ProductVersion
-        this.Id = pluginDescriptionModel.Id
-        this.InstanceId = pluginDescriptionModel.InstanceId
-        this.InstanceName = ko.observable<string>(pluginDescriptionModel.InstanceName)
-        this.IsEnabled = ko.observable<boolean>(pluginDescriptionModel.IsEnabled)
+        this.ProductVersion = extensionDescriptionModel.ProductVersion
+        this.Id = extensionDescriptionModel.Id
+        this.InstanceId = extensionDescriptionModel.InstanceId
+        this.InstanceName = ko.observable<string>(extensionDescriptionModel.InstanceName)
+        this.IsEnabled = ko.observable<boolean>(extensionDescriptionModel.IsEnabled)
     }
 
     public ToModel()

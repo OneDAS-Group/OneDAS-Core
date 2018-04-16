@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Provides a common type system for all OneDAS application parts and plugins.</Description>
+    <Description>Provides a common type system for all OneDAS application parts and extensions.</Description>
     <PackageTags>OneDAS data aquisition measurement</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

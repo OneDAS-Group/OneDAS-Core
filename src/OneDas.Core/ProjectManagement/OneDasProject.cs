@@ -19,8 +19,8 @@ namespace OneDas.Core.ProjectManagement
         {
             _settings = settings;
 
-            this.DataGatewaySet = this.Settings.DataGatewaySettingsSet.Select(pluginSettings => extensionFactory.BuildLogic<DataGatewayExtensionLogicBase>(pluginSettings)).ToList();
-            this.DataWriterSet = this.Settings.DataWriterSettingsSet.Select(pluginSettings => extensionFactory.BuildLogic<DataWriterExtensionLogicBase>(pluginSettings)).ToList();
+            this.DataGatewaySet = this.Settings.DataGatewaySettingsSet.Select(extensionSettings => extensionFactory.BuildLogic<DataGatewayExtensionLogicBase>(extensionSettings)).ToList();
+            this.DataWriterSet = this.Settings.DataWriterSettingsSet.Select(extensionSettings => extensionFactory.BuildLogic<DataWriterExtensionLogicBase>(extensionSettings)).ToList();
             this.ChannelHubSet = this.Settings.ChannelHubSettingsSet.Select(channelHubSettings => this.CreateChannelHub(channelHubSettings)).ToList();
 
             this.UpdateMapping();

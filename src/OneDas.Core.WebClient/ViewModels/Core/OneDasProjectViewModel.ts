@@ -44,7 +44,7 @@
     public SelectedChannelHub_ContextMenu: KnockoutObservable<ChannelHubViewModel>
     public SelectedDataGateway: KnockoutObservable<DataGatewayViewModelBase>
     public SelectedDataWriter: KnockoutObservable<DataWriterViewModelBase>
-    public SelectedPlugin: KnockoutObservable<PluginViewModelBase>
+    public SelectedExtension: KnockoutObservable<ExtensionViewModelBase>
     public CurrentTitle: KnockoutObservable<string>
     public IsFullEditingEnabled: KnockoutObservable<boolean>
     public IsUpdating: boolean
@@ -90,7 +90,7 @@
         this.SelectedChannelHub_ContextMenu = ko.observable<ChannelHubViewModel>()
         this.SelectedDataGateway = ko.observable<DataGatewayViewModelBase>()
         this.SelectedDataWriter = ko.observable<DataWriterViewModelBase>()
-        this.SelectedPlugin = ko.observable<PluginViewModelBase>()
+        this.SelectedExtension = ko.observable<ExtensionViewModelBase>()
         this.CurrentTitle = ko.observable<string>()
         this.IsFullEditingEnabled = ko.observable<boolean>(this.Description.Version() === 0);
 
@@ -266,9 +266,9 @@
             this.SubscribeToChanges()
 
             // data gateway
-            dataGatewaySet = <DataGatewayViewModelBase[]>await Promise.all(dataGatewaySettingsModelSet.map(async pluginModel =>
+            dataGatewaySet = <DataGatewayViewModelBase[]>await Promise.all(dataGatewaySettingsModelSet.map(async extensionModel =>
             {
-                return await PluginFactory.CreatePluginViewModelAsync("DataGateway", pluginModel)
+                return await ExtensionFactory.CreateExtensionViewModelAsync("DataGateway", extensionModel)
             }))
 
             dataGatewaySet.forEach(dataGateway =>
@@ -283,9 +283,9 @@
             this.DataGatewaySet(dataGatewaySet)
 
             // data writer
-            dataWriterSet = <DataWriterViewModelBase[]>await Promise.all(dataWriterSettingsModelSet.map(async pluginModel =>
+            dataWriterSet = <DataWriterViewModelBase[]>await Promise.all(dataWriterSettingsModelSet.map(async extensionModel =>
             {
-                return await PluginFactory.CreatePluginViewModelAsync("DataWriter", pluginModel)
+                return await ExtensionFactory.CreateExtensionViewModelAsync("DataWriter", extensionModel)
             }))
 
             dataWriterSet.forEach(dataWriter =>
@@ -545,23 +545,23 @@
         this.ChannelHubSet.remove(this.SelectedChannelHub())
     }
 
-    public AddNewDataGateway = async (item: PluginIdentificationViewModel) =>
+    public AddNewDataGateway = async (item: ExtensionIdentificationViewModel) =>
     {
-        let pluginModel: any
-        let pluginViewModel: DataGatewayViewModelBase
+        let extensionModel: any
+        let extensionViewModel: DataGatewayViewModelBase
         let lastInstanceId: number
 
         try
         {
             lastInstanceId = Math.max(...this.DataGatewaySet().map(dataGateway => dataGateway.Description.InstanceId))
 
-            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataGatewaySettings', item.Id)
-            pluginModel.Description.InstanceId = this.DataGatewaySet().length > 0 ? lastInstanceId + 1 : 1
-            pluginViewModel = <DataGatewayViewModelBase>await PluginFactory.CreatePluginViewModelAsync("DataGateway", pluginModel)
+            extensionModel = await ConnectionManager.InvokeWebClientHub('CreateDataGatewaySettings', item.Id)
+            extensionModel.Description.InstanceId = this.DataGatewaySet().length > 0 ? lastInstanceId + 1 : 1
+            extensionViewModel = <DataGatewayViewModelBase>await ExtensionFactory.CreateExtensionViewModelAsync("DataGateway", extensionModel)
 
-            await pluginViewModel.InitializeAsync()
+            await extensionViewModel.InitializeAsync()
 
-            this.DataGatewaySet.push(pluginViewModel)
+            this.DataGatewaySet.push(extensionViewModel)
         }
         catch (e)
         {
@@ -569,23 +569,23 @@
         }
     }
 
-    public AddNewDataWriter = async (item: PluginIdentificationViewModel) =>
+    public AddNewDataWriter = async (item: ExtensionIdentificationViewModel) =>
     {
-        let pluginModel: any
-        let pluginViewModel: DataWriterViewModelBase
+        let extensionModel: any
+        let extensionViewModel: DataWriterViewModelBase
         let lastInstanceId: number
 
         try
         {
             lastInstanceId = Math.max(...this.DataWriterSet().map(dataWriter => dataWriter.Description.InstanceId))
 
-            pluginModel = await ConnectionManager.InvokeWebClientHub('CreateDataWriterSettings', item.Id)
-            pluginModel.Description.InstanceId = this.DataWriterSet().length > 0 ? lastInstanceId + 1 : 1
-            pluginViewModel = <DataWriterViewModelBase>await PluginFactory.CreatePluginViewModelAsync("DataWriter", pluginModel)
+            extensionModel = await ConnectionManager.InvokeWebClientHub('CreateDataWriterSettings', item.Id)
+            extensionModel.Description.InstanceId = this.DataWriterSet().length > 0 ? lastInstanceId + 1 : 1
+            extensionViewModel = <DataWriterViewModelBase>await ExtensionFactory.CreateExtensionViewModelAsync("DataWriter", extensionModel)
 
-            await pluginViewModel.InitializeAsync()
+            await extensionViewModel.InitializeAsync()
 
-            this.DataWriterSet.push(pluginViewModel)
+            this.DataWriterSet.push(extensionViewModel)
         }
         catch (e)
         {
@@ -593,19 +593,19 @@
         }
     }
 
-    public SelectPlugin = (item: PluginViewModelBase) =>
+    public SelectExtension = (item: ExtensionViewModelBase) =>
     {
-        this.SelectedPlugin(item)
+        this.SelectedExtension(item)
     }
 
     public DeleteDataGateway = () =>
     {
-        this.DataGatewaySet.remove(<DataGatewayViewModelBase>this.SelectedPlugin())
+        this.DataGatewaySet.remove(<DataGatewayViewModelBase>this.SelectedExtension())
     }
 
     public DeleteDataWriter = () =>
     {
-        this.DataWriterSet.remove(<DataWriterViewModelBase>this.SelectedPlugin())
+        this.DataWriterSet.remove(<DataWriterViewModelBase>this.SelectedExtension())
     }
 
     public ClearSelectedViewModels = (e: any) =>

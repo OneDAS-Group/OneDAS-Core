@@ -2,9 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Core.ProjectManagement;
-using OneDas.Infrastructure;
 using OneDas.Extensibility;
-using OneDas.Types.Abstractions;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -603,7 +602,7 @@ namespace OneDas.Core.Engine
                 string baseDirectoryPath;
                 DataWriterContext dataWriterContext;
 
-                // Improve - make general plugin validation
+                // Improve - make general extension validation
                 if (new Regex($"[{Regex.Escape(new string(Path.GetInvalidPathChars()))}]").IsMatch(dataWriter.Settings.Description.Id))
                 {
                     throw new Exception(ErrorMessage.OneDasEngine_DirectoryNameInvalid);
@@ -829,11 +828,11 @@ namespace OneDas.Core.Engine
                             {
                                 int referencePeriod;
 
-                                // MaximumDatasetAge is ether determined by the corresponding plugin setting or by the sample period of the associated ChannelHub
+                                // MaximumDatasetAge is ether determined by the corresponding extension setting or by the sample period of the associated ChannelHub
                                 //
-                                // MaximumDatasetAge = 0                    -> normal behavior (no oversampling)
-                                // MaximumDatasetAge > plugin IO cycle time -> compensate unstable cycle periods (packet drop tolerance)
-                                // MaximumDatasetAge >= sample period       -> allow oversampling (repeat values)
+                                // MaximumDatasetAge = 0                       -> normal behavior (no oversampling)
+                                // MaximumDatasetAge > extension IO cycle time -> compensate unstable cycle periods (packet drop tolerance)
+                                // MaximumDatasetAge >= sample period          -> allow oversampling (repeat values)
                                 referencePeriod = Math.Max(dataGateway.Settings.MaximumDatasetAge, (int)entry.Key * 10);
 
                                 _hasValidDataSet[dataGateway] = dataGateway.LastSuccessfulUpdate?.Elapsed.TotalMilliseconds <= referencePeriod;

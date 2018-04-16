@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>OneDas.Plugin.DataGateway.DataGatewaySample</AssemblyName>
+    <AssemblyName>OneDas.Extension.DataGatewaySample</AssemblyName>
     <Description>For testing only.</Description>
-    <PackageTags>OneDAS data aquisition measurement plugin Test</PackageTags>
-    <RootNamespace>OneDas.Plugin.DataGateway.DataGatewaySample</RootNamespace>
+    <PackageTags>OneDAS data aquisition measurement extension Test</PackageTags>
+    <RootNamespace>OneDas.Extension.DataGateway.DataGatewaySample</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
@@ -24,7 +24,7 @@
   </ItemGroup>
       
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.Extensibility\OneDas.Extensiblity.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.Extensibility.Abstractions\OneDas.Extensibility.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,7 +39,7 @@
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>OneDas.Plugin.DataGateway.DataGatewaySample</CustomToolNamespace>
+      <CustomToolNamespace>OneDas.Extension.DataGatewaySample</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
   

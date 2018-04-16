@@ -1,16 +1,16 @@
-﻿abstract class PluginViewModelBase
+﻿abstract class ExtensionViewModelBase
 {
-    public Description: PluginDescriptionViewModel
-    public PluginIdentification: PluginIdentificationViewModel
+    public Description: ExtensionDescriptionViewModel
+    public ExtensionIdentification: ExtensionIdentificationViewModel
     public IsInSettingsMode: KnockoutObservable<boolean>
 
     private _model: any
 
-    constructor(pluginSettingsModel: any, pluginIdentification: PluginIdentificationViewModel)
+    constructor(extensionSettingsModel: any, extensionIdentification: ExtensionIdentificationViewModel)
     {
-        this._model = pluginSettingsModel
-        this.Description = new PluginDescriptionViewModel(pluginSettingsModel.Description)
-        this.PluginIdentification = pluginIdentification
+        this._model = extensionSettingsModel
+        this.Description = new ExtensionDescriptionViewModel(extensionSettingsModel.Description)
+        this.ExtensionIdentification = extensionIdentification
         this.IsInSettingsMode = ko.observable<boolean>(false)
     }
 
@@ -31,7 +31,7 @@
     {
         let model: any = {
             $type: <string>this._model.$type,
-            Description: <PluginDescriptionViewModel>this.Description.ToModel()
+            Description: <ExtensionDescriptionViewModel>this.Description.ToModel()
         }
 
         this.ExtendModel(model)

@@ -14,7 +14,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using OneDas.Extensibility;
-using OneDas.Types.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,7 +130,7 @@ namespace OneDas.Core.PackageManagement
 
             packageSource = new PackageSource(source);
             sourceRepository = _sourceRepositoryProvider.CreateRepository(packageSource);
-            searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _webServerOptions.PluginPackageTypeName
+            searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _options.PackageTypeName
 
             packageSearchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>();
             searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);

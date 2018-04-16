@@ -7,7 +7,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using OneDas.Types.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,7 +120,7 @@ namespace OneDas.Core.PackageManagement
 
             if (packageTypeSet.Any())
             {
-                if (!packageTypeSet.Any(packageType => packageType == PackageType.Dependency || packageType.Name == _options.PluginPackageTypeName))
+                if (!packageTypeSet.Any(packageType => packageType == PackageType.Dependency || packageType.Name == _options.PackageTypeName))
                 {
                     throw new Exception(ErrorMessage.OneDasInstallationCompatiblity_InvalidPackageType);
                 }

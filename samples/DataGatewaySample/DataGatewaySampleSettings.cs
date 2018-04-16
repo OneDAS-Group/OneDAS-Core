@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace OneDas.Extensibility.DataGateway.DataGatewaySample
+namespace OneDas.Extensibility.DataGatewaySample
 {
     [DataContract]
     [ExtensionContext(typeof(DataGatewaySampleGateway))]

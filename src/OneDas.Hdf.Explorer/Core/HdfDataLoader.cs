@@ -1,11 +1,11 @@
 ﻿using HDF.PInvoke;
 using Microsoft.Extensions.Logging;
+using OneDas.Extensibility;
+using OneDas.Extension.Csv;
+using OneDas.Extension.Mat73;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
-using OneDas.Extensibility;
-using OneDas.Extensibility.DataWriter.Csv;
-using OneDas.Extensibility.DataWriter.Mat73;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -33,7 +33,7 @@ namespace OneDas.Hdf.Explorer.Core
             IList<CustomMetadataEntry> customMetadataEntrySet;
 
             ZipArchiveEntry zipArchiveEntry;
-            DataWriterPluginLogicBase dataWriter;
+            DataWriterExtensionLogicBase dataWriter;
             DataWriterExtensionSettingsBase settings;
             DataWriterContext dataWriterContext;
 
@@ -175,7 +175,7 @@ namespace OneDas.Hdf.Explorer.Core
             return true;
         }
 
-        private bool CreateFiles(DataWriterPluginLogicBase dataWriter, ZipSettings zipSettings)
+        private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, ZipSettings zipSettings)
         {
             DateTime dateTime;
             TimeSpan dataStoragePeriod;

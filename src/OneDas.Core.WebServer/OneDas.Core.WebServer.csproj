@@ -20,6 +20,11 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\OneDas.Core.WebClient\OneDas.Core.WebClient.csproj" />
+    <ProjectReference Include="..\OneDas.Core\OneDas.Core.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Content Update="bundleconfig.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 

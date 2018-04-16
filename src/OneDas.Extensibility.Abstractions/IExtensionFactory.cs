@@ -12,9 +12,9 @@ namespace OneDas.Extensibility
 
         Type GetLogic(string id);
 
-        IEnumerable<Type> Get<TPluginBase>();
+        IEnumerable<Type> Get<TExtensionBase>();
 
-        IEnumerable<ExtensionIdentificationAttribute> GetIdentifications<TPluginSettings>() where TPluginSettings : ExtensionSettingsBase;
+        IEnumerable<ExtensionIdentificationAttribute> GetIdentifications<TExtensionSettings>() where TExtensionSettings : ExtensionSettingsBase;
 
         void ScanAssembly(Assembly assembly);
 
@@ -32,7 +32,7 @@ namespace OneDas.Extensibility
 
         IExtensionSupporter TryBuildSupporter(Type settingsType);
 
-        TPluginLogic BuildLogic<TPluginLogic>(ExtensionSettingsBase settings, params object[] args) where TPluginLogic : ExtensionLogicBase;
+        TExtensionLogic BuildLogic<TExtensionLogic>(ExtensionSettingsBase settings, params object[] args) where TExtensionLogic : ExtensionLogicBase;
 
         #endregion
 

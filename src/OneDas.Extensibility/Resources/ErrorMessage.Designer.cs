@@ -61,47 +61,47 @@ namespace OneDas.Extensibility {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginLogic was found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified extension was not found. ähnelt.
         /// </summary>
-        internal static string ExtensionFactory_NoMatchingTPluginLogicFound {
+        internal static string ExtensionFactory_ExtensionNotFound {
             get {
-                return ResourceManager.GetString("ExtensionFactory_NoMatchingTPluginLogicFound", resourceCulture);
+                return ResourceManager.GetString("ExtensionFactory_ExtensionNotFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any PluginSupporterAttribute. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any ExtensionSupporterAttribute. ähnelt.
         /// </summary>
-        internal static string ExtensionFactory_NoPluginSupporterAttributeFound {
+        internal static string ExtensionFactory_NoExtensionSupporterAttributeFound {
             get {
-                return ResourceManager.GetString("ExtensionFactory_NoPluginSupporterAttributeFound", resourceCulture);
+                return ResourceManager.GetString("ExtensionFactory_NoExtensionSupporterAttributeFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TExtensionLogic was found. ähnelt.
         /// </summary>
-        internal static string ExtensionFactory_PluginNotFound {
+        internal static string ExtensionFactory_NoMatchingTExtensionLogicFound {
             get {
-                return ResourceManager.GetString("ExtensionFactory_PluginNotFound", resourceCulture);
+                return ResourceManager.GetString("ExtensionFactory_NoMatchingTExtensionLogicFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IPluginSupporter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IExtensionSupporter. ähnelt.
         /// </summary>
-        internal static string ExtensionFactory_TypeDoesNotImplementIPluginSupporter {
+        internal static string ExtensionFactory_TypeDoesNotImplementIExtensionSupporter {
             get {
-                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotImplementIExtensionSupporter", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;settingsType&apos; must be a subclass of PluginSettingsBase. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;settingsType&apos; must be a subclass of ExtensionSettingsBase. ähnelt.
         /// </summary>
-        internal static string ExtensionFactory_TypeDoesNotInheritFromPluginSettingsBase {
+        internal static string ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase {
             get {
-                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotInheritFromPluginSettingsBase", resourceCulture);
+                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase", resourceCulture);
             }
         }
     }

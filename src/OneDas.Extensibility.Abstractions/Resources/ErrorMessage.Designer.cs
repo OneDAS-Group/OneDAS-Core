@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas {
+namespace OneDas.Extensibility {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace OneDas {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extensibility.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extensibility.Abstractions2.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -72,9 +72,9 @@ namespace OneDas {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The MaximumDatasetAge is must be between zero and 10000. ähnelt.
         /// </summary>
-        internal static string DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid {
+        internal static string DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid {
             get {
-                return ResourceManager.GetString("DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid", resourceCulture);
+                return ResourceManager.GetString("DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid", resourceCulture);
             }
         }
         
@@ -90,18 +90,18 @@ namespace OneDas {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The requested period has already been written before. ähnelt.
         /// </summary>
-        internal static string DataWriterPluginLogicBase_DateTimeAlreadyWritten {
+        internal static string DataWriterExtensionLogicBase_DateTimeAlreadyWritten {
             get {
-                return ResourceManager.GetString("DataWriterPluginLogicBase_DateTimeAlreadyWritten", resourceCulture);
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeAlreadyWritten", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute. ähnelt.
         /// </summary>
-        internal static string DataWriterPluginLogicBase_DateTimeGranularityTooHigh {
+        internal static string DataWriterExtensionLogicBase_DateTimeGranularityTooHigh {
             get {
-                return ResourceManager.GetString("DataWriterPluginLogicBase_DateTimeGranularityTooHigh", resourceCulture);
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeGranularityTooHigh", resourceCulture);
             }
         }
         

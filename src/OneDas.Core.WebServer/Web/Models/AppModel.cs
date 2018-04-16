@@ -8,14 +8,14 @@ namespace OneDas.WebServer.Web
 {
     public class AppModel
     {
-        public AppModel(OneDasProjectSettings activeProjectSettings, IEnumerable<OneDasPackageMetaData> installedPackageSet, IEnumerable<string> clientSet, IEnumerable<ExtensionIdentificationAttribute> dataGatewayPluginIdentificationSet, IEnumerable<ExtensionIdentificationAttribute> dataWriterPluginIdentificationSet, string productVersion, string lastError, OneDasState oneDasState, WebServerOptionsLight webServerOptionsLight)
+        public AppModel(OneDasProjectSettings activeProjectSettings, IEnumerable<OneDasPackageMetaData> installedPackageSet, IEnumerable<string> clientSet, IEnumerable<ExtensionIdentificationAttribute> dataGatewayExtensionIdentificationSet, IEnumerable<ExtensionIdentificationAttribute> dataWriterExtensionIdentificationSet, string productVersion, string lastError, OneDasState oneDasState, WebServerOptionsLight webServerOptionsLight)
         {
             this.ProductVersion = productVersion;
             this.InstalledPackageSet = installedPackageSet;
             this.ActiveProjectSettings = activeProjectSettings;
             this.ClientSet = clientSet;
-            this.DataGatewayPluginIdentificationSet = dataGatewayPluginIdentificationSet;
-            this.DataWriterPluginIdentificationSet = dataWriterPluginIdentificationSet;
+            this.DataGatewayExtensionIdentificationSet = dataGatewayExtensionIdentificationSet;
+            this.DataWriterExtensionIdentificationSet = dataWriterExtensionIdentificationSet;
             this.LastError = lastError;
             this.OneDasState = oneDasState;
             this.WebServerOptionsLight = webServerOptionsLight;
@@ -25,8 +25,8 @@ namespace OneDas.WebServer.Web
         public readonly OneDasProjectSettings ActiveProjectSettings;
         public readonly IEnumerable<OneDasPackageMetaData> InstalledPackageSet;
         public readonly IEnumerable<string> ClientSet;
-        public readonly IEnumerable<ExtensionIdentificationAttribute> DataGatewayPluginIdentificationSet;
-        public readonly IEnumerable<ExtensionIdentificationAttribute> DataWriterPluginIdentificationSet;
+        public readonly IEnumerable<ExtensionIdentificationAttribute> DataGatewayExtensionIdentificationSet;
+        public readonly IEnumerable<ExtensionIdentificationAttribute> DataWriterExtensionIdentificationSet;
         public readonly string ProductVersion;
         public readonly string LastError;
         public readonly OneDasState OneDasState;

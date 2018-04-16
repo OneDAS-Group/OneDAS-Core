@@ -12,8 +12,8 @@
     public PerformanceInformation: KnockoutObservable<OneDasPerformanceInformationViewModel>
     public IsConnected: KnockoutObservable<boolean>
 
-    public DataGatewayPluginIdentificationSet: KnockoutObservableArray<PluginIdentificationViewModel>
-    public DataWriterPluginIdentificationSet: KnockoutObservableArray<PluginIdentificationViewModel>
+    public DataGatewayExtensionIdentificationSet: KnockoutObservableArray<ExtensionIdentificationViewModel>
+    public DataWriterExtensionIdentificationSet: KnockoutObservableArray<ExtensionIdentificationViewModel>
 
     public NewWebServerOptionsLightOneDasName: KnockoutObservable<string>
     public NewWebServerOptionsLightAspBaseUrl: KnockoutObservable<string>
@@ -64,8 +64,8 @@
         this.PerformanceInformation = ko.observable<OneDasPerformanceInformationViewModel>()
         this.IsConnected = ko.observable<boolean>(true)
 
-        this.DataGatewayPluginIdentificationSet = ko.observableArray<PluginIdentificationViewModel>()
-        this.DataWriterPluginIdentificationSet = ko.observableArray<PluginIdentificationViewModel>()
+        this.DataGatewayExtensionIdentificationSet = ko.observableArray<ExtensionIdentificationViewModel>()
+        this.DataWriterExtensionIdentificationSet = ko.observableArray<ExtensionIdentificationViewModel>()
 
         this.NewWebServerOptionsLightOneDasName = ko.observable<string>()
         this.NewWebServerOptionsLightAspBaseUrl = ko.observable<string>()
@@ -188,10 +188,10 @@
             this.InstalledPackageSet(installedPackageSet.map(packageMetadata => new PackageMetadataViewModel(packageMetadata)))
         })
 
-        ConnectionManager.WebClientHub.on("SendPluginIdentifications", (dataGatewayPluginIdentificationSet, dataWriterPluginIdentificationSet) =>
+        ConnectionManager.WebClientHub.on("SendExtensionIdentifications", (dataGatewayExtensionIdentificationSet, dataWriterExtensionIdentificationSet) =>
         {
-            this.RegisterPlugins("DataGateway", dataGatewayPluginIdentificationSet, this.DataGatewayPluginIdentificationSet)
-            this.RegisterPlugins("DataWriter", dataWriterPluginIdentificationSet, this.DataWriterPluginIdentificationSet)
+            this.RegisterExtensions("DataGateway", dataGatewayExtensionIdentificationSet, this.DataGatewayExtensionIdentificationSet)
+            this.RegisterExtensions("DataWriter", dataWriterExtensionIdentificationSet, this.DataWriterExtensionIdentificationSet)
         })
     }
 
@@ -205,9 +205,9 @@
         this.OneDasState(appModel.OneDasState)
         this.WebServerOptionsLight(new WebServerOptionsLightViewModel(appModel.WebServerOptionsLight));
 
-        // register plugins
-        this.RegisterPlugins("DataGateway", appModel.DataGatewayPluginIdentificationSet, this.DataGatewayPluginIdentificationSet)
-        this.RegisterPlugins("DataWriter", appModel.DataWriterPluginIdentificationSet, this.DataWriterPluginIdentificationSet)
+        // register extensions
+        this.RegisterExtensions("DataGateway", appModel.DataGatewayExtensionIdentificationSet, this.DataGatewayExtensionIdentificationSet)
+        this.RegisterExtensions("DataWriter", appModel.DataWriterExtensionIdentificationSet, this.DataWriterExtensionIdentificationSet)
         
         // installed packages
         this.InstalledPackageSet(appModel.InstalledPackageSet.map(packageMetadata => new PackageMetadataViewModel(packageMetadata)))
@@ -223,24 +223,24 @@
         }
     }
 
-    public RegisterPlugins(pluginType: string, pluginIdentificationModelSet: any[], pluginIdentificationSet: KnockoutObservableArray<PluginIdentificationViewModel>)
+    public RegisterExtensions(extensionType: string, extensionIdentificationModelSet: any[], extensionIdentificationSet: KnockoutObservableArray<ExtensionIdentificationViewModel>)
     {
-        pluginIdentificationSet().forEach(pluginIdentification =>
+        extensionIdentificationSet().forEach(extensionIdentification =>
         {
-            if (ko.components.isRegistered(pluginIdentification.Id))
+            if (ko.components.isRegistered(extensionIdentification.Id))
             {
-                ko.components.unregister(pluginIdentification.Id)
+                ko.components.unregister(extensionIdentification.Id)
             }
         })
 
-        PluginHive.PluginIdentificationSet.set(pluginType, pluginIdentificationModelSet.map(x => new PluginIdentificationViewModel(x)))
+        ExtensionHive.ExtensionIdentificationSet.set(extensionType, extensionIdentificationModelSet.map(x => new ExtensionIdentificationViewModel(x)))
 
-        PluginHive.PluginIdentificationSet.get(pluginType).forEach(pluginIdentification =>
+        ExtensionHive.ExtensionIdentificationSet.get(extensionType).forEach(extensionIdentification =>
         {
-            ko.components.register(pluginIdentification.Id, {
+            ko.components.register(extensionIdentification.Id, {
                 template:
                     {
-                        PluginType: pluginType, PluginIdentification: pluginIdentification
+                        ExtensionType: extensionType, ExtensionIdentification: extensionIdentification
                     },
                 viewModel:
                     {
@@ -252,9 +252,9 @@
             })
         })
 
-        pluginIdentificationSet(PluginHive.PluginIdentificationSet.get(pluginType))
+        extensionIdentificationSet(ExtensionHive.ExtensionIdentificationSet.get(extensionType))
 
-        console.log("OneDAS: " + pluginType + " plugins registered (" + PluginHive.PluginIdentificationSet.get(pluginType).length + ")")
+        console.log("OneDAS: " + extensionType + " extensions registered (" + ExtensionHive.ExtensionIdentificationSet.get(extensionType).length + ")")
     }
 
     public InitializeProject = async (projectModel) =>

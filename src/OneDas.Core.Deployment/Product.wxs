@@ -74,7 +74,7 @@
 
       <Shortcut Id="ApplicationShortcutDesktop"
           Name="$(var.ProductDisplayName) $(var.ComponentDisplayName)"
-          Description="free open and flexible measurement data acquisition system with plugin support"
+          Description="Free, open and extensible measurement data acquisition software."
           Target="[INSTALLFOLDER]$(var.WixApplicationName).exe"
           WorkingDirectory="INSTALLFOLDER"/>
 

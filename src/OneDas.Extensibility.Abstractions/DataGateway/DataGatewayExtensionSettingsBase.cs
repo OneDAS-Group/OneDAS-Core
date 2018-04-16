@@ -36,7 +36,7 @@ namespace OneDas.Extensibility
 
             if (this.MaximumDatasetAge < 0 || this.MaximumDatasetAge > 10000)
             {
-                throw new Exception(ErrorMessage.DataReaderPluginSettingsBase_MaximumDatasetAgeInvalid);
+                throw new Exception(ErrorMessage.DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid);
             }
         }
 

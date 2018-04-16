@@ -3,7 +3,7 @@
     public ModuleToDataPortMap: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>
     public OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>
 
-    constructor(model, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel)
+    constructor(model, identification: ExtensionIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel)
     {
         super(model, identification)
 

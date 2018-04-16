@@ -6,9 +6,9 @@ namespace OneDas.Extensibility
     [DataContract]
     public class ActionRequest
     {
-        public ActionRequest(string pluginId, int instanceId, string methodName, object data)
+        public ActionRequest(string extensionId, int instanceId, string methodName, object data)
         {
-            this.PluginId = pluginId;
+            this.ExtensionId = extensionId;
             this.InstanceId = instanceId;
             this.MethodName = methodName;
             this.Data = data;
@@ -16,7 +16,7 @@ namespace OneDas.Extensibility
 
 
         [DataMember]
-        public string PluginId { get; private set; }
+        public string ExtensionId { get; private set; }
 
         [DataMember]
         public int InstanceId { get; private set; }
@@ -31,9 +31,9 @@ namespace OneDas.Extensibility
         {
             string errorMessage;
 
-            if (!OneDasUtilities.CheckNamingConvention(this.PluginId, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.ExtensionId, out errorMessage))
             {
-                throw new Exception($"The plugin ID is invalid: { errorMessage }");
+                throw new Exception($"The extension ID is invalid: { errorMessage }");
             }
 
             if (this.InstanceId < 0)

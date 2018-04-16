@@ -80,17 +80,17 @@ namespace OneDas.Extensibility
 
             if (dateTime < _lastWrittenDateTime)
             {
-                throw new ArgumentException(ErrorMessage.DataWriterPluginLogicBase_DateTimeAlreadyWritten);
+                throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeAlreadyWritten);
             }
 
             if (dateTime != dateTime.RoundDown(this.ChunkPeriod))
             {
-                throw new ArgumentException(ErrorMessage.DataWriterPluginLogicBase_DateTimeGranularityTooHigh);
+                throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
             }
 
             if (dataStoragePeriod.Seconds > 0 || dataStoragePeriod.Milliseconds > 0)
             {
-                throw new ArgumentException(ErrorMessage.DataWriterPluginLogicBase_DateTimeGranularityTooHigh);
+                throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
             }
 
             dataStorageOffset = TimeSpan.Zero;

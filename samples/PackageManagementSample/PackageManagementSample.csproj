@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OneDas.Core\OneDas.Core.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.Core\OneDas.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OneDas.Extensibility.DataGateway.DataGatewaySample
+namespace OneDas.Extensibility.DataGatewaySample
 {
     public class DataGatewaySampleGateway : ExtendedDataGatewayExtensionLogicBase
     {
@@ -27,7 +27,7 @@ namespace OneDas.Extensibility.DataGateway.DataGatewaySample
             }).ToList();
         }
 
-        public override void UpdateIo(DateTime referenceDateTime)
+        protected override void OnUpdateIo(DateTime referenceDateTime)
         {
             _numberGeneratorSet.ForEach(genericGenerator => genericGenerator.Update());
 

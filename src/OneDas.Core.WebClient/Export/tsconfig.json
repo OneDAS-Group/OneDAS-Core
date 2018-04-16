@@ -30,22 +30,22 @@
     "./../Static/EnumerationHelper.ts",
     "./../Static/ErrorMessage.ts",
     "./../Static/Helper.ts",
-    "./../Static/PluginFactory.ts",
-    "./../Static/PluginHive.ts",
+    "./../Static/ExtensionFactory.ts",
+    "./../Static/ExtensionHive.ts",
 
     "./../ViewModels/Core/ChannelHubViewModel.ts",
     "./../ViewModels/Core/OneDasModuleViewModel.ts",
     "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
     "./../ViewModels/Core/TransferFunctionViewModel.ts",
 
-    "./../ViewModels/Plugin/BufferRequestSelectorViewModel.ts",
-    "./../ViewModels/Plugin/BufferRequestViewModel.ts",
-    "./../ViewModels/Plugin/DataPortViewModel.ts",
-    "./../ViewModels/Plugin/PluginViewModelBase.ts",
-    "./../ViewModels/Plugin/DataGatewayViewModelBase.ts",
-    "./../ViewModels/Plugin/ExtendedDataGatewayViewModelBase.ts",
-    "./../ViewModels/Plugin/DataWriterViewModelBase.ts",
-    "./../ViewModels/Plugin/PluginDescriptionViewModel.ts",
-    "./../ViewModels/Plugin/PluginIdentificationViewModel.ts"
+    "./../ViewModels/Extension/BufferRequestSelectorViewModel.ts",
+    "./../ViewModels/Extension/BufferRequestViewModel.ts",
+    "./../ViewModels/Extension/DataPortViewModel.ts",
+    "./../ViewModels/Extension/ExtensionViewModelBase.ts",
+    "./../ViewModels/Extension/DataGatewayViewModelBase.ts",
+    "./../ViewModels/Extension/ExtendedDataGatewayViewModelBase.ts",
+    "./../ViewModels/Extension/DataWriterViewModelBase.ts",
+    "./../ViewModels/Extension/ExtensionDescriptionViewModel.ts",
+    "./../ViewModels/Extension/ExtensionIdentificationViewModel.ts"
   ]
 }

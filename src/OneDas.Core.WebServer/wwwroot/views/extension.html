@@ -83,14 +83,14 @@
                                     <th>Version</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: $root.DataGatewayPluginIdentificationSet">
+                            <tbody data-bind="foreach: $root.DataGatewayExtensionIdentificationSet">
                                 <tr>
                                     <td>data gateway</td>
                                     <td data-bind="text: Name, tooltip: { title: Description}"></td>
                                     <td data-bind="text: ProductVersion"></td>
                                 </tr>
                             </tbody>
-                            <tbody data-bind="foreach: $root.DataWriterPluginIdentificationSet">
+                            <tbody data-bind="foreach: $root.DataWriterExtensionIdentificationSet">
                                 <tr>
                                     <td>data writer</td>
                                     <td data-bind="text: Name, tooltip: { title: Description}"></td>

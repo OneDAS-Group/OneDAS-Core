@@ -11,7 +11,7 @@ namespace OneDas.Extensibility
 
         public ExtensionSettingsBase()
         {
-            ExtensionIdentificationAttribute pluginIdentificationAttribute;
+            ExtensionIdentificationAttribute extensionIdentificationAttribute;
 
             if (!this.GetType().IsDefined(typeof(ExtensionContextAttribute), false))
             {
@@ -23,9 +23,9 @@ namespace OneDas.Extensibility
                 throw new Exception(ErrorMessage.ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined);
             }
 
-            pluginIdentificationAttribute = this.GetType().GetFirstAttribute<ExtensionIdentificationAttribute>();
+            extensionIdentificationAttribute = this.GetType().GetFirstAttribute<ExtensionIdentificationAttribute>();
 
-            this.Description = new ExtensionDescription(FileVersionInfo.GetVersionInfo(this.GetType().Assembly.Location).ProductVersion, pluginIdentificationAttribute.Id, true);
+            this.Description = new ExtensionDescription(FileVersionInfo.GetVersionInfo(this.GetType().Assembly.Location).ProductVersion, extensionIdentificationAttribute.Id, true);
         }
 
         #endregion

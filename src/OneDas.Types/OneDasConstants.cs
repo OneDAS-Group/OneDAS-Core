@@ -1,4 +1,4 @@
-﻿namespace OneDas.Types.Abstractions
+﻿namespace OneDas
 {
     public static class OneDasConstants
     {

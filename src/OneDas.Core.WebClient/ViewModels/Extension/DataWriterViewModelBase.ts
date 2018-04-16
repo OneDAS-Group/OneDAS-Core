@@ -1,12 +1,12 @@
-﻿/// <reference path="PluginViewModelBase.ts"/>
+﻿/// <reference path="ExtensionViewModelBase.ts"/>
 
-abstract class DataWriterViewModelBase extends PluginViewModelBase
+abstract class DataWriterViewModelBase extends ExtensionViewModelBase
 {
     public readonly FileGranularity: KnockoutObservable<FileGranularityEnum>
     public readonly BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>
     public readonly BufferRequestSelector: KnockoutObservable<BufferRequestSelectorViewModel>
 
-    constructor(model, identification: PluginIdentificationViewModel)
+    constructor(model, identification: ExtensionIdentificationViewModel)
     {
         super(model, identification)
 

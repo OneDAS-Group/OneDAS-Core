@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace OneDas.Infrastructure
+namespace OneDas.Extensibility
 {
     /// <summary>
     /// Represents an infrastructure to buffer data.

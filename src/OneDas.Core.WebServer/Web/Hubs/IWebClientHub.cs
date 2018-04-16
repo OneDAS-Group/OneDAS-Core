@@ -19,6 +19,6 @@ namespace OneDas.WebServer.Web
         Task SendClientMessage(string message);
         Task SendNugetMessage(string message);
         Task SendInstalledPackages(List<OneDasPackageMetaData> packageMetadata);
-        Task SendPluginIdentifications(List<ExtensionIdentificationAttribute> dataGatewayPluginIdentificationSet, List<ExtensionIdentificationAttribute> dataWriterPluginIdentificationSet);
+        Task SendExtensionIdentifications(List<ExtensionIdentificationAttribute> dataGatewayExtensionIdentificationSet, List<ExtensionIdentificationAttribute> dataWriterExtensionIdentificationSet);
     }
 }

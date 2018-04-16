@@ -117,19 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ExtensionFactory_NoMatchingTPluginLogicFound" xml:space="preserve">
-    <value>No matching TPluginLogic was found.</value>
+  <data name="ExtensionFactory_ExtensionNotFound" xml:space="preserve">
+    <value>The specified extension was not found.</value>
   </data>
-  <data name="ExtensionFactory_NoPluginSupporterAttributeFound" xml:space="preserve">
-    <value>Could not find any PluginSupporterAttribute.</value>
+  <data name="ExtensionFactory_NoExtensionSupporterAttributeFound" xml:space="preserve">
+    <value>Could not find any ExtensionSupporterAttribute.</value>
   </data>
-  <data name="ExtensionFactory_PluginNotFound" xml:space="preserve">
-    <value>The specified plugin was not found.</value>
+  <data name="ExtensionFactory_NoMatchingTExtensionLogicFound" xml:space="preserve">
+    <value>No matching TExtensionLogic was found.</value>
   </data>
-  <data name="ExtensionFactory_TypeDoesNotImplementIPluginSupporter" xml:space="preserve">
-    <value>The specified type does not implement the interface IPluginSupporter.</value>
+  <data name="ExtensionFactory_TypeDoesNotImplementIExtensionSupporter" xml:space="preserve">
+    <value>The specified type does not implement the interface IExtensionSupporter.</value>
   </data>
-  <data name="ExtensionFactory_TypeDoesNotInheritFromPluginSettingsBase" xml:space="preserve">
-    <value>The argument 'settingsType' must be a subclass of PluginSettingsBase.</value>
+  <data name="ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase" xml:space="preserve">
+    <value>The argument 'settingsType' must be a subclass of ExtensionSettingsBase.</value>
   </data>
 </root>

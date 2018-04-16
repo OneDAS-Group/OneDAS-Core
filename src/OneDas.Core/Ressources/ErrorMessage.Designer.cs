@@ -79,11 +79,11 @@ namespace OneDas.Core {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die No PluginActionRequestAttribute was found on the the specified plugin. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die No ExtensionActionRequestAttribute was found on the the specified extension. ähnelt.
         /// </summary>
-        internal static string OneDasEngine_MissingPluginActionRequestAttribute {
+        internal static string OneDasEngine_MissingExtensionActionRequestAttribute {
             get {
-                return ResourceManager.GetString("OneDasEngine_MissingPluginActionRequestAttribute", resourceCulture);
+                return ResourceManager.GetString("OneDasEngine_MissingExtensionActionRequestAttribute", resourceCulture);
             }
         }
         

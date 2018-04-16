@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace OneDas.Types.Abstractions
+namespace OneDas
 {
     public class OneDasOptions
     {
@@ -18,7 +18,7 @@ namespace OneDas.Types.Abstractions
             this.ProjectDirectoryPath = Path.Combine(baseDirectoryPath, "project");
 
             this.NugetProjectFilePath = Path.Combine(this.NugetDirectoryPath, "project.json");
-            this.PluginPackageTypeName = "OneDasExtension";
+            this.PackageTypeName = "OneDasExtension";
         }
 
         public string BackupDirectoryPath { get; set; }
@@ -28,6 +28,6 @@ namespace OneDas.Types.Abstractions
         public string ProjectDirectoryPath { get; set; }
 
         public string NugetProjectFilePath { get; set; }
-        public string PluginPackageTypeName { get; set; }
+        public string PackageTypeName { get; set; }
     }
 }

@@ -39,11 +39,11 @@ declare enum SampleRateEnum {
     SampleRate_1 = 100,
 }
 declare class ActionRequest {
-    readonly PluginId: string;
+    readonly ExtensionId: string;
     readonly InstanceId: number;
     readonly MethodName: string;
     readonly Data: any;
-    constructor(pluginId: string, instanceId: number, methodName: string, data: any);
+    constructor(extensionId: string, instanceId: number, methodName: string, data: any);
 }
 declare class ActionResponse {
     Data: any;
@@ -127,13 +127,13 @@ declare let CheckNamingConvention: (value: string) => {
     HasError: boolean;
     ErrorDescription: string;
 };
-declare class PluginFactory {
-    static CreatePluginViewModelAsync: (pluginType: string, pluginModel: any) => Promise<PluginViewModelBase>;
+declare class ExtensionFactory {
+    static CreateExtensionViewModelAsync: (extensionType: string, extensionModel: any) => Promise<ExtensionViewModelBase>;
 }
-declare class PluginHive {
-    static PluginIdentificationSet: Map<string, PluginIdentificationViewModel[]>;
+declare class ExtensionHive {
+    static ExtensionIdentificationSet: Map<string, ExtensionIdentificationViewModel[]>;
     static Initialize: () => void;
-    static FindPluginIdentification: (pluginTypeName: string, pluginId: string) => PluginIdentificationViewModel;
+    static FindExtensionIdentification: (extensionTypeName: string, extensionId: string) => ExtensionIdentificationViewModel;
 }
 declare class ChannelHubViewModel {
     Name: KnockoutObservable<string>;
@@ -278,12 +278,12 @@ declare class DataPortViewModel {
     ToModel(): any;
     ResetAssociations(maintainWeakReference: boolean): void;
 }
-declare abstract class PluginViewModelBase {
-    Description: PluginDescriptionViewModel;
-    PluginIdentification: PluginIdentificationViewModel;
+declare abstract class ExtensionViewModelBase {
+    Description: ExtensionDescriptionViewModel;
+    ExtensionIdentification: ExtensionIdentificationViewModel;
     IsInSettingsMode: KnockoutObservable<boolean>;
     private _model;
-    constructor(pluginSettingsModel: any, pluginIdentification: PluginIdentificationViewModel);
+    constructor(extensionSettingsModel: any, extensionIdentification: ExtensionIdentificationViewModel);
     abstract InitializeAsync(): Promise<any>;
     SendActionRequest: (instanceId: number, methodName: string, data: any) => Promise<ActionResponse>;
     ExtendModel(model: any): void;
@@ -292,42 +292,42 @@ declare abstract class PluginViewModelBase {
     DisableSettingsMode: () => void;
     ToggleSettingsMode: () => void;
 }
-declare abstract class DataGatewayViewModelBase extends PluginViewModelBase {
+declare abstract class DataGatewayViewModelBase extends ExtensionViewModelBase {
     readonly MaximumDatasetAge: KnockoutObservable<number>;
     readonly DataPortSet: KnockoutObservableArray<DataPortViewModel>;
-    constructor(model: any, identification: PluginIdentificationViewModel);
+    constructor(model: any, identification: ExtensionIdentificationViewModel);
     ExtendModel(model: any): void;
 }
 declare abstract class ExtendedDataGatewayViewModelBase extends DataGatewayViewModelBase {
     ModuleToDataPortMap: KnockoutObservableArray<ObservableGroup<DataPortViewModel>>;
     OneDasModuleSelector: KnockoutObservable<OneDasModuleSelectorViewModel>;
-    constructor(model: any, identification: PluginIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel);
+    constructor(model: any, identification: ExtensionIdentificationViewModel, oneDasModuleSelector: OneDasModuleSelectorViewModel);
     InitializeAsync(): Promise<void>;
     UpdateDataPortSet(): void;
     CreateDataPortSet(oneDasModule: OneDasModuleViewModel, index: number): DataPortViewModel[];
 }
-declare abstract class DataWriterViewModelBase extends PluginViewModelBase {
+declare abstract class DataWriterViewModelBase extends ExtensionViewModelBase {
     readonly FileGranularity: KnockoutObservable<FileGranularityEnum>;
     readonly BufferRequestSet: KnockoutObservableArray<BufferRequestViewModel>;
     readonly BufferRequestSelector: KnockoutObservable<BufferRequestSelectorViewModel>;
-    constructor(model: any, identification: PluginIdentificationViewModel);
+    constructor(model: any, identification: ExtensionIdentificationViewModel);
     ExtendModel(model: any): void;
 }
-declare class PluginDescriptionViewModel {
+declare class ExtensionDescriptionViewModel {
     ProductVersion: number;
     Id: string;
     InstanceId: number;
     InstanceName: KnockoutObservable<string>;
     IsEnabled: KnockoutObservable<boolean>;
-    constructor(pluginDescriptionModel: any);
+    constructor(extensionDescriptionModel: any);
     ToModel(): any;
 }
-declare class PluginIdentificationViewModel {
+declare class ExtensionIdentificationViewModel {
     ProductVersion: string;
     Id: string;
     Name: string;
     Description: string;
     ViewResourceName: string;
     ViewModelResourceName: string;
-    constructor(pluginIdentificationModel: any);
+    constructor(extensionIdentificationModel: any);
 }

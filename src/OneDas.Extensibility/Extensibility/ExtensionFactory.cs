@@ -13,7 +13,8 @@ namespace OneDas.Extensibility
         #region "Fields"
 
         private IServiceProvider _serviceProvider;
-        private HashSet<Type> _pluginSet;
+        private HashSet<Type> _extensionSet;
+        private IExtensionSupporter supporter;
 
         #endregion
 
@@ -23,7 +24,7 @@ namespace OneDas.Extensibility
         {
             _serviceProvider = serviceProvider;
 
-            _pluginSet = new HashSet<Type>();
+            _extensionSet = new HashSet<Type>();
         }
 
         #endregion
@@ -41,7 +42,7 @@ namespace OneDas.Extensibility
 
         public Type GetSettings(string id)
         {
-            return _pluginSet.FirstOrDefault(type => type.GetFirstAttribute<ExtensionIdentificationAttribute>()?.Id == id);
+            return _extensionSet.FirstOrDefault(type => type.GetFirstAttribute<ExtensionIdentificationAttribute>()?.Id == id);
         }
 
         public Type GetLogic(string id)
@@ -49,14 +50,14 @@ namespace OneDas.Extensibility
             return this.GetSettings(id)?.GetFirstAttribute<ExtensionContextAttribute>().LogicType;
         }
 
-        public IEnumerable<Type> Get<TPluginBase>()
+        public IEnumerable<Type> Get<TExtensionBase>()
         {
-            return _pluginSet.Where(type => type.IsSubclassOf(typeof(TPluginBase))).ToList();
+            return _extensionSet.Where(type => type.IsSubclassOf(typeof(TExtensionBase))).ToList();
         }
 
-        public IEnumerable<ExtensionIdentificationAttribute> GetIdentifications<TPluginSettings>() where TPluginSettings : ExtensionSettingsBase
+        public IEnumerable<ExtensionIdentificationAttribute> GetIdentifications<TExtensionSettings>() where TExtensionSettings : ExtensionSettingsBase
         {
-            return this.Get<TPluginSettings>().Select(settingsType =>
+            return this.Get<TExtensionSettings>().Select(settingsType =>
             {
                 ExtensionIdentificationAttribute attribute;
 
@@ -74,21 +75,21 @@ namespace OneDas.Extensibility
 
         public void AddRange(IEnumerable<Type> typeSet)
         {
-            typeSet.ToList().ForEach(pluginType =>
+            typeSet.ToList().ForEach(type =>
             {
-                // create IPluginSupporter and call Initialize once
-                if (!_pluginSet.Contains(pluginType))
+                // create IExtensionSupporter and call Initialize once
+                if (!_extensionSet.Contains(type))
                 {
-                    this.TryBuildSupporter(pluginType)?.Initialize();
+                    this.TryBuildSupporter(type)?.Initialize();
                 }
 
-                _pluginSet.Add(pluginType);
+                _extensionSet.Add(type);
             });
         }
 
         public void Clear()
         {
-            _pluginSet.Clear();
+            _extensionSet.Clear();
         }
 
         #endregion
@@ -106,19 +107,19 @@ namespace OneDas.Extensibility
 
             if (!settingsType.IsSubclassOf(typeof(ExtensionSettingsBase)))
             {
-                throw new Exception(ErrorMessage.ExtensionFactory_TypeDoesNotInheritFromPluginSettingsBase);
+                throw new Exception(ErrorMessage.ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase);
             }
 
             supporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
 
             if (supporterType == null)
             {
-                throw new Exception(ErrorMessage.ExtensionFactory_NoPluginSupporterAttributeFound);
+                throw new Exception(ErrorMessage.ExtensionFactory_NoExtensionSupporterAttributeFound);
             }
 
             if (!typeof(IExtensionSupporter).IsAssignableFrom(supporterType))
             {
-                throw new Exception(ErrorMessage.ExtensionFactory_TypeDoesNotImplementIPluginSupporter);
+                throw new Exception(ErrorMessage.ExtensionFactory_TypeDoesNotImplementIExtensionSupporter);
             }
 
             return (IExtensionSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, supporterType);
@@ -126,7 +127,7 @@ namespace OneDas.Extensibility
 
         public IExtensionSupporter TryBuildSupporter(Type settingsType)
         {
-            Type pluginSupporterType;
+            Type supporterType;
 
             if (settingsType == null)
             {
@@ -138,22 +139,22 @@ namespace OneDas.Extensibility
                 return null;
             }
 
-            pluginSupporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
+            supporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
 
-            if (pluginSupporterType == null)
+            if (supporterType == null)
             {
                 return null;
             }
 
-            if (!typeof(IExtensionSupporter).IsAssignableFrom(pluginSupporterType))
+            if (!typeof(IExtensionSupporter).IsAssignableFrom(supporterType))
             {
                 return null;
             }
 
-            return (IExtensionSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, pluginSupporterType);
+            return (IExtensionSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, supporterType);
         }
 
-        public TPluginLogic BuildLogic<TPluginLogic>(ExtensionSettingsBase settings, params object[] args) where TPluginLogic : ExtensionLogicBase
+        public TExtensionLogic BuildLogic<TExtensionLogic>(ExtensionSettingsBase settings, params object[] args) where TExtensionLogic : ExtensionLogicBase
         {
             Type logicType;
             object[] argsExtended;
@@ -163,10 +164,10 @@ namespace OneDas.Extensibility
 
             if (logicType == null)
             {
-                throw new Exception(ErrorMessage.ExtensionFactory_NoMatchingTPluginLogicFound);
+                throw new Exception(ErrorMessage.ExtensionFactory_NoMatchingTExtensionLogicFound);
             }
 
-            return (TPluginLogic)ActivatorUtilities.CreateInstance(_serviceProvider, logicType, argsExtended);
+            return (TExtensionLogic)ActivatorUtilities.CreateInstance(_serviceProvider, logicType, argsExtended);
         }
 
         #endregion
@@ -176,23 +177,23 @@ namespace OneDas.Extensibility
         public ActionResponse HandleActionRequest(ActionRequest actionRequest)
         {
             List<Type> typeSet;
-            Type pluginSettingsType;
+            Type settingsType;
             ActionResponse actionResponse;
-            IExtensionSupporter pluginSupporter;
+            IExtensionSupporter supporter;
 
             typeSet = this.Get<ExtensionSettingsBase>().ToList();
             actionRequest.Validate();
 
-            pluginSettingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == actionRequest.PluginId);
+            settingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == actionRequest.ExtensionId);
 
-            if (pluginSettingsType != null)
+            if (settingsType != null)
             {
-                pluginSupporter = this.BuildSupporter(pluginSettingsType);
-                actionResponse = pluginSupporter.HandleActionRequest(actionRequest);
+                supporter = this.BuildSupporter(settingsType);
+                actionResponse = supporter.HandleActionRequest(actionRequest);
             }
             else
             {
-                throw new Exception(ErrorMessage.ExtensionFactory_PluginNotFound);
+                throw new Exception(ErrorMessage.ExtensionFactory_ExtensionNotFound);
             }
 
             return actionResponse;
@@ -222,13 +223,13 @@ namespace OneDas.Extensibility
                     }
                     else
                     {
-                        throw new Exception($"The requested resource of plugin ID = '{ id }' and name = '{ resourceName }' could not be found.");
+                        throw new Exception($"The requested resource of extension ID = '{ id }' and name = '{ resourceName }' could not be found.");
                     }
                 }
             }
             else
             {
-                throw new Exception($"The requested plugin with ID = '{ id }' could not be found.");
+                throw new Exception($"The requested extension with ID = '{ id }' could not be found.");
             }
         }
 

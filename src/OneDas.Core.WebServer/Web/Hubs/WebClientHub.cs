@@ -184,11 +184,11 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<string> GetPluginStringResource(string pluginId, string resourceName)
+        public Task<string> GetExtensionStringResource(string extensionId, string resourceName)
         {
             return Task.Run(() =>
             {
-                return _extensionFactory.GetStringResource(pluginId, resourceName);
+                return _extensionFactory.GetStringResource(extensionId, resourceName);
             });
         }
 
@@ -248,8 +248,8 @@ namespace OneDas.WebServer.Web
                     activeProjectSettings: _engine.Project?.Settings,
                     installedPackageSet: await _packageManager.GetInstalledPackagesAsync(),
                     clientSet: new List<string>() { },
-                    dataGatewayPluginIdentificationSet: _extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList(),
-                    dataWriterPluginIdentificationSet: _extensionFactory.GetIdentifications<DataWriterExtensionSettingsBase>().ToList(),
+                    dataGatewayExtensionIdentificationSet: _extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList(),
+                    dataWriterExtensionIdentificationSet: _extensionFactory.GetIdentifications<DataWriterExtensionSettingsBase>().ToList(),
                     productVersion: productVersion,
                     lastError: _engine.LastError,
                     oneDasState: _engine.OneDasState,
@@ -276,19 +276,19 @@ namespace OneDas.WebServer.Web
             });
         }
 
-        public Task<DataGatewayExtensionSettingsBase> CreateDataGatewaySettings(string pluginName)
+        public Task<DataGatewayExtensionSettingsBase> CreateDataGatewaySettings(string extensionName)
         {
             return Task.Run(() =>
             {
-                return (DataGatewayExtensionSettingsBase)Activator.CreateInstance(_extensionFactory.GetSettings(pluginName));
+                return (DataGatewayExtensionSettingsBase)Activator.CreateInstance(_extensionFactory.GetSettings(extensionName));
             });
         }
 
-        public Task<DataWriterExtensionSettingsBase> CreateDataWriterSettings(string pluginName)
+        public Task<DataWriterExtensionSettingsBase> CreateDataWriterSettings(string extensionName)
         {
             return Task.Run(() =>
             {
-                return (DataWriterExtensionSettingsBase)Activator.CreateInstance(_extensionFactory.GetSettings(pluginName));
+                return (DataWriterExtensionSettingsBase)Activator.CreateInstance(_extensionFactory.GetSettings(extensionName));
             });
         }
 
@@ -331,7 +331,7 @@ namespace OneDas.WebServer.Web
 
             Console.WriteLine(_extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList().Count);
 
-            await this.Clients.All.SendPluginIdentifications(
+            await this.Clients.All.SendExtensionIdentifications(
                 _extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList(),
                 _extensionFactory.GetIdentifications<DataWriterExtensionSettingsBase>().ToList());
         }

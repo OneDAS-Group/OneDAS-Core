@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OneDas.Infrastructure;
 using OneDas.Extensibility;
-using OneDas.Extensibility.DataGateway.DataGatewaySample;
+using OneDas.Extensibility.DataGatewaySample;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -39,7 +39,7 @@ namespace EngineSample
             {
                 using (var gateway = extensionFactory.BuildLogic<DataGatewaySampleGateway>(settings))
                 {
-                    gateway.Configure();
+                    gateway.Configure(new DataGatewayContext());
 
                     while (true)
                     {

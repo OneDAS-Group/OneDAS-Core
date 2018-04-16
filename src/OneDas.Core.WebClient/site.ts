@@ -1,5 +1,5 @@
 ﻿/// <reference path="Static/ConnectionManager.ts"/>
-/// <reference path="Static/PluginHive.ts"/>
+/// <reference path="Static/ExtensionHive.ts"/>
 
 declare var pager: any
 declare var _ko: any
@@ -70,27 +70,27 @@ _componentLoader =
     {
         loadTemplate: (name, templateConfig, callback) =>
         {
-            let pluginIdentification: PluginIdentificationViewModel
+            let extensionIdentification: ExtensionIdentificationViewModel
 
-            if (templateConfig.PluginType && templateConfig.PluginIdentification)
+            if (templateConfig.ExtensionType && templateConfig.ExtensionIdentification)
             {
-                pluginIdentification = templateConfig.PluginIdentification
+                extensionIdentification = templateConfig.ExtensionIdentification
 
-                ConnectionManager.InvokeWebClientHub("GetPluginStringResource", pluginIdentification.Id, pluginIdentification.ViewResourceName).then(pluginView =>
+                ConnectionManager.InvokeWebClientHub("GetExtensionStringResource", extensionIdentification.Id, extensionIdentification.ViewResourceName).then(extensionView =>
                 {
                     let element: HTMLDivElement
 
-                    if (templateConfig.PluginType === "DataGateway" || templateConfig.PluginType === "DataWriter")
+                    if (templateConfig.ExtensionType === "DataGateway" || templateConfig.ExtensionType === "DataWriter")
                     {
                         element = document.createElement("div")
-                        element.innerHTML = document.querySelector("#Project_PluginTemplate_" + templateConfig.PluginType).innerHTML
-                        element.querySelector("#Project_PluginTemplate_Content").innerHTML = pluginView
+                        element.innerHTML = document.querySelector("#Project_ExtensionTemplate_" + templateConfig.ExtensionType).innerHTML
+                        element.querySelector("#Project_ExtensionTemplate_Content").innerHTML = extensionView
 
                         callback([element])
                     }
                     else
                     {
-                        ko.components.defaultLoader.loadTemplate(name, pluginView, callback)
+                        ko.components.defaultLoader.loadTemplate(name, extensionView, callback)
                     }
                 }).catch(() =>
                 {
@@ -308,7 +308,7 @@ function InitializeApp()
     pager.goTo(window.location.pathname.substr(1))
 }
 
-PluginHive.Initialize()
+ExtensionHive.Initialize()
 
 ConnectionManager.Initialize(false)
 

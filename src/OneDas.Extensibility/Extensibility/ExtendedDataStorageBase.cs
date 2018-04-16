@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace OneDas.Infrastructure
+namespace OneDas.Extensibility
 {
     /// <summary>
     /// Represents an infrastructure to buffer data.

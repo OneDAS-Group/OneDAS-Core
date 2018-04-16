@@ -1,11 +1,11 @@
-﻿/// <reference path="PluginViewModelBase.ts"/>
+﻿/// <reference path="ExtensionViewModelBase.ts"/>
 
-abstract class DataGatewayViewModelBase extends PluginViewModelBase
+abstract class DataGatewayViewModelBase extends ExtensionViewModelBase
 {
     public readonly MaximumDatasetAge: KnockoutObservable<number>
     public readonly DataPortSet: KnockoutObservableArray<DataPortViewModel>
 
-    constructor(model, identification: PluginIdentificationViewModel)
+    constructor(model, identification: ExtensionIdentificationViewModel)
     {
         super(model, identification)
 
