@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled">
 
   <Import Project=".\..\..\Directory.Build.props" />
   
@@ -15,8 +14,6 @@
     <SuppressValidation>False</SuppressValidation>
     <SuppressIces>ICE60;</SuppressIces>
     <SuppressPdbOutput>True</SuppressPdbOutput>
-    <SuppressSpecificWarnings>
-    </SuppressSpecificWarnings>
   </PropertyGroup>
   
   <ItemGroup>
@@ -57,7 +54,7 @@
       <WixApplicationName>OneDas.Hdf.Explorer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
       <WixHarvestPath>.\..\..\build\bin\$(WixApplicationName)\PublishOutput</WixHarvestPath>
-	  <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
+	    <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-HDF-Explorer-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>
     </PropertyGroup>

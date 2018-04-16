@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas.Plugin.DataGateway.DataGatewaySample {
+namespace OneDas.Extensibility.DataGateway.DataGatewaySample {
     using System;
     
     

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace OneDas.Plugin.DataGateway.DataGatewaySample
+namespace OneDas.Extensibility.DataGateway.DataGatewaySample
 {
     public abstract class DataGatewaySampleNumberGeneratorBase
     {

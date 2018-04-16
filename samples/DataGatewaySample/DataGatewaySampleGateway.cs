@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OneDas.Plugin.DataGateway.DataGatewaySample
+namespace OneDas.Extensibility.DataGateway.DataGatewaySample
 {
-    public class DataGatewaySampleGateway : ExtendedDataGatewayPluginLogicBase
+    public class DataGatewaySampleGateway : ExtendedDataGatewayExtensionLogicBase
     {
         private DataGatewaySampleSettings _settings;
         private List<DataGatewaySampleNumberGeneratorBase> _numberGeneratorSet;

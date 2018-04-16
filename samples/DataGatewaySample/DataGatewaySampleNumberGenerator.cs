@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace OneDas.Plugin.DataGateway.DataGatewaySample
+namespace OneDas.Extensibility.DataGateway.DataGatewaySample
 {
     public unsafe class DataGatewaySampleNumberGenerator<T> : DataGatewaySampleNumberGeneratorBase where T : struct
     {

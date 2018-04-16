@@ -22,9 +22,9 @@
       <Pack>false</Pack>
     </Content>
   </ItemGroup>
-    
+      
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.Types.Abstractions\OneDas.Types.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.Extensibility\OneDas.Extensiblity.csproj" />
   </ItemGroup>
 
   <ItemGroup>

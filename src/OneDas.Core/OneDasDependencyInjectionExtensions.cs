@@ -1,0 +1,39 @@
+﻿using NuGet.PackageManagement;
+using OneDas.Core.Engine;
+using OneDas.Core.PackageManagement;
+using OneDas.Core.Serialization;
+using OneDas.Infrastructure;
+using OneDas.Extensibility;
+using OneDas.Types.Abstractions;
+using System;
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static class OneDasDependencyInjectionExtensions
+    {
+        public static void AddOneDas(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddOneDas(oneDasOptions => { });
+        }
+
+        public static void AddOneDas(this IServiceCollection serviceCollection, Action<OneDasOptions> configure)
+        {
+            // options
+            serviceCollection.Configure(configure);
+
+            // common
+            serviceCollection.AddLogging();
+            serviceCollection.AddOptions();
+
+            // engine
+            serviceCollection.AddSingleton(typeof(IOneDasSerializer), typeof(OneDasSerializer));
+            serviceCollection.AddSingleton(typeof(IOneDasProjectSerializer), typeof(OneDasProjectSerializer));
+            serviceCollection.AddSingleton(typeof(IExtensionFactory), typeof(ExtensionFactory));
+            serviceCollection.AddSingleton<OneDasEngine>();
+
+            // package manager
+            serviceCollection.AddSingleton<IInstallationCompatibility, OneDasInstallationCompatibility>();
+            serviceCollection.AddSingleton<OneDasPackageManager>();
+        }
+    }
+}

@@ -61,47 +61,47 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TPluginLogic was found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
         /// </summary>
-        internal static string PluginProvider_NoMatchingTPluginLogicFound {
+        internal static string OneDasCampaignDescription_InvalidFormatVersion {
             get {
-                return ResourceManager.GetString("PluginProvider_NoMatchingTPluginLogicFound", resourceCulture);
+                return ResourceManager.GetString("OneDasCampaignDescription_InvalidFormatVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any PluginSupporterAttribute. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign version must be equal or greater zero. ähnelt.
         /// </summary>
-        internal static string PluginProvider_NoPluginSupporterAttributeFound {
+        internal static string OneDasCampaignDescription_InvalidVersion {
             get {
-                return ResourceManager.GetString("PluginProvider_NoPluginSupporterAttributeFound", resourceCulture);
+                return ResourceManager.GetString("OneDasCampaignDescription_InvalidVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified plugin was not found. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Use A-Z, a-z, 0-9 or _. ähnelt.
         /// </summary>
-        internal static string PluginProvider_PluginNotFound {
+        internal static string OneDasUtilities_InvalidCharacters {
             get {
-                return ResourceManager.GetString("PluginProvider_PluginNotFound", resourceCulture);
+                return ResourceManager.GetString("OneDasUtilities_InvalidCharacters", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IPluginSupporter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Use A-Z or a-z as first character. ähnelt.
         /// </summary>
-        internal static string PluginProvider_TypeDoesNotImplementIPluginSupporter {
+        internal static string OneDasUtilities_InvalidLeadingCharacter {
             get {
-                return ResourceManager.GetString("PluginProvider_TypeDoesNotImplementIPluginSupporter", resourceCulture);
+                return ResourceManager.GetString("OneDasUtilities_InvalidLeadingCharacter", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;settingsType&apos; must be a subclass of PluginSettingsBase. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The name must not be empty. ähnelt.
         /// </summary>
-        internal static string PluginProvider_TypeDoesNotInheritFromPluginSettingsBase {
+        internal static string OneDasUtilities_NameEmpty {
             get {
-                return ResourceManager.GetString("PluginProvider_TypeDoesNotInheritFromPluginSettingsBase", resourceCulture);
+                return ResourceManager.GetString("OneDasUtilities_NameEmpty", resourceCulture);
             }
         }
     }

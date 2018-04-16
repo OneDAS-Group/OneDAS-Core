@@ -1,0 +1,90 @@
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled">
+
+  <Import Project=".\..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <Platform>x86</Platform>
+    <InstallerPlatform>x86</InstallerPlatform>
+    <ProductVersion>3.9</ProductVersion>
+    <ProjectGuid>{a30ffe93-a205-48e6-880b-b8dc17e12af8}</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputType>Package</OutputType>
+    <Name>OneDas.Core.Deployment</Name>
+    <SuppressValidation>False</SuppressValidation>
+    <SuppressIces>ICE60;</SuppressIces>
+    <SuppressPdbOutput>True</SuppressPdbOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="license.rtf" />
+    <Content Include="RemoveExe.xslt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <Import Project=".\..\..\Directory.Build.targets" />
+  <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+
+  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
+    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+
+  <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateOneDasMetaData">
+
+    <PropertyGroup>
+      <WixApplicationName>OneDas.Core.WebServer</WixApplicationName>
+      <WixConfiguration>Release</WixConfiguration>
+      <WixHarvestPath>.\..\..\build\bin\$(WixApplicationName)\PublishOutput</WixHarvestPath>
+      <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
+      <OutputName>OneDAS-Core-$(Version)</OutputName>
+      <TargetName>$(OutputName)</TargetName>
+    </PropertyGroup>
+
+  </Target>
+
+  <Target Name="BeforeBuild">
+
+    <PropertyGroup>
+      <WixRootPath Condition=" '$(WixRootPath)' == '' ">$(WIX)bin\</WixRootPath>
+      <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(WixRootPath)</WixToolPath>
+    </PropertyGroup>
+
+    <Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(WixConfiguration) -o $(WixHarvestPath)" />
+
+    <ItemGroup>
+      <HarvestDirectory Include="$(WixHarvestPath)">
+        <AutogenerateGuids>true</AutogenerateGuids>
+        <ComponentGroupName>HeatComponentGroup</ComponentGroupName>
+        <DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
+        <PreprocessorVariable>var.WixHarvestPath</PreprocessorVariable>
+        <SuppressRegistry>true</SuppressRegistry>
+        <SuppressRootDirectory>true</SuppressRootDirectory>
+        <ToolPath>$(WixToolPath)</ToolPath>
+        <Transforms>RemoveExe.xslt</Transforms>
+      </HarvestDirectory>
+    </ItemGroup>
+
+    <!-- <HeatDirectory OutputFile="$(ProjectDir)\ProductInstallFiles.wxs" AutogenerateGuids="true" ComponentGroupName="HeatComponentGroup" Directory="$(WixHarvestPath)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.WixHarvestPath" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" /> -->
+
+  </Target>
+
+</Project>

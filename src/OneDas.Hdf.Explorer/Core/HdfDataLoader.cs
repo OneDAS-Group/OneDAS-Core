@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
-using OneDas.Plugin;
-using OneDas.Plugin.DataWriter.Csv;
-using OneDas.Plugin.DataWriter.Mat73;
+using OneDas.Extensibility;
+using OneDas.Extensibility.DataWriter.Csv;
+using OneDas.Extensibility.DataWriter.Mat73;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,7 +34,7 @@ namespace OneDas.Hdf.Explorer.Core
 
             ZipArchiveEntry zipArchiveEntry;
             DataWriterPluginLogicBase dataWriter;
-            DataWriterPluginSettingsBase settings;
+            DataWriterExtensionSettingsBase settings;
             DataWriterContext dataWriterContext;
 
             string directoryPath;
@@ -131,7 +131,7 @@ namespace OneDas.Hdf.Explorer.Core
             // initialize data writer
             campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
             dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
-            dataWriter.Initialize(dataWriterContext, variableDescriptionSet);
+            dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 
             // create temp files
             try

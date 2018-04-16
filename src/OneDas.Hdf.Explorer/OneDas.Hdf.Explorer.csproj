@@ -16,10 +16,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-final" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-final" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-final" />
-    <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6677" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6677" />
-    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6677" />
-    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6677" />
+    <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6680" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Csv" Version="1.0.0-alpha-6680" />
+    <PackageReference Include="OneDas.Plugin.DataWriter.Mat73" Version="1.0.0-alpha-6680" />
+    <PackageReference Include="OneDas.Types" Version="1.0.0-alpha-6680" />
   </ItemGroup>
    
   <ItemGroup>
@@ -28,5 +28,41 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+   
+  <ItemGroup>
+    <None Remove="WebClient\Core\EventDispatcher.ts" />
+    <None Remove="WebClient\Core\HdfExplorerStateEnum.ts" />
+    <None Remove="WebClient\Core\IEvent.ts" />
+    <None Remove="WebClient\OneDas.Hdf.Explorer\DataAvailabilityGranularityEnum.ts" />
+    <None Remove="WebClient\OneDas.Hdf.Explorer\FileFormatEnum.ts" />
+    <None Remove="WebClient\OneDas\FileGranularityEnum.ts" />
+    <None Remove="WebClient\site.ts" />
+    <None Remove="WebClient\Static\EnumerationHelper.ts" />
+    <None Remove="WebClient\Static\Helper.ts" />
+    <None Remove="WebClient\ViewModels\AppViewModel.ts" />
+    <None Remove="WebClient\ViewModels\CampaignInfoViewModel.ts" />
+    <None Remove="WebClient\ViewModels\DataAvailabilityStatisticsViewModel.ts" />
+    <None Remove="WebClient\ViewModels\DatasetInfoViewModel.ts" />
+    <None Remove="WebClient\ViewModels\HdfElementViewModelBase.ts" />
+    <None Remove="WebClient\ViewModels\VariableInfoViewModel.ts" />
+  </ItemGroup>
+   
+  <ItemGroup>
+    <TypeScriptCompile Include="WebClient\Core\EventDispatcher.ts" />
+    <TypeScriptCompile Include="WebClient\Core\HdfExplorerStateEnum.ts" />
+    <TypeScriptCompile Include="WebClient\Core\IEvent.ts" />
+    <TypeScriptCompile Include="WebClient\OneDas.Hdf.Explorer\DataAvailabilityGranularityEnum.ts" />
+    <TypeScriptCompile Include="WebClient\OneDas.Hdf.Explorer\FileFormatEnum.ts" />
+    <TypeScriptCompile Include="WebClient\OneDas\FileGranularityEnum.ts" />
+    <TypeScriptCompile Include="WebClient\site.ts" />
+    <TypeScriptCompile Include="WebClient\Static\EnumerationHelper.ts" />
+    <TypeScriptCompile Include="WebClient\Static\Helper.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\AppViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\CampaignInfoViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\DataAvailabilityStatisticsViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\DatasetInfoViewModel.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\HdfElementViewModelBase.ts" />
+    <TypeScriptCompile Include="WebClient\ViewModels\VariableInfoViewModel.ts" />
+  </ItemGroup>
+      
 </Project>

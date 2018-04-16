@@ -1,11 +1,11 @@
 ﻿using System.Runtime.Serialization;
 
-namespace OneDas.Plugin.DataGateway.DataGatewaySample
+namespace OneDas.Extensibility.DataGateway.DataGatewaySample
 {
     [DataContract]
-    [PluginContext(typeof(DataGatewaySampleGateway))]
-    [PluginIdentification("DataGatewaySample", "Data-gateway sample", "For testing only.", @"WebClient.DataGatewaySampleView.html", @"WebClient.DataGatewaySample.js")]
-    public class DataGatewaySampleSettings : ExtendedDataGatewayPluginSettingsBase
+    [ExtensionContext(typeof(DataGatewaySampleGateway))]
+    [ExtensionIdentification("DataGatewaySample", "Data-gateway sample", "For testing only.", @"WebClient.DataGatewaySampleView.html", @"WebClient.DataGatewaySample.js")]
+    public class DataGatewaySampleSettings : ExtendedDataGatewayExtensionSettingsBase
     {
         //
     }

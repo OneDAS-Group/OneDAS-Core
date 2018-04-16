@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.Infrastructure;
-using OneDas.Plugin;
-using OneDas.Plugin.DataGateway.DataGatewaySample;
+using OneDas.Extensibility;
+using OneDas.Extensibility.DataGateway.DataGatewaySample;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -25,9 +25,9 @@ namespace EngineSample
             ConfigureServices(services);
 
             var provider = services.BuildServiceProvider();
-            var pluginProvider = provider.GetRequiredService<IPluginProvider>();
+            var extensionFactory = provider.GetRequiredService<IExtensionFactory>();
 
-            pluginProvider.Add(typeof(DataGatewaySampleGateway));
+            extensionFactory.Add(typeof(DataGatewaySampleGateway));
 
             var settings = new DataGatewaySampleSettings();
             settings.ModuleSet.Add(new OneDasModule(OneDasDataType.FLOAT32, DataDirection.Input, Endianness.LittleEndian, 10));
@@ -37,7 +37,7 @@ namespace EngineSample
 
             Task.Run(() =>
             {
-                using (var gateway = pluginProvider.BuildLogic<DataGatewaySampleGateway>(settings))
+                using (var gateway = extensionFactory.BuildLogic<DataGatewaySampleGateway>(settings))
                 {
                     gateway.Configure();
 
@@ -64,7 +64,7 @@ namespace EngineSample
 
         static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IPluginProvider, PluginProvider>();
+            services.AddSingleton<IExtensionFactory, ExtensionFactory>();
 
             services.AddLogging(loggingBuilder =>
             {
