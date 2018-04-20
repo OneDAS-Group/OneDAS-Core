@@ -4,7 +4,7 @@
     <Description>Encapsulates the core functionality of OneDAS.</Description>
     <PackageTags>OneDAS data aquisition measurement extension engine</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net471</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
