@@ -1,4 +1,9 @@
 # OneDAS-Core
+
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core)
+
+AppVeyor (/feature/continuous-integration): [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true&branch=feature/continuous-integration)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core/branch/feature/continuous-integration)
+
 Contains the main executables and type definitions of OneDAS.
 
 The documentation is hosted on [onedas.readthedocs.io](https://onedas.readthedocs.io) but incomplete and written for the old version of OneDAS. It will be updated continuously in the following weeks and months.

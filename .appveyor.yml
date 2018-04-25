@@ -1,0 +1,34 @@
+version: '{build}'
+
+image: Visual Studio 2017
+
+clone_depth: 1
+
+branches:
+  only:
+  - feature/continuous-integration
+
+init:
+  - git config --global core.autocrlf true
+
+before_build:
+  - cmd: dotnet --version
+  - cmd: dotnet restore ./src/OneDas.Core/OneDas.Core.csproj --verbosity m
+
+build_script:
+  - cmd: dotnet build ./src/OneDas.Core/OneDas.Core.csproj /p:Build=%APPVEYOR_BUILD_NUMBER% -c Release
+  - cmd: dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj /p:Build=%APPVEYOR_BUILD_NUMBER% -c Release
+
+test_script:
+  cmd: dotnet test ./tests/OneDas.Core.Tests
+
+artifacts:
+  - path: ./build/bin/**/*.nupkg
+
+deploy:
+  provider: NuGet
+  server: https://www.myget.org/F/onedas/api/v2/package
+  api_key:
+    secure: DVadlPknnKPMR4F2+3VqeU7BFFmtLcXDHzkySA590MqQNIdzbx8HRuaPwDVbHRqX
+  skip_symbols: true
+  artifact: /.*\.nupkg/ 
