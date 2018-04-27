@@ -7,13 +7,15 @@
     <EmbedAllSources>true</EmbedAllSources>
     <LangVersion>latest</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoWarn>CS7035</NoWarn>
   </PropertyGroup>
     
   <PropertyGroup>
     <Major Condition="$(Major) == ''">1</Major>
     <Minor Condition="$(Minor) == ''">0</Minor>
     <Revision Condition="$(Revision) == ''">0</Revision>
-    <VersionSuffix Condition="$(VersionSuffix) == ''">alpha1</VersionSuffix>
+    <VersionSuffix Condition="$(VersionSuffix) == ''">alpha.1</VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup>

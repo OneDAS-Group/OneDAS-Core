@@ -25,18 +25,17 @@
       <Version>$(Major).$(Minor).$(Revision)</Version>
 
       <Build Condition="$(IsFinalBuild) == 'True'">final</Build>
-      
+      <FileVersion>$(Major).$(Minor).$(Revision).$(Build)</FileVersion>
+    
     </PropertyGroup>
 
     <!-- build Version -->
     <PropertyGroup Condition="$(VersionSuffix) != '' AND $(Build) != ''">
-      <Version>$(Version)-$(VersionSuffix)-$(Build)</Version>
-      <FileVersion>$(Major).$(Minor).$(Revision).$(Build)</FileVersion>
+      <Version>$(Version)-$(VersionSuffix).$(Build)</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(VersionSuffix) != '' AND $(Build) == ''">
       <Version>$(Version)-$(VersionSuffix)</Version>
-      <FileVersion>$(Major).$(Minor).$(Revision).0</FileVersion>
     </PropertyGroup>
 
     <!-- build PackageVersion -->
