@@ -14,7 +14,6 @@ init:
 
 before_build:
   - cmd: dotnet --version
-  - cmd: dotnet restore ./src/OneDas.Core/OneDas.Core.csproj --verbosity m
 
 build_script:
   - cmd: dotnet build ./src/OneDas.Core/OneDas.Core.csproj /p:Build=%APPVEYOR_BUILD_NUMBER% -c %CONFIGURATION%
