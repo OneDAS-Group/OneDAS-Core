@@ -28,7 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1C185F4C
 	ProjectSection(SolutionItems) = preProject
 		build\OneDas.props = build\OneDas.props
 		build\OneDas.targets = build\OneDas.targets
-		build\publish.ps1 = build\publish.ps1
 	EndProjectSection
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Core.Deployment", "src\OneDas.Core.Deployment\OneDas.Core.Deployment.wixproj", "{A30FFE93-A205-48E6-880B-B8DC17E12AF8}"
