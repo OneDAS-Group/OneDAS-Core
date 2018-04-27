@@ -1,8 +1,7 @@
 # OneDAS-Core
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core)
-
-AppVeyor (/feature/continuous-integration): [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true&branch=feature/continuous-integration)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core/branch/feature/continuous-integration)
+Travis: [![Travis](https://travis-ci.org/OneDAS-Group/OneDAS-Core.svg?branch=master)](https://travis-ci.org/OneDAS-Group/OneDAS-Core)
 
 Contains the main executables and type definitions of OneDAS.
 
