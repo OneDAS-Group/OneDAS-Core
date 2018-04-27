@@ -14,7 +14,6 @@ namespace OneDas.Extensibility
 
         private IServiceProvider _serviceProvider;
         private HashSet<Type> _extensionSet;
-        private IExtensionSupporter supporter;
 
         #endregion
 
