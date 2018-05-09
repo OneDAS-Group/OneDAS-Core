@@ -1,9 +1,9 @@
 ﻿using NuGet.PackageManagement;
 using OneDas;
 using OneDas.Core.Engine;
-using OneDas.Core.PackageManagement;
 using OneDas.Core.Serialization;
 using OneDas.Extensibility;
+using OneDas.Extensibility.PackageManagement;
 using OneDas.Infrastructure;
 using System;
 

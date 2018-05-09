@@ -1,4 +1,4 @@
-﻿namespace OneDas.Core.PackageManagement
+﻿namespace OneDas.Extensibility.PackageManagement
 {
     public class OneDasPackageSource
     {

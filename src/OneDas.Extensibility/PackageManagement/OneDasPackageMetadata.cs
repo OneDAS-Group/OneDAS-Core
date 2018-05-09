@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace OneDas.Core.PackageManagement
+namespace OneDas.Extensibility.PackageManagement
 {
     [DataContract]
     public class OneDasPackageMetaData

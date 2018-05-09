@@ -1,6 +1,6 @@
 ﻿using NuGet.ProjectManagement.Projects;
 
-namespace OneDas.Core.PackageManagement
+namespace OneDas.Extensibility.PackageManagement
 {
     public class OneDasNugetProject : ProjectJsonNuGetProject
     {

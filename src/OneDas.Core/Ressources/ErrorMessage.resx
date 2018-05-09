@@ -162,7 +162,4 @@
   <data name="OneDasEngine_DataWriterHasNoBufferRequests" xml:space="preserve">
     <value>Data writer {0} has no channel filters configured and will not store any data.</value>
   </data>
-  <data name="OneDasInstallationCompatiblity_InvalidPackageType" xml:space="preserve">
-    <value>The package type is invalid.</value>
-  </data>
 </root>
