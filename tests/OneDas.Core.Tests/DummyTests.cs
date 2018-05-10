@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Options;
 using Moq;
 using NuGet.PackageManagement;
-using OneDas.Core.PackageManagement;
 using OneDas.Extensibility;
+using OneDas.Extensibility.PackageManagement;
 using Xunit;
 
 namespace OneDas.Core.Tests
