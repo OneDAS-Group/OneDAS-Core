@@ -9,17 +9,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Core
 {
     public class ExtensionLoader
     {
         ILogger _logger;
+        IExtensionFactory _extensionFactory;
         OneDasPackageManager _packageManager;
-        ExtensionFactory _extensionFactory;
 
-        public ExtensionLoader(ILoggerFactory loggerFactory, OneDasPackageManager packageManager, ExtensionFactory extensionFactory)
+        public ExtensionLoader(ILoggerFactory loggerFactory, IExtensionFactory extensionFactory, OneDasPackageManager packageManager)
         {
             _logger = loggerFactory.CreateLogger("Nuget");
             _packageManager = packageManager;

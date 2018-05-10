@@ -1,10 +1,10 @@
 {
   "dependencies": {
     "@aspnet/signalr": "1.0.0-rc1-update1",
-    "@types/chart.js": "^2.7.7",
+    "@types/chart.js": "2.7.17",
     "@types/jquery": "3.3.1",
     "@types/knockout": "3.4.54",
-    "@types/mathjs": "3.20.0",
+    "@types/mathjs": "0.0.37",
     "bootstrap": "4.0.0",
     "chart.js": "2.7.2",
     "font-awesome": "4.7.0",
