@@ -52,8 +52,11 @@ namespace OneDas.WebServer.Shell
 
             _consoleHubClient.Closed += e =>
             {
-                _isConnected = false;
-                this.ResetConsole();
+                return Task.Run(() =>
+                {
+                    _isConnected = false;
+                    this.ResetConsole();
+                });
             };
 
             Task.Run(async () =>
