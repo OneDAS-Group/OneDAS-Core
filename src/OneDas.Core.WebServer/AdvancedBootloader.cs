@@ -176,11 +176,7 @@ namespace OneDas.WebServer
             });
 
             // OneDasEngine
-            serviceCollection.AddOneDas(oneDasOptions =>
-            {
-                oneDasOptions.DataDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "data");
-                oneDasOptions.ConfigurationDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "config");
-            });
+            serviceCollection.AddOneDas();
 
             // Misc
             serviceCollection.AddSingleton<OneDasConsole>();

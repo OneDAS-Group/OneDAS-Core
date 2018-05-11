@@ -9,7 +9,7 @@ namespace OneDas
         {
             string baseDirectoryPath;
 
-            baseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS");
+            baseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
 
             this.BackupDirectoryPath = Path.Combine(baseDirectoryPath, "backup");
             this.ConfigurationDirectoryPath = Path.Combine(baseDirectoryPath, "config");

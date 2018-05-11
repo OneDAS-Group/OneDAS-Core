@@ -10,6 +10,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
+// https://www.codeproject.com/Articles/1194332/Resolving-Assemblies-in-NET-Core
+
 namespace OneDas.WebServer.Core
 {
     public class ExtensionLoader
@@ -25,6 +27,11 @@ namespace OneDas.WebServer.Core
             _extensionFactory = extensionFactory;
 
             packageManager.InstalledPackagesChanged += (sender, e) => this.ReloadPackages();
+
+            //using (var stream = File.OpenRead("")
+            //{
+            //    return new DependencyContextJsonReader().Read(stream);
+            //}
         }
 
         public void ReloadPackages()

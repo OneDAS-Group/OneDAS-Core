@@ -10,7 +10,7 @@ namespace OneDas.Core.Tests
 { 
     public class DummyTests
     {
-        [Fact]
+        [Fact(Skip="Incomplete")]
         public async void OneDasPackageManagerCreatesAssetsFile()
         {
             var extensionFactory = Mock.Of<IExtensionFactory>();
