@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -13,19 +12,23 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.Core.PackageManagement
+namespace OneDas.Extensibility.PackageManagement
 {
     public class OneDasPackageManager
     {
+        #region "Events"
+
+        public event EventHandler InstalledPackagesChanged;
+
+        #endregion
+
         #region "Fields"
 
         OneDasOptions _options;
@@ -81,26 +84,9 @@ namespace OneDas.Core.PackageManagement
 
         #region "Methods"
 
-        public Task ReloadPackagesAsync()
+        public LockFile GetLockFile()
         {
-            return Task.Run(() =>
-            {
-                this.ReloadPackages();
-            });
-        }
-
-        public void ReloadPackages()
-        {
-            List<Assembly> assemblySet;
-
-            _extensionFactory.Clear();
-
-            assemblySet = this.LoadPackages();
-
-            assemblySet.ToList().ForEach(assembly =>
-            {
-                _extensionFactory.ScanAssembly(assembly);
-            });
+            return LockFileUtilities.GetLockFile(_project.GetAssetsFilePathAsync().Result, _projectContext.LoggerAdapter);
         }
 
         public async Task<List<OneDasPackageMetaData>> GetInstalledPackagesAsync()
@@ -176,6 +162,8 @@ namespace OneDas.Core.PackageManagement
                          sourceRepositorySet,
                          null,
                          CancellationToken.None);
+
+            this.OnInstalledPackagesChanged();
         }
 
         public async Task UpdateAsync(string packageId, string source)
@@ -199,6 +187,8 @@ namespace OneDas.Core.PackageManagement
                         CancellationToken.None);
 
             await _packageManager.ExecuteNuGetProjectActionsAsync(_project, actionSet, _projectContext, packageDownloadContext, CancellationToken.None);
+
+            this.OnInstalledPackagesChanged();
         }
 
         public async Task UninstallAsync(string packageId)
@@ -216,6 +206,13 @@ namespace OneDas.Core.PackageManagement
             {
                 await _packageManager.UninstallPackageAsync(_project, packageId, uninstallationContext, _projectContext, CancellationToken.None);
             }
+
+            this.OnInstalledPackagesChanged();
+        }
+
+        private void OnInstalledPackagesChanged()
+        {
+            this.InstalledPackagesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private NuGetPackageManager CreateNuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider)
@@ -248,63 +245,6 @@ namespace OneDas.Core.PackageManagement
             sourceRepositoryProvider = new SourceRepositoryProvider(_settings, providerSet);
 
             return sourceRepositoryProvider;
-        }
-
-        private List<Assembly> LoadPackages()
-        {
-            LockFile lockFile;
-            LockFileTarget lockFileTarget;
-            HashSet<Assembly> assemblySet;
-
-            assemblySet = new HashSet<Assembly>();
-
-            lockFile = this.GetLockFile();
-            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
-
-            if (lockFileTarget != null)
-            {
-                lockFileTarget.Libraries.ToList().ForEach(library =>
-                {
-                    string basePath;
-                    string absoluteFilePath;
-
-                    LockFileLibrary lockFileLibrary;
-
-                    try
-                    {
-                        assemblySet.Add(Assembly.Load(library.Name));
-                        _projectContext.Log(MessageLevel.Debug, "Loaded lib: " + library.Name);
-                    }
-                    catch
-                    {
-                        lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
-                        basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
-
-                        lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.StartsWith("lib/netstandard2.0") && relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
-                        {
-                            absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, relativeFilePath));
-
-                            try
-                            {
-                                assemblySet.Add(Assembly.LoadFrom(absoluteFilePath));
-                                _projectContext.Log(MessageLevel.Debug, "Loaded file: " + absoluteFilePath);
-                            }
-                            catch
-                            {
-                                _projectContext.Log(MessageLevel.Debug, "Failed to load file: " + absoluteFilePath);
-                                throw;
-                            }
-                        });
-                    }
-                });
-            }
-
-            return assemblySet.ToList();
-        }
-
-        private LockFile GetLockFile()
-        {
-            return LockFileUtilities.GetLockFile(_project.GetAssetsFilePathAsync().Result, _projectContext.LoggerAdapter);
         }
 
         #endregion

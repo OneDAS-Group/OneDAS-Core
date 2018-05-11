@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.Core.PackageManagement
+namespace OneDas.Extensibility.PackageManagement
 {
     public class OneDasInstallationCompatibility : IInstallationCompatibility
     {

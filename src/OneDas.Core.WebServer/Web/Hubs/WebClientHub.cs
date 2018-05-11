@@ -2,11 +2,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Core.Engine;
-using OneDas.Core.PackageManagement;
 using OneDas.Core.ProjectManagement;
 using OneDas.Core.Serialization;
-using OneDas.Infrastructure;
 using OneDas.Extensibility;
+using OneDas.Extensibility.PackageManagement;
+using OneDas.Infrastructure;
 using OneDas.WebServer.Core;
 using System;
 using System.Collections.Generic;
@@ -327,9 +327,6 @@ namespace OneDas.WebServer.Web
         private async Task UpdateClientPackagesInformation()
         {
             await this.Clients.All.SendInstalledPackages(await _packageManager.GetInstalledPackagesAsync());
-            await _packageManager.ReloadPackagesAsync();
-
-            Console.WriteLine(_extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList().Count);
 
             await this.Clients.All.SendExtensionIdentifications(
                 _extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList(),

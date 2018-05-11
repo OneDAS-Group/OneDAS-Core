@@ -115,15 +115,6 @@ namespace OneDas.Core {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The package type is invalid. ähnelt.
-        /// </summary>
-        internal static string OneDasInstallationCompatiblity_InvalidPackageType {
-            get {
-                return ResourceManager.GetString("OneDasInstallationCompatiblity_InvalidPackageType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The campaign name is invalid. ähnelt.
         /// </summary>
         internal static string OneDasProject_CampaignNameInvalid {

@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
 using OneDas.Core.Engine;
-using OneDas.Core.PackageManagement;
 using OneDas.Core.Serialization;
+using OneDas.Extensibility.PackageManagement;
 using OneDas.WebServer.Core;
 using OneDas.WebServer.Logging;
 using OneDas.WebServer.Shell;
@@ -37,7 +37,7 @@ namespace OneDas.WebServer
         public AdvancedBootloader(bool isHosting, WebServerOptions webServerOptions, IConfiguration configuration)
         {
             OneDasOptions options;
-            OneDasPackageManager packageManager;
+            ExtensionLoader extensionLoader;
 
             _isHosting = isHosting;
             _webServerOptions = webServerOptions;
@@ -57,9 +57,9 @@ namespace OneDas.WebServer
                 Directory.CreateDirectory(options.NugetDirectoryPath);
                 Directory.CreateDirectory(options.ProjectDirectoryPath);
 
-                // package manager 
-                packageManager = _serviceProvider.GetRequiredService<OneDasPackageManager>();
-                packageManager.ReloadPackages();
+                // extension loader
+                extensionLoader = _serviceProvider.GetRequiredService<ExtensionLoader>();
+                extensionLoader.ReloadPackages();
 
                 // create engine
                 _engine = _serviceProvider.GetRequiredService<OneDasEngine>();
@@ -176,16 +176,11 @@ namespace OneDas.WebServer
             });
 
             // OneDasEngine
-            serviceCollection.AddOneDas(oneDasOptions =>
-            {
-                oneDasOptions.DataDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "data");
-                oneDasOptions.ConfigurationDirectoryPath = Path.Combine(_webServerOptions.BaseDirectoryPath, "config");
-            });
+            serviceCollection.AddOneDas();
 
-            // OneDasConsole
+            // Misc
             serviceCollection.AddSingleton<OneDasConsole>();
-
-            // ClientPushService
+            serviceCollection.AddSingleton<ExtensionLoader>();
             serviceCollection.AddSingleton<ClientPushService>();
         }
 

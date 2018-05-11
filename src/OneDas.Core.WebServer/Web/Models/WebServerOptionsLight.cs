@@ -1,4 +1,4 @@
-﻿using OneDas.Core.PackageManagement;
+﻿using OneDas.Extensibility.PackageManagement;
 using System.Collections.Generic;
 
 namespace OneDas.WebServer.Web

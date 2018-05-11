@@ -4,7 +4,7 @@ using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 
-namespace OneDas.Core.PackageManagement
+namespace OneDas.Extensibility.PackageManagement
 {
     public class OneDasDeleteOnRestartManager : IDeleteOnRestartManager
     {

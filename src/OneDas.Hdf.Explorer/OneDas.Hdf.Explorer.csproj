@@ -4,24 +4,25 @@
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.6.375" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-preview2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-preview2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-final" />
-    <PackageReference Include="OneDas.Extensibility" Version="1.0.0-alpha-6680" />
-    <PackageReference Include="OneDas.Extension.Csv" Version="1.0.0-alpha-6680" />
-    <PackageReference Include="OneDas.Extension.Mat73" Version="1.0.0-alpha-6680" />
-    <PackageReference Include="OneDas.Hdf.Types" Version="1.0.0-alpha-6680" />
+    <PackageReference Include="BuildBundlerMinifier" Version="2.7.385" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-rc1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-rc1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-rc1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-rc1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-rc1-final" />
   </ItemGroup>
-   
+
+  <ItemGroup>
+    <ProjectReference Include="..\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+    <ProjectReference Include="..\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
     <Content Include="$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\**\*.dll" CopyToPublishDirectory="Always">
