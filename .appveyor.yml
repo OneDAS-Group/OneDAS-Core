@@ -23,7 +23,7 @@ test_script:
   - cmd: dotnet test ./tests/OneDas.Core.Tests
 
 artifacts:
-  - path: ./build/bin/**/*.nupkg
+  - path: ./artifacts/**/*.nupkg
 
 deploy:
   provider: NuGet
