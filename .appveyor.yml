@@ -16,11 +16,10 @@ before_build:
   - cmd: dotnet --version
 
 build_script:
-  - cmd: dotnet build ./src/OneDas.Core/OneDas.Core.csproj /p:Build=%APPVEYOR_BUILD_NUMBER% -c %CONFIGURATION%
   - cmd: dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj /p:Build=%APPVEYOR_BUILD_NUMBER% -c %CONFIGURATION%
 
 test_script:
-  - cmd: dotnet test ./tests/OneDas.Core.Tests --no-build
+  - cmd: dotnet test ./tests/OneDas.Core.Tests /p:Build=%APPVEYOR_BUILD_NUMBER% -c %CONFIGURATION%
 
 artifacts:
   - path: ./artifacts/**/*.nupkg
