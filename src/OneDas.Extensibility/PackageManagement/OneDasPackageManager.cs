@@ -6,6 +6,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -45,7 +46,7 @@ namespace OneDas.Extensibility.PackageManagement
 
         #region "Constructors"
 
-        public OneDasPackageManager(IExtensionFactory extensionFactory, IInstallationCompatibility installationCompatibility, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasPackageManager(string rid, IExtensionFactory extensionFactory, IInstallationCompatibility installationCompatibility, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             JObject jobject;
 
@@ -63,6 +64,10 @@ namespace OneDas.Extensibility.PackageManagement
                 jobject = new JObject();
 
                 JsonConfigUtility.AddFramework(jobject, FrameworkConstants.CommonFrameworks.NetStandard20);
+                JsonConfigUtility.AddDependency(jobject, new PackageDependency("NETStandard.Library", new VersionRange(new NuGetVersion("2.0.1"))));
+
+                jobject.Add("runtimes", new JObject(new JProperty(rid, new JObject())));
+
                 File.WriteAllText(_options.NugetProjectFilePath, jobject.ToString(Formatting.Indented));
             }
 
@@ -97,7 +102,7 @@ namespace OneDas.Extensibility.PackageManagement
             installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
             packageMetadataSet = installedPackageSet.
-                    Where(packageReference => packageReference.IsUserInstalled).
+                    Where(packageReference => packageReference.PackageIdentity.Id != "NETStandard.Library").
                     Select(packageReference => new OneDasPackageMetaData(packageReference.PackageIdentity.Id, string.Empty, packageReference.PackageIdentity.Version.ToString(), true, false)).ToList();
 
             return packageMetadataSet;

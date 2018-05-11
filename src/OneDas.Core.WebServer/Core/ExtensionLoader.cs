@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using NuGet.Frameworks;
+﻿using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.DependencyModel.Resolution;
+using Microsoft.Extensions.Logging;
 using NuGet.ProjectModel;
 using OneDas.Extensibility;
 using OneDas.Extensibility.PackageManagement;
@@ -16,9 +17,10 @@ namespace OneDas.WebServer.Core
 {
     public class ExtensionLoader
     {
-        ILogger _logger;
-        IExtensionFactory _extensionFactory;
-        OneDasPackageManager _packageManager;
+        private ICompilationAssemblyResolver _assemblyResolver;
+        private ILogger _logger;
+        private IExtensionFactory _extensionFactory;
+        private OneDasPackageManager _packageManager;
 
         public ExtensionLoader(ILoggerFactory loggerFactory, IExtensionFactory extensionFactory, OneDasPackageManager packageManager)
         {
@@ -26,12 +28,15 @@ namespace OneDas.WebServer.Core
             _packageManager = packageManager;
             _extensionFactory = extensionFactory;
 
-            packageManager.InstalledPackagesChanged += (sender, e) => this.ReloadPackages();
+            _assemblyResolver = new CompositeCompilationAssemblyResolver
+                                (new ICompilationAssemblyResolver[]
+            {
+                new AppBaseCompilationAssemblyResolver(Directory.GetCurrentDirectory()),
+                new ReferenceAssemblyPathResolver(),
+                new PackageCompilationAssemblyResolver()
+            });
 
-            //using (var stream = File.OpenRead("")
-            //{
-            //    return new DependencyContextJsonReader().Read(stream);
-            //}
+            packageManager.InstalledPackagesChanged += (sender, e) => this.ReloadPackages();
         }
 
         public void ReloadPackages()
@@ -57,47 +62,83 @@ namespace OneDas.WebServer.Core
 
             assemblySet = new HashSet<Assembly>();
 
-            lockFile = _packageManager.GetLockFile();
-            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
-            loadContext = new OneDasAssemblyLoadContext();
+            DependencyContext dependencyContext;
 
-            if (lockFileTarget != null)
+
+            using (FileStream fileStream = File.OpenRead(@"C:\Users\wilvin\AppData\Local\OneDAS\Core\nuget\project.lock.json"))
             {
-                lockFileTarget.Libraries.ToList().ForEach(library =>
-                {
-                    string basePath;
-                    string absoluteFilePath;
-
-                    LockFileLibrary lockFileLibrary;
-
-                    try
-                    {
-                        assemblySet.Add(Assembly.Load(library.Name));
-                        _logger.LogDebug("Loaded lib: " + library.Name);
-                    }
-                    catch
-                    {
-                        lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
-                        basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
-
-                        lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.StartsWith("lib/netstandard2.0") && relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
-                        {
-                            absoluteFilePath = NuGet.Common.PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, relativeFilePath));
-
-                            try
-                            {
-                                assemblySet.Add(loadContext.LoadFromAssemblyPath(absoluteFilePath));
-                                _logger.LogDebug("Loaded file: " + absoluteFilePath);
-                            }
-                            catch
-                            {
-                                _logger.LogDebug("Failed to load file: " + absoluteFilePath);
-                                throw;
-                            }
-                        });
-                    }
-                });
+                dependencyContext = new DependencyContextJsonReader().Read(fileStream);
             }
+
+
+            var a = dependencyContext.GetDefaultNativeAssets();
+            var b = dependencyContext.GetRuntimeNativeAssets("win7-x86");
+            var c = dependencyContext.GetRuntimeNativeAssets("win-x86");
+            var d = dependencyContext.GetRuntimeNativeAssets("any");
+            var e = dependencyContext.GetRuntimeNativeAssets("linux-x64");
+            var f = dependencyContext.GetRuntimeNativeAssets("linux-x64");
+
+            
+            //dependencyContext.GetDefaultAssemblyNames
+
+            //lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
+            //loadContext = new OneDasAssemblyLoadContext();
+
+            //if (lockFileTarget != null)
+            //{
+            //    lockFileTarget.Libraries.ToList().ForEach(library =>
+            //    {
+            //        string basePath;
+            //        string absoluteFilePath;
+
+            //        LockFileLibrary lockFileLibrary;
+
+            //        try
+            //        {
+            //            assemblySet.Add(Assembly.Load(library.Name));
+            //            _logger.LogDebug("Loaded lib: " + library.Name);
+            //        }
+            //        catch
+            //        {
+            //            lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
+            //            //basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
+
+            //            var wrapper = new CompilationLibrary(
+            //                lockFileLibrary.Type,
+            //                lockFileLibrary.Name,
+            //                lockFileLibrary.Version.ToString(),
+            //                lockFileLibrary.Sha512,
+            //                lockFileLibrary.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+            //                lockFileLibrary.Dependencies,
+            //                lockFileLibrary.Serviceable);
+
+            //            var assemblies = new List<string>();
+
+            //            _assemblyResolver.TryResolveAssemblyPaths(, assemblies);
+
+            //            if (assemblies.Count > 0)
+            //            {
+            //                assemblySet.Add(loadContext.LoadFromAssemblyPath(assemblies[0]));
+            //            }
+
+            //            //lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.StartsWith("lib/netstandard2.0") && relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
+            //            //{
+            //            //    absoluteFilePath = NuGet.Common.PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, relativeFilePath));
+
+            //            //    try
+            //            //    {
+            //            //        assemblySet.Add(loadContext.LoadFromAssemblyPath(absoluteFilePath));
+            //            //        _logger.LogDebug("Loaded file: " + absoluteFilePath);
+            //            //    }
+            //            //    catch
+            //            //    {
+            //            //        _logger.LogDebug("Failed to load file: " + absoluteFilePath);
+            //            //        throw;
+            //            //    }
+            //            //});
+            //        }
+            //    });
+            //}
 
             return assemblySet.ToList();
         }

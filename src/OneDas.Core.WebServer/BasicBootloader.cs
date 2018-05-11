@@ -31,6 +31,8 @@ namespace OneDas.WebServer
 
             WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
 
+            var rid = RuntimeEnvironment.GetRuntimeIdentifier();
+
             // configuration
             BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
             configurationFileName = "settings.json";
