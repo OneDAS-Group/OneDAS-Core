@@ -1,4 +1,4 @@
-﻿using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
