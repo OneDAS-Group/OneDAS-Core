@@ -9,8 +9,6 @@ namespace OneDas
 
         private static Func<T, double> EmitToDoubleConverter()
         {
-            // check if convertible
-
             DynamicMethod method = new DynamicMethod(string.Empty, typeof(double), new Type[] { typeof(T) });
             ILGenerator ilGenerator = method.GetILGenerator();
 

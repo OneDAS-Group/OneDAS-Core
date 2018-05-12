@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -6,6 +6,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -48,6 +49,7 @@ namespace OneDas.Extensibility.PackageManagement
         public OneDasPackageManager(IExtensionFactory extensionFactory, IInstallationCompatibility installationCompatibility, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             JObject jobject;
+            VersionRange versionRange;
 
             _extensionFactory = extensionFactory;
             _installationCompatibility = installationCompatibility;
@@ -61,8 +63,13 @@ namespace OneDas.Extensibility.PackageManagement
             if (!File.Exists(_options.NugetProjectFilePath))
             {
                 jobject = new JObject();
+                versionRange = new VersionRange(new NuGetVersion("2.0.3"));
 
                 JsonConfigUtility.AddFramework(jobject, FrameworkConstants.CommonFrameworks.NetStandard20);
+                JsonConfigUtility.AddDependency(jobject, new PackageDependency("NETStandard.Library", versionRange));
+
+                jobject.Add("runtimes", new JObject(new JProperty(_options.RestoreRuntimeId, new JObject())));
+
                 File.WriteAllText(_options.NugetProjectFilePath, jobject.ToString(Formatting.Indented));
             }
 
@@ -97,7 +104,7 @@ namespace OneDas.Extensibility.PackageManagement
             installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
             packageMetadataSet = installedPackageSet.
-                    Where(packageReference => packageReference.IsUserInstalled).
+                    Where(packageReference => packageReference.PackageIdentity.Id != "NETStandard.Library").
                     Select(packageReference => new OneDasPackageMetaData(packageReference.PackageIdentity.Id, string.Empty, packageReference.PackageIdentity.Version.ToString(), true, false)).ToList();
 
             return packageMetadataSet;

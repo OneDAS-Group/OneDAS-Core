@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Threading.Tasks;
 
 namespace OneDas.WebServer.Logging
 {
@@ -17,6 +16,8 @@ namespace OneDas.WebServer.Logging
 
         public IDisposable BeginScope<TState>(TState state)
         {
+            //return _loggerExternalScopeProvider().Push(state);
+
             return null;
         }
 
@@ -27,11 +28,11 @@ namespace OneDas.WebServer.Logging
                 switch (_categoryName)
                 {
                     case "Nuget":
-                        AdvancedBootloader.ClientPushService.SendNugetMessage(formatter(state, exception));
+                        AdvancedBootloader.ClientPushService?.SendNugetMessage(formatter(state, exception));
                         break;
 
                     default:
-                        AdvancedBootloader.ClientPushService.SendClientMessage($"{ _categoryName }: { formatter(state, exception) }");
+                        AdvancedBootloader.ClientPushService?.SendClientMessage($"{ _categoryName }: { formatter(state, exception) }");
                         break;
                 }
             }

@@ -297,6 +297,8 @@ namespace OneDas.WebServer.Web
             return _packageManager.SearchAsync(searchTerm, address, skip, take);
         }
 
+        // TODO: prevent modification of "NETStandard" package!
+
         public Task InstallPackage(string packageId, string source)
         {
             return Task.Run(async () =>

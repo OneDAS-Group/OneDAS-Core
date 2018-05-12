@@ -1,8 +1,0 @@
-<Project>
-
-  <Target Name="PushTarget" AfterTargets="Pack">
-    <Exec Command="dotnet nuget push &quot;$(TargetDir)..\$(PackageId).$(PackageVersion).nupkg&quot; --source https://www.myget.org/F/onedas/api/v3/index.json" />
-    <Exec Command="del /s &quot;$(TargetDir)..\*.nupkg&quot; &gt;nul 2&gt;&amp;1" />
-  </Target>
-  
-</Project>
