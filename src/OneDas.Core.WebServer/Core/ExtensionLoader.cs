@@ -7,7 +7,6 @@ using NuGet.ProjectModel;
 using OneDas.Extensibility;
 using OneDas.Extensibility.PackageManagement;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +25,7 @@ namespace OneDas.WebServer.Core
 
         public ExtensionLoader(ILoggerFactory loggerFactory, IExtensionFactory extensionFactory, OneDasPackageManager packageManager)
         {
-            _logger = loggerFactory.CreateLogger("Nuget");
+            _logger = loggerFactory.CreateLogger("ExtensionLoader");
             _packageManager = packageManager;
             _extensionFactory = extensionFactory;
 
@@ -52,19 +51,13 @@ namespace OneDas.WebServer.Core
             LockFile lockFile;
             LockFileTarget lockFileTarget;
             OneDasAssemblyLoadContext loadContext;
-            HashSet<Assembly> assemblySet;
+            List<Assembly> assemblySet;
 
-            assemblySet = new HashSet<Assembly>();
+            assemblySet = new List<Assembly>();
+            loadContext = new OneDasAssemblyLoadContext();
 
             lockFile = _packageManager.GetLockFile();
             lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, RuntimeEnvironment.GetRuntimeIdentifier());
-            loadContext = new OneDasAssemblyLoadContext();
-
-            loadContext.Resolving += (assemblyLoadContext, assemblyName) =>
-            {
-                _logger.LogDebug("########## Searching for: " + assemblyName + " #############");
-                return null;
-            };
 
             if (lockFileTarget != null)
             {
@@ -79,14 +72,16 @@ namespace OneDas.WebServer.Core
                     lockFileLibrary = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
                     basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
 
-                    _logger.LogDebug("########## Processing library: " + targetLibrary.Name + " #############");
-
                     _isAlreadyIncluded = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name && runtimeLibrary.Version == targetLibrary.Version.ToString())
-                                      || targetLibrary.Name == "OneDas.Extensibility.Abstractions";
+                                      || targetLibrary.Name == "OneDas.Extensibility.Abstractions" || targetLibrary.Name == "OneDas.Types";
 
-                    if (_isAlreadyIncluded)
+                    if (!_isAlreadyIncluded)
                     {
-                        _logger.LogDebug("skipping library: " + targetLibrary.Name + "/" + targetLibrary.Version.ToString() + " ##");
+                        _logger.LogDebug($"#### processing library: { targetLibrary.Name }");
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"#### skipping library: { targetLibrary.Name }/{ targetLibrary.Version.ToString() }");
                         return;
                     }
 
@@ -95,25 +90,24 @@ namespace OneDas.WebServer.Core
                     {
                         absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, runtimeAssembly.Path));
 
-                        _logger.LogDebug("## processing file: " + absoluteFilePath + " ##");
-
-                        if (runtimeAssembly.Path.EndsWith("/_._"))
+                        if (!runtimeAssembly.Path.EndsWith("/_._"))
                         {
-                            _logger.LogDebug("skipping file: " + absoluteFilePath + " ##");
-
+                            _logger.LogDebug($"processing file: { absoluteFilePath }");
+                        }
+                        else
+                        {
+                            _logger.LogDebug($"skipping file: { absoluteFilePath }");
                             return;
                         }
 
                         try
                         {
-                            //assemblySet.Add(loadContext.LoadFromAssemblyPath(absoluteFilePath));
-                            assemblySet.Add(AssemblyLoadContext.Default.LoadFromAssemblyPath(absoluteFilePath));
-
-                            _logger.LogDebug("file loaded: " + absoluteFilePath);
+                            assemblySet.Add(loadContext.LoadFromAssemblyPath(absoluteFilePath));
+                            _logger.LogDebug($"file loaded: { absoluteFilePath }");
                         }
                         catch
                         {
-                            _logger.LogDebug("file loading failed: " + absoluteFilePath);
+                            _logger.LogDebug($"file loading failed: { absoluteFilePath }");
                             throw;
                         }
                     });
@@ -123,16 +117,16 @@ namespace OneDas.WebServer.Core
                     {
                         absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, nativeLibrary.Path));
 
-                        _logger.LogDebug("## processing file: " + absoluteFilePath + " ##");
+                        _logger.LogDebug($"processing file: { absoluteFilePath }");
 
                         try
                         {
                             loadContext.LoadFromNativeAssemblyPath(absoluteFilePath);
-                            _logger.LogDebug("native file loaded: " + absoluteFilePath);
+                            _logger.LogDebug($"native file loaded: { absoluteFilePath }");
                         }
                         catch
                         {
-                            _logger.LogDebug("native file loading failed: " + absoluteFilePath);
+                            _logger.LogDebug($"native file loading failed: { absoluteFilePath }");
                             throw;
                         }
                     });
@@ -151,16 +145,8 @@ namespace OneDas.WebServer.Core
 
             protected override Assembly Load(AssemblyName assemblyName)
             {
-                Debug.WriteLine("LOAD: request received to load: " + assemblyName);
                 return null;
             }
-
-            //protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
-            //{
-            //    Debug.WriteLine("LoadUnmanagedDll: request received to load: " + unmanagedDllName);
-
-            //    return base.LoadUnmanagedDll(unmanagedDllName);
-            //}
         }
     }
 }
