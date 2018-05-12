@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace OneDas.Extensibility
 {
     [DataContract]
-    public class DataWriterExtensionSettingsBase : ExtensionSettingsBase
+    public abstract class DataWriterExtensionSettingsBase : ExtensionSettingsBase
     {
         #region "Constructors
 

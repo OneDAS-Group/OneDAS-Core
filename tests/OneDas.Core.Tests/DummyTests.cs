@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NuGet.PackageManagement;
@@ -18,6 +19,7 @@ namespace OneDas.Core.Tests
 
             var optionsMock = new Mock<IOptions<OneDasOptions>>();
             optionsMock.SetupGet(x => x.Value).Returns(new OneDasOptions());
+            optionsMock.Object.Value.RestoreRuntimeId = RuntimeEnvironment.GetRuntimeIdentifier();
 
             var loggerFactory = new LoggerFactory();
 

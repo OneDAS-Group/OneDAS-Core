@@ -7,27 +7,21 @@ namespace OneDas
     {
         public OneDasOptions()
         {
-            string baseDirectoryPath;
-
-            baseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
-
-            this.BackupDirectoryPath = Path.Combine(baseDirectoryPath, "backup");
-            this.ConfigurationDirectoryPath = Path.Combine(baseDirectoryPath, "config");
-            this.DataDirectoryPath = Path.Combine(baseDirectoryPath, "data");
-            this.NugetDirectoryPath = Path.Combine(baseDirectoryPath, "nuget");
-            this.ProjectDirectoryPath = Path.Combine(baseDirectoryPath, "project");
-
-            this.NugetProjectFilePath = Path.Combine(this.NugetDirectoryPath, "project.json");
+            this.BaseDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
             this.PackageTypeName = "OneDasExtension";
+            this.RestoreRuntimeId = "any";
         }
 
-        public string BackupDirectoryPath { get; set; }
-        public string ConfigurationDirectoryPath { get; set; }
-        public string DataDirectoryPath { get; set; }
-        public string NugetDirectoryPath { get; set; }
-        public string ProjectDirectoryPath { get; set; }
-
-        public string NugetProjectFilePath { get; set; }
+        public string BaseDirectoryPath { get; set; }
         public string PackageTypeName { get; set; }
+        public string RestoreRuntimeId { get; set; }
+
+        public string BackupDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "backup"); }
+        public string ConfigurationDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "config"); }
+        public string DataDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "data"); }
+        public string NugetDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "nuget"); }
+        public string ProjectDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "project"); }
+
+        public string NugetProjectFilePath { get => Path.Combine(this.NugetDirectoryPath, "project.json"); }
     }
 }

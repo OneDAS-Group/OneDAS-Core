@@ -53,7 +53,7 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.Hdf.Explorer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\build\bin\$(WixApplicationName)\PublishOutput</WixHarvestPath>
+      <WixHarvestPath>.\..\..\artifacts\$(WixApplicationName)\bin\PublishOutput</WixHarvestPath>
 	    <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-HDF-Explorer-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>

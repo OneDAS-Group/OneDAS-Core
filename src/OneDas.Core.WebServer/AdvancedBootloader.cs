@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -85,7 +86,7 @@ namespace OneDas.WebServer
 
         public void Run()
         {
-            OneDasConsole oneDasConsole;
+            OneDasConsole console;
 
             if (_engine != null && !Environment.UserInteractive)
             {
@@ -96,10 +97,10 @@ namespace OneDas.WebServer
             {
                 BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
 
-                oneDasConsole = _serviceProvider.GetRequiredService<OneDasConsole>();
+                console = _serviceProvider.GetRequiredService<OneDasConsole>();
 
                 _webhost?.StartAsync();
-                oneDasConsole.Run(_isHosting);
+                console.Run(_isHosting);
             }
             else
             {
@@ -175,7 +176,10 @@ namespace OneDas.WebServer
             });
 
             // OneDasEngine
-            serviceCollection.AddOneDas();
+            serviceCollection.AddOneDas(options =>
+            {
+                options.RestoreRuntimeId = RuntimeEnvironment.GetRuntimeIdentifier();
+            });
 
             // Misc
             serviceCollection.AddSingleton<OneDasConsole>();

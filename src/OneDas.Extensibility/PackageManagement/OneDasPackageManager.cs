@@ -46,9 +46,10 @@ namespace OneDas.Extensibility.PackageManagement
 
         #region "Constructors"
 
-        public OneDasPackageManager(string rid, IExtensionFactory extensionFactory, IInstallationCompatibility installationCompatibility, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasPackageManager(IExtensionFactory extensionFactory, IInstallationCompatibility installationCompatibility, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             JObject jobject;
+            VersionRange versionRange;
 
             _extensionFactory = extensionFactory;
             _installationCompatibility = installationCompatibility;
@@ -62,11 +63,12 @@ namespace OneDas.Extensibility.PackageManagement
             if (!File.Exists(_options.NugetProjectFilePath))
             {
                 jobject = new JObject();
+                versionRange = new VersionRange(new NuGetVersion("2.0.3"));
 
                 JsonConfigUtility.AddFramework(jobject, FrameworkConstants.CommonFrameworks.NetStandard20);
-                JsonConfigUtility.AddDependency(jobject, new PackageDependency("NETStandard.Library", new VersionRange(new NuGetVersion("2.0.1"))));
+                JsonConfigUtility.AddDependency(jobject, new PackageDependency("NETStandard.Library", versionRange));
 
-                jobject.Add("runtimes", new JObject(new JProperty(rid, new JObject())));
+                jobject.Add("runtimes", new JObject(new JProperty(_options.RestoreRuntimeId, new JObject())));
 
                 File.WriteAllText(_options.NugetProjectFilePath, jobject.ToString(Formatting.Indented));
             }

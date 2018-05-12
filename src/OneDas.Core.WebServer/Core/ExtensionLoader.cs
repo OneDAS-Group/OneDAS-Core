@@ -1,15 +1,18 @@
-﻿using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.DependencyModel.Resolution;
+﻿using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
+using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using OneDas.Extensibility;
 using OneDas.Extensibility.PackageManagement;
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // https://www.codeproject.com/Articles/1194332/Resolving-Assemblies-in-NET-Core
 
@@ -17,7 +20,6 @@ namespace OneDas.WebServer.Core
 {
     public class ExtensionLoader
     {
-        private ICompilationAssemblyResolver _assemblyResolver;
         private ILogger _logger;
         private IExtensionFactory _extensionFactory;
         private OneDasPackageManager _packageManager;
@@ -27,14 +29,6 @@ namespace OneDas.WebServer.Core
             _logger = loggerFactory.CreateLogger("Nuget");
             _packageManager = packageManager;
             _extensionFactory = extensionFactory;
-
-            _assemblyResolver = new CompositeCompilationAssemblyResolver
-                                (new ICompilationAssemblyResolver[]
-            {
-                new AppBaseCompilationAssemblyResolver(Directory.GetCurrentDirectory()),
-                new ReferenceAssemblyPathResolver(),
-                new PackageCompilationAssemblyResolver()
-            });
 
             packageManager.InstalledPackagesChanged += (sender, e) => this.ReloadPackages();
         }
@@ -62,93 +56,111 @@ namespace OneDas.WebServer.Core
 
             assemblySet = new HashSet<Assembly>();
 
-            DependencyContext dependencyContext;
+            lockFile = _packageManager.GetLockFile();
+            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, RuntimeEnvironment.GetRuntimeIdentifier());
+            loadContext = new OneDasAssemblyLoadContext();
 
-
-            using (FileStream fileStream = File.OpenRead(@"C:\Users\wilvin\AppData\Local\OneDAS\Core\nuget\project.lock.json"))
+            loadContext.Resolving += (assemblyLoadContext, assemblyName) =>
             {
-                dependencyContext = new DependencyContextJsonReader().Read(fileStream);
+                _logger.LogDebug("########## Searching for: " + assemblyName + " #############");
+                return null;
+            };
+
+            if (lockFileTarget != null)
+            {
+                lockFileTarget.Libraries.ToList().ForEach(targetLibrary =>
+                {
+                    string basePath;
+                    string absoluteFilePath;
+                    bool _isAlreadyIncluded;
+
+                    LockFileLibrary lockFileLibrary;
+
+                    lockFileLibrary = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
+                    basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
+
+                    _logger.LogDebug("########## Processing library: " + targetLibrary.Name + " #############");
+
+                    _isAlreadyIncluded = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name && runtimeLibrary.Version == targetLibrary.Version.ToString())
+                                      || targetLibrary.Name == "OneDas.Extensibility.Abstractions";
+
+                    if (_isAlreadyIncluded)
+                    {
+                        _logger.LogDebug("skipping library: " + targetLibrary.Name + "/" + targetLibrary.Version.ToString() + " ##");
+                        return;
+                    }
+
+                    // RuntimeAssemblies
+                    targetLibrary.RuntimeAssemblies.ToList().ForEach(runtimeAssembly =>
+                    {
+                        absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, runtimeAssembly.Path));
+
+                        _logger.LogDebug("## processing file: " + absoluteFilePath + " ##");
+
+                        if (runtimeAssembly.Path.EndsWith("/_._"))
+                        {
+                            _logger.LogDebug("skipping file: " + absoluteFilePath + " ##");
+
+                            return;
+                        }
+
+                        try
+                        {
+                            //assemblySet.Add(loadContext.LoadFromAssemblyPath(absoluteFilePath));
+                            assemblySet.Add(AssemblyLoadContext.Default.LoadFromAssemblyPath(absoluteFilePath));
+
+                            _logger.LogDebug("file loaded: " + absoluteFilePath);
+                        }
+                        catch
+                        {
+                            _logger.LogDebug("file loading failed: " + absoluteFilePath);
+                            throw;
+                        }
+                    });
+
+                    // NativeLibraries
+                    targetLibrary.NativeLibraries.ToList().ForEach(nativeLibrary =>
+                    {
+                        absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, nativeLibrary.Path));
+
+                        _logger.LogDebug("## processing file: " + absoluteFilePath + " ##");
+
+                        try
+                        {
+                            loadContext.LoadFromNativeAssemblyPath(absoluteFilePath);
+                            _logger.LogDebug("native file loaded: " + absoluteFilePath);
+                        }
+                        catch
+                        {
+                            _logger.LogDebug("native file loading failed: " + absoluteFilePath);
+                            throw;
+                        }
+                    });
+                });
             }
-
-
-            var a = dependencyContext.GetDefaultNativeAssets();
-            var b = dependencyContext.GetRuntimeNativeAssets("win7-x86");
-            var c = dependencyContext.GetRuntimeNativeAssets("win-x86");
-            var d = dependencyContext.GetRuntimeNativeAssets("any");
-            var e = dependencyContext.GetRuntimeNativeAssets("linux-x64");
-            var f = dependencyContext.GetRuntimeNativeAssets("linux-x64");
-
-            
-            //dependencyContext.GetDefaultAssemblyNames
-
-            //lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, null);
-            //loadContext = new OneDasAssemblyLoadContext();
-
-            //if (lockFileTarget != null)
-            //{
-            //    lockFileTarget.Libraries.ToList().ForEach(library =>
-            //    {
-            //        string basePath;
-            //        string absoluteFilePath;
-
-            //        LockFileLibrary lockFileLibrary;
-
-            //        try
-            //        {
-            //            assemblySet.Add(Assembly.Load(library.Name));
-            //            _logger.LogDebug("Loaded lib: " + library.Name);
-            //        }
-            //        catch
-            //        {
-            //            lockFileLibrary = lockFile.GetLibrary(library.Name, library.Version);
-            //            //basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
-
-            //            var wrapper = new CompilationLibrary(
-            //                lockFileLibrary.Type,
-            //                lockFileLibrary.Name,
-            //                lockFileLibrary.Version.ToString(),
-            //                lockFileLibrary.Sha512,
-            //                lockFileLibrary.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
-            //                lockFileLibrary.Dependencies,
-            //                lockFileLibrary.Serviceable);
-
-            //            var assemblies = new List<string>();
-
-            //            _assemblyResolver.TryResolveAssemblyPaths(, assemblies);
-
-            //            if (assemblies.Count > 0)
-            //            {
-            //                assemblySet.Add(loadContext.LoadFromAssemblyPath(assemblies[0]));
-            //            }
-
-            //            //lockFileLibrary.Files.Where(relativeFilePath => relativeFilePath.StartsWith("lib/netstandard2.0") && relativeFilePath.EndsWith(".dll")).ToList().ForEach(relativeFilePath =>
-            //            //{
-            //            //    absoluteFilePath = NuGet.Common.PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, relativeFilePath));
-
-            //            //    try
-            //            //    {
-            //            //        assemblySet.Add(loadContext.LoadFromAssemblyPath(absoluteFilePath));
-            //            //        _logger.LogDebug("Loaded file: " + absoluteFilePath);
-            //            //    }
-            //            //    catch
-            //            //    {
-            //            //        _logger.LogDebug("Failed to load file: " + absoluteFilePath);
-            //            //        throw;
-            //            //    }
-            //            //});
-            //        }
-            //    });
-            //}
 
             return assemblySet.ToList();
         }
 
         private class OneDasAssemblyLoadContext : AssemblyLoadContext
         {
+            public void LoadFromNativeAssemblyPath(string assemblyFilePath)
+            {
+                this.LoadUnmanagedDllFromPath(assemblyFilePath);
+            }
+
             protected override Assembly Load(AssemblyName assemblyName)
             {
-                throw new NotImplementedException();
+                Debug.WriteLine("LOAD: request received to load: " + assemblyName);
+                return null;
             }
+
+            //protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+            //{
+            //    Debug.WriteLine("LoadUnmanagedDll: request received to load: " + unmanagedDllName);
+
+            //    return base.LoadUnmanagedDll(unmanagedDllName);
+            //}
         }
     }
 }
