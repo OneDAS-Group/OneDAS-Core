@@ -6,7 +6,10 @@ class ConnectionManager
 
     public static Initialize(enableLogging: boolean)
     {
-        ConnectionManager.WebClientHub = new signalR.HubConnection('/webclienthub');
+        ConnectionManager.WebClientHub = new signalR.HubConnectionBuilder()
+                                                .configureLogging(signalR.LogLevel.Information)
+                                                .withUrl('/webclienthub')
+                                                .build();
     }
 
     public static InvokeWebClientHub = async(methodName: string, ...args: any[]) =>

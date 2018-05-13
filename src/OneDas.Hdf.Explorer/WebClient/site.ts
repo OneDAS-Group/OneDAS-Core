@@ -108,7 +108,10 @@ async function Reconnect()
     }
 }
 
-_broadcaster = new signalR.HubConnection("/broadcaster")
+_broadcaster = new signalR.HubConnectionBuilder()
+    .configureLogging(signalR.LogLevel.Information)
+    .withUrl('/broadcaster')
+    .build();
 _broadcaster.onclose(() => this.Reconnect())
 
 this.Connect()

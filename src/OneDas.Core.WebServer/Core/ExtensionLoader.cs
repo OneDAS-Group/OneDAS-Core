@@ -1,5 +1,4 @@
-using Microsoft.DotNet.PlatformAbstractions;
-using Microsoft.Extensions.DependencyModel;
+﻿using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -14,6 +13,31 @@ using System.Runtime.Loader;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // https://www.codeproject.com/Articles/1194332/Resolving-Assemblies-in-NET-Core
+
+// Working principle:
+// 
+//      option 1: load all assemblies into the default load context
+//                  +: easy
+//                  -: unable to load new assembly versions
+//
+//      option 2: load all assemblies into a new load context
+//                  +: easy
+//                  -: does not work, because "OneDas.Extensibility.Abstractions" is loaded twice and therefore inheritance does not work properly
+//
+//      option 3: load only new assemblies into a new load context
+//                  -: more complex:  if (DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name && runtimeLibrary.Version == targetLibrary.Version.ToString())) ...
+//                  -: it is not possible to update assemblies that the hosting application is referencing by default
+//
+//      option 4: load everything except "OneDas.Extensibility.Abstractions" into a new load context
+//                  +: easy
+//                  -: does not work, because then "OneDas.Types" is still loaded twice (throws MethodNotFoundException)
+//
+//      option 5: load everything except "OneDas.Extensibility.Abstractions" and "OneDas.Types" into a new load context
+//                  +: easy
+//                  +: all assemblies except "OneDas.Extensibility.Abstractions" and "OneDas.Types" can be updated
+//                  -: there is a small chance of causing the "MethodNotFoundException", which needs to be kept in mind
+//
+// Option 5 is choosed.
 
 namespace OneDas.WebServer.Core
 {
@@ -63,26 +87,24 @@ namespace OneDas.WebServer.Core
             {
                 lockFileTarget.Libraries.ToList().ForEach(targetLibrary =>
                 {
+                    bool skip;
                     string basePath;
                     string absoluteFilePath;
-                    bool _isAlreadyIncluded;
 
                     LockFileLibrary lockFileLibrary;
 
                     lockFileLibrary = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
                     basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
+                    skip = targetLibrary.Name == "OneDas.Extensibility.Abstractions" || targetLibrary.Name == "OneDas.Types";
 
-                    _isAlreadyIncluded = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name && runtimeLibrary.Version == targetLibrary.Version.ToString())
-                                      || targetLibrary.Name == "OneDas.Extensibility.Abstractions" || targetLibrary.Name == "OneDas.Types";
-
-                    if (!_isAlreadyIncluded)
-                    {
-                        _logger.LogDebug($"#### processing library: { targetLibrary.Name }");
-                    }
-                    else
+                    if (skip)
                     {
                         _logger.LogDebug($"#### skipping library: { targetLibrary.Name }/{ targetLibrary.Version.ToString() }");
                         return;
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"#### processing library: { targetLibrary.Name }");
                     }
 
                     // RuntimeAssemblies
