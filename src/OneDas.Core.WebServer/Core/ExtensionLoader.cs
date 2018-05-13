@@ -1,4 +1,5 @@
 ﻿using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -25,7 +26,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 //                  -: does not work, because "OneDas.Extensibility.Abstractions" is loaded twice and therefore inheritance does not work properly
 //
 //      option 3: load only new assemblies into a new load context
-//                  -: more complex:  if (DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name && runtimeLibrary.Version == targetLibrary.Version.ToString())) ...
+//                  -: more complex:  skip = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name)
 //                  -: it is not possible to update assemblies that the hosting application is referencing by default
 //
 //      option 4: load everything except "OneDas.Extensibility.Abstractions" into a new load context
@@ -35,9 +36,10 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 //      option 5: load everything except "OneDas.Extensibility.Abstractions" and "OneDas.Types" into a new load context
 //                  +: easy
 //                  +: all assemblies except "OneDas.Extensibility.Abstractions" and "OneDas.Types" can be updated
-//                  -: there is a small chance of causing the "MethodNotFoundException", which needs to be kept in mind
+//                  -: there is a chance of causing the "MethodNotFoundException" or type mismatches, which needs to be kept in mind
+//                  -: dependency injection type resolving prevents usage of option 5
 //
-// Option 5 is choosed.
+// Option 3 is choosed.
 
 namespace OneDas.WebServer.Core
 {
@@ -95,7 +97,7 @@ namespace OneDas.WebServer.Core
 
                     lockFileLibrary = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
                     basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
-                    skip = targetLibrary.Name == "OneDas.Extensibility.Abstractions" || targetLibrary.Name == "OneDas.Types";
+                    skip = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name);
 
                     if (skip)
                     {
