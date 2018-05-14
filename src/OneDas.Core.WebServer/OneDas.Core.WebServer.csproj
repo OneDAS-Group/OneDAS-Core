@@ -3,6 +3,7 @@
   <PropertyGroup>
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
   </PropertyGroup>
   

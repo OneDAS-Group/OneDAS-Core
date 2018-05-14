@@ -17,5 +17,6 @@ before_script:
   - dotnet --version
 
 script: 
-  - dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj /p:Build=%APPVEYOR_BUILD_NUMBER% -c %CONFIGURATION%
+  - dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj
+  - dotnet build ./samples/ExtensionSample/ExtensionSample.csproj /p:BuildProjectReferences=false
   - dotnet test ./tests/OneDas.Core.Tests -c %CONFIGURATION%

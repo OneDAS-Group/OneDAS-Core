@@ -15,7 +15,7 @@ namespace OneDas.WebServer
         #region "Fields"
 
         private static WebServerOptions _options;
-        private static ServiceController _oneDasServiceController;
+        private static ServiceController _serviceController;
         private static AdvancedBootloader _advancedBootloader;
 
         #endregion
@@ -95,16 +95,16 @@ namespace OneDas.WebServer
 
         public static ServiceControllerStatus GetOneDasServiceStatus()
         {
-            if (_oneDasServiceController == null)
+            if (_serviceController == null)
             {
-                _oneDasServiceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == _options.ServiceName);
+                _serviceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == _options.ServiceName);
             }
 
-            if (_oneDasServiceController != null)
+            if (_serviceController != null)
             {
-                _oneDasServiceController.Refresh();
+                _serviceController.Refresh();
 
-                return _oneDasServiceController.Status;
+                return _serviceController.Status;
             }
             else
             {

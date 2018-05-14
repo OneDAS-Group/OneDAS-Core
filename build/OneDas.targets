@@ -10,22 +10,21 @@
     <Error Condition="$(PackageProjectUrl) == ''" Text="The PackageProjectUrl property must be set." />
 
     <!-- build properties -->
+   
     <PropertyGroup>
 
       <!-- ensure default values -->
       <Authors Condition="$(Authors) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Authors>
       <Company Condition="$(Company) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Company>
       <Copyright Condition="$(Copyright) == ''">OneDAS Group</Copyright>
+      <Build Condition="$(IsFinalBuild) == 'True'">final</Build>
 
       <!-- create new properties -->
       <AssemblyVersion>$(Major).0.0.0</AssemblyVersion>
-      <FileVersion>$(Major).$(Minor).$(Revision)</FileVersion>
+      <FileVersion>$(Major).$(Minor).$(Revision).0</FileVersion>
       <Product>OneDAS</Product>
       <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
       <Version>$(Major).$(Minor).$(Revision)</Version>
-
-      <Build Condition="$(IsFinalBuild) == 'True'">final</Build>
-      <FileVersion>$(Major).$(Minor).$(Revision).$(Build)</FileVersion>
     
     </PropertyGroup>
 
