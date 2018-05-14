@@ -5,6 +5,7 @@ clone_depth: 1
 branches:
   only:
   - master
+  - dev
 
 configuration:
   - Release
@@ -13,22 +14,37 @@ init:
   - git config --global core.autocrlf true
 
 before_build:
-  - cmd: dotnet --version
+  - dotnet --version
 
 build_script:
-  - cmd: dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj -c %CONFIGURATION% /p:Build=%APPVEYOR_BUILD_NUMBER%
-  - cmd: dotnet build ./samples/ExtensionSample/ExtensionSample.csproj -c %CONFIGURATION% /p:Build=%APPVEYOR_BUILD_NUMBER% /p:BuildProjectReferences=false
+  - dotnet build ./src/OneDas.Core/OneDas.Core.csproj -c %CONFIGURATION% /p:Build=%APPVEYOR_BUILD_NUMBER%
+  - dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj -c %CONFIGURATION% /p:Build=%APPVEYOR_BUILD_NUMBER%
+  - dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj -c %CONFIGURATION% /p:Build=%APPVEYOR_BUILD_NUMBER%
 
 test_script:
-  - cmd: dotnet test ./tests/OneDas.Core.Tests /p:Build=%APPVEYOR_BUILD_NUMBER% -c %CONFIGURATION%
+  - dotnet test ./tests/OneDas.Core.Tests -c %CONFIGURATION% /p:Build=%APPVEYOR_BUILD_NUMBER% /p:BuildProjectReferences=false
 
 artifacts:
   - path: ./artifacts/**/*.nupkg
 
+# master
 deploy:
-  provider: NuGet
-  server: https://www.myget.org/F/onedas/api/v2/package
-  api_key:
-    secure: DVadlPknnKPMR4F2+3VqeU7BFFmtLcXDHzkySA590MqQNIdzbx8HRuaPwDVbHRqX
-  skip_symbols: true
-  artifact: /.*\.nupkg/ 
+  - provider: NuGet
+    server: https://www.nuget.org/api/v2/package
+    api_key:
+      secure: Z+/E7/8k05NePoUmHdtw/sTn6GSM+0e7ko6A02/rBjm6K9wVTYNekWHvSv7GEBtC
+    skip_symbols: true
+    artifact: /.*\.nupkg/ 
+    on: 
+      branch: master
+      appveyor_repo_tag: true
+
+# dev
+  - provider: NuGet
+    server: https://www.myget.org/F/onedas/api/v2/package
+    api_key:
+      secure: DVadlPknnKPMR4F2+3VqeU7BFFmtLcXDHzkySA590MqQNIdzbx8HRuaPwDVbHRqX
+    skip_symbols: true
+    artifact: /.*\.nupkg/ 
+    on:
+      branch: dev
