@@ -35,7 +35,7 @@ deploy:
       secure: Z+/E7/8k05NePoUmHdtw/sTn6GSM+0e7ko6A02/rBjm6K9wVTYNekWHvSv7GEBtC
     skip_symbols: true
     artifact: /.*\.nupkg/ 
-    on:  
+    on:
       branch: master
       appveyor_repo_tag: true
 
