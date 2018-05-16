@@ -1,6 +1,9 @@
 version: '{build}'
-image: Visual Studio 2017
 clone_depth: 1
+
+image:
+- Visual Studio 2017
+- Ubuntu
 
 branches:
   only:
@@ -37,6 +40,7 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: master
+      image: Visual Studio 2017
       appveyor_repo_tag: true
 
 # dev
@@ -48,3 +52,4 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: dev
+      image: Visual Studio 2017
