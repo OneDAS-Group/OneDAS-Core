@@ -1,6 +1,6 @@
 # OneDAS-Core
 
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true&passingText=AppVeyor%20-%20OK&failedText=AppVeyor%20-%20Fails&pendingText=AppVeyor%20-%20building)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core) [![Documentation Status](https://readthedocs.org/projects/onedas/badge/?version=latest)](http://onedas.readthedocs.io/en/latest/?badge=latest)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core) [![Documentation Status](https://readthedocs.org/projects/onedas/badge/?version=latest)](http://onedas.readthedocs.io/en/latest/?badge=latest)
 
 
 Contains the main executables and type definitions of OneDAS.
