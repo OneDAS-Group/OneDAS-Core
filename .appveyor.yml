@@ -40,8 +40,8 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: master
-      image: Visual Studio 2017
-      appveyor_repo_tag: true
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_REPO_TAG: true
 
 # dev
   - provider: NuGet
@@ -52,4 +52,4 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: dev
-      image: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
