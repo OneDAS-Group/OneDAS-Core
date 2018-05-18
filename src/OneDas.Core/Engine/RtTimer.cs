@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace OneDas.Core.Engine
@@ -42,15 +43,15 @@ namespace OneDas.Core.Engine
 
         public void Start(TimeSpan interval, TimeSpan offset, Func<DateTime> func)
         {
-            this.Start(interval, offset, func, false, 0);
+            this.Start(interval, offset, func, ThreadPriority.Highest, true);
         }
 
-        public void Start(TimeSpan interval, TimeSpan offset, Func<DateTime> func, UnmanagedThreadPriority threadPriority)
+        public void Start(TimeSpan interval, TimeSpan offset, Func<DateTime> func, ThreadPriority threadPriority)
         {
-            this.Start(interval, offset, func, true, threadPriority);
+            this.Start(interval, offset, func, threadPriority, false);
         }
 
-        private void Start(TimeSpan interval, TimeSpan offset, Func<DateTime> func, bool useThreadPriority, UnmanagedThreadPriority threadPriority)
+        private void Start(TimeSpan interval, TimeSpan offset, Func<DateTime> func, ThreadPriority threadPriority, bool boostToRealTime)
         {
             Contract.Requires(func != null);
 
@@ -65,24 +66,58 @@ namespace OneDas.Core.Engine
 
             _thread = new Thread(() =>
             {
-                // step 1: timer and thread preperation
-                SafeNativeMethods.TimeBeginPeriod(1u);
-                ////SafeNativeMethods.NtSetTimerResolution(5000, True, Nothing)
-
-                if (useThreadPriority)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), threadPriority);
+                    // step 1: timer and thread preperation
+                    SafeNativeMethods.TimeBeginPeriod(1u);
+
+                    ////SafeNativeMethods.NtSetTimerResolution(5000, True, Nothing)
+
+                    if (boostToRealTime)
+                    {
+                        SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
+                    }
+                    else
+                    {
+                        switch (threadPriority)
+                        {
+                            case ThreadPriority.AboveNormal:
+                                SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_ABOVE_NORMAL); break;
+
+                            case ThreadPriority.BelowNormal:
+                                SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_BELOW_NORMAL); break;
+
+                            case ThreadPriority.Highest:
+                                SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_HIGHEST); break;
+
+                            case ThreadPriority.Lowest:
+                                SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_LOWEST); break;
+
+                            case ThreadPriority.Normal:
+                                SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_NORMAL); break;
+
+                            default:
+                                throw new ArgumentException(nameof(threadPriority));
+                        }
+                    }
+
+                    // step 2: start timer loop
+                    this.TimerLoop();
+
+                    // step 3: clean up
+                    SafeNativeMethods.TimeEndPeriod(1);
                 }
                 else
                 {
-                    SafeNativeMethods.SetThreadPriority(SafeNativeMethods.GetCurrentThread(), UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
+                    // step 1: timer and thread preperation
+                    Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
+                    // step 2: start timer loop
+                    this.TimerLoop();
+
+                    // step 3: clean up
+                    // -
                 }
-
-                // step 2: start timer loop
-                this.TimerLoop();
-
-                // step 3: clean up
-                SafeNativeMethods.TimeEndPeriod(1);
             })
             { Name = "RtTimer" };
 

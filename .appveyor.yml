@@ -2,7 +2,7 @@ version: '{build}'
 clone_depth: 1
 
 image:
-- Visual Studio 2017
+- Visual Studio 2017 Preview
 - Ubuntu
 
 branches:
@@ -17,11 +17,13 @@ init:
   - git config --global core.autocrlf true
 
 before_build:
+  - ps: dotnet --info
   - ps: "Get-ChildItem Env:"
-  - ps: dotnet --version
+  - ps: if ($isWindows) { .\init_solution.ps1 }
 
 build_script:
-  - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER
+  - ps: if ($isWindows) { dotnet pack ./src/OneDas.Core.WebServer/OneDas.Core.WebServer.csproj -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER }
+  - ps: if ($isLinux) { dotnet build ./src/OneDas.Core/OneDas.Core.csproj -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER }
   - ps: dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER
   - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER
 
@@ -41,7 +43,7 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: master
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017 Preview
       APPVEYOR_REPO_TAG: true
 
 # dev
@@ -53,4 +55,4 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: dev
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017 Preview

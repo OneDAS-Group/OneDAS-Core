@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace OneDas.Core.Engine
         private ILogger _systemLogger;
         private ILogger _oneDasEngineLogger;
 
-        private OneDasOptions _oneDasOptions;
+        private OneDasOptions _options;
         private DriveInfo _driveInfo;
 
         // reset required	
@@ -92,8 +93,8 @@ namespace OneDas.Core.Engine
         public OneDasEngine(IServiceProvider serviceProvider, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             _serviceProvider = serviceProvider;
-            _oneDasOptions = options.Value;
-            _driveInfo = new DriveInfo(_oneDasOptions.DataDirectoryPath);
+            _options = options.Value;
+            _driveInfo = new DriveInfo(_options.DataDirectoryPath);
 
             // state
             _oneDasState = OneDasState.Initialization;
@@ -105,7 +106,12 @@ namespace OneDas.Core.Engine
             // 
             _baseFrequency_To_DateTime = Convert.ToInt64(10000000L / OneDasConstants.NativeSampleRate);
             _timer_UpdateIo = new RtTimer();
-            _executionState = SafeNativeMethods.SetThreadExecutionState(ExecutionState.CONTINUOUS | ExecutionState.SYSTEM_REQUIRED);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _executionState = SafeNativeMethods.SetThreadExecutionState(ExecutionState.CONTINUOUS | ExecutionState.SYSTEM_REQUIRED);
+            }
+            
             _ratedCycleTime_Ms = 1.0 / OneDasConstants.NativeSampleRate * 1000.0;
 
             _storageThread = new Thread(() => this.StoreData())
@@ -122,8 +128,17 @@ namespace OneDas.Core.Engine
             _syncLock = new object();
 
             // process priority
+
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime; // try to get even higher
+
+            try
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime; // try to get even higher
+            }
+            catch
+            {
+                //
+            }
 
             GcNotification.GcDone += GcNotification_GcOccured;
 
@@ -608,7 +623,7 @@ namespace OneDas.Core.Engine
                     throw new Exception(ErrorMessage.OneDasEngine_DirectoryNameInvalid);
                 }
 
-                baseDirectoryPath = Path.Combine(_oneDasOptions.DataDirectoryPath, $"{ this.Project.Settings.Description.PrimaryGroupName }_{ this.Project.Settings.Description.SecondaryGroupName }_{ this.Project.Settings.Description.CampaignName }_V{ this.Project.Settings.Description.Version }_{ this.Project.Settings.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
+                baseDirectoryPath = Path.Combine(_options.DataDirectoryPath, $"{ this.Project.Settings.Description.PrimaryGroupName }_{ this.Project.Settings.Description.SecondaryGroupName }_{ this.Project.Settings.Description.CampaignName }_V{ this.Project.Settings.Description.Version }_{ this.Project.Settings.Description.Guid.ToString().Substring(0, 8) }", $"{ dataWriter.Settings.Description.Id }_DW{ dataWriter.Settings.Description.InstanceId }");
 
                 Directory.CreateDirectory(baseDirectoryPath);
 
@@ -627,7 +642,7 @@ namespace OneDas.Core.Engine
             interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(1.0 / OneDasConstants.NativeSampleRate * 1000.0));
             timeShift = new TimeSpan(0, 0, 0, 0, TIMER_SHIFT);
 
-            _timer_UpdateIo.Start(interval, timeShift, this.UpdateIo, UnmanagedThreadPriority.THREAD_PRIORITY_TIME_CRITICAL);
+            _timer_UpdateIo.Start(interval, timeShift, this.UpdateIo);
 
             if (Process.GetCurrentProcess().PriorityClass < ProcessPriorityClass.RealTime)
             {
@@ -1057,7 +1072,10 @@ namespace OneDas.Core.Engine
                     _timer_UpdateIo?.Stop();
 
                     // general
-                    SafeNativeMethods.SetThreadExecutionState(_executionState);
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        SafeNativeMethods.SetThreadExecutionState(_executionState);
+                    }
 
                     _storageCancellationTokenSource.Cancel();
                     _storageAutoResetEvent.Set();
