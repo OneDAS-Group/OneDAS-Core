@@ -129,15 +129,29 @@ namespace OneDas.Core.Engine
 
             // process priority
 
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
 
-            try
-            {
-                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime; // try to get even higher
+                try
+                {
+                    Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime; // try to get even higher
+                }
+                catch
+                {
+                    //
+                }
             }
-            catch
+            else
             {
-                //
+                try
+                {
+                    Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+                }
+                catch
+                {
+                    //
+                }
             }
 
             GcNotification.GcDone += GcNotification_GcOccured;
