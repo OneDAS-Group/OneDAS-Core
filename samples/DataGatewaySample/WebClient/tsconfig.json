@@ -4,6 +4,7 @@
     "outFile": "DataGatewaySample.js"
   },
   "include": [
+    "./../../../src/OneDas.Core.WebClient/Export/OneDas.Types.d.ts",
     "./**/*.ts"
   ]
 }
