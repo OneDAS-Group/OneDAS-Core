@@ -5,7 +5,7 @@
     <Description>For testing only.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>OneDAS data aquisition measurement extension Test</PackageTags>
-    <RootNamespace>OneDas.Extension.DataGateway.DataGatewaySample</RootNamespace>
+    <RootNamespace>OneDas.Extension.DataGatewaySample</RootNamespace>
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
   </PropertyGroup>
   

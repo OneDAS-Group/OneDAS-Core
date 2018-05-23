@@ -207,7 +207,7 @@ namespace OneDas.Extensibility
             typeSet = this.Get<ExtensionSettingsBase>().ToList();
             type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == id);
             assembly = type?.Assembly;
-            resourceName = $"{ assembly.GetName().Name }.{ resourceName }";
+            resourceName = $"{ assembly.GetName().Name }.{ resourceName }"; // actually it should be the root namespace instead of assembly name
 
             if (assembly != null)
             {
