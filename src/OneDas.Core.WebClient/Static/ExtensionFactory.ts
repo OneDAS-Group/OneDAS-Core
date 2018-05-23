@@ -11,12 +11,7 @@
         if (extensionIdentification)
         {
             extensionViewModelRaw = await ConnectionManager.InvokeWebClientHub("GetExtensionStringResource", extensionModel.Description.Id, extensionIdentification.ViewModelResourceName)
-            let a = new Function(extensionViewModelRaw + "; return ViewModelConstructor")()
-            let b = new Function(extensionViewModelRaw + "; return ViewModelConstructor")
-            let c = new Function("let ViewModelConstructor = 1" + "; return ViewModelConstructor")()
-            debugger
             extensionViewModel = <ExtensionViewModelBase>new Function(extensionViewModelRaw + "; return ViewModelConstructor")()(extensionModel, extensionIdentification)
-            debugger
 
             return extensionViewModel
         }
