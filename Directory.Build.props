@@ -3,9 +3,9 @@
   <Import Project="./build/OneDas.props" />
 
   <PropertyGroup> 
-    <OutputPath>$(MSBuildThisFileDirectory)artifacts\$(MSBuildProjectName)\bin\$(Configuration)</OutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts\$(MSBuildProjectName)\obj</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)artifacts/$(MSBuildProjectName)/bin/$(Configuration)</OutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts/$(MSBuildProjectName)/obj</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)/$(Configuration)</IntermediateOutputPath>
     <IsFinalBuild>False</IsFinalBuild>
   </PropertyGroup>
   
