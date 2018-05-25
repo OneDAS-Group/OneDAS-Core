@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <Description>Provides a common type system for all OneDAS extensions.</Description>
+    <PackageTags>OneDAS data aquisition measurement extension</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
