@@ -19,6 +19,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)../artifacts</ArtifactsPath>
+    <BaseIntermediateOutputPath>$(ArtifactsPath)/$(MSBuildProjectName)/obj</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)/$(Configuration)</IntermediateOutputPath>
+    <OutputPath>$(ArtifactsPath)/$(MSBuildProjectName)/bin/$(Configuration)</OutputPath>
+    <PackageOutputPath>$(ArtifactsPath)/packages</PackageOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);CreateOneDasMetaData</GetPackageVersionDependsOn>
   </PropertyGroup>
   

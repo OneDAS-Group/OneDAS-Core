@@ -31,7 +31,7 @@ test_script:
   - pwsh: dotnet test ./tests/OneDas.Core.Tests -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:BuildProjectReferences=false
 
 artifacts:
-  - path: ./artifacts/**/*.nupkg
+  - path: ./artifacts/packages/**/*.nupkg
 
 # master
 deploy:
