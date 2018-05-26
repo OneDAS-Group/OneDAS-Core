@@ -9,13 +9,6 @@
     <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
   </PropertyGroup>
   
-  <PropertyGroup>
-    <Major>1</Major>
-    <Minor>0</Minor>
-    <Revision>0</Revision>
-    <VersionSuffix>alpha</VersionSuffix>
-  </PropertyGroup>
-  
   <ItemGroup>
     <None Remove="WebClient\DataGatewaySample.js" />
   </ItemGroup>

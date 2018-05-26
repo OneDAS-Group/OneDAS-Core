@@ -15,7 +15,6 @@ namespace OneDas.Core.Tests
         public async void OneDasPackageManagerCreatesAssetsFile()
         {
             var extensionFactory = Mock.Of<IExtensionFactory>();
-            var installationCompatiblity = Mock.Of<IInstallationCompatibility>();
 
             var optionsMock = new Mock<IOptions<OneDasOptions>>();
             optionsMock.SetupGet(x => x.Value).Returns(new OneDasOptions());
@@ -23,7 +22,7 @@ namespace OneDas.Core.Tests
 
             var loggerFactory = new LoggerFactory();
 
-            var packageManager = new OneDasPackageManager(extensionFactory, installationCompatiblity, optionsMock.Object, loggerFactory);
+            var packageManager = new OneDasPackageManager(extensionFactory, optionsMock.Object, loggerFactory);
             // TODO: upload ExtensionSample to allow testing
             await packageManager.InstallAsync("OneDas.Extension.Mat73", "https://www.myget.org/F/onedas/api/v3/index.json");
         }
