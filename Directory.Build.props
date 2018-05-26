@@ -3,10 +3,6 @@
   <Import Project="./build/OneDas.props" />
 
   <PropertyGroup>
-    <IsFinalBuild>False</IsFinalBuild>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <PackageLicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</PackageProjectUrl>
   </PropertyGroup>
