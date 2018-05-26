@@ -1,5 +1,4 @@
-﻿using Microsoft.DotNet.PlatformAbstractions;
-using Microsoft.Extensions.DependencyModel;
+﻿using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -10,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -83,7 +83,7 @@ namespace OneDas.WebServer.Core
             loadContext = new OneDasAssemblyLoadContext();
 
             lockFile = _packageManager.GetLockFile();
-            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, RuntimeEnvironment.GetRuntimeIdentifier());
+            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier());
 
             if (lockFileTarget != null)
             {
@@ -112,7 +112,14 @@ namespace OneDas.WebServer.Core
                     // RuntimeAssemblies
                     targetLibrary.RuntimeAssemblies.ToList().ForEach(runtimeAssembly =>
                     {
-                        absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, runtimeAssembly.Path));
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, runtimeAssembly.Path));
+                        }
+                        else
+                        {
+                            absoluteFilePath = PathUtility.GetPathWithForwardSlashes(Path.Combine(basePath, runtimeAssembly.Path));
+                        }
 
                         if (!runtimeAssembly.Path.EndsWith("/_._"))
                         {

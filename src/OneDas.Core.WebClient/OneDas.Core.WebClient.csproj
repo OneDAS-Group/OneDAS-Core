@@ -2,8 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.8.3" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Update="**\tsconfig.json" CopyToPublishDirectory="Never" />

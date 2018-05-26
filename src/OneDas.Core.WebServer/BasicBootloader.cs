@@ -3,10 +3,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using System.Threading;
 
 namespace OneDas.WebServer
 {
@@ -25,11 +26,11 @@ namespace OneDas.WebServer
         public static void Main(string[] args)
         {
             bool isHosting;
-            string configurationFileName;
+            string configurationFileName;          
             IConfigurationRoot configurationRoot;
             IConfigurationBuilder configurationBuilder;
 
-            WebServerUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
+            Thread.CurrentThread.Name = "Main thread";
 
             // configuration
             BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
@@ -72,7 +73,7 @@ namespace OneDas.WebServer
             }
             else
             {
-                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_options.MutexName), () => WebServerUtilities.BringWindowToFront(Process.GetCurrentProcess().MainWindowHandle)))
+                if (!WebServerUtilities.EnsureSingeltonInstance(new Guid(_options.MutexName)))
                 {
                     Environment.Exit(0);
                 }
@@ -91,10 +92,18 @@ namespace OneDas.WebServer
 
             // run
             _advancedBootloader.Run();
+
+            // shutdown 
+            BasicBootloader.Shutdown(0);
         }
 
         public static ServiceControllerStatus GetOneDasServiceStatus()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return 0;
+            }
+
             if (_serviceController == null)
             {
                 _serviceController = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName == _options.ServiceName);
@@ -117,6 +126,13 @@ namespace OneDas.WebServer
             BasicBootloader.SystemLogger.LogCritical(e.ExceptionObject.ToString());
         }
 
+        private static void Shutdown(int returnCode)
+        {
+            _advancedBootloader?.Dispose();
+
+            Environment.Exit(returnCode);
+        }
+
         #endregion
 
         #region "Properties"
@@ -125,22 +141,6 @@ namespace OneDas.WebServer
 
         public static ILogger SystemLogger { get; private set; }
         public static JObject NugetFramework { get; private set; }
-
-        #endregion
-
-        #region "Shutdown"
-
-        public static void Shutdown()
-        {
-            _advancedBootloader?.Dispose();
-        }
-
-        public static void Shutdown(int returnCode)
-        {
-            _advancedBootloader?.Dispose();
-
-            Environment.Exit(returnCode);
-        }
 
         #endregion
     }

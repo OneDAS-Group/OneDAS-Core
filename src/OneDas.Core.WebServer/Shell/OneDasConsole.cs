@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.ServiceProcess;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -15,7 +14,7 @@ namespace OneDas.WebServer.Shell
     {
         #region "Fields"
 
-        private System.Timers.Timer _timer_UpdateConsole;
+        private Timer _timer_UpdateConsole;
         private object _syncLock_UpdateConsole;
 
         private HubConnection _consoleHubClient;
@@ -30,111 +29,79 @@ namespace OneDas.WebServer.Shell
         public OneDasConsole(IOptions<WebServerOptions> options)
         {
             _webServerOptions = options.Value;
-
-            Thread.CurrentThread.Name = "Main thread";
-
-            Console.SetWindowSize(80, 25);
-            Console.CursorVisible = false;
-
             _syncLock_UpdateConsole = new object();
 
-            Console.Write("initialization (standard) ... ");
+            Console.CursorVisible = false;
         }
 
         #endregion
 
         #region "Methods"
 
-        public void Run(bool isHosting)
+        public Task RunAsync(bool isHosting)
         {
-            // SignalR connection
-            _consoleHubClient = this.BuildHubConnection();
-
-            _consoleHubClient.Closed += e =>
+            return Task.Run(() =>
             {
-                return Task.Run(() =>
-                {
-                    _isConnected = false;
-                    this.ResetConsole();
-                });
-            };
+                // SignalR connection
+                _consoleHubClient = this.BuildHubConnection();
 
-            Task.Run(async () =>
-            {
-                while (true)
+                _consoleHubClient.Closed += e =>
                 {
-                    if (!_isConnected)
+                    return Task.Run(() =>
                     {
-                        try
-                        {
-                            _consoleHubClient.StartAsync().Wait();
-                            _isConnected = true;
+                        _isConnected = false;
+                        this.ResetConsole();
+                    });
+                };
 
-                            this.ResetConsole();
-                        }
-                        catch
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(4));
-                        }
-                    }
-
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-            });
-
-            // timer
-            _timer_UpdateConsole = new System.Timers.Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
-            {
-                AutoReset = true,
-                Enabled = true
-            };
-
-            _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
-
-            // to serve or not to serve?
-            Console.Title = "OneDAS Core";
-
-            if (!isHosting)
-            {
-                Console.Title += " (remote control)";
-            }
-
-            // wait for user input (loop)
-            this.ResetConsole();
-
-            while (true)
-            {
-                ConsoleKey consoleKey;
-
-                consoleKey = Console.ReadKey(true).Key;
-
-                try
+                Task.Run(async () =>
                 {
-                    lock (_syncLock_UpdateConsole)
+                    while (true)
                     {
-                        switch (consoleKey)
+                        if (!_isConnected)
                         {
-                            case ConsoleKey.E:
-
-                                // exit
-                                Console.WriteLine("Do you want to shutdown the application? (Y)es (N)o.");
-
-                                if (Console.ReadKey(true).Key == ConsoleKey.Y)
-                                {
-                                    BasicBootloader.Shutdown(0);
-                                }
+                            try
+                            {
+                                _consoleHubClient.StartAsync().Wait();
+                                _isConnected = true;
 
                                 this.ResetConsole();
-
-                                break;
+                            }
+                            catch
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(4));
+                            }
                         }
+
+                        await Task.Delay(TimeSpan.FromSeconds(1));
                     }
-                }
-                catch
+                });
+
+                // timer
+                _timer_UpdateConsole = new Timer(new TimeSpan(0, 0, 1).TotalMilliseconds)
                 {
-                    //
+                    AutoReset = true,
+                    Enabled = true
+                };
+
+                _timer_UpdateConsole.Elapsed += _timer_UpdateConsole_Elapsed;
+
+                // to serve or not to serve?
+                Console.Title = "OneDAS Core";
+
+                if (!isHosting)
+                {
+                    Console.Title += " (remote control)";
                 }
-            }
+
+                // wait for user input (loop)
+                this.ResetConsole();
+
+                while (true)
+                {
+                    Console.ReadKey(true);
+                }
+            });
         }
 
         private void WriteColoredLine(string text, ConsoleColor color)
@@ -165,23 +132,17 @@ namespace OneDas.WebServer.Shell
 
                 // frame
                 Console.Clear();
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.DarkCyan;
 
-                Console.Write($"+================================"); this.WriteColored($" OneDAS Core ", ConsoleColor.Cyan); Console.WriteLine($"================================+");
+                Console.Write($"+================================"); Console.Write($" OneDAS Core "); Console.WriteLine($"================================+");
                 Console.WriteLine($"|                                                                             |");
-                Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                     |                                       |");
                 Console.WriteLine($"|                                                                             |");
                 Console.WriteLine($"+=============================================================================+");
-                this.WriteColoredLine($"                                                                        (e)xit", ConsoleColor.Cyan);
 
                 // text
-                Console.ForegroundColor = ConsoleColor.Cyan;
-
                 Console.SetCursorPosition(2, 2);
                 Console.Write("Instance name:");
 
@@ -214,6 +175,7 @@ namespace OneDas.WebServer.Shell
                 }
 
                 Console.SetCursorPosition(0, 11);
+                Console.WriteLine("Press CTRL+C to shut down the application.");
             }
         }
 

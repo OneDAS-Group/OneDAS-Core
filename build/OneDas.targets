@@ -10,7 +10,6 @@
     <Error Condition="$(PackageProjectUrl) == ''" Text="The PackageProjectUrl property must be set." />
 
     <!-- build properties -->
-   
     <PropertyGroup>
 
       <!-- ensure default values -->
@@ -29,12 +28,9 @@
     </PropertyGroup>
 
     <!-- build Version -->
-    <PropertyGroup Condition="$(VersionSuffix) != '' AND $(Build) != ''">
-      <Version>$(Version)-$(VersionSuffix).$(Build)</Version>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(VersionSuffix) != '' AND $(Build) == ''">
+    <PropertyGroup Condition="$(VersionSuffix) != ''">
       <Version>$(Version)-$(VersionSuffix)</Version>
+      <Version Condition="$(Build) != ''">$(Version).$(Build)</Version>
     </PropertyGroup>
 
     <!-- build PackageVersion -->

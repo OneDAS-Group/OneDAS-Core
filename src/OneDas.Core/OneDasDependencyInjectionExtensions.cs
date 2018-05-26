@@ -32,7 +32,6 @@ namespace Microsoft.Extensions.DependencyInjection
             serviceCollection.AddSingleton<OneDasEngine>();
 
             // package manager
-            serviceCollection.AddSingleton<IInstallationCompatibility, OneDasInstallationCompatibility>();
             serviceCollection.AddSingleton<OneDasPackageManager>();
         }
     }

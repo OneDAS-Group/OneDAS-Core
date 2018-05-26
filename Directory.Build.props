@@ -2,14 +2,11 @@
 
   <Import Project="./build/OneDas.props" />
 
-  <PropertyGroup> 
-    <OutputPath>$(MSBuildThisFileDirectory)artifacts\$(MSBuildProjectName)\bin\$(Configuration)</OutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts\$(MSBuildProjectName)\obj</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)</IntermediateOutputPath>
+  <PropertyGroup>
     <IsFinalBuild>False</IsFinalBuild>
   </PropertyGroup>
-  
-  <PropertyGroup> 
+
+  <PropertyGroup>
     <PackageLicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</PackageProjectUrl>
   </PropertyGroup>

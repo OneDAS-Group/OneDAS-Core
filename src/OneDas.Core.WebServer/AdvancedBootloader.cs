@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,9 @@ using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace OneDas.WebServer
 {
@@ -99,8 +100,15 @@ namespace OneDas.WebServer
 
                 console = _serviceProvider.GetRequiredService<OneDasConsole>();
 
-                _webhost?.StartAsync();
-                console.Run(_isHosting);
+                if (_webhost != null)
+                {
+                    console.RunAsync(_isHosting);
+                    _webhost.Run();
+                }
+                else
+                {
+                    console.RunAsync(_isHosting).Wait();
+                }
             }
             else
             {
@@ -146,33 +154,38 @@ namespace OneDas.WebServer
             // logging
             serviceCollection.AddLogging(loggingBuilder =>
             {
-                EventLogSettings eventLogSettings;
                 WebClientLoggerProvider clientMessageLoggerProvider;
-
-                // event log
-                if (Environment.UserInteractive)
-                {
-                    eventLogSettings = new EventLogSettings();
-                }
-                else
-                {
-                    eventLogSettings = new EventLogSettings()
-                    {
-                        LogName = _webServerOptions.EventLogName,
-                        SourceName = _webServerOptions.EventLogSourceName
-                    };
-                }
-
-                eventLogSettings.Filter = (category, logLevel) => category == "System" && logLevel >= LogLevel.Information;
 
                 // client message log
                 clientMessageLoggerProvider = new WebClientLoggerProvider((category, logLevel) => category != "System" && logLevel >= LogLevel.Information);
 
                 // add logger
-                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."))
+                loggingBuilder
+                    .AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."))
                     .AddDebug()
-                    .AddEventLog(eventLogSettings)
                     .AddProvider(clientMessageLoggerProvider);
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    EventLogSettings eventLogSettings;
+
+                    if (Environment.UserInteractive)
+                    {
+                        eventLogSettings = new EventLogSettings();
+                    }
+                    else
+                    {
+                        eventLogSettings = new EventLogSettings()
+                        {
+                            LogName = _webServerOptions.EventLogName,
+                            SourceName = _webServerOptions.EventLogSourceName
+                        };
+                    }
+
+                    eventLogSettings.Filter = (category, logLevel) => category == "System" && logLevel >= LogLevel.Information;
+
+                    loggingBuilder.AddEventLog(eventLogSettings);
+                }
             });
 
             // OneDasEngine

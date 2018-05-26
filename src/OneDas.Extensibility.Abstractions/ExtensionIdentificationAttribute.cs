@@ -7,13 +7,13 @@ namespace OneDas.Extensibility
     [AttributeUsage(validOn: AttributeTargets.Class, AllowMultiple = false)]
     public class ExtensionIdentificationAttribute : Attribute
     {
-        public ExtensionIdentificationAttribute(string id, string name, string description, string relativeViewPath, string ViewModelResourceName)
+        public ExtensionIdentificationAttribute(string id, string name, string description, string relativeViewPath, string relativeViewModelPath)
         {
             this.Id = id;
             this.Name = name;
             this.Description = description;
             this.ViewResourceName = relativeViewPath;
-            this.ViewModelResourceName = ViewModelResourceName;
+            this.ViewModelResourceName = relativeViewModelPath;
 
             this.ProductVersion = "N/A";
         }

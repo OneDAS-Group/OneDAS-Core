@@ -40,25 +40,23 @@ namespace OneDas.Extensibility.PackageManagement
 
         ISettings _settings;
         IExtensionFactory _extensionFactory;
-        IInstallationCompatibility _installationCompatibility;
 
         #endregion
 
         #region "Constructors"
 
-        public OneDasPackageManager(IExtensionFactory extensionFactory, IInstallationCompatibility installationCompatibility, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasPackageManager(IExtensionFactory extensionFactory, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             JObject jobject;
             VersionRange versionRange;
 
             _extensionFactory = extensionFactory;
-            _installationCompatibility = installationCompatibility;
             _options = options.Value;
 
             // settings
             _settings = new Settings(_options.NugetDirectoryPath);
-            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("OneDAS", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
-            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("nuget.org", "https://api.nuget.org/v3/index.json", false) });
+            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("NuGet", "https://api.nuget.org/v3/index.json", false) });
+            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
 
             if (!File.Exists(_options.NugetProjectFilePath))
             {
@@ -123,10 +121,10 @@ namespace OneDas.Extensibility.PackageManagement
 
             packageSource = new PackageSource(source);
             sourceRepository = _sourceRepositoryProvider.CreateRepository(packageSource);
-            searchFilter = new SearchFilter(true, null) { PackageTypes = new List<string>() { "Dependency" } }; // _options.PackageTypeName
+            searchFilter = new SearchFilter(true) { PackageTypes = new List<string>() { "Dependency" } }; // _options.PackageTypeName -> not really working
 
             packageSearchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>();
-            searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);
+            searchMetadataSet = await packageSearchResource.SearchAsync($"id:{ searchTerm } tags:{ _options.PackageTypeName }", searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);
 
             installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
@@ -232,11 +230,7 @@ namespace OneDas.Extensibility.PackageManagement
             solutionManager = new OneDasSolutionManager(_projectContext, _project, _options.NugetDirectoryPath);
             deleteOnRestartManager = new OneDasDeleteOnRestartManager();
             packageSourceProvider = (PackageSourceProvider)sourceRepositoryProvider.PackageSourceProvider;
-
-            packageManager = new NuGetPackageManager(sourceRepositoryProvider, _settings, solutionManager, deleteOnRestartManager)
-            {
-                InstallationCompatibility = _installationCompatibility
-            };
+            packageManager = new NuGetPackageManager(sourceRepositoryProvider, _settings, solutionManager, deleteOnRestartManager);
 
             return packageManager;
         }

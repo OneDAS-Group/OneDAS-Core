@@ -2,9 +2,13 @@
 
   <PropertyGroup>
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
+    <Description>Provides a web-based user interface for OneDAS.</Description>
+    <IsPackable>true</IsPackable>
+    <PackageTags>OneDAS data aquisition measurement</PackageTags>
+    <PackAsTool>true</PackAsTool>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
-    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
+    <ToolCommandName>onedas</ToolCommandName>
+    <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
   </PropertyGroup>
   
   <ItemGroup>
