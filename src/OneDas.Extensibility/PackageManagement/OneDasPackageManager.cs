@@ -55,8 +55,8 @@ namespace OneDas.Extensibility.PackageManagement
 
             // settings
             _settings = new Settings(_options.NugetDirectoryPath);
-            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("OneDAS", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
-            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("nuget.org", "https://api.nuget.org/v3/index.json", false) });
+            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("NuGet", "https://api.nuget.org/v3/index.json", false) });
+            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
 
             if (!File.Exists(_options.NugetProjectFilePath))
             {
