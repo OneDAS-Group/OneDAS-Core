@@ -34,9 +34,9 @@ artifacts:
   - path: ./artifacts/packages/**/*.nupkg
   - path: ./artifacts/msi/**/*.msi
 
-
-# Git (master)
 deploy:
+
+# GitHub (master)
   - provider: GitHub
     force_update: true
     auth_token:
@@ -49,7 +49,6 @@ deploy:
 
 
 # NuGet (master)
-deploy:
   - provider: NuGet
     server: https://www.nuget.org/api/v2/package
     api_key:
