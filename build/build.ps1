@@ -5,7 +5,7 @@ dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj         -c $En
 dotnet pack  ./src/OneDas.Core.WebServer/OneDas.Core.WebServer.csproj     -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 dotnet pack  ./src/OneDas.Hdf.Explorer/OneDas.Hdf.Explorer.csproj         -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
-if ($APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017 Preview")
+if ($isWindows -eq "true")
 {
   dotnet publish .\src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win7-x86 /p:BuildProjectReferences=false
   dotnet publish .\src\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj     -c $Env:Configuration /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win7-x64 /p:BuildProjectReferences=false
