@@ -16,7 +16,7 @@
       <Authors Condition="$(Authors) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Authors>
       <Company Condition="$(Company) == '' OR $(Authors) == $(PackageId)">https://github.com/OneDAS-Group</Company>
       <Copyright Condition="$(Copyright) == ''">OneDAS Group</Copyright>
-      <Build Condition="$(IsFinalBuild) == 'True'">final</Build>
+      <Build Condition="$(IsFinalBuild) == 'true'">final</Build>
 
       <!-- create new properties -->
       <AssemblyVersion>$(Major).0.0.0</AssemblyVersion>
