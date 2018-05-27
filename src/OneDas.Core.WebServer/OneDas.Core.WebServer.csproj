@@ -8,7 +8,6 @@
     <PackAsTool>true</PackAsTool>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <ToolCommandName>onedas</ToolCommandName>
-    <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
   </PropertyGroup>
   
   <ItemGroup>

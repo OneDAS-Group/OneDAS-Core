@@ -2,9 +2,13 @@
   
   <PropertyGroup>
     <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
+    <IsPackable>true</IsPackable>
+    <PackageTags>OneDAS HDF explorer export</PackageTags>
+    <PackAsTool>true</PackAsTool>
+    <!-- <RuntimeIdentifier>win-x64</RuntimeIdentifier> -->
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <ToolCommandName>onedas</ToolCommandName>
+    <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
   </PropertyGroup>
   
   <ItemGroup>
@@ -20,10 +24,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="wwwroot\lib\" />
-    <Content Include="$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\**\*.dll" CopyToPublishDirectory="Always">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Update="bundleconfig.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
       
 </Project>

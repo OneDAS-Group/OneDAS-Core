@@ -4,11 +4,12 @@
   
   <PropertyGroup>
     <Configuration>Release</Configuration>
-    <Platform>x64</Platform>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
 	  <InstallerPlatform>x64</InstallerPlatform>
     <ProductVersion>3.9</ProductVersion>
     <ProjectGuid>{6f96c4c6-f442-4240-9d83-bafe70d63ed3}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
+    <OutputPath>.\..\..\artifacts\msi</OutputPath>
     <OutputType>Package</OutputType>
     <Name>OneDas.Hdf.Deployment</Name>
     <SuppressValidation>False</SuppressValidation>
@@ -53,7 +54,7 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.Hdf.Explorer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\artifacts\$(WixApplicationName)\bin\PublishOutput</WixHarvestPath>
+      <WixHarvestPath>.\..\..\artifacts\$(WixApplicationName)\bin\$(WixConfiguration)\netcoreapp2.1\win7-x64\publish</WixHarvestPath>
 	    <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-HDF-Explorer-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>
@@ -64,11 +65,9 @@
   <Target Name="BeforeBuild">
   
     <PropertyGroup>
-      <WixRootPath Condition=" '$(WixRootPath)' == '' ">$(WIX)bin\</WixRootPath>
-      <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(WixRootPath)</WixToolPath>
+      <WixRootPath Condition="'$(WixRootPath)' == ''">$(WIX)bin\</WixRootPath>
+      <WixToolPath Condition="'$(WixToolPath)' == ''">$(WixRootPath)</WixToolPath>
     </PropertyGroup>
-	
-    <Exec Command="dotnet publish ..\$(WixApplicationName)\$(WixApplicationName).csproj -c $(WixConfiguration) -o $(WixHarvestPath)" />
 	
     <ItemGroup>
       <HarvestDirectory Include="$(WixHarvestPath)">
