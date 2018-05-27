@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <Description>Provides a web-based user interface for OneDAS.</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>OneDAS data aquisition measurement</PackageTags>

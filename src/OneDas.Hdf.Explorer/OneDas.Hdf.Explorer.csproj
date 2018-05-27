@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   
   <PropertyGroup>
-    <ApplicationIcon>$(ProjectDir)Resources\NetworkIcon.ico</ApplicationIcon>
     <IsPackable>true</IsPackable>
     <PackageTags>OneDAS HDF explorer export</PackageTags>
     <PackAsTool>true</PackAsTool>
-    <!-- <RuntimeIdentifier>win-x64</RuntimeIdentifier> -->
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <ToolCommandName>onedas</ToolCommandName>
     <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
