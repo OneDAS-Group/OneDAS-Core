@@ -20,9 +20,9 @@
 
   <PropertyGroup>
     <ArtifactsPath>$(MSBuildThisFileDirectory)../artifacts</ArtifactsPath>
-    <BaseIntermediateOutputPath>$(ArtifactsPath)/$(MSBuildProjectName)/obj</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactsPath)/obj/$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)/$(Configuration)</IntermediateOutputPath>
-    <OutputPath>$(ArtifactsPath)/$(MSBuildProjectName)/bin/$(Configuration)</OutputPath>
+    <OutputPath>$(ArtifactsPath)/bin/$(MSBuildProjectName)/$(Configuration)</OutputPath>
     <PackageOutputPath>$(ArtifactsPath)/packages</PackageOutputPath>
   </PropertyGroup>
 

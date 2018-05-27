@@ -142,7 +142,8 @@
             KeyPath="yes"
             Vital="yes" />
 
-      <ServiceInstall Description="Download and convert data from a OneDAS database"
+      <ServiceInstall Arguments="--non-interactive"
+                      Description="Download and convert data from a OneDAS database"
                       DisplayName="$(var.ServiceDisplayName)"
                       ErrorControl="ignore"
                       Name="$(var.ServiceName)"

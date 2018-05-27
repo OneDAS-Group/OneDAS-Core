@@ -31,6 +31,7 @@ namespace OneDas.WebServer
             IConfigurationBuilder configurationBuilder;
 
             Thread.CurrentThread.Name = "Main thread";
+            BasicBootloader.IsUserInteractive = !args.Contains("--non-interactive");
 
             // configuration
             BasicBootloader.ConfigurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Core");
@@ -67,7 +68,7 @@ namespace OneDas.WebServer
             _options.Save(BasicBootloader.ConfigurationDirectoryPath);
 
             // determine startup mode
-            if (Environment.UserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0)
+            if (BasicBootloader.IsUserInteractive && BasicBootloader.GetOneDasServiceStatus() > 0)
             {
                 isHosting = false;
             }
@@ -137,8 +138,8 @@ namespace OneDas.WebServer
 
         #region "Properties"
 
+        public static bool IsUserInteractive { get; private set; }
         public static string ConfigurationDirectoryPath { get; private set; }
-
         public static ILogger SystemLogger { get; private set; }
         public static JObject NugetFramework { get; private set; }
 

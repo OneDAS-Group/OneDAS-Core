@@ -142,7 +142,8 @@
             KeyPath="yes"
             Vital="yes" />
 
-      <ServiceInstall Description="Manage incoming and outgoing measurement data"
+      <ServiceInstall Arguments="--non-interactive"
+                      Description="Manage incoming and outgoing measurement data"
                       DisplayName="$(var.ServiceDisplayName)"
                       ErrorControl="ignore"
                       Name="$(var.ServiceName)"

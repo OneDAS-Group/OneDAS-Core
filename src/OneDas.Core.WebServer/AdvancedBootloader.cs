@@ -58,6 +58,9 @@ namespace OneDas.WebServer
                 Directory.CreateDirectory(options.NugetDirectoryPath);
                 Directory.CreateDirectory(options.ProjectDirectoryPath);
 
+                // client push service
+                AdvancedBootloader.ClientPushService = _serviceProvider.GetRequiredService<ClientPushService>();
+
                 // extension loader
                 extensionLoader = _serviceProvider.GetRequiredService<ExtensionLoader>();
                 extensionLoader.ReloadPackages();
@@ -71,8 +74,6 @@ namespace OneDas.WebServer
                 this.ConfigureServices(_serviceCollection);
                 _serviceProvider = _serviceCollection.BuildServiceProvider();
             }
-
-            AdvancedBootloader.ClientPushService = _serviceProvider.GetRequiredService<ClientPushService>();
         }
 
         #endregion
@@ -89,12 +90,12 @@ namespace OneDas.WebServer
         {
             OneDasConsole console;
 
-            if (_engine != null && !Environment.UserInteractive)
+            if (_engine != null && !BasicBootloader.IsUserInteractive)
             {
                 this.TryStartOneDasEngine(_engine, _webServerOptions.CurrentProjectFilePath);
             }
 
-            if (Environment.UserInteractive)
+            if (BasicBootloader.IsUserInteractive)
             {
                 BasicBootloader.SystemLogger.LogInformation("started in user interactive mode (console)");
 
@@ -169,7 +170,7 @@ namespace OneDas.WebServer
                 {
                     EventLogSettings eventLogSettings;
 
-                    if (Environment.UserInteractive)
+                    if (BasicBootloader.IsUserInteractive)
                     {
                         eventLogSettings = new EventLogSettings();
                     }

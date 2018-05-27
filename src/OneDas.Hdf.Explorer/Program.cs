@@ -23,11 +23,13 @@ namespace OneDas.Hdf.Explorer
 
         public static void Main(string[] args)
         {
+            bool isUserInteractive;
             string configurationDirectoryPath;
             string configurationFileName;
 
             IConfigurationBuilder configurationBuilder;
 
+            isUserInteractive = !args.Contains("--non-interactive");
             _lock = new object();
 
             // configuration
@@ -52,7 +54,7 @@ namespace OneDas.Hdf.Explorer
 
             Program.UpdateCampaignInfoSet();
 
-            if (Environment.UserInteractive)
+            if (isUserInteractive)
             {
                 Program.CreateWebHost().Run();
             }
