@@ -44,9 +44,8 @@ deploy:
     artifact: /.*\.msi/
     on:
       branch: master
-      isWindows: true
+      CI_WINDOWS: true
       APPVEYOR_REPO_TAG: true
-
 
 # NuGet (master)
   - provider: NuGet
@@ -57,7 +56,7 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: master
-      isWindows: true
+      CI_WINDOWS: true
       APPVEYOR_REPO_TAG: true
 
 # MyGet (dev)
@@ -69,4 +68,4 @@ deploy:
     artifact: /.*\.nupkg/ 
     on:
       branch: dev
-      isWindows: true
+      CI_WINDOWS: true
