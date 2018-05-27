@@ -132,7 +132,4 @@
   <data name="ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase" xml:space="preserve">
     <value>The argument 'settingsType' must be a subclass of ExtensionSettingsBase.</value>
   </data>
-  <data name="OneDasInstallationCompatiblity_InvalidPackageType" xml:space="preserve">
-    <value>The package type is invalid.</value>
-  </data>
 </root>
