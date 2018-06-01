@@ -21,29 +21,29 @@ The documentation is hosted on [onedas.readthedocs.io](https://onedas.readthedoc
 
 ### Initialization
 
-On Windows, run the following batch script to get started with OneDAS:
+Run the following Powershell script to get started with OneDAS:
 
-```bat
-:: constants
-set "projectName=OneDAS"
-set "origin=https://github.com/OneDAS-Group/"
+```
+# constants
+$projectName = "OneDAS"
+$origin = "https://github.com/OneDAS-Group/"
 
-:: create parent folder
-md %projectName%
-cd ".\%projectName%"
-set "rootFolder=%cd%"
+# create parent folder
+md -Force  $projectName | Out-Null
+cd $projectName
+$rootFolder = (Get-Location).Path
 
-:: clone projects
-git clone "%origin%/%projectName%-Core"
-git clone "%origin%/%projectName%-Documentation"
-git clone "%origin%/%projectName%-Ethercat"
-git clone "%origin%/%projectName%-Extensions"
+# clone projects
+git clone "$origin/$projectName-Core" --quiet
+git clone "$origin/$projectName-Documentation" --quiet
+git clone "$origin/$projectName-Ethercat" --quiet
+git clone "$origin/$projectName-Extensions" --quiet
 
-:: Core
-cd "%rootFolder%\%projectName%-Core"
-call init_solution.bat
+# Core
+cd $rootFolder/$projectName-Core
+./init_solution.ps1
 
-:: Ethercat
-cd "%rootFolder%\%projectName%-Ethercat"
-call init_solution.bat
+# Ethercat
+cd $rootFolder/$projectName-Ethercat
+./init_solution.ps1
 ```
