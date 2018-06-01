@@ -8,7 +8,7 @@
   
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke.NETStandard" Version="1.10.200" />
-    <PackageReference Include="System.Memory" Version="4.5.0-rc1" />
+    <PackageReference Include="System.Memory" Version="4.5.0" />
   </ItemGroup>
   
   <ItemGroup>

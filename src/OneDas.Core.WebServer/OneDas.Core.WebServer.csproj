@@ -11,12 +11,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.7.385" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0-rc1-final" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0-rc1-final" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-rc1-final" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-rc1-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0-rc1-final" />
+    <PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0" />
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
   </ItemGroup>
   
