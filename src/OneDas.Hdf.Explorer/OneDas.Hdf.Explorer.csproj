@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   
   <PropertyGroup>
+    <Description>Provides a web-based user interface to browse the HDF-based OneDAS database and export desired data.</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>OneDAS HDF explorer export</PackageTags>
     <PackAsTool>true</PackAsTool>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <ToolCommandName>onedas</ToolCommandName>
+    <ToolCommandName>onedas-hdf</ToolCommandName>
     <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
   </PropertyGroup>
   
