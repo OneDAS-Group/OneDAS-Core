@@ -131,8 +131,6 @@
 
             if (oneDasState == OneDasStateEnum.Error)
             {
-                console.log("OneDAS: called")
-
                 this.ActiveProject(null)
 
                 try
