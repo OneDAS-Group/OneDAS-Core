@@ -29,7 +29,7 @@ namespace OneDas.Extensibility
             base.Validate();
 
             // IMPROVE: implement general frame rate divider setting
-            //if (this.FrameRateDivider < 1 || FrameRateDivider > oneDasOptions.NativeSampleRate)
+            //if (this.FrameRateDivider < 1 || this.FrameRateDivider > oneDasOptions.NativeSampleRate)
             //{
             //    throw new Exception(ErrorMessage.UdpModel_FrameRateDividerInvalid);
             //}
