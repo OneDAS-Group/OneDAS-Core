@@ -24,6 +24,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static uint _isLibraryThreadSafe;
         private static bool _exit;
+        private static string _databaseDirectoryPath;
 
         #endregion
 
@@ -45,6 +46,10 @@ namespace OneDas.Hdf.VdsTool
             VdsToolUtilities.ModifyConsoleMenu(SystemCommand.SC_CLOSE, 0x0);
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
+            // DATABASE directory
+            _databaseDirectoryPath = Directory.GetCurrentDirectory();
+            Program.TryGetParameterValue("database", "d", args.ToList(), ref _databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value));
 
             if (args.Any())
             {
@@ -213,16 +218,6 @@ namespace OneDas.Hdf.VdsTool
 
         private static void HandleImport(List<string> args)
         {
-            // databaseDirectoryPath
-            string databaseDirectoryPath;
-
-            databaseDirectoryPath = Directory.GetCurrentDirectory();
-
-            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
-            {
-                return;
-            }
-
             // sourceDirectoryPath
             string sourceDirectoryPath = default;
 
@@ -231,7 +226,7 @@ namespace OneDas.Hdf.VdsTool
                 return;
             }
 
-            // campaignName
+            // search pattern
             string searchPattern = default;
 
             if (!Program.TryGetParameterValue("search-pattern", "s", args, ref searchPattern))
@@ -265,21 +260,11 @@ namespace OneDas.Hdf.VdsTool
             }
 
             //
-            Program.ImportFiles(searchPattern, campaignName, dataWriterId, databaseDirectoryPath, sourceDirectoryPath, days);
+            Program.ImportFiles(searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
         }
 
         private static void HandleUpdate(List<string> args)
         {
-            // databaseDirectoryPath
-            string databaseDirectoryPath;
-
-            databaseDirectoryPath = Directory.GetCurrentDirectory();
-
-            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
-            {
-                return;
-            }
-
             // epoch start
             DateTime date;
             DateTime epochStart;
@@ -290,73 +275,49 @@ namespace OneDas.Hdf.VdsTool
             {
                 epochStart = new DateTime(date.Year, date.Month, 1);
                 epochStart = epochStart.AddMonths(-1);
-                Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+                Program.CreateVirtualDatasetFile(epochStart);
             }
 
             epochStart = new DateTime(date.Year, date.Month, 1);
-            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+            Program.CreateVirtualDatasetFile(epochStart);
 
             epochStart = DateTime.MinValue;
-            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+            Program.CreateVirtualDatasetFile(epochStart);
         }
 
         private static void HandleVds(List<string> args)
         {
-            // databaseDirectoryPath
-            string databaseDirectoryPath;
-
-            databaseDirectoryPath = Directory.GetCurrentDirectory();
-
-            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
-            {
-                return;
-            }
-
             // epoch start
             string dateTime = default;
             DateTime epochStart = default;
-
-            databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
             {
                 return;
             }
 
-            Program.CreateVirtualDatasetFile(databaseDirectoryPath, epochStart);
+            Program.CreateVirtualDatasetFile(epochStart);
         }
 
         private static void HandleAggregations(List<string> args)
         {
-            // databaseDirectoryPath
-            string databaseDirectoryPath;
-
-            databaseDirectoryPath = Directory.GetCurrentDirectory();
-
-            if (!Program.TryGetParameterValue("database", "d", args, ref databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
-            {
-                return;
-            }
-
             // epoch start
             string dateTime = default;
             DateTime epochStart = default;
-
-            databaseDirectoryPath = Directory.GetCurrentDirectory();
 
             if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
             {
                 return;
             }
 
-            Program.CreateAggregatedFiles(databaseDirectoryPath, epochStart);
+            Program.CreateAggregatedFiles(epochStart);
         }
 
         #endregion
 
         #region "VDS"
 
-        public static void CreateVirtualDatasetFile(string databaseDirectoryPath, DateTime epochStart)
+        public static void CreateVirtualDatasetFile(DateTime epochStart)
         {
             string vdsFilePath;
             DateTime epochEnd;
@@ -367,17 +328,17 @@ namespace OneDas.Hdf.VdsTool
             if (epochStart > DateTime.MinValue)
             {
                 epochEnd = epochStart.AddMonths(1);
-                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
-                vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS", $"{ epochStart.ToString("yyyy-MM") }.h5");
+                sourceDirectoryPathSet.Add(Path.Combine(_databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(_databaseDirectoryPath, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(_databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
+                vdsFilePath = Path.Combine(_databaseDirectoryPath, "VDS", $"{ epochStart.ToString("yyyy-MM") }.h5");
             }
             else
             {
                 epochStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
                 epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                sourceDirectoryPathSet.Add(Path.Combine(databaseDirectoryPath, "VDS"));
-                vdsFilePath = Path.Combine(databaseDirectoryPath, "VDS.h5");
+                sourceDirectoryPathSet.Add(Path.Combine(_databaseDirectoryPath, "VDS"));
+                vdsFilePath = Path.Combine(_databaseDirectoryPath, "VDS.h5");
             }
 
             if (Console.CursorTop > 0 || Console.CursorLeft > 0)
@@ -629,7 +590,9 @@ namespace OneDas.Hdf.VdsTool
                     long sourceSpaceId = -1;
 
                     string key;
+                    string relativeFilePath;
 
+                    relativeFilePath = Path.Combine(".", sourceFileInfo.FilePath.Remove(0, _databaseDirectoryPath.TrimEnd('\\').TrimEnd('/').Length));
                     sourceSpaceId = H5S.create_simple(1, new ulong[] { sourceFileInfo.Length }, new ulong[] { sourceFileInfo.Length });
 
                     key = $"{ sourceFileInfo.FilePath }+{ campaignPath }";
@@ -654,7 +617,7 @@ namespace OneDas.Hdf.VdsTool
 
                             H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { offset + start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
                             H5S.select_hyperslab(sourceSpaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
-                            H5P.set_virtual(propertyId, spaceId, sourceFileInfo.FilePath, datasetInfo.GetPath(), sourceSpaceId);
+                            H5P.set_virtual(propertyId, spaceId, relativeFilePath, datasetInfo.GetPath(), sourceSpaceId);
                         }
                         finally
                         {
@@ -1065,7 +1028,7 @@ namespace OneDas.Hdf.VdsTool
 
         #region "AGGREGATION"
 
-        public static void CreateAggregatedFiles(string databaseDirectoryPath, DateTime epochStart)
+        public static void CreateAggregatedFiles(DateTime epochStart)
         {
             string sourceDirectoryPath;
             string targetDirectoryPath;
@@ -1074,7 +1037,7 @@ namespace OneDas.Hdf.VdsTool
 
             DateTime epochEnd;
 
-            vdsMetaFilePath = Path.Combine(databaseDirectoryPath, "VDS_META.h5");
+            vdsMetaFilePath = Path.Combine(_databaseDirectoryPath, "VDS_META.h5");
 
             if (!File.Exists(vdsMetaFilePath))
             {
@@ -1082,9 +1045,9 @@ namespace OneDas.Hdf.VdsTool
             }
 
             epochEnd = epochStart.AddMonths(1);
-            sourceDirectoryPath = Path.Combine(databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
-            targetDirectoryPath = Path.Combine(databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
-            logDirectoryPath = Path.Combine(databaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
+            sourceDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
+            targetDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
+            logDirectoryPath = Path.Combine(_databaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
 
             Directory.CreateDirectory(logDirectoryPath);
 
@@ -1607,7 +1570,7 @@ namespace OneDas.Hdf.VdsTool
 
         #region "IMPORT"
 
-        private static void ImportFiles(string searchPattern, string campaignName, string dataWriterId, string dataBaseDirectoryPath, string sourceDirectoryPath, int days)
+        private static void ImportFiles(string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
         {
             DateTime dateTimeBegin;
             DateTime dateTimeEnd;
@@ -1619,14 +1582,14 @@ namespace OneDas.Hdf.VdsTool
 
             string version;
 
-            targetDirectoryPath = Path.Combine(dataBaseDirectoryPath, "DB_NATIVE");
+            targetDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_NATIVE");
 
             dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
             dateTimeBegin = dateTimeEnd.AddDays(-days);
 
             Directory.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
             {
-                logDirectoryPath = Path.Combine(dataBaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
+                logDirectoryPath = Path.Combine(_databaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
                 logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last() }.txt");
 
                 Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
