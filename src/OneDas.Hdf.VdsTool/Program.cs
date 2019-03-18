@@ -3,6 +3,7 @@ using MathNet.Numerics.Statistics;
 using OneDas.Extensibility;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
+using OneDas.Hdf.VdsTool.FileSystem;
 using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
 using System;
@@ -23,7 +24,6 @@ namespace OneDas.Hdf.VdsTool
         #region "Fields"
 
         private static uint _isLibraryThreadSafe;
-        private static bool _exit;
         private static string _databaseDirectoryPath;
 
         #endregion
@@ -221,7 +221,7 @@ namespace OneDas.Hdf.VdsTool
             // sourceDirectoryPath
             string sourceDirectoryPath = default;
 
-            if (!Program.TryGetParameterValue("source", "s", args, ref sourceDirectoryPath, value => Directory.Exists(value)))
+            if (!Program.TryGetParameterValue("source", "r", args, ref sourceDirectoryPath))
             {
                 return;
             }
@@ -237,7 +237,7 @@ namespace OneDas.Hdf.VdsTool
             // campaignName
             string campaignName = default;
 
-            if (!Program.TryGetParameterValue("campaign", "C", args, ref campaignName))
+            if (!Program.TryGetParameterValue("campaign", "c", args, ref campaignName))
             {
                 return;
             }
@@ -259,8 +259,45 @@ namespace OneDas.Hdf.VdsTool
                 return;
             }
 
+            // ftpAddress
+            string ftpAddress = default;
+
+            if (!Program.TryGetParameterValue("ftp-address", "d", args, ref ftpAddress))
+            {
+                return;
+            }
+
+            // ftpUserName
+            string ftpUserName = default;
+
+            if (!Program.TryGetParameterValue("ftp-username", "u", args, ref ftpUserName))
+            {
+                return;
+            }
+
+            // ftpPassword
+            string ftpPassword = default;
+
+            if (!Program.TryGetParameterValue("ftp-password", "x", args, ref ftpPassword))
+            {
+                return;
+            }
+
             //
-            Program.ImportFiles(searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
+            IFileSystemProvider provider;
+
+            if (!string.IsNullOrEmpty(ftpAddress))
+            {
+                provider = new FtpFileSystemProvider(ftpAddress, ftpUserName, ftpPassword);
+            }
+            else
+            {
+                provider = new LocalFileSystemProvider();
+            }
+
+            provider.Connect();
+            Program.ImportFiles(provider, searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
+            provider.Disconnect();
         }
 
         private static void HandleUpdate(List<string> args)
@@ -1570,7 +1607,7 @@ namespace OneDas.Hdf.VdsTool
 
         #region "IMPORT"
 
-        private static void ImportFiles(string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
+        private static void ImportFiles(IFileSystemProvider provider, string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
         {
             DateTime dateTimeBegin;
             DateTime dateTimeEnd;
@@ -1587,7 +1624,7 @@ namespace OneDas.Hdf.VdsTool
             dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
             dateTimeBegin = dateTimeEnd.AddDays(-days);
 
-            Directory.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
+            provider.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
             {
                 logDirectoryPath = Path.Combine(_databaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
                 logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last() }.txt");
@@ -1596,8 +1633,7 @@ namespace OneDas.Hdf.VdsTool
                 File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
 
                 version = Regex.Match(currentSourceDirectoryPath, "V[0-9]+(?!.*V[0-9]+)").Value;
-
-                currentSourceDirectoryPath = Path.Combine(currentSourceDirectoryPath, dataWriterId);
+                currentSourceDirectoryPath = Program.PathCombine(currentSourceDirectoryPath, dataWriterId);
 
                 for (int i = 0; i <= days; i++)
                 {
@@ -1608,14 +1644,14 @@ namespace OneDas.Hdf.VdsTool
                     currentDateTimeBegin = dateTimeBegin.AddDays(i);
                     fileName = $"{ campaignName }_{ version }_{ currentDateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ") }.h5";
 
-                    sourceFilePath = Path.Combine(currentSourceDirectoryPath, fileName);
+                    sourceFilePath = Program.PathCombine(currentSourceDirectoryPath, fileName);
                     targetFilePath = Path.Combine(targetDirectoryPath, currentDateTimeBegin.ToString("yyyy-MM"), fileName);
 
                     Console.WriteLine($"checking file { fileName }");
 
-                    if (File.Exists(sourceFilePath) && !File.Exists(targetFilePath))
+                    if (provider.FileExists(sourceFilePath) && !File.Exists(targetFilePath))
                     {
-                        Program.CopyFile(sourceFilePath, targetFilePath, logFilePath);
+                        Program.CopyFile(provider, sourceFilePath, targetFilePath, logFilePath);
                     }
                 }
 
@@ -1623,19 +1659,17 @@ namespace OneDas.Hdf.VdsTool
             });
         }
 
-        private static void CopyFile(string sourceFilePath, string targetFilePath, string logFilePath)
+        private static void CopyFile(IFileSystemProvider provider, string sourceFilePath, string targetFilePath, string logFilePath)
         {
             string fileName;
 
             fileName = Path.GetFileName(sourceFilePath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
-
             try
             {
-                Console.Write($" copying file { Path.GetFileName(sourceFilePath) } ... ");
+                Console.Write($" copying file { fileName } ... ");
                 Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
-                File.Copy(sourceFilePath, targetFilePath);
+                provider.DownloadFile(sourceFilePath, targetFilePath);
                 Console.WriteLine($"Done.");
                 File.AppendAllText(logFilePath, $"\tsuccessful: { fileName }{ Environment.NewLine }");
             }
@@ -1645,6 +1679,11 @@ namespace OneDas.Hdf.VdsTool
                 Console.WriteLine($"Failed.");
                 File.AppendAllText(logFilePath, $"\tfailed: { fileName }{ Environment.NewLine }");
             }
+        }
+
+        private static string PathCombine(params string[] paths)
+        {
+            return Path.Combine(paths).Replace('\\', '/');
         }
 
         #endregion

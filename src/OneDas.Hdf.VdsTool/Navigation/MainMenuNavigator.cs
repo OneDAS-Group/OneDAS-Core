@@ -119,7 +119,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-            Program.CreateVirtualDatasetFile(Program.BaseDirectoryPath, epochStart);
+            Program.CreateVirtualDatasetFile(epochStart);
         }
 
         private void Menu_2()
@@ -203,7 +203,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-            Program.CreateAggregatedFiles(Program.BaseDirectoryPath, epochStart);
+            Program.CreateAggregatedFiles(epochStart);
         }
 
         private void Menu_4()

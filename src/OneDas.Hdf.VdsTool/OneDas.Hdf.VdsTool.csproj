@@ -6,7 +6,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics" Version="4.5.1" />
+    <PackageReference Include="FluentFTP" Version="23.1.0" />
+    <PackageReference Include="MathNet.Numerics" Version="4.7.0" />
   </ItemGroup>
   
   <ItemGroup>
