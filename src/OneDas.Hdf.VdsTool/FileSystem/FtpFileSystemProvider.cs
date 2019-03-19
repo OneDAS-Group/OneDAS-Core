@@ -10,8 +10,27 @@ namespace OneDas.Hdf.VdsTool.FileSystem
     {
         private FtpClient _client;
 
-        public FtpFileSystemProvider(string address, string userName, string password)
+        public FtpFileSystemProvider(string ftpConnectionString)
         {
+            string address;
+            string userName;
+            string password;
+
+            //address
+            address = ftpConnectionString.Split('@').Last();
+
+            // userName
+            if (ftpConnectionString.Split('@').Count() > 1)
+                userName = ftpConnectionString.Split(':').First().Split('@').First();
+            else
+                userName = string.Empty;
+
+            // password
+            if (ftpConnectionString.Split(':').Count() > 1)
+                password = ftpConnectionString.Split(':').Last().Split('@').First();
+            else
+                password = string.Empty;
+
             _client = new FtpClient(address) { RetryAttempts = 1 };
 
             if (!string.IsNullOrEmpty(userName))

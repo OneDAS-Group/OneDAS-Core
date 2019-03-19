@@ -259,26 +259,10 @@ namespace OneDas.Hdf.VdsTool
                 return;
             }
 
-            // ftpAddress
-            string ftpAddress = default;
+            // ftpConnectionString
+            string ftpConnectionString = default;
 
-            if (!Program.TryGetParameterValue("ftp-address", "d", args, ref ftpAddress))
-            {
-                return;
-            }
-
-            // ftpUserName
-            string ftpUserName = default;
-
-            if (!Program.TryGetParameterValue("ftp-username", "u", args, ref ftpUserName))
-            {
-                return;
-            }
-
-            // ftpPassword
-            string ftpPassword = default;
-
-            if (!Program.TryGetParameterValue("ftp-password", "x", args, ref ftpPassword))
+            if (!Program.TryGetParameterValue("ftp", "f", args, ref ftpConnectionString))
             {
                 return;
             }
@@ -286,18 +270,25 @@ namespace OneDas.Hdf.VdsTool
             //
             IFileSystemProvider provider;
 
-            if (!string.IsNullOrEmpty(ftpAddress))
+            if (!string.IsNullOrEmpty(ftpConnectionString))
             {
-                provider = new FtpFileSystemProvider(ftpAddress, ftpUserName, ftpPassword);
+                provider = new FtpFileSystemProvider(ftpConnectionString);
             }
             else
             {
                 provider = new LocalFileSystemProvider();
             }
 
-            provider.Connect();
-            Program.ImportFiles(provider, searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
-            provider.Disconnect();
+            try
+            {
+                provider.Connect();
+                Program.ImportFiles(provider, searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
+                provider.Disconnect();
+            }
+            catch
+            {
+                Console.WriteLine("Could not connect or access data. Aborting action.");
+            }
         }
 
         private static void HandleUpdate(List<string> args)
@@ -1627,7 +1618,7 @@ namespace OneDas.Hdf.VdsTool
             provider.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
             {
                 logDirectoryPath = Path.Combine(_databaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
-                logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last() }.txt");
+                logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
 
                 Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
                 File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
