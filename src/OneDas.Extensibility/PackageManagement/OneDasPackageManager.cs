@@ -55,7 +55,7 @@ namespace OneDas.Extensibility.PackageManagement
 
             // settings
             _settings = new Settings(_options.NugetDirectoryPath);
-            _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
+            //_settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
 
             if (!File.Exists(_options.NugetProjectFilePath))
             {
@@ -123,7 +123,11 @@ namespace OneDas.Extensibility.PackageManagement
             searchFilter = new SearchFilter(true) { PackageTypes = new List<string>() { "Dependency" } }; // _options.PackageTypeName -> not really working
 
             packageSearchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>();
-            searchMetadataSet = await packageSearchResource.SearchAsync($"{ searchTerm.Replace(" ", "+") }+{ _options.PackageTypeName }", searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);
+
+            if (packageSource.IsLocal)
+                searchMetadataSet = await packageSearchResource.SearchAsync(searchTerm, searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);
+            else
+                searchMetadataSet = await packageSearchResource.SearchAsync($"{ searchTerm.Replace(" ", "+") }+{ _options.PackageTypeName }", searchFilter, skip, take, _projectContext.LoggerAdapter, CancellationToken.None);
 
             installedPackageSet = await _project.GetInstalledPackagesAsync(new CancellationToken());
 
