@@ -11,13 +11,14 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
+    <PackageReference Include="BuildBundlerMinifier" Version="2.9.406" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OneDas.DataStorage\OneDas.DataStorage.csproj" />
     <ProjectReference Include="..\OneDas.Extensibility\OneDas.Extensibility.csproj" />
     <ProjectReference Include="..\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
   </ItemGroup>

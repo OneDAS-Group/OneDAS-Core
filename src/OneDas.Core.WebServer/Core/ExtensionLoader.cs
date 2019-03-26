@@ -4,7 +4,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using OneDas.Extensibility;
-using OneDas.Extensibility.PackageManagement;
+using OneDas.PackageManagement;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

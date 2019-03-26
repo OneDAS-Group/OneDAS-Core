@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OneDas.Extensibility
+namespace OneDas.DataStorage
 {
     public interface IExtendedDataStorage : IDataStorage
     {

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nuget.PackageManagement" Version="4.8.0-preview1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+  </ItemGroup>
+  
+</Project>

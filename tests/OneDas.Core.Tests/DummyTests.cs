@@ -2,9 +2,8 @@ using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using NuGet.PackageManagement;
 using OneDas.Extensibility;
-using OneDas.Extensibility.PackageManagement;
+using OneDas.PackageManagement;
 using Xunit;
 
 namespace OneDas.Core.Tests

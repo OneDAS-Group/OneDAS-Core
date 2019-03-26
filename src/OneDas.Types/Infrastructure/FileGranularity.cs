@@ -1,4 +1,4 @@
-﻿namespace OneDas.Extensibility
+﻿namespace OneDas.Infrastructure
 {
     public enum FileGranularity
     {

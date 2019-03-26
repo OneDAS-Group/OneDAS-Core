@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackageManagementSample", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types", "src\OneDas.Types\OneDas.Types.csproj", "{19EE6C78-A363-4E5A-8FDC-429902739608}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extensibility", "src\OneDas.Extensibility\OneDas.Extensibility.csproj", "{626ADC76-CF0A-4722-8D3B-4EFF9E937700}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataStorage", "src\OneDas.DataStorage\OneDas.DataStorage.csproj", "{626ADC76-CF0A-4722-8D3B-4EFF9E937700}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core", "src\OneDas.Core\OneDas.Core.csproj", "{74655BA1-DF54-42E8-8EFF-99A3971D995D}"
 EndProject
@@ -60,7 +60,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Explorer", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core.WebClient", "src\OneDas.Core.WebClient\OneDas.Core.WebClient.csproj", "{6E250434-C1AE-4215-B3B9-39C5DA4065F1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extensibility.Abstractions", "src\OneDas.Extensibility.Abstractions\OneDas.Extensibility.Abstractions.csproj", "{371CC31E-36A3-4BCE-804F-E79471869819}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extensibility", "src\OneDas.Extensibility\OneDas.Extensibility.csproj", "{371CC31E-36A3-4BCE-804F-E79471869819}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Types", "src\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj", "{3E9346D6-F0C7-48B8-9B10-937E853FFE72}"
 EndProject
@@ -70,6 +70,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{DE065826-114
 	ProjectSection(SolutionItems) = preProject
 		web\package.json = web\package.json
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.PackageManagement", "src\OneDas.PackageManagement\OneDas.PackageManagement.csproj", "{EB86576C-D566-497E-9EC5-C4287E24A051}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -265,6 +267,18 @@ Global
 		{83AFA14F-3D34-4013-9FEF-FDDD9B363667}.Release|x64.Build.0 = Release|Any CPU
 		{83AFA14F-3D34-4013-9FEF-FDDD9B363667}.Release|x86.ActiveCfg = Release|Any CPU
 		{83AFA14F-3D34-4013-9FEF-FDDD9B363667}.Release|x86.Build.0 = Release|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Debug|x64.Build.0 = Debug|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Debug|x86.Build.0 = Debug|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x64.ActiveCfg = Release|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x64.Build.0 = Release|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x86.ActiveCfg = Release|Any CPU
+		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -289,6 +303,7 @@ Global
 		{371CC31E-36A3-4BCE-804F-E79471869819} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 		{3E9346D6-F0C7-48B8-9B10-937E853FFE72} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 		{83AFA14F-3D34-4013-9FEF-FDDD9B363667} = {3DBD52E4-26F8-413F-A954-2BE86E572F3E}
+		{EB86576C-D566-497E-9EC5-C4287E24A051} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F998BD6D-3E2B-4AA0-A7A4-FD84100C45A4}

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace OneDas.Extensibility.PackageManagement
+namespace OneDas.PackageManagement
 {
     public class OneDasSolutionManager : ISolutionManager
     {

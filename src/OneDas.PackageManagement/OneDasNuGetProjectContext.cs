@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
-namespace OneDas.Extensibility.PackageManagement
+namespace OneDas.PackageManagement
 {
     public class OneDasNuGetProjectContext : INuGetProjectContext
     {

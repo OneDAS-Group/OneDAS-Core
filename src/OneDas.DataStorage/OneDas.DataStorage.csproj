@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Provides a common type system for all OneDAS application parts and extensions.</Description>
+    <PackageTags>OneDAS data aquisition measurement extension</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
+  </ItemGroup>
+
+</Project>

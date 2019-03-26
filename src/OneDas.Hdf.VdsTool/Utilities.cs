@@ -5,13 +5,8 @@ using System.Text;
 
 namespace OneDas.Hdf.VdsTool
 {
-    public static class VdsToolUtilities
+    public static class Utilities
     {
-        public static void ModifyConsoleMenu(SystemCommand systemCommand, int flags)
-        {
-            SafeNativeMethods.DeleteMenu(SafeNativeMethods.GetSystemMenu(SafeNativeMethods.GetConsoleWindow(), false), (int)systemCommand, flags);
-        }
-
         public static void RemoveCharacters(int count)
         {
             for (int i = 0; i <= count - 1; i++)
@@ -44,7 +39,7 @@ namespace OneDas.Hdf.VdsTool
                         {
                             selectedIndex = (selectedIndex + 1) % optionSet.Count;
 
-                            VdsToolUtilities.RemoveCharacters(buffer.Length);
+                            Utilities.RemoveCharacters(buffer.Length);
                             buffer.Clear();
 
                             Console.Write(optionSet[selectedIndex]);
@@ -64,7 +59,7 @@ namespace OneDas.Hdf.VdsTool
 
                             selectedIndex -= 1;
 
-                            VdsToolUtilities.RemoveCharacters(buffer.Length);
+                            Utilities.RemoveCharacters(buffer.Length);
                             buffer.Clear();
 
                             Console.Write(optionSet[selectedIndex]);
@@ -82,7 +77,7 @@ namespace OneDas.Hdf.VdsTool
 
                     case ConsoleKey.Escape:
 
-                        VdsToolUtilities.RemoveCharacters(buffer.Length);
+                        Utilities.RemoveCharacters(buffer.Length);
                         buffer.Clear();
 
                         return (string.Empty, true);
@@ -92,7 +87,7 @@ namespace OneDas.Hdf.VdsTool
                         if (buffer.Length > 0)
                         {
                             buffer.Remove(buffer.Length - 1, 1);
-                            VdsToolUtilities.RemoveCharacters(1);
+                            Utilities.RemoveCharacters(1);
                         }
 
                         optionSet[0] = buffer.ToString();

@@ -39,7 +39,7 @@ namespace OneDas.Extensibility {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extensibility.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extensibility.Abstractions.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,51 @@ namespace OneDas.Extensibility {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The instance ID must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string ActionRequest_InstanceIdInvalid {
+            get {
+                return ResourceManager.GetString("ActionRequest_InstanceIdInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The MaximumDatasetAge is must be between zero and 10000. ähnelt.
+        /// </summary>
+        internal static string DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid {
+            get {
+                return ResourceManager.GetString("DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The requested period has already been written before. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionLogicBase_DateTimeAlreadyWritten {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeAlreadyWritten", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionLogicBase_DateTimeGranularityTooHigh {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeGranularityTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The file granularity value is invalid. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionSettingsBase_FileGranularityInvalid {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionSettingsBase_FileGranularityInvalid", resourceCulture);
             }
         }
         
@@ -102,6 +147,42 @@ namespace OneDas.Extensibility {
         internal static string ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase {
             get {
                 return ResourceManager.GetString("ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ExtensionContextAttribute is not defined. ähnelt.
+        /// </summary>
+        internal static string ExtensionSettingsBase_ExtensionContextAttributeNotDefined {
+            get {
+                return ResourceManager.GetString("ExtensionSettingsBase_ExtensionContextAttributeNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ExtensionDescriptionAttribute is not defined. ähnelt.
+        /// </summary>
+        internal static string ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined {
+            get {
+                return ResourceManager.GetString("ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data storage type is invalid. ähnelt.
+        /// </summary>
+        internal static string VariableContext_DataStorageTypeInvalid {
+            get {
+                return ResourceManager.GetString("VariableContext_DataStorageTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IDataStorage. ähnelt.
+        /// </summary>
+        internal static string VariableDescription_DataStorageTypeInvalid {
+            get {
+                return ResourceManager.GetString("VariableDescription_DataStorageTypeInvalid", resourceCulture);
             }
         }
     }

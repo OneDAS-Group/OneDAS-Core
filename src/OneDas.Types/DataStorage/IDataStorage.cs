@@ -1,15 +1,13 @@
 ﻿using System;
 
-namespace OneDas.Extensibility
+namespace OneDas.DataStorage
 {
     public interface IDataStorage
     {
         #region "Properties"
 
         IntPtr DataBufferPtr { get; }
-
         int ElementSize { get; }
-
         Span<byte> DataBuffer { get; }
 
         #endregion

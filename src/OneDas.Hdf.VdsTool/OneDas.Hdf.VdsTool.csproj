@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   
   <ItemGroup>
@@ -11,7 +11,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+    <ProjectReference Include="..\OneDas.DataStorage\OneDas.DataStorage.csproj" />
     <ProjectReference Include="..\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
   </ItemGroup>
   
@@ -30,9 +30,5 @@
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="if not exist &quot;$(TargetDir)bin32&quot; md &quot;$(TargetDir)bin32&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin32\*.*&quot; &quot;$(TargetDir)bin32&quot;&#xD;&#xA;if not exist &quot;$(TargetDir)bin64&quot; md &quot;$(TargetDir)bin64&quot;&#xD;&#xA;xcopy /s /y &quot;$(HOMEDRIVE)$(HOMEPATH)\.nuget\packages\HDF.PInvoke\1.10.1\build\bin64\*.*&quot; &quot;$(TargetDir)bin64&quot;" />
-  </Target>
   
 </Project>

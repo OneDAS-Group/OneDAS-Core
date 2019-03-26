@@ -13,6 +13,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +21,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.Extensibility.PackageManagement
+namespace OneDas.PackageManagement
 {
     public class OneDasPackageManager
     {
@@ -54,8 +55,15 @@ namespace OneDas.Extensibility.PackageManagement
             _options = options.Value;
 
             // settings
-            _settings = new Settings(_options.NugetDirectoryPath);
-            //_settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
+            if (File.Exists(_options.NugetDirectoryPath))
+            {
+                _settings = new Settings(_options.NugetDirectoryPath);
+            }
+            else
+            {
+                _settings = new Settings(_options.NugetDirectoryPath);
+                _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
+            }
 
             if (!File.Exists(_options.NugetProjectFilePath))
             {

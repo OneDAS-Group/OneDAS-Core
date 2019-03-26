@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
     <ProjectReference Include="..\DataGatewaySample\DataGatewaySample.csproj" />
   </ItemGroup>
 

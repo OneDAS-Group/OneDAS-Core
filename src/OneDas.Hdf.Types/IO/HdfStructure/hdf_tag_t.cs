@@ -47,17 +47,24 @@ namespace OneDas.Hdf.IO
         /// <returns>Returns True if both copies are equal.</returns>
         public override bool Equals(object obj)
         {
+            if (obj == null || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                hdf_tag_t _hdf_tag = (hdf_tag_t)obj;
 
-            ////If TypeOf (obj) IsNot hdf_ec_info_t Then
-            ////    Return False
-            ////End If
+                return this.date_time == _hdf_tag.date_time &&
+                       this.name == _hdf_tag.name &&
+                       this.mode == _hdf_tag.mode &&
+                       this.comment == _hdf_tag.comment;
+            }            
+        }
 
-            hdf_tag_t _hdf_tag = (hdf_tag_t)obj;
-
-            return this.date_time == _hdf_tag.date_time &&
-                   this.name == _hdf_tag.name &&
-                   this.mode == _hdf_tag.mode &&
-                   this.comment == _hdf_tag.comment;
+        public override int GetHashCode()
+        {
+            return this.date_time.Length + this.name.Length + this.mode.Length + this.comment.Length;
         }
     }
 }

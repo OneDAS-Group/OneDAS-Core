@@ -105,7 +105,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                (dateTime, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
+                (dateTime, isEscaped) = Utilities.ReadLine(new List<string>());
 
                 if (isEscaped)
                 {
@@ -188,7 +188,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                (dateTime, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
+                (dateTime, isEscaped) = Utilities.ReadLine(new List<string>());
 
                 if (isEscaped)
                 {

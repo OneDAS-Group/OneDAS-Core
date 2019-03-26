@@ -13,7 +13,6 @@ namespace OneDas.Hdf.Explorer
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
@@ -40,7 +39,6 @@ namespace OneDas.Hdf.Explorer
             services.AddSingleton<HdfExplorerStateManager>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
             ILogger logger;
@@ -77,7 +75,7 @@ namespace OneDas.Hdf.Explorer
             // asp base URL
             logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
 
-            // check if database directory is confiured and existing
+            // check if database directory is configured and existing
             if (string.IsNullOrWhiteSpace(options.Value.DataBaseFolderPath))
             {
                 logger.LogError($"No database directory path has been configured.");

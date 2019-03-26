@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Provides a common type system for all OneDAS application parts and extensions.</Description>
+    <Description>Provides a common type system for all OneDAS extensions.</Description>
     <PackageTags>OneDAS data aquisition measurement extension</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0" />
-    <PackageReference Include="Nuget.PackageManagement" Version="4.8.0-preview1" />
-    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.Extensibility.Abstractions\OneDas.Extensibility.Abstractions.csproj" />
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <Content Update="**\tsconfig.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DependentUpon>ErrorMessage.resx</DependentUpon>
@@ -25,7 +25,7 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <CustomToolNamespace>OneDas.Extensibility</CustomToolNamespace>
