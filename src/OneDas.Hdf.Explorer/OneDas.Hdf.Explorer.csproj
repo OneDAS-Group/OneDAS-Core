@@ -4,7 +4,7 @@
     <Description>Provides a web-based user interface to browse the HDF-based OneDAS database and export desired data.</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>OneDAS HDF explorer export</PackageTags>
-    <PackAsTool>true</PackAsTool>
+    <!--<PackAsTool>true</PackAsTool>-->
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <ToolCommandName>onedas-hdf</ToolCommandName>
     <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>

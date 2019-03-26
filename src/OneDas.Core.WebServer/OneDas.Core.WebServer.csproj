@@ -4,7 +4,7 @@
     <Description>Provides a web-based user interface for OneDAS.</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>OneDAS data aquisition measurement</PackageTags>
-    <PackAsTool>true</PackAsTool>
+    <!--<PackAsTool>true</PackAsTool>-->
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <ToolCommandName>onedas</ToolCommandName>
     <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
