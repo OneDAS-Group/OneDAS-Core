@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <DefineSolutionProperties>false</DefineSolutionProperties>
-    <InstallerPlatform>x86</InstallerPlatform>
+    <InstallerPlatform>x64</InstallerPlatform>
     <ProductVersion>3.9</ProductVersion>
     <ProjectGuid>{a30ffe93-a205-48e6-880b-b8dc17e12af8}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -15,7 +15,6 @@
     <SuppressValidation>False</SuppressValidation>
     <SuppressIces>ICE60;</SuppressIces>
     <SuppressPdbOutput>True</SuppressPdbOutput>
-    <WixTargetsPath>C:\Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\wix.targets</WixTargetsPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,7 +46,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
 
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
-    <Error Text="$(MSBuildExtensionsPath32) => The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
 
   <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateOneDasMetaData">
@@ -55,7 +54,7 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.Core.WebServer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp2.1\win7-x86\publish</WixHarvestPath>
+      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp2.1\win10-x64\publish</WixHarvestPath>
       <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-Core-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>

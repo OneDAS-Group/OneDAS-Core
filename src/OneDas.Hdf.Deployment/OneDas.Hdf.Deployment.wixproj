@@ -54,7 +54,7 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.Hdf.Explorer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp2.1\win7-x64\publish</WixHarvestPath>
+      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp2.1\win10-x64\publish</WixHarvestPath>
 	    <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-HDF-Explorer-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>
