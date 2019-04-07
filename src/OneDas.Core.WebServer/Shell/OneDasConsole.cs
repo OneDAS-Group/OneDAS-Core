@@ -246,9 +246,11 @@ namespace OneDas.WebServer.Shell
         {
             UriBuilder uriBuilder;
 
-            uriBuilder = new UriBuilder(_webServerOptions.AspBaseUrl);
-            uriBuilder.Host = IPAddress.Loopback.ToString();
-            uriBuilder.Path = _webServerOptions.ConsoleHubName;
+            uriBuilder = new UriBuilder(_webServerOptions.AspBaseUrl)
+            {
+                Host = IPAddress.Loopback.ToString(),
+                Path = _webServerOptions.ConsoleHubName
+            };
 
             return new HubConnectionBuilder()
                  .WithUrl(uriBuilder.ToString())

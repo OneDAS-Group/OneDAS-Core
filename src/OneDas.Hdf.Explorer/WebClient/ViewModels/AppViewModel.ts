@@ -63,7 +63,6 @@ class AppViewModel
         // enumeration description
         EnumerationHelper.Description["FileFormatEnum_CSV"] = "Comma-separated (*.csv)"
         EnumerationHelper.Description["FileFormatEnum_MAT73"] = "Matlab v7.3 (*.mat)"
-        EnumerationHelper.Description["FileFormatEnum_GAM"] = "GAM file (*.gam)"
 
         EnumerationHelper.Description["FileGranularityEnum_Minute_1"] = "1 file per minute"
         EnumerationHelper.Description["FileGranularityEnum_Minute_10"] = "1 file per 10 minutes"

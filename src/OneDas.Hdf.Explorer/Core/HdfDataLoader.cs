@@ -1,6 +1,9 @@
 ﻿using HDF.PInvoke;
+using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
+using OneDas.Extension.Csv;
+using OneDas.Extension.Mat73;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
@@ -90,28 +93,19 @@ namespace OneDas.Hdf.Explorer.Core
                 });
             });
 
-            dataWriter = null; // REMOVE ONE IMPLEMENTED PROPERLY
-
             switch (fileFormat)
             {
                 case FileFormat.CSV:
 
-                    //settings = new CsvSettings() { FileGranularity = fileGranularity };
-                    //dataWriter = new CsvWriter((CsvSettings)settings, new LoggerFactory());
-
-                    break;
-
-                case FileFormat.GAM:
-
-                    //settings = new GamSettings() { FileGranularity = fileGranularity };
-                    //dataWriter = new GamWriter((GamSettings)settings, new LoggerFactory());
+                    settings = new CsvSettings() { FileGranularity = fileGranularity };
+                    dataWriter = new CsvWriter((CsvSettings)settings, new LoggerFactory());
 
                     break;
 
                 case FileFormat.MAT73:
 
-                    //settings = new Mat73Settings() { FileGranularity = fileGranularity };
-                    //dataWriter = new Mat73Writer((Mat73Settings)settings, new LoggerFactory());
+                    settings = new Mat73Settings() { FileGranularity = fileGranularity };
+                    dataWriter = new Mat73Writer((Mat73Settings)settings, new LoggerFactory());
 
                     break;
 

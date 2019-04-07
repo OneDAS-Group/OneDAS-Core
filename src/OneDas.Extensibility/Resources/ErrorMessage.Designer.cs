@@ -39,7 +39,7 @@ namespace OneDas.Extensibility {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extensibility.Abstractions.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extensibility.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

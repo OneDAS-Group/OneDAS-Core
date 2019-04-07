@@ -100,6 +100,44 @@ namespace OneDas.Hdf.Explorer.Web
             });
         }
 
+        // TODO: Unify Download and GetData
+        public Task<string> Download(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
+        {
+            CampaignInfo campaignInfo;
+            Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet;
+
+            campaignInfo = Program.CampaignInfoSet.FirstOrDefault(current => current.Name == campaignPath);
+
+            if (campaignInfo == null)
+            {
+                throw new Exception($"Could not find campaign with path '{campaignPath}'.");
+            }
+
+            campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
+            campaignInfoSet[campaignInfo.Name] = new Dictionary<string, List<string>>();
+
+            foreach (var variableName in variableNameSet)
+            {
+                VariableInfo variableInfo;
+
+                variableInfo = campaignInfo.VariableInfoSet.FirstOrDefault(current => current.VariableNameSet.Contains(variableName));
+
+                if (campaignInfo == null)
+                {
+                    throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaignInfo.Name}'.");
+                }
+
+                if (!variableInfo.DatasetInfoSet.Any(current => current.Name == sampleRateDescription))
+                {
+                    throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNameSet.First()}) in campaign '{campaignInfo.Name}'.");
+                }
+
+                campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateDescription };
+            }
+            
+            return this.GetData(dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+        }
+
         public Task<string> GetData(DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
             long fileId = -1;

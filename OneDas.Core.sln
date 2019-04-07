@@ -73,6 +73,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{DE065826-114
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.PackageManagement", "src\OneDas.PackageManagement\OneDas.PackageManagement.csproj", "{EB86576C-D566-497E-9EC5-C4287E24A051}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Interface", "src\OneDas.Hdf.Interface\OneDas.Hdf.Interface.csproj", "{269F03CF-0A2A-4212-AAC7-E6CF12999114}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -279,6 +281,18 @@ Global
 		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x64.Build.0 = Release|Any CPU
 		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x86.ActiveCfg = Release|Any CPU
 		{EB86576C-D566-497E-9EC5-C4287E24A051}.Release|x86.Build.0 = Release|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Debug|x64.Build.0 = Debug|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Debug|x86.Build.0 = Debug|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Release|Any CPU.Build.0 = Release|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Release|x64.ActiveCfg = Release|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Release|x64.Build.0 = Release|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Release|x86.ActiveCfg = Release|Any CPU
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -304,6 +318,7 @@ Global
 		{3E9346D6-F0C7-48B8-9B10-937E853FFE72} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 		{83AFA14F-3D34-4013-9FEF-FDDD9B363667} = {3DBD52E4-26F8-413F-A954-2BE86E572F3E}
 		{EB86576C-D566-497E-9EC5-C4287E24A051} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{269F03CF-0A2A-4212-AAC7-E6CF12999114} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F998BD6D-3E2B-4AA0-A7A4-FD84100C45A4}
