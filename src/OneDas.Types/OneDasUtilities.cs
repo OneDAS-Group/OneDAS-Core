@@ -126,6 +126,14 @@ namespace OneDas
             {
                 return OneDasDataType.INT32;
             }
+            else if (type == typeof(UInt64))
+            {
+                return OneDasDataType.UINT64;
+            }
+            else if (type == typeof(Int64))
+            {
+                return OneDasDataType.INT64;
+            }
             else if (type == typeof(Single))
             {
                 return OneDasDataType.FLOAT32;
@@ -158,6 +166,10 @@ namespace OneDas
                     return typeof(UInt32);
                 case OneDasDataType.INT32:
                     return typeof(Int32);
+                case OneDasDataType.UINT64:
+                    return typeof(UInt64);
+                case OneDasDataType.INT64:
+                    return typeof(Int64);
                 case OneDasDataType.FLOAT32:
                     return typeof(Single);
                 case OneDasDataType.FLOAT64:

@@ -12,6 +12,8 @@
         INT16 = 0x210,
         UINT32 = 0x120,
         INT32 = 0x220,
+        UINT64 = 0x140,
+        INT64 = 0x240,
         FLOAT32 = 0x320,
         FLOAT64 = 0x340
     }

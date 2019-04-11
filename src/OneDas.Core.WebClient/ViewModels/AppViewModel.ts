@@ -44,6 +44,8 @@
         EnumerationHelper.Description["OneDasDataTypeEnum_INT16"] = "INT16"
         EnumerationHelper.Description["OneDasDataTypeEnum_UINT32"] = "UINT32"
         EnumerationHelper.Description["OneDasDataTypeEnum_INT32"] = "INT32"
+        EnumerationHelper.Description["OneDasDataTypeEnum_UINT64"] = "UINT64"
+        EnumerationHelper.Description["OneDasDataTypeEnum_INT64"] = "INT64"
         EnumerationHelper.Description["OneDasDataTypeEnum_FLOAT32"] = "FLOAT32"
         EnumerationHelper.Description["OneDasDataTypeEnum_FLOAT64"] = "FLOAT64"
 
