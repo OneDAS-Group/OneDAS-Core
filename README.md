@@ -1,7 +1,7 @@
 # OneDAS-Core
 
 [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/onedas-group/onedas-core?svg=true)](https://ci.appveyor.com/project/Apollo3zehn/onedas-core) [![Documentation Status](https://readthedocs.org/projects/onedas/badge/?version=latest)](http://onedas.readthedocs.io/en/latest/?badge=latest)
-
+[![AppVeyor](https://img.shields.io/nuget/vpre/OneDAS.Core.svg)](https://www.nuget.org/packages?q=OneDAS) [![License](https://img.shields.io/github/license/OneDAS-Group/OneDAS-Core.svg)](https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md)
 
 Contains the main executables and type definitions of OneDAS.
 
