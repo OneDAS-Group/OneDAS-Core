@@ -55,7 +55,7 @@ namespace OneDas.PackageManagement
             _options = options.Value;
 
             // settings
-            if (File.Exists(_options.NugetDirectoryPath))
+            if (File.Exists(Path.Combine(_options.NugetDirectoryPath, "NuGet.Config")))
             {
                 _settings = new Settings(_options.NugetDirectoryPath);
             }
