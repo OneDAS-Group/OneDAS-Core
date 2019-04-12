@@ -81,22 +81,22 @@ namespace OneDas.Core.ProjectManagement
             // -> naming convention
             if (!OneDasUtilities.CheckNamingConvention(this.Description.PrimaryGroupName, out errorDescription))
             {
-                throw new Exception(ErrorMessage.OneDasProject_PrimaryGroupNameInvalid);
+                throw new Exception($"{ErrorMessage.OneDasProject_PrimaryGroupNameInvalid}: {errorDescription}");
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.Description.SecondaryGroupName, out errorDescription))
             {
-                throw new Exception(ErrorMessage.OneDasProject_SecondaryGroupNameInvalid);
+                throw new Exception($"{ErrorMessage.OneDasProject_SecondaryGroupNameInvalid}: {errorDescription}");
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.Description.CampaignName, out errorDescription))
             {
-                throw new Exception(ErrorMessage.OneDasProject_CampaignNameInvalid);
+                throw new Exception($"{ErrorMessage.OneDasProject_CampaignNameInvalid}: {errorDescription}");
             }
 
             if (!this.ChannelHubSettingsSet.ToList().TrueForAll(x => OneDasUtilities.CheckNamingConvention(x.Name, out errorDescription)))
             {
-                throw new Exception(ErrorMessage.OneDasProject_ChannelHubNameInvalid);
+                throw new Exception($"{ErrorMessage.OneDasProject_ChannelHubNameInvalid}: {errorDescription}");
             }
 
             // -> ChannelHub

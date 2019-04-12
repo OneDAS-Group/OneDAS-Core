@@ -197,15 +197,15 @@ namespace OneDas
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                errorDescription = ErrorMessage.OneDasUtilities_NameEmpty;
+                errorDescription = $"{ErrorMessage.OneDasUtilities_NameEmpty} (value: '{value}')";
             }
             else if (Regex.IsMatch(value, "[^A-Za-z0-9_]"))
             {
-                errorDescription = ErrorMessage.OneDasUtilities_InvalidCharacters;
+                errorDescription = $"{ErrorMessage.OneDasUtilities_InvalidCharacters} (value: '{value}')";
             }
             else if (Regex.IsMatch(value, "^[0-9_]"))
             {
-                errorDescription = ErrorMessage.OneDasUtilities_InvalidLeadingCharacter;
+                errorDescription = $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter} (value: '{value}')";
             }
             else
             {
