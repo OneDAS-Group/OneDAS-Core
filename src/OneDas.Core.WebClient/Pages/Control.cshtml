@@ -1,0 +1,304 @@
+﻿@page "/control"
+@inject AppStateViewModel state
+
+<!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.ApplyConfiguration -->
+<div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
+    <h1 class="display-4">Activate a project to start running OneDAS!</h1>
+    <p>Or create a new one in the <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> section.</p>
+    <p>&nbsp;</p>
+    <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary btn-wide"
+                role="button"
+                data-bind="click: GetCampaignDescriptions"
+                data-toggle="modal"
+                data-target="#Control_OpenProjectModal"
+                data-backdrop="static">
+            Select
+        </button>
+    </div>
+</div>
+<!-- /ko -->
+<!-- ko if: $root.OneDasState() === OneDasStateEnum.ApplyConfiguration -->
+<div id="Editor_ApplyConfiguration" class="center-vertically plus-center-horizontally">
+    <h1 class="display-4 mb-5 noselect">Activating project ...</h1>
+    <img class="text-center" src="/images/loading.gif" />
+</div>
+<!-- /ko -->
+
+<div id="Control_OpenProjectModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Available projects</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <!-- ko if: CampaignDescriptionSet().length == 0 -->
+                    <h5 class="d-block text-center my-5"><small class="text-muted">- no projects available -</small></h5>
+                    <!-- /ko -->
+                    <!-- ko foreach: CampaignDescriptionSet -->
+                    <a class="list-group-item list-group-item-action noselect url"
+                       data-dismiss="modal"
+                       data-bind="click: $parents[1].ActivateProject">
+                        <div class="d-flex">
+                            <h6 class="mb-1 mr-auto" data-bind="text: PrimaryGroupName + ' / ' + SecondaryGroupName + ' / ' + CampaignName"></h6>
+                            <span class="fa fa-folder-open-o fa-fix ml-auto"></span>
+                        </div>
+                        <div class="d-flex">
+                            <h6 class="mr-auto"><small class="text-muted" data-bind="text: Guid"></small></h6>
+                            <h6><small class="text-muted" data-bind="text: 'Version: ' + Version()"></small></h6>
+                        </div>
+                    </a>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        role="button"
+                        data-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ACTIVE PROJECT -->
+<!-- ko if: ($root.ActiveProject() && $root.OneDasState() == OneDasStateEnum.Error) || $root.OneDasState() >= OneDasStateEnum.Ready -->
+<!-- ko with: $root.ActiveProject -->
+
+<div id="ActiveProject_Header" class="container">
+    <div class="row align-content-end my-5" data-bind="with: Description">
+        <h1 class="display-4 mr-auto">Control</h1>
+        <h1 class="display-small text-muted mt-auto" data-bind="text: PrimaryGroupName + ' / ' + SecondaryGroupName + ' / ' + CampaignName + ' v' + Version()"></h1>
+    </div>
+</div>
+<hr />
+
+<!-- /ko -->
+
+<div id="Control_Content">
+    <div class="row">
+        <div class="col">
+            <div class="card my-2">
+
+                <div class="card-header d-flex justify-content-between bg-dark">
+
+                    <div class="d-flex">
+                        <div class="flex-column">
+                            <!-- ko if: $root.OneDasState() === OneDasStateEnum.Ready -->
+                            <span class="fa fa-stop url mr-2 text-white"
+                                  data-bind="click: StopOneDas">
+                            </span>
+                            <span class="fa fa-play url mr-2 text-white"
+                                  data-bind="click: StartOneDas">
+                            </span>
+                            <!-- /ko -->
+                            <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
+                            <span class="fa fa-pause url mr-2 text-white"
+                                  data-bind="click: PauseOneDas">
+                            </span>
+                            <!-- /ko -->
+                        </div>
+
+                        <!-- ko if: $root.OneDasState() === OneDasStateEnum.Error -->
+                        <span class="text-danger">
+                            ERROR
+                        </span>
+                        <!-- /ko -->
+                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.Ready -->
+                        <span class="text-warning">
+                            IDLE
+                        </span>
+                        <!-- /ko -->
+                        <!-- ko if: $root.OneDasState() === OneDasStateEnum.Ready -->
+                        <span class="text-warning">
+                            READY
+                        </span>
+                        <!-- /ko -->
+                        <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
+                        <span class="text-success">
+                            RUN
+                        </span>
+                        <!-- /ko -->
+                    </div>
+
+                    <!-- ko if: $root.OneDasState() === OneDasStateEnum.Error -->
+                    <span class="text-white" data-bind="text: $root.LastError"></span>
+                    <!-- /ko -->
+                    <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Initialization && $root.OneDasState() < OneDasStateEnum.Ready -->
+                    <span class="text-white">
+                        OneDAS is intialized waiting for a project file.
+                    </span>
+                    <!-- /ko -->
+                    <!-- ko if: $root.OneDasState() === OneDasStateEnum.Ready -->
+                    <span class="text-white">
+                        OneDAS is running but not recording data.
+                    </span>
+                    <!-- /ko -->
+                    <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
+                    <span class="text-white">
+                        OneDAS is running and recording data.
+                    </span>
+                    <!-- /ko -->
+
+                    <div class="flex-column ml-4"
+                         data-bind="tooltip: { title: $root.OneDasState() === OneDasStateEnum.Run ? 'Stop data recording before activating a new project.' : 'Click here to activate a new project.' }">
+                        <!-- ko if: $root.OneDasState() >= OneDasStateEnum.Idle && $root.OneDasState() < OneDasStateEnum.Run -->
+                        <span class="fa fa-folder-open-o url text-white"
+                              data-bind="click: GetCampaignDescriptions"
+                              data-toggle="modal"
+                              data-target="#Control_OpenProjectModal"
+                              data-backdrop="static">
+                        </span>
+                        <!-- /ko -->
+                        <!-- ko if: $root.OneDasState() === OneDasStateEnum.Run -->
+                        <span class="fa fa-folder-o url text-danger"></span>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="card my-2">
+                <div class="card-header">
+                    Message Log
+                </div>
+                <div class="card-body" style="overflow: hidden">
+                    <div class="message-log" style="margin-right: -36px; padding-right: 36px;">
+                        <ul class="list-group" data-bind="foreach: $root.ClientMessageLog">
+                            <li class="message-log-list-item" data-bind="text: $data.Prefix + ': ' + $data.Message, fadeVisible: true" />
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card my-2 noselect">
+                <div class="card-header d-flex justify-content-between">
+                    Performance
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Timer fired too late by the shown period due to internal scheduling mechanism of the OS.' }">
+                                    Delay
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="numericText: LateBy, precision: 2, unit: 'ms'"></h1>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Indicates the load.'}">
+                                    Cycle Time
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="numericText: CycleTime, precision: 2, unit: 'ms'"></h1>
+                                </div>
+                            </div>
+                            <div class="progress mt-2"
+                                 data-bind="tooltip: { title: 'Time difference of reference clock and Windows clock.' },
+                                    with: $root.PerformanceInformation">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     data-bind="style: { width: TimerDriftMicroseconds / 1500 * 100 + '%' },
+                                        numericText: TimerDriftMicroseconds, precision: 0, unit: 'µs'">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Time since the current project was activated.' }">
+                                    Local Time
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="text: Time"></h1>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="display-small text-muted"
+                                    data-bind="tooltip: { title: 'Time since the current project was activated.' }">
+                                    Uptime
+                                </h5>
+                                <div data-bind="with: $root.PerformanceInformation">
+                                    <h1 class="display-small text-muted"
+                                        data-bind="text: UpTimeHours + ' h ' + UpTimeMinutes + ' m '"></h1>
+                                </div>
+                            </div>
+                            <div class="progress mt-2"
+                                 data-bind="tooltip: { title: 'Consumed disk space.' },
+                                    with: $root.PerformanceInformation">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     data-bind="style: { width: ConsumedDiskSpace / TotalDiskSize * 100 + '%' },
+                                        text: ConsumedDiskSpace.toFixed(0) + ' GB / ' + TotalDiskSize.toFixed(0) + ' GB'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="card my-2">
+                <div class="card-header">
+                    Data Snapshot
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th class="text-right">Value</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- ko if ActiveProject() -->
+                            <!-- ko with: ActiveProject() -->
+                            <!-- ko if: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()).length > 0 && DataSnapshot().length > 0 -->
+                            <!-- ko foreach: ChannelHubSet().filter(channelHub => channelHub.AssociatedDataInput()) -->
+                            <tr data-toggle="tooltip" data-placement="left"
+                                data-bind="attr: { title: EnumerationHelper.GetEnumLocalization('OneDasDataTypeEnum', DataType()) }">
+                                <th class="table-row-condensed"><small data-bind="text: $index() + 1"></small></th>
+                                <td class="table-row-condensed"><small data-bind="text: Name"></small></td>
+                                <!-- ko if: DataType() === OneDasDataTypeEnum.BOOLEAN -->
+                                <td class="table-row-condensed text-right"><small data-bind="text: $parent.DataSnapshot()[$index()]"></small></td>
+                                <!-- /ko -->
+                                <!-- ko if: DataType() !== OneDasDataTypeEnum.BOOLEAN -->
+                                <td class="table-row-condensed text-right"><small data-bind="text: GetTransformedValue($parent.DataSnapshot()[$index()]).toFixed(2)"></small></td>
+                                <!-- /ko -->
+                                <td class="table-row-condensed"><small data-bind="text: Unit"></small></td>
+                            </tr>
+                            <!-- /ko -->
+                            <!-- /ko -->
+                            <!-- /ko -->
+                            <!-- /ko -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /ko -->
+
+@functions
+{
+
+}

@@ -1,0 +1,147 @@
+﻿@page "/"
+
+<div class="row my-5">
+    <div class="col">
+        <h2 class="text-center">Welcome to OneDAS Core</h2>
+        <p class="text-center subtitle">
+            This is the home page - here you get a quick overview of the current status.
+            Navigate to
+            <a data-bind="page-href: '../' + $root.WorkspaceSet()[1].Address, text: $root.WorkspaceSet()[1].Title"></a>,
+            <a data-bind="page-href: '../' + $root.WorkspaceSet()[2].Address, text: $root.WorkspaceSet()[2].Title"></a>,
+            <a data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address, text: $root.WorkspaceSet()[3].Title"></a> or
+            <a data-bind="page-href: '../' + $root.WorkspaceSet()[4].Address, text: $root.WorkspaceSet()[4].Title"></a>
+            to dive into OneDAS.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action" data-bind="page-href: '../' + $root.WorkspaceSet()[1].Address">
+                <div class="d-flex align-items-center">
+                    <img width="54" src="../images/terminal.png" />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <h5 class="list-group-item-heading">Control</h5>
+                </div>
+                <small class="list-group-item-text">Control the measurement system (apply configuration, start data aquisition, ...).</small>
+            </a>
+            <a class="list-group-item list-group-item-action" data-bind="page-href: '../' + $root.WorkspaceSet()[2].Address">
+                <div class="d-flex align-items-center">
+                    <img class="center-block" width="54" src="../images/activity_monitor.png" />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <h5 class="list-group-item-heading">Live View</h5>
+                </div>
+                <small class="list-group-item-text">Displays live data to get a comprehensive and dynamic overview of the system.</small>
+            </a>
+        </div>
+    </div>
+    <div class="col">
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action" data-bind="page-href: '../' + $root.WorkspaceSet()[3].Address">
+                <div class="d-flex align-items-center">
+                    <img width="54" src="../images/console_stripes.png" />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <h5 class="list-group-item-heading">Editor</h5>
+                </div>
+                <small class="list-group-item-text">Provides an editor for project configurations to setup the measurement system.</small>
+            </a>
+            <a class="list-group-item list-group-item-action" data-bind="page-href: '../' + $root.WorkspaceSet()[4].Address">
+                <div class="d-flex align-items-center">
+                    <img class="center-block" width="54" src="../images/air_port.png" />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <h5 class="list-group-item-heading">Extensions</h5>
+                </div>
+                <small class="list-group-item-text">Find a list of loaded extensions and available updates.</small>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col">
+
+    </div>
+    <div class="col">
+        <div class="table-responsive" data-bind="with: $root">
+            <table class="table table-sm table-hover small">
+                <thead class="thead-default">
+                    <tr>
+                        <th>Property</th>
+                        <th>
+                            <div class="d-flex">
+                                <span class="mr-auto">Value</span>
+                                <span data-toggle="tooltip" title="Edit OneDAS settings."
+                                      data-bind="click: UpdateNewWebServerOptionsLight">
+                                    <span class="fa fa-cog mr-2 url"
+                                          data-toggle="modal"
+                                          data-target="#Start_WebServerOptionsLightModal"
+                                          data-backdrop="static"></span>
+                                </span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody data-bind="with: WebServerOptionsLight">
+                    <tr data-toggle="tooltip" title="Name of the current OneDAS instance.">
+                        <td>OneDAS Name</td>
+                        <td data-bind="text: OneDasName"></td>
+                    </tr>
+                    <tr data-toggle="tooltip" title="Used to create a socket for web requests.">
+                        <td>Web address</td>
+                        <td data-bind="text: AspBaseUrl"></td>
+                    </tr>
+                    <tr data-toggle="tooltip" title="The directory where the projects, data files, etc. live.">
+                        <td>Base folder</td>
+                        <td data-bind="text: BaseDirectoryPath"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="Start_WebServerOptionsLightModal" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">OneDAS settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" data-bind="with: $root">
+                <form>
+                    <div class="form-group">
+                        <label class="form-control-label" for="OneDasName">OneDAS Name:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               id="OneDasName"
+                               data-bind="textInput: NewWebServerOptionsLightOneDasName">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label" for="AspBaseUrl">Web Address:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               id="AspBaseUrl"
+                               data-bind="textInput: NewWebServerOptionsLightAspBaseUrl">
+                    </div>
+                    <div class="BaseFolder">
+                        <label class="form-control-label" for="BaseDirectoryPath">Base Folder:</label>
+                        <input type="text"
+                               class="form-control modal-input-full-width"
+                               id="BaseDirectoryPath"
+                               data-bind="textInput: NewWebServerOptionsLightBaseDirectoryPath">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        role="button"
+                        data-dismiss="modal"
+                        data-bind="click: $root.SaveWebServerOptionsLight">
+                    Save settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

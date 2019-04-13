@@ -27,7 +27,7 @@ namespace OneDas.WebServer.Web
             services.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-            }).AddJsonProtocol(options =>
+            }).AddNewtonsoftJsonProtocol(options =>
             {
                 var settings = new JsonSerializerSettings()
                 {
@@ -47,7 +47,12 @@ namespace OneDas.WebServer.Web
             webServerOptions = options.Value;
 
             app.UseResponseCompression();
-            app.UseDeveloperExceptionPage();
+
+            if (env.EnvironmentName == "Development")
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseBlazorDebugging();
+            }
 
             app.UseStaticFiles();
 
@@ -57,7 +62,7 @@ namespace OneDas.WebServer.Web
                 routes.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
             });
 
-            app.UseMvc();
+            app.UseBlazor<OneDas.Core.WebClient.Startup>();
         }
     }
 }

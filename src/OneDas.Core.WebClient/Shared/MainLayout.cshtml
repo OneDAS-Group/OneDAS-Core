@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+@inject AppStateViewModel state
+
+<Navbar />
+
+<div class="container">
+    <!-- ko ifnot: IsConnected -->
+    <div class="alert alert-danger url flex-column">
+        <div class="d-flex">
+            <strong>Attention!</strong>
+            <small class="ml-auto">This can be caused by a bad network connection.</small>
+        </div>
+        Connection to server lost. Trying to reconnect...
+    </div>
+    <!-- /ko -->
+    <!-- ko if: OneDasState() == 1 -->
+    <div class="alert alert-danger url flex-column" data-bind="click: AcknowledgeError">
+        <div class="d-flex">
+            <strong>Attention!</strong>
+            <small class="ml-auto">Click to acknowledge.</small>
+        </div>
+        <span class="d-block" data-bind="text: 'Message: ' + $root.LastError()"></span>
+    </div>
+    <!-- /ko -->
+    @Body
+    <footer class="fixed-top text-center footer"></footer>
+</div>
+
+@functions
+{
+
+}
+
