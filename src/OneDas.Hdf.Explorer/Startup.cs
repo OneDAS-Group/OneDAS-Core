@@ -39,7 +39,7 @@ namespace OneDas.Hdf.Explorer
             services.AddSingleton<HdfExplorerStateManager>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
             ILogger logger;
 
