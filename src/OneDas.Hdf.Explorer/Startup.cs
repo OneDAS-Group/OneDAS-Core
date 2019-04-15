@@ -15,19 +15,16 @@ namespace OneDas.Hdf.Explorer
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services
+                .AddMvc()
                 .AddRazorPagesOptions(options =>
                 {
                     options.RootDirectory = "/Web/Pages";
                 });
 
-            services.AddSignalR(options =>
-            {
-                options.EnableDetailedErrors = true;
-            }).AddJsonProtocol(options =>
-            {
-                options.PayloadSerializerSettings = new JsonSerializerSettings();
-            });
+            services
+                .AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddNewtonsoftJsonProtocol(options => options.PayloadSerializerSettings = new JsonSerializerSettings());
 
             services.AddLogging(loggingBuilder =>
             {
