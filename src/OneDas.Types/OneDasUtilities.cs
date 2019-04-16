@@ -17,19 +17,13 @@ namespace OneDas
         public static int SizeOf(Type type)
         {
             if (type == typeof(bool))
-            {
                 return 1;
-            }
             else
-            {
                 return Marshal.SizeOf(type);
-            }
         }
 
         public static bool ValidateIPv4(string ipAddressString, out IPAddress ipAddress)
         {
-            ipAddress = null;
-
             return IPAddress.TryParse(ipAddressString, out ipAddress) && ipAddressString.Split('.').Length == 4;
         }
 
@@ -40,179 +34,90 @@ namespace OneDas
 
         public static ulong GetSamplesPerDayFromSampleRate(SampleRate sampleRate)
         {
-            switch (sampleRate)
+            return sampleRate switch
             {
-                case SampleRate.SampleRate_100:
-                    return 86400 * 100;
-                case SampleRate.SampleRate_25:
-                    return 86400 * 25;
-                case SampleRate.SampleRate_5:
-                    return 86400 * 5;
-                case SampleRate.SampleRate_1:
-                    return 86400 * 1;
-                default:
-                    throw new ArgumentException();
-            }
+                SampleRate.SampleRate_100   => 86400UL * 100,
+                SampleRate.SampleRate_25    => 86400UL * 25,
+                SampleRate.SampleRate_5     => 86400UL * 5,
+                SampleRate.SampleRate_1     => 86400UL * 1,
+                _                           => throw new ArgumentException()
+            };
         }
 
         // Improve! RegEx
         public static ulong GetSamplesPerDayFromString(string datasetName)
         {
-            if (datasetName.StartsWith("100 Hz"))
+            return true switch
             {
-                return 86400 * 100;
-            }
-            else if (datasetName.StartsWith("25 Hz"))
-            {
-                return 86400 * 25;
-            }
-            else if (datasetName.StartsWith("5 Hz"))
-            {
-                return 86400 * 5;
-            }
-            else if (datasetName.StartsWith("1 Hz"))
-            {
-                return 86400 * 1;
-            }
-            else if (datasetName.StartsWith("1 s"))
-            {
-                return 86400 * 1;
-            }
-            else if (datasetName.StartsWith("60 s"))
-            {
-                return 86400 / 60;
-            }
-            else if (datasetName.StartsWith("600 s"))
-            {
-                return 86400 / 600;
-            }
-            else if (datasetName == "is_chunk_completed_set")
-            {
-                return 86400 / 60;
-            }
-            else
-            {
-                throw new ArgumentException(nameof(datasetName));
-            }
+                true when datasetName.StartsWith("100 Hz")                  => 86400UL * 100,
+                true when datasetName.StartsWith("25 Hz")                   => 86400UL * 25,
+                true when datasetName.StartsWith("5 Hz")                    => 86400UL * 5,
+                true when datasetName.StartsWith("1 Hz")                    => 86400UL * 1,
+                true when datasetName.StartsWith("1 s")                     => 86400UL * 1,
+                true when datasetName.StartsWith("60 s")                    => 86400UL / 60,
+                true when datasetName.StartsWith("600 s")                   => 86400UL / 600,
+                true when datasetName.StartsWith("is_chunk_completed_set")  => 86400UL / 60,
+                _                                                           => throw new ArgumentException(nameof(datasetName))
+            };
         }
 
         public static OneDasDataType GetOneDasDataTypeFromType(Type type)
         {
-            if (type == typeof(bool))
+            return true switch
             {
-                return OneDasDataType.BOOLEAN;
-            }
-            else if (type == typeof(Byte))
-            {
-                return OneDasDataType.UINT8;
-            }
-            else if (type == typeof(SByte))
-            {
-                return OneDasDataType.INT8;
-            }
-            else if (type == typeof(UInt16))
-            {
-                return OneDasDataType.UINT16;
-            }
-            else if (type == typeof(Int16))
-            {
-                return OneDasDataType.INT16;
-            }
-            else if (type == typeof(UInt32))
-            {
-                return OneDasDataType.UINT32;
-            }
-            else if (type == typeof(Int32))
-            {
-                return OneDasDataType.INT32;
-            }
-            else if (type == typeof(UInt64))
-            {
-                return OneDasDataType.UINT64;
-            }
-            else if (type == typeof(Int64))
-            {
-                return OneDasDataType.INT64;
-            }
-            else if (type == typeof(Single))
-            {
-                return OneDasDataType.FLOAT32;
-            }
-            else if (type == typeof(Double))
-            {
-                return OneDasDataType.FLOAT64;
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
+                true when type == typeof(bool)      => OneDasDataType.BOOLEAN,
+                true when type == typeof(Byte)      => OneDasDataType.UINT8,
+                true when type == typeof(SByte)     => OneDasDataType.INT8,
+                true when type == typeof(UInt16)    => OneDasDataType.UINT16,
+                true when type == typeof(Int16)     => OneDasDataType.INT16,
+                true when type == typeof(UInt32)    => OneDasDataType.UINT32,
+                true when type == typeof(Int32)     => OneDasDataType.INT32,
+                true when type == typeof(UInt64)    => OneDasDataType.UINT64,
+                true when type == typeof(Int64)     => OneDasDataType.INT64,
+                true when type == typeof(Single)    => OneDasDataType.FLOAT32,
+                true when type == typeof(Double)    => OneDasDataType.FLOAT64,
+                _                                   => throw new NotSupportedException()
+            };
         }
 
-        public static Type GetTypeFromOneDasDataType(OneDasDataType oneDasDataType)
+        public static Type GetTypeFromOneDasDataType(OneDasDataType dateType)
         {
-            switch (oneDasDataType)
+            return dateType switch
             {
-                case OneDasDataType.BOOLEAN:
-                    return typeof(bool);
-                case OneDasDataType.UINT8:
-                    return typeof(Byte);
-                case OneDasDataType.INT8:
-                    return typeof(SByte);
-                case OneDasDataType.UINT16:
-                    return typeof(UInt16);
-                case OneDasDataType.INT16:
-                    return typeof(Int16);
-                case OneDasDataType.UINT32:
-                    return typeof(UInt32);
-                case OneDasDataType.INT32:
-                    return typeof(Int32);
-                case OneDasDataType.UINT64:
-                    return typeof(UInt64);
-                case OneDasDataType.INT64:
-                    return typeof(Int64);
-                case OneDasDataType.FLOAT32:
-                    return typeof(Single);
-                case OneDasDataType.FLOAT64:
-                    return typeof(Double);
-                default:
-                    throw new NotSupportedException();
-            }
+                OneDasDataType.BOOLEAN              => typeof(bool),
+                OneDasDataType.UINT8                => typeof(Byte),
+                OneDasDataType.INT8                 => typeof(SByte),
+                OneDasDataType.UINT16               => typeof(UInt16),
+                OneDasDataType.INT16                => typeof(Int16),
+                OneDasDataType.UINT32               => typeof(UInt32),
+                OneDasDataType.INT32                => typeof(Int32),
+                OneDasDataType.UINT64               => typeof(UInt64),
+                OneDasDataType.INT64                => typeof(Int64),
+                OneDasDataType.FLOAT32              => typeof(Single),
+                OneDasDataType.FLOAT64              => typeof(Double),
+                _                                   => throw new NotSupportedException()
+            };
         }
 
         public static byte GetBitLength(OneDasDataType oneDasDataType, bool expandedBoolean)
         {
             if (!expandedBoolean && oneDasDataType == OneDasDataType.BOOLEAN)
-            {
                 return 1;
-            }
             else
-            {
                 return Convert.ToByte((int)oneDasDataType & 0xff);
-            }
         }
 
         public static bool CheckNamingConvention(string value, out string errorDescription)
         {
-            errorDescription = string.Empty;
+            errorDescription = true switch
+            {
+                true when string.IsNullOrWhiteSpace(value)      => $"{ErrorMessage.OneDasUtilities_NameEmpty} (value: '{value}')",
+                true when Regex.IsMatch(value, "[^A-Za-z0-9_]") => $"{ErrorMessage.OneDasUtilities_InvalidCharacters} (value: '{value}')",
+                true when Regex.IsMatch(value, "^[0-9_]")       => $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter} (value: '{value}')",
+                _                                               => string.Empty
+            };
 
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                errorDescription = $"{ErrorMessage.OneDasUtilities_NameEmpty} (value: '{value}')";
-            }
-            else if (Regex.IsMatch(value, "[^A-Za-z0-9_]"))
-            {
-                errorDescription = $"{ErrorMessage.OneDasUtilities_InvalidCharacters} (value: '{value}')";
-            }
-            else if (Regex.IsMatch(value, "^[0-9_]"))
-            {
-                errorDescription = $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter} (value: '{value}')";
-            }
-            else
-            {
-                return true;
-            }
-
-            return false;
+            return string.IsNullOrWhiteSpace(errorDescription);
         }
     }
 }
