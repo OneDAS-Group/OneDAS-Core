@@ -2,11 +2,9 @@
 graph LR
     OneDas.PackageManagement --> OneDas.Types
     OneDas.Hdf.Interface --> OneDas.Types
-    OneDas.Core --> OneDas.Types
     OneDas.Core --> OneDas.PackageManagement
     OneDas.Hdf.VdsTool --> OneDas.Types
     %%OneDas.Hdf.VdsTool --> OneDas.Hdf.Types
-    OneDas.Hdf.Explorer --> OneDas.Types
     OneDas.Hdf.Explorer --> OneDas.PackageManagement
     %%OneDas.Hdf.Explorer --> OneDas.Hdf.Types
     OneDas.Core.WebServer --> OneDas.Core
