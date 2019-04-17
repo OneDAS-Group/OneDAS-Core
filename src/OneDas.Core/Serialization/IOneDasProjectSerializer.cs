@@ -1,5 +1,5 @@
-﻿using OneDas.Core.ProjectManagement;
-using OneDas.Infrastructure;
+﻿using OneDas.Infrastructure;
+using OneDas.ProjectManagement;
 
 namespace OneDas.Core.Serialization
 {

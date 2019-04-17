@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
-using OneDas.Extension.Csv;
-using OneDas.Extension.Mat73;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
@@ -92,6 +90,8 @@ namespace OneDas.Hdf.Explorer.Core
                     }
                 });
             });
+
+            dataWriter = null;
 
             switch (fileFormat)
             {

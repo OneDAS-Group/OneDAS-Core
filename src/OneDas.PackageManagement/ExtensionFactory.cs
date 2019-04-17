@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace OneDas.Extensibility
+namespace OneDas.PackageManagement
 {
     public class ExtensionFactory : IExtensionFactory
     {

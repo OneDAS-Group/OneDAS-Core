@@ -11,8 +11,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.DataStorage\OneDas.DataStorage.csproj" />
     <ProjectReference Include="..\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
   
   <ItemGroup>

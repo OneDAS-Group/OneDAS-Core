@@ -1,10 +1,9 @@
-﻿using OneDas.Core.Engine;
-using OneDas.Core.ProjectManagement;
-using OneDas.Extensibility;
+﻿using OneDas.Extensibility;
 using OneDas.PackageManagement;
+using OneDas.ProjectManagement;
 using System.Collections.Generic;
 
-namespace OneDas.WebServer.Web
+namespace OneDas.Core.WebClient.Model
 {
     public class AppModel
     {

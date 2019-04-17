@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Blazor.Hosting;
-using Microsoft.JSInterop;
 
 namespace OneDas.Core.WebClient
 {
@@ -11,6 +10,7 @@ namespace OneDas.Core.WebClient
                    .Build()
                    .Run();
 
+            // see also: https://github.com/aspnet/AspNetCore/issues/8117#issuecomment-475872863
             //JSRuntime.Current.InvokeAsync<object>("OnLoaded");
         }
 

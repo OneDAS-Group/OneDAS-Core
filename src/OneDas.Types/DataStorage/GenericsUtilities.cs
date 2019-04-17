@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection.Emit;
 
-namespace OneDas
+namespace OneDas.DataStorage
 {
     public static class GenericToDouble<T>
     {

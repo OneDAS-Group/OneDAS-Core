@@ -138,27 +138,6 @@
   <data name="OneDasProjectSerializer_InvalidProjectVersion" xml:space="preserve">
     <value>The project's version is invalid.</value>
   </data>
-  <data name="OneDasProject_CampaignNameInvalid" xml:space="preserve">
-    <value>The campaign name is invalid.</value>
-  </data>
-  <data name="OneDasProject_PrimaryGroupNameInvalid" xml:space="preserve">
-    <value>The 1st level group name is invalid.</value>
-  </data>
-  <data name="OneDasProject_SecondaryGroupNameInvalid" xml:space="preserve">
-    <value>The 2nd level group name is invalid.</value>
-  </data>
-  <data name="OneDasProject_ChannelHubNameInvalid" xml:space="preserve">
-    <value>One or more channel names are invalid</value>
-  </data>
-  <data name="OneDasProject_ChannelHubNotUnqiue" xml:space="preserve">
-    <value>The channel set is invalid: A channel must be unique.</value>
-  </data>
-  <data name="OneDasProject_DataGatewaySettingsIdNotUnique" xml:space="preserve">
-    <value>The data gateway settings IDs are not unique.</value>
-  </data>
-  <data name="OneDasProject_DataWriterSettingsIdNotUnique" xml:space="preserve">
-    <value>The data writer settings IDs are not unique.</value>
-  </data>
   <data name="OneDasEngine_DataWriterHasNoBufferRequests" xml:space="preserve">
     <value>Data writer {0} has no channel filters configured and will not store any data.</value>
   </data>

@@ -1,11 +1,11 @@
-﻿using OneDas.Infrastructure;
-using OneDas.Extensibility;
+﻿using OneDas.Extensibility;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace OneDas.Core.ProjectManagement
+namespace OneDas.ProjectManagement
 {
     [DataContract]
     public class OneDasProjectSettings

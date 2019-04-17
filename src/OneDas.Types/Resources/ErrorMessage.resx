@@ -117,11 +117,53 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ActionRequest_InstanceIdInvalid" xml:space="preserve">
+    <value>The instance ID must be equal or greater zero.</value>
+  </data>
+  <data name="DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
+    <value>The MaximumDatasetAge is must be between zero and 10000.</value>
+  </data>
+  <data name="DataWriterExtensionLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
+    <value>The requested period has already been written before.</value>
+  </data>
+  <data name="DataWriterExtensionLogicBase_DateTimeGranularityTooHigh" xml:space="preserve">
+    <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute.</value>
+  </data>
+  <data name="DataWriterExtensionSettingsBase_FileGranularityInvalid" xml:space="preserve">
+    <value>The file granularity value is invalid.</value>
+  </data>
+  <data name="ExtensionSettingsBase_ExtensionContextAttributeNotDefined" xml:space="preserve">
+    <value>ExtensionContextAttribute is not defined.</value>
+  </data>
+  <data name="ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined" xml:space="preserve">
+    <value>ExtensionDescriptionAttribute is not defined.</value>
+  </data>
   <data name="OneDasCampaignDescription_InvalidFormatVersion" xml:space="preserve">
     <value>The format version must be equal or greater zero.</value>
   </data>
   <data name="OneDasCampaignDescription_InvalidVersion" xml:space="preserve">
     <value>The campaign version must be equal or greater zero.</value>
+  </data>
+  <data name="OneDasProject_CampaignNameInvalid" xml:space="preserve">
+    <value>The campaign name is invalid.</value>
+  </data>
+  <data name="OneDasProject_ChannelHubNameInvalid" xml:space="preserve">
+    <value>One or more channel names are invalid</value>
+  </data>
+  <data name="OneDasProject_ChannelHubNotUnqiue" xml:space="preserve">
+    <value>The channel set is invalid: A channel must be unique.</value>
+  </data>
+  <data name="OneDasProject_DataGatewaySettingsIdNotUnique" xml:space="preserve">
+    <value>The data gateway settings IDs are not unique.</value>
+  </data>
+  <data name="OneDasProject_DataWriterSettingsIdNotUnique" xml:space="preserve">
+    <value>The data writer settings IDs are not unique.</value>
+  </data>
+  <data name="OneDasProject_PrimaryGroupNameInvalid" xml:space="preserve">
+    <value>The 1st level group name is invalid.</value>
+  </data>
+  <data name="OneDasProject_SecondaryGroupNameInvalid" xml:space="preserve">
+    <value>The 2nd level group name is invalid.</value>
   </data>
   <data name="OneDasUtilities_InvalidCharacters" xml:space="preserve">
     <value>Use A-Z, a-z, 0-9 or _.</value>
@@ -131,5 +173,11 @@
   </data>
   <data name="OneDasUtilities_NameEmpty" xml:space="preserve">
     <value>The name must not be empty.</value>
+  </data>
+  <data name="VariableContext_DataStorageTypeInvalid" xml:space="preserve">
+    <value>The data storage type is invalid.</value>
+  </data>
+  <data name="VariableDescription_DataStorageTypeInvalid" xml:space="preserve">
+    <value>The provided type must be assignable to IDataStorage.</value>
   </data>
 </root>

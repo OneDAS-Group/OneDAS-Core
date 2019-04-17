@@ -1,7 +1,6 @@
-﻿using OneDas.DataStorage;
-using System;
+﻿using System;
 
-namespace OneDas.Extensibility
+namespace OneDas.DataStorage
 {
     public class ExtendedDataStorage<T> : ExtendedDataStorageBase where T : struct
     {

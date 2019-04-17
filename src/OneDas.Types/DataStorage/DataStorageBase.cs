@@ -1,8 +1,7 @@
-﻿using OneDas.DataStorage;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
-namespace OneDas.Extensibility
+namespace OneDas.DataStorage
 {
     /// <summary>
     /// Represents an infrastructure to buffer data.

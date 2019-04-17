@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using OneDas.Infrastructure;
 
-namespace OneDas.Core.ProjectManagement
+namespace OneDas.ProjectManagement
 {
     [DataContract]
     public class ChannelHubSettings

@@ -1,7 +1,7 @@
 ﻿using OneDas.PackageManagement;
 using System.Collections.Generic;
 
-namespace OneDas.WebServer.Web
+namespace OneDas.Core.WebClient.Model
 {
     public class WebServerOptionsLight
     {
