@@ -9,15 +9,12 @@ The documentation is hosted on [onedas.readthedocs.io](https://onedas.readthedoc
 
 ### Prerequisites
 
-* Visual Studio 2017 Community (which workloads?)
-* up-to-date browser, old browsers do not work
+* Visual Studio 2017 Community
 * Git for Windows (https://git-scm.com/download/win)
 * node.js (https://nodejs.org/en/)
 * **optional**: WiX Toolset (to open .wixproj and to build .msi packages)
   * WiX Toolset build tools v3.11 (http://wixtoolset.org/releases/)
   * WiX Toolset Visual Studio 2017 Extension (http://wixtoolset.org/releases/)"
-* **optional**: CMake (for EtherCAT solution)
-  * CMake (https://cmake.org/download/)
 
 ### Initialization
 
@@ -36,14 +33,9 @@ $rootFolder = (Get-Location).Path
 # clone projects
 git clone "$origin/$projectName-Core" --quiet
 git clone "$origin/$projectName-Documentation" --quiet
-git clone "$origin/$projectName-Ethercat" --quiet
 git clone "$origin/$projectName-Extensions" --quiet
 
 # Core
 cd $rootFolder/$projectName-Core
-./init_solution.ps1
-
-# Ethercat
-cd $rootFolder/$projectName-Ethercat
 ./init_solution.ps1
 ```
