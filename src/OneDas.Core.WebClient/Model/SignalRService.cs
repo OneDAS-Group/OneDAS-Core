@@ -24,7 +24,9 @@ namespace OneDas.Core.WebClient.Model
                         try
                         {
                             await this.Connection.StartAsync();
+                            Console.WriteLine("Connected.");
                             var a = await this.Connection.InvokeAsync<AppModel>("GetAppModel");
+                            Console.WriteLine("App model received.");
 
                             state.IsConnected = true;
 
