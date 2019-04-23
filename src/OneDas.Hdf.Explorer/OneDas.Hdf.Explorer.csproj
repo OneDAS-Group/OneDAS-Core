@@ -12,8 +12,8 @@
   
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="2.9.406" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0-preview3-19153-02" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="3.0.0-preview3-19153-02" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0-preview4-19216-03" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="3.0.0-preview4-19123-01" />
     <!--<PackageReference Include="OneDas.Extension.Csv" Version="1.0.0-alpha.1.55" />
     <PackageReference Include="OneDas.Extension.Mat73" Version="1.0.0-alpha.1.55" />-->
   </ItemGroup>
