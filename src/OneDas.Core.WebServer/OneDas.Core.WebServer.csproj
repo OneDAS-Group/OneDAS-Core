@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0-preview4-19216-03" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="3.0.0-preview4-19123-01" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0-preview4-19216-03" />
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview4-27615-11" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview4.19216.2" />
   </ItemGroup>
   
