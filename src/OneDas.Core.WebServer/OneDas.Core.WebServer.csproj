@@ -5,10 +5,6 @@
     <IsPackable>true</IsPackable>
     <PackageTags>OneDAS data aquisition measurement</PackageTags>
     <!--<PackAsTool>true</PackAsTool>-->
-    <RestoreAdditionalProjectSources>
-      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
-      https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
-    </RestoreAdditionalProjectSources>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <ToolCommandName>onedas</ToolCommandName>
     <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
@@ -17,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="3.0.0-preview4-19216-03" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0-preview4-19216-03" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="3.0.0-preview4-19123-01" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0-preview4-19216-03" />
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview4-27615-11" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview4.19216.2" />
