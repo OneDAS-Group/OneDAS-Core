@@ -1,4 +1,5 @@
 ﻿using Blazor.Extensions;
+using Microsoft.JSInterop;
 using OneDas.Core.WebClient.ViewModel;
 using System;
 using System.Threading.Tasks;
@@ -7,10 +8,18 @@ namespace OneDas.Core.WebClient.Model
 {
     public class SignalRService
     {
+        #region Fields
+
+        IJSRuntime _jsRuntime;
+
+        #endregion
+
         #region Constructors
 
-        public SignalRService(AppStateViewModel state)
+        public SignalRService(AppStateViewModel state, IJSRuntime jsRuntime)
         {
+            _jsRuntime = jsRuntime;
+
             this.Connection = this.BuildHubConnection();
 
             this.Connection.OnClose(e =>
@@ -56,7 +65,7 @@ namespace OneDas.Core.WebClient.Model
         private HubConnection BuildHubConnection()
         {
             // TODO: replace magic string with options?
-            return new HubConnectionBuilder()
+            return new HubConnectionBuilder(_jsRuntime)
                  .WithUrl("/webclienthub")
                  .Build();
         }
