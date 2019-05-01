@@ -132,6 +132,21 @@
   <data name="DataWriterExtensionSettingsBase_FileGranularityInvalid" xml:space="preserve">
     <value>The file granularity value is invalid.</value>
   </data>
+  <data name="ExtensionFactory_ExtensionNotFound" xml:space="preserve">
+    <value>The specified extension was not found.</value>
+  </data>
+  <data name="ExtensionFactory_NoExtensionSupporterAttributeFound" xml:space="preserve">
+    <value>Could not find any ExtensionSupporterAttribute.</value>
+  </data>
+  <data name="ExtensionFactory_NoMatchingTExtensionLogicFound" xml:space="preserve">
+    <value>No matching TExtensionLogic was found.</value>
+  </data>
+  <data name="ExtensionFactory_TypeDoesNotImplementIExtensionSupporter" xml:space="preserve">
+    <value>The specified type does not implement the interface IExtensionSupporter.</value>
+  </data>
+  <data name="ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase" xml:space="preserve">
+    <value>The argument 'settingsType' must be a subclass of ExtensionSettingsBase.</value>
+  </data>
   <data name="ExtensionSettingsBase_ExtensionContextAttributeNotDefined" xml:space="preserve">
     <value>ExtensionContextAttribute is not defined.</value>
   </data>

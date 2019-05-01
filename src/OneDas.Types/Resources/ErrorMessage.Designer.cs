@@ -106,6 +106,51 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified extension was not found. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_ExtensionNotFound {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_ExtensionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any ExtensionSupporterAttribute. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_NoExtensionSupporterAttributeFound {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_NoExtensionSupporterAttributeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TExtensionLogic was found. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_NoMatchingTExtensionLogicFound {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_NoMatchingTExtensionLogicFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IExtensionSupporter. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_TypeDoesNotImplementIExtensionSupporter {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotImplementIExtensionSupporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;settingsType&apos; must be a subclass of ExtensionSettingsBase. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ExtensionContextAttribute is not defined. ähnelt.
         /// </summary>
         internal static string ExtensionSettingsBase_ExtensionContextAttributeNotDefined {
