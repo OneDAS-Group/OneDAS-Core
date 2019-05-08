@@ -47,29 +47,6 @@ artifacts:
 
 deploy:
 
-# GitHub (master)
-  - provider: GitHub
-    force_update: true
-    auth_token:
-      secure: Ssl8rHF6345+qU9lhUQlHRx0Ta4e6UXIQM3SEpDpjR4+WcpMJM3TvQ5gUWjwf6jQ
-    artifact: /.*\.msi/
-    on:
-      branch: master
-      CI_WINDOWS: true
-      APPVEYOR_REPO_TAG: true
-
-# NuGet (master)
-  - provider: NuGet
-    server: https://www.nuget.org/api/v2/package
-    api_key:
-      secure: Z+/E7/8k05NePoUmHdtw/sTn6GSM+0e7ko6A02/rBjm6K9wVTYNekWHvSv7GEBtC
-    skip_symbols: true
-    artifact: /.*\.nupkg/ 
-    on:
-      branch: master
-      CI_WINDOWS: true
-      APPVEYOR_REPO_TAG: true
-
 # MyGet (dev)
   - provider: NuGet
     server: https://www.myget.org/F/onedas/api/v2/package
@@ -80,3 +57,25 @@ deploy:
     on:
       branch: dev
       CI_WINDOWS: true
+
+# NuGet (master)
+  - provider: NuGet
+    server: https://www.nuget.org/api/v2/package
+    api_key:
+      secure: WqZcnRwOmzIa+INti/HnihBrUz0u71rTRNElX/2wbuAIbzMX6SV8h4OxJtCaX2vN
+    skip_symbols: true
+    artifact: /.*\.nupkg/ 
+    on:
+      branch: master
+      CI_WINDOWS: true
+      APPVEYOR_REPO_TAG: true
+
+# GitHub (master)
+  - provider: GitHub
+    force_update: true
+    auth_token:
+      secure: Ssl8rHF6345+qU9lhUQlHRx0Ta4e6UXIQM3SEpDpjR4+WcpMJM3TvQ5gUWjwf6jQ
+    artifact: /.*\.msi/
+    on:
+      CI_WINDOWS: true
+      APPVEYOR_REPO_TAG: true

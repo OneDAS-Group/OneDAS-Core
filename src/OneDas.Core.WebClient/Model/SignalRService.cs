@@ -32,13 +32,7 @@ namespace OneDas.Core.WebClient.Model
                     {
                         try
                         {
-                            await this.Connection.StartAsync();
-                            Console.WriteLine("Connected.");
-                            var a = await this.Connection.InvokeAsync<AppModel>("GetAppModel");
-                            Console.WriteLine("App model received.");
-
-                            state.IsConnected = true;
-
+                            await this.Connect(state);
                             break;
                         }
                         catch
@@ -49,7 +43,16 @@ namespace OneDas.Core.WebClient.Model
                 });
             });
 
-            this.Connection.StartAsync();
+            try
+            {
+                _ = this.Connect(state);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exceptionne");
+                Console.WriteLine(ex.ToString());
+                //
+            }           
         }
 
         #endregion
@@ -61,6 +64,27 @@ namespace OneDas.Core.WebClient.Model
         #endregion
 
         #region Methods
+
+        private async Task Connect(AppStateViewModel state)
+        {
+            Console.WriteLine("A.");
+            await this.Connection.StartAsync();
+            Console.WriteLine("Connected.");
+            try
+            {
+                var a = await this.Connection.InvokeAsync<AppModel>("GetAppModel");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ohh Ohhhh: " + ex.ToString());
+                throw;
+            }
+
+            Console.WriteLine("B.");
+            Console.WriteLine("App model received.");
+            state.IsConnected = true;
+            Console.WriteLine("C.");
+        }
 
         private HubConnection BuildHubConnection()
         {

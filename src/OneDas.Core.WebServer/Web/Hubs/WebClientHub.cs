@@ -246,22 +246,24 @@ namespace OneDas.WebServer.Web
 
             return Task.Run(async () =>
             {
-                return new AppModel(
-                    activeProjectSettings: _engine.Project?.Settings,
-                    installedPackageSet: await _packageManager.GetInstalledPackagesAsync(),
-                    clientSet: new List<string>() { },
-                    dataGatewayExtensionIdentificationSet: _extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList(),
-                    dataWriterExtensionIdentificationSet: _extensionFactory.GetIdentifications<DataWriterExtensionSettingsBase>().ToList(),
-                    productVersion: productVersion,
-                    lastError: _engine.LastError,
-                    oneDasState: _engine.OneDasState,
-                    webServerOptionsLight: new WebServerOptionsLight
-                    {
-                        OneDasName = _webServerOptions.OneDasName,
-                        AspBaseUrl = _webServerOptions.AspBaseUrl,
-                        BaseDirectoryPath = _webServerOptions.BaseDirectoryPath,
-                        PackageSourceSet = _packageManager.PackageSourceSet.Select(packageSource => new OneDasPackageSource(packageSource.Name, packageSource.Source)).ToList()
-                    });
+                return new AppModel()
+                {
+                    //ActiveProjectSettings = _engine.Project?.Settings,
+                    InstalledPackageSet = await _packageManager.GetInstalledPackagesAsync(),
+                    ClientSet = new List<string>() { },
+                    DataGatewayExtensionIdentificationSet = _extensionFactory.GetIdentifications<DataGatewayExtensionSettingsBase>().ToList(),
+                    DataWriterExtensionIdentificationSet = _extensionFactory.GetIdentifications<DataWriterExtensionSettingsBase>().ToList(),
+                    ProductVersion = productVersion,
+                    LastError = _engine.LastError,
+                    OneDasState = (int)_engine.OneDasState,
+                    //WebServerOptionsLight = new WebServerOptionsLight
+                    //{
+                    //    OneDasName = _webServerOptions.OneDasName,
+                    //    AspBaseUrl = _webServerOptions.AspBaseUrl,
+                    //    BaseDirectoryPath = _webServerOptions.BaseDirectoryPath,
+                    //    PackageSourceSet = _packageManager.PackageSourceSet.Select(packageSource => new OneDasPackageSource(packageSource.Name, packageSource.Source)).ToList()
+                    //}
+                };
             });
         }
 

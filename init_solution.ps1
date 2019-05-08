@@ -6,20 +6,15 @@ Set-Location -Path $baseDirectory
 
 $sourceDirectory = $baseDirectory + "\web\node_modules"
 
-# WebServer
-$targetDirectory = $baseDirectory + "\src\OneDas.Core.WebServer\wwwroot\lib"
+# Core
+$targetDirectory = $baseDirectory + "\src\OneDas.Core.WebClient\wwwroot\lib"
 Remove-Item $targetDirectory -Recurse -ErrorAction Ignore
 
 $directorySet = @(
-    "@aspnet\signalr\dist\browser",
     "bootstrap\dist",
     "font-awesome\css",
     "font-awesome\fonts",
-    "jquery\dist",
-    "knockout\build",
-    "mathjs\dist",
-    "moment\min",
-    "popper.js\dist"
+    "jquery\dist"
 )
 
 foreach ($directory in $directorySet)
@@ -32,9 +27,7 @@ foreach ($directory in $directorySet)
 
 $filePathSet = @(
     "chart.js\dist\Chart.js",
-    "chart.js\dist\Chart.min.js",
-    "moment\moment.js",
-    "pagerjs\pager.js"
+    "chart.js\dist\Chart.min.js"
 )
 
 foreach ($filePath in $filePathSet)
@@ -57,8 +50,7 @@ $directorySet = @(
     "font-awesome\fonts",
     "jquery\dist",
     "knockout\build",
-    "moment\min",
-    "popper.js\dist",
+    "moment\min"
     "tempusdominus-bootstrap-4\build"
 )
 
