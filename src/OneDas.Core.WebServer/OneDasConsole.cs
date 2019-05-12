@@ -8,7 +8,7 @@ using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace OneDas.WebServer.Shell
+namespace OneDas.WebServer
 {
     public class OneDasConsole
     {
@@ -67,7 +67,7 @@ namespace OneDas.WebServer.Shell
 
                                 this.ResetConsole();
                             }
-                            catch
+                            catch (Exception ex)
                             {
                                 await Task.Delay(TimeSpan.FromSeconds(4));
                             }

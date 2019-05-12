@@ -1,4 +1,4 @@
-﻿using Blazor.Extensions;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 using OneDas.Core.WebClient.ViewModel;
 using System;
@@ -22,7 +22,7 @@ namespace OneDas.Core.WebClient.Model
 
             this.Connection = this.BuildHubConnection();
 
-            this.Connection.OnClose(e =>
+            this.Connection.Closed += e =>
             {
                 return Task.Run(async () =>
                 {
@@ -41,7 +41,7 @@ namespace OneDas.Core.WebClient.Model
                         }
                     }
                 });
-            });
+            };
 
             try
             {
@@ -89,7 +89,7 @@ namespace OneDas.Core.WebClient.Model
         private HubConnection BuildHubConnection()
         {
             // TODO: replace magic string with options?
-            return new HubConnectionBuilder(_jsRuntime)
+            return new HubConnectionBuilder()
                  .WithUrl("/webclienthub")
                  .Build();
         }

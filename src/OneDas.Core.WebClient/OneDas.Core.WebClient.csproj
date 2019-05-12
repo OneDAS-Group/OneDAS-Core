@@ -5,9 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazor.Extensions.SignalR" Version="0.1.9" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview4-19216-03" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.0.0-preview4-19216-03" />
+    <!--<PackageReference Include="Blazor.Extensions.SignalR" Version="0.1.9" />-->
+    <PackageReference Include="BlazorSignalR" Version="0.6.0-blazor-3.0.0-preview4-19216-03" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview5-19227-01" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.0.0-preview5-19227-01" />
   </ItemGroup>
 
   <ItemGroup>

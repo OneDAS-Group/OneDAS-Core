@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using OneDas.Core.Serialization;
 
 namespace OneDas.WebServer.Web
 {
@@ -19,23 +17,10 @@ namespace OneDas.WebServer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddRazorPagesOptions(options => {
-                options.RootDirectory = "/Web/Pages";
-                options.Conventions.AddPageRoute("/Index", "{*url}");
-            });
-
             services.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-            }).AddNewtonsoftJsonProtocol(options =>
-            {
-                var settings = new JsonSerializerSettings()
-                {
-                    Converters = { new OneDasConverter() }
-                };
-
-                options.PayloadSerializerSettings = settings;
-            });
+            }).AddJsonProtocol();
 
             services.AddResponseCompression();
         }

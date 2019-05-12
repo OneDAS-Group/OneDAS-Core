@@ -11,11 +11,11 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="3.0.0-preview4-19216-03" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0-preview4-19216-03" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0-preview4-19216-03" />
-    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview4-27615-11" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview4.19216.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="3.0.0-preview5-19227-01" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0-preview5-192227-01" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0-preview5-19227-01" />
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview5-27626-15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview5.19227.9" />
   </ItemGroup>
   
   <ItemGroup>

@@ -13,7 +13,7 @@ namespace OneDas.Core.WebClient.Model
         public IEnumerable<ExtensionIdentificationAttribute> DataWriterExtensionIdentificationSet { get; set; }
         public string ProductVersion { get; set; }
         public string LastError { get; set; }
-        public int OneDasState { get; set; }
+        public OneDasState OneDasState { get; set; }
         //public WebServerOptionsLight WebServerOptionsLight { get; set; }
     }
 }

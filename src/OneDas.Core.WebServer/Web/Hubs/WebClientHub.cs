@@ -255,7 +255,7 @@ namespace OneDas.WebServer.Web
                     DataWriterExtensionIdentificationSet = _extensionFactory.GetIdentifications<DataWriterExtensionSettingsBase>().ToList(),
                     ProductVersion = productVersion,
                     LastError = _engine.LastError,
-                    OneDasState = (int)_engine.OneDasState,
+                    OneDasState = _engine.OneDasState,
                     //WebServerOptionsLight = new WebServerOptionsLight
                     //{
                     //    OneDasName = _webServerOptions.OneDasName,
