@@ -32,6 +32,7 @@ namespace OneDas.Hdf.Explorer.Web
             _serviceProvider = serviceProvider;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger("HDF Explorer");
+            _lock = new object();
         }
 
         #endregion
