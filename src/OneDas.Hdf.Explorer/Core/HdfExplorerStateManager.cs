@@ -136,17 +136,13 @@ namespace OneDas.Hdf.Explorer.Core
 
             if (_isActive)
             {
-                _stateSet.ToList().ForEach(entry =>
-                {
-                    this.SetState(entry.Key, HdfExplorerState.Idle);
-                });
+                Program.UpdateCampaignInfoSet();
+
+                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Idle));
             }
             else
             {
-                _stateSet.ToList().ForEach(entry =>
-                {
-                    this.SetState(entry.Key, HdfExplorerState.Inactive);
-                });
+                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Inactive));
             }
         }
 

@@ -24,6 +24,7 @@ namespace OneDas.Hdf.Explorer.Web
         private ILogger _logger;
         private HdfExplorerOptions _options;
         private HdfExplorerStateManager _stateManager;
+        private object _lock;
 
         #endregion
 
@@ -34,6 +35,7 @@ namespace OneDas.Hdf.Explorer.Web
             _stateManager = stateManager;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger("HDF Explorer");
+            _lock = new object();
         }
 
         #endregion
@@ -43,7 +45,7 @@ namespace OneDas.Hdf.Explorer.Web
         public override Task OnConnectedAsync()
         {
             _stateManager.Register(this.Context.ConnectionId);
-            _logger.LogInformation($"{ this.Context.GetHttpContext().Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _stateManager.UserCount } client(s) are connected now.");
+            _logger.LogInformation($"{ this.Context.GetHttpContext().Connection.RemoteIpAddress } ({ this.Context.ConnectionId.Substring(0, 8) }) connected. { _stateManager.UserCount } client(s) are connected.");
 
             return base.OnConnectedAsync();
         }
@@ -164,7 +166,7 @@ namespace OneDas.Hdf.Explorer.Web
             {
                 this.CheckState();
 
-                if (!campaignInfoSet.Any())
+                if (!campaignInfoSet.Any() || dateTimeBegin == dateTimeEnd)
                 {
                     return string.Empty;
                 }
@@ -607,20 +609,25 @@ namespace OneDas.Hdf.Explorer.Web
                 logFilePath = Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer", "requests.txt");
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+
             // file
-            try
+            lock (_lock)
             {
-                using (FileStream fileStream = new FileStream(logFilePath, FileMode.Append, FileAccess.Write))
+                try
                 {
-                    using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                    using (FileStream fileStream = new FileStream(logFilePath, FileMode.Append, FileAccess.Write))
                     {
-                        streamWriter.WriteLine($"{ DateTime.UtcNow.ToString("yyyy-MM:dd hh:mm:ss") }: { message }\n");
+                        using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                        {
+                            streamWriter.WriteLine($"{ DateTime.UtcNow.ToString("yyyy-MM:dd hh:mm:ss") }: { message }\n");
+                        }
                     }
                 }
-            }
-            catch (Exception)
-            {
-                //
+                catch (Exception)
+                {
+                    //
+                }
             }
         }
 
