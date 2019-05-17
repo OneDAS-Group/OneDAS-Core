@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Hdf.Core;
@@ -16,18 +17,18 @@ namespace OneDas.Hdf.Explorer.Web
         #region "Fields"
 
         private ILogger _logger;
+        private IServiceProvider _serviceProvider;
         private HdfExplorerStateManager _stateManager;
-        private DownloadService _downloadService;
         private HdfExplorerOptions _options;
 
         #endregion
 
         #region "Constructors"
 
-        public Broadcaster(HdfExplorerStateManager stateManager, DownloadService downloadService, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public Broadcaster(HdfExplorerStateManager stateManager, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
             _stateManager = stateManager;
-            _downloadService = downloadService;
+            _serviceProvider = serviceProvider;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger("HDF Explorer");
         }
@@ -98,17 +99,26 @@ namespace OneDas.Hdf.Explorer.Web
         // TODO: Unify Download and GetData
         public void Download(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
         {
-            _ = _downloadService.Download(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, sampleRateDescription, campaignPath, variableNameSet);
+            DownloadService downloadService;
+
+            downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
+            downloadService.Download(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, sampleRateDescription, campaignPath, variableNameSet);
         }
 
         public void GetData(DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
-            _ = _downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+            DownloadService downloadService;
+
+            downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
+            downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
         }
 
         public Task<string> GetCampaignDocumentation(string campaigInfoName)
         {
-            return _downloadService.GetCampaignDocumentation(campaigInfoName);
+            DownloadService downloadService;
+
+            downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
+            return downloadService.GetCampaignDocumentation(campaigInfoName);
         }
 
         public Task<string> GetInactivityMessage()
@@ -127,7 +137,10 @@ namespace OneDas.Hdf.Explorer.Web
 
         public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
         {
-            return _downloadService.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
+            DownloadService downloadService;
+
+            downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
+            return downloadService.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
         }
 
         public Task CancelGetData()

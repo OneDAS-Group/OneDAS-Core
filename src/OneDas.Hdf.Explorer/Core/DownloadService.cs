@@ -28,6 +28,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         public DownloadService(HdfExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options, string connectionId)
         {
+            _stateManager = stateManager;
             _context = context;
             _logger = loggerFactory.CreateLogger("HDF Explorer");
             _options = options.Value;
