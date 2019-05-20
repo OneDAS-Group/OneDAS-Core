@@ -8,6 +8,7 @@ using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace OneDas.Hdf.Explorer.Web
@@ -97,20 +98,25 @@ namespace OneDas.Hdf.Explorer.Web
         }
 
         // TODO: Unify Download and GetData
-        public void Download(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
+        // TODO: do not use stream but simple task instead
+        public ChannelReader<string> Download(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
         {
+            Channel<string> channel;
             DownloadService downloadService;
 
+            channel = Channel.CreateUnbounded<string>();
             downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
-            downloadService.Download(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, sampleRateDescription, campaignPath, variableNameSet);
+            _ = downloadService.Download(channel.Writer, this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, sampleRateDescription, campaignPath, variableNameSet);
+
+            return channel;
         }
 
-        public void GetData(DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
+        public Task GetData(DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
             DownloadService downloadService;
 
             downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
-            downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+            return downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
         }
 
         public Task<string> GetCampaignDocumentation(string campaigInfoName)

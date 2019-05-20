@@ -13,6 +13,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace OneDas.Hdf.Explorer.Core
@@ -176,44 +177,56 @@ namespace OneDas.Hdf.Explorer.Core
             });
         }
 
-        public void Download(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
+        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
         {
+            string url;
             CampaignInfo campaignInfo;
             Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet;
 
-            campaignInfo = Program.CampaignInfoSet.FirstOrDefault(current => current.Name == campaignPath);
-
-            if (campaignInfo == null)
+            try
             {
-                throw new Exception($"Could not find campaign with path '{campaignPath}'.");
-            }
-
-            campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
-            campaignInfoSet[campaignInfo.Name] = new Dictionary<string, List<string>>();
-
-            foreach (var variableName in variableNameSet)
-            {
-                VariableInfo variableInfo;
-
-                variableInfo = campaignInfo.VariableInfoSet.FirstOrDefault(current => current.VariableNameSet.Contains(variableName));
+                campaignInfo = Program.CampaignInfoSet.FirstOrDefault(current => current.Name == campaignPath);
 
                 if (campaignInfo == null)
                 {
-                    throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaignInfo.Name}'.");
+                    throw new Exception($"Could not find campaign with path '{campaignPath}'.");
                 }
 
-                if (!variableInfo.DatasetInfoSet.Any(current => current.Name == sampleRateDescription))
+                campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
+                campaignInfoSet[campaignInfo.Name] = new Dictionary<string, List<string>>();
+
+                foreach (var variableName in variableNameSet)
                 {
-                    throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNameSet.First()}) in campaign '{campaignInfo.Name}'.");
+                    VariableInfo variableInfo;
+
+                    variableInfo = campaignInfo.VariableInfoSet.FirstOrDefault(current => current.VariableNameSet.Contains(variableName));
+
+                    if (campaignInfo == null)
+                    {
+                        throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaignInfo.Name}'.");
+                    }
+
+                    if (!variableInfo.DatasetInfoSet.Any(current => current.Name == sampleRateDescription))
+                    {
+                        throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNameSet.First()}) in campaign '{campaignInfo.Name}'.");
+                    }
+
+                    campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateDescription };
                 }
 
-                campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateDescription };
+                url = await this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+                await writer.WriteAsync(url);
+            }
+            catch (Exception ex)
+            {
+                writer.TryComplete(ex);
+                throw;
             }
 
-            this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+            writer.TryComplete();
         }
 
-        public void GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
+        public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
             long fileId = -1;
             long datasetId = -1;
@@ -235,14 +248,13 @@ namespace OneDas.Hdf.Explorer.Core
             string zipFilePath;
 
             // task 
-            Task.Run(() =>
+            return Task.Run(() =>
             {
                 _stateManager.CheckState(_connectionId);
 
                 if (!campaignInfoSet.Any() || dateTimeBegin == dateTimeEnd)
                 {
-                    this.GetClient().SendAsync("SendUrl", string.Empty);
-                    return;
+                    return string.Empty;
                 }
 
                 // zip file
@@ -317,8 +329,7 @@ namespace OneDas.Hdf.Explorer.Core
 
                             if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, sampleRate, start, stride, block, count, segmentLength)))
                             {
-                                this.GetClient().SendAsync("SendUrl", string.Empty);
-                                return;
+                                return string.Empty;
                             }
                         }
                     }
@@ -336,7 +347,7 @@ namespace OneDas.Hdf.Explorer.Core
                 }
 
                 this.WriteLogEntry($"{ remoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
-                this.GetClient().SendAsync("SendUrl", $"download/{ Path.GetFileName(zipFilePath) }");
+                return $"download/{ Path.GetFileName(zipFilePath) }";
             }, _stateManager.GetToken(_connectionId));
         }
 

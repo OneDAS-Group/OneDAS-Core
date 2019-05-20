@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace OneDas.Hdf.Interface
@@ -13,11 +15,8 @@ namespace OneDas.Hdf.Interface
     public class Downloader
     {
         string _baseAddress;
-        string _url;
         Logger _logger;
         HubConnection _connection;
-        ManualResetEventSlim _manualResetEvent;
-        CancellationTokenSource _cts;
 
         static Downloader()
         {
@@ -41,20 +40,11 @@ namespace OneDas.Hdf.Interface
         public Downloader(string hostName, int port, Action<string> logAction)
         {
             _baseAddress = $"http://{hostName}:{port}/";
-            _manualResetEvent = new ManualResetEventSlim();
-            _cts = new CancellationTokenSource();
-
             _connection = this.BuildHubConnection(hostName, port, "broadcaster");
 
             _connection.On("SendProgress", (double percent, string message) =>
             {
                 _logger?.Log($"{percent,3:0}%: {message}\n");
-            });
-
-            _connection.On("SendUrl", (string url) =>
-            {
-                _url = url;
-                _cts.Cancel();
             });
 
             _logger = new Logger(logAction);
@@ -74,15 +64,18 @@ namespace OneDas.Hdf.Interface
 
         public Task DownloadAndExtract(DownloadSettings settings, string targetDirectoryPath)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
+                string url;
                 string downloadFilePath;
                 string entryFilePath;
-
                 WebClient webClient;
+                ChannelReader<string> reader;
 
                 // get URL
-                _connection.InvokeAsync<string>(
+                url = string.Empty;
+
+                reader = await _connection.StreamAsChannelAsync<string>(
                         "Download",
                         settings.DateTimeBegin,
                         settings.DateTimeEnd,
@@ -92,16 +85,12 @@ namespace OneDas.Hdf.Interface
                         settings.CampaignPath,
                         settings.VariableNameSet);
 
-                try
+                while (await reader.WaitToReadAsync())
                 {
-                    _manualResetEvent.Wait(_cts.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    //
+                    reader.TryRead(out url);
                 }
 
-                if (string.IsNullOrWhiteSpace(_url))
+                if (string.IsNullOrWhiteSpace(url))
                 {
                     throw new Exception("No URL received from the server.");
                 }
@@ -111,10 +100,10 @@ namespace OneDas.Hdf.Interface
                 try
                 {
                     // download data
-                    _logger.Log($"Downloading ZIP file from {_baseAddress}{_url} to {downloadFilePath}.\n");
+                    _logger.Log($"Downloading ZIP file from {_baseAddress}{url} to {downloadFilePath}.\n");
 
                     webClient = new WebClient();
-                    webClient.DownloadFile($"{_baseAddress}{_url}", downloadFilePath);
+                    webClient.DownloadFile($"{_baseAddress}{url}", downloadFilePath);
 
                     // unzip data
                     using (var archive = ZipFile.OpenRead(downloadFilePath))

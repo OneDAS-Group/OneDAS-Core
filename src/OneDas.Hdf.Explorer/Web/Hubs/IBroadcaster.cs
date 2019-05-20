@@ -8,6 +8,5 @@ namespace OneDas.Hdf.Explorer.Web
         Task SendState(HdfExplorerState hdfExplorerState);
         Task SendProgress(double percent, string message);
         Task SendByteCount(ulong byteCount);
-        Task SendUrl(string url);
     }
 }
