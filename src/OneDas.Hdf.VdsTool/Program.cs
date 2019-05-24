@@ -1288,7 +1288,7 @@ namespace OneDas.Hdf.VdsTool
                         GeneralHelper.InvokeGenericMethod(typeof(Program), null, nameof(Program.AggregateDataset),
                                                       BindingFlags.NonPublic | BindingFlags.Static,
                                                       TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                      new object[] { variableInfo, groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, aggregate_function_set, messageLog });
+                                                      new object[] { groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, aggregate_function_set, messageLog });
 
                         // clean up
                         H5D.close(sourceDatasetId_status);
@@ -1311,7 +1311,7 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
-        private static void AggregateDataset<T>(VariableInfo variableInfo, string groupPath, long sourceDatasetId, long sourceDatasetId_status, long targetFileId, SampleRate sampleRate, hdf_aggregate_function_t[] aggregate_function_set, StreamWriter messageLog)
+        private static void AggregateDataset<T>(string groupPath, long sourceDatasetId, long sourceDatasetId_status, long targetFileId, SampleRate sampleRate, hdf_aggregate_function_t[] aggregate_function_set, StreamWriter messageLog)
         {
             int chunkCount;
             long targetDatasetId = -1;
