@@ -117,7 +117,8 @@ class AppViewModel
 
             this.SelectedSampleRate(null)
 
-            this.SampleRateSet([...new Set(this._datasetInfoSet.map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) => {
+            //                                                         temporarily disable 10 min averages due to incompatibility with 60s chunks
+            this.SampleRateSet([...new Set(this._datasetInfoSet.filter(datasetInfo => !datasetInfo.Name.includes("600 s")).map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) => {
                 switch (true) {
                     case a.includes('Hz') && !b.includes('Hz'):
                         return -1;
