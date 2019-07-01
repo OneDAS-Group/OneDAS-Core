@@ -22,7 +22,7 @@ namespace OneDas.DataStorage
             _byteCount = elementCount;
 
             this.StatusBufferPtr = Marshal.AllocHGlobal(_byteCount);
-            this.GetStatusBuffer().Clear();
+            this.StatusBuffer.Clear();
         }
 
         public ExtendedDataStorageBase(Type type, byte[] statusSet) : base(type, statusSet.Length)
@@ -92,25 +92,15 @@ namespace OneDas.DataStorage
 
         private bool disposedValue = false;
 
-        protected new virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 Marshal.FreeHGlobal(this.StatusBufferPtr);
-
                 disposedValue = true;
             }
-        }
 
-        ~ExtendedDataStorageBase()
-        {
-            Dispose(false);
-        }
-
-        public new void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            base.Dispose(disposing);
         }
 
         #endregion
