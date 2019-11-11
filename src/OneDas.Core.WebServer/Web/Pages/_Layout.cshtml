@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.css" />
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
+</head>
+
+<body style="display: none;" data-bind="visible: true">
+    <!-- ko with: $root -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar-main" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" data-bind="page-href: 'start'">
+            <img class="logo d-inline-block align-top" src="/images/network_icon.png" />
+            <span>
+                OneDAS (
+            </span>
+            <!-- ko if: OneDasState() === OneDasStateEnum.Error -->
+            <small data-bind="attr: { title: LastError }"
+                   data-toggle="tooltip"
+                   class="text-danger">
+                ERROR
+            </small>
+            <!-- /ko -->
+            <!-- ko if: OneDasState() >= OneDasStateEnum.Initialization && OneDasState() < OneDasStateEnum.Ready -->
+            <small data-toggle="tooltip"
+                   title="OneDAS is intialized waiting for a project file."
+                   class="text-warning">
+                IDLE
+            </small>
+            <!-- /ko -->
+            <!-- ko if: OneDasState() === OneDasStateEnum.Ready -->
+            <small data-toggle="tooltip"
+                   title="OneDAS is running but not recording data."
+                   class="text-warning">
+                READY
+            </small>
+            <!-- /ko -->
+            <!-- ko if: OneDasState() === OneDasStateEnum.Run -->
+            <small data-toggle="tooltip"
+                   title="OneDAS is running and recording data."
+                   class="text-success">
+                RUN
+            </small>
+            <!-- /ko -->
+            <span>
+                )
+            </span>
+        </a>
+        <div class="collapse navbar-collapse" id="navbar-main">
+            <ul class="navbar-nav mr-auto" data-bind="foreach: ReducedWorkspaceSet">
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bind="page-href: Address, text: Title"
+                       data-toggle="collapse"
+                       data-target=".navbar-collapse.show"></a>
+                </li>
+            </ul>
+            <span class="navbar-text">
+                <em>One DAS to rule them all</em> - <em data-bind="text: ProductVersion"></em>
+            </span>
+        </div>
+    </nav>
+
+    <div id="main-container" class="container">
+        <!-- ko ifnot: IsConnected -->
+        <div class="alert alert-danger url flex-column">
+            <div class="d-flex">
+                <strong>Attention!</strong>
+                <small class="ml-auto">This can be caused by a bad network connection.</small>
+            </div>
+            Connection to server lost. Trying to reconnect...
+        </div>
+        <!-- /ko -->
+        <!-- ko if: OneDasState() == 1 -->
+        <div class="alert alert-danger url flex-column" data-bind="click: AcknowledgeError">
+            <div class="d-flex">
+                <strong>Attention!</strong>
+                <small class="ml-auto">Click to acknowledge.</small>
+            </div>
+            <span class="d-block" data-bind="text: 'Message: ' + $root.LastError()"></span>
+        </div>
+        <!-- /ko -->
+        @RenderBody()
+        <footer class="fixed-top text-center footer"></footer>
+    </div>
+
+    <environment names="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/popper.js/dist/umd/popper.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/lib/knockout/build/output/knockout-latest.debug.js"></script>
+        <script src="~/lib/pagerjs/pager.js"></script>
+        <script src="~/lib/moment/moment.js"></script>
+        <script src="~/lib/chart.js/dist/Chart.js"></script>
+        <script src="~/lib/mathjs/dist/math.js"></script>
+        <script src="~/lib/@@aspnet/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/popper.js/dist/umd/popper.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="~/lib/knockout/build/output/knockout-latest.js"></script>
+        <script src="~/lib/pagerjs/pager.js"></script>
+        <script src="~/lib/moment/min/moment.min.js"></script>
+        <script src="~/lib/chart.js/dist/Chart.min.js"></script>
+        <script src="~/lib/mathjs/dist/math.min.js"></script>
+        <script src="~/lib/@@aspnet/signalr/dist/browser/signalr.min.js"></script>
+        @* // minifier generates invalid javascript *@
+        @*<script src="~/js/site.min.js" asp-append-version="true"></script>*@
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+
+    @RenderSection("Scripts", required: false)
+    <!-- /ko -->
+</body>
+</html>

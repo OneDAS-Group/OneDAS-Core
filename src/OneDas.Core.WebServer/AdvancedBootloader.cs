@@ -9,6 +9,7 @@ using OneDas.Core.Engine;
 using OneDas.Core.Serialization;
 using OneDas.WebServer.Core;
 using OneDas.WebServer.Logging;
+using OneDas.WebServer.Shell;
 using OneDas.WebServer.Web;
 using System;
 using System.IO;
@@ -138,7 +139,7 @@ namespace OneDas.WebServer
                 .UseUrls(_webServerOptions.AspBaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
-                .SuppressStatusMessages(true)
+                //.SuppressStatusMessages(true)
                 .Build();
 
             return webHost;

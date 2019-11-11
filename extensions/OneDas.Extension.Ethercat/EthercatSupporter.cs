@@ -71,7 +71,7 @@ namespace OneDas.Extension.Ethercat
                         slaveInfo = null;
                     }
 
-                    returnData = ExtensibilityHelper.ReloadHardware(_extensionFactory, nicHardwareAddress, slaveInfo);
+                    returnData = ExtensibilityHelper.ReloadHardware(this.EsiSourceDirectoryPath, _extensionFactory, nicHardwareAddress, slaveInfo);
 
                     break;
 
@@ -90,7 +90,7 @@ namespace OneDas.Extension.Ethercat
                         slaveInfo.Validate();
                     }
 
-                    returnData = ExtensibilityHelper.GetDynamicSlaveInfoData(_extensionFactory, slaveInfo);
+                    returnData = ExtensibilityHelper.GetDynamicSlaveInfoData(this.EsiSourceDirectoryPath, _extensionFactory, slaveInfo);
 
                     break;
 
@@ -105,7 +105,7 @@ namespace OneDas.Extension.Ethercat
                     slaveInfo = _oneDasSerializer.Deserialize<SlaveInfo>(actionRequest.Data);
                     slaveInfo.Validate();
 
-                    ExtensibilityHelper.CreateDynamicData(_extensionFactory, slaveInfo);
+                    ExtensibilityHelper.CreateDynamicData(this.EsiSourceDirectoryPath, _extensionFactory, slaveInfo);
 
                     returnData = slaveInfo.GetOpModes();
 

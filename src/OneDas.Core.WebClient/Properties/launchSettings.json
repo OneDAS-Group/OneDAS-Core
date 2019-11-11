@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:58205/",
+      "applicationUrl": "http://localhost:2180/",
       "sslPort": 0
     }
   },
@@ -15,13 +15,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "OneDas.Core.WebClient": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:58206/"
+    "OneDas.Main.WebClient": {
+      "commandName": "Project"
     }
   }
 }

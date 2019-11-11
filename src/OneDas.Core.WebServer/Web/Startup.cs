@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using OneDas.Core.Serialization;
 
 namespace OneDas.WebServer.Web
 {
@@ -17,10 +19,24 @@ namespace OneDas.WebServer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR(options =>
+            services
+                .AddMvc()
+                .AddRazorPagesOptions(options => {
+                options.RootDirectory = "/Web/Pages";
+                options.Conventions.AddPageRoute("/Index", "{*url}");
+            });
+
+            services
+                .AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddNewtonsoftJsonProtocol(options =>
             {
-                options.EnableDetailedErrors = true;
-            }).AddJsonProtocol();
+                var settings = new JsonSerializerSettings()
+                {
+                    Converters = { new OneDasConverter() }
+                };
+
+                options.PayloadSerializerSettings = settings;
+            });
 
             services.AddResponseCompression();
         }
@@ -32,22 +48,16 @@ namespace OneDas.WebServer.Web
             webServerOptions = options.Value;
 
             app.UseResponseCompression();
-
-            if (env.EnvironmentName == "Development")
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseBlazorDebugging();
-            }
-
+            app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<WebClientHub>("/" + webServerOptions.WebClientHubName);
-                routes.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
+                endpoints.MapRazorPages();
+                endpoints.MapHub<WebClientHub>("/" + webServerOptions.WebClientHubName);
+                endpoints.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
             });
-
-            app.UseBlazor<OneDas.Core.WebClient.Startup>();
         }
     }
 }

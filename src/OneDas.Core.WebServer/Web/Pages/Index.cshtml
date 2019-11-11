@@ -1,0 +1,6 @@
+﻿@page
+@model IndexModel
+
+<!-- ko foreach: WorkspaceSet -->
+    <div data-bind="page: {id: $data.Address, title: $data.Title, sourceOnShow: 'views/' + $data.ViewName}"></div>
+<!-- /ko -->

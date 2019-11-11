@@ -1,0 +1,51 @@
+{
+  "extends": "./../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "./OneDas.Types.js",
+    "declaration": true
+  },
+  "exclude": [
+    "wwwroot"
+  ],
+  "files": [
+    "./../OneDas.Types/DataDirectionEnum.ts",
+    "./../OneDas.Types/EndiannessEnum.ts",
+    "./../OneDas.Types/FileGranularityEnum.ts",
+    "./../OneDas.Types/OneDasDataTypeEnum.ts",
+    "./../OneDas.Types/OneDasStateEnum.ts",
+    "./../OneDas.Types/SampleRateEnum.ts",
+
+    "./../Core/ActionRequest.ts",
+    "./../Core/ActionResponse.ts",
+    "./../Core/EventDispatcher.ts",
+    "./../Core/IEvent.ts",
+    "./../Core/OneDasModuleSelectorModeEnum.ts",
+
+    "./../Models/BufferRequestModel.ts",
+    "./../Models/ChannelHubModel.ts",
+    "./../Models/OneDasModuleModel.ts",
+    "./../Models/TransferFunctionModel.ts",
+
+    "./../Static/ConnectionManager.ts",
+    "./../Static/EnumerationHelper.ts",
+    "./../Static/ErrorMessage.ts",
+    "./../Static/Helper.ts",
+    "./../Static/ExtensionFactory.ts",
+    "./../Static/ExtensionHive.ts",
+
+    "./../ViewModels/Core/ChannelHubViewModel.ts",
+    "./../ViewModels/Core/OneDasModuleViewModel.ts",
+    "./../ViewModels/Core/OneDasModuleSelectorViewModel.ts",
+    "./../ViewModels/Core/TransferFunctionViewModel.ts",
+
+    "./../ViewModels/Extension/BufferRequestSelectorViewModel.ts",
+    "./../ViewModels/Extension/BufferRequestViewModel.ts",
+    "./../ViewModels/Extension/DataPortViewModel.ts",
+    "./../ViewModels/Extension/ExtensionViewModelBase.ts",
+    "./../ViewModels/Extension/DataGatewayViewModelBase.ts",
+    "./../ViewModels/Extension/ExtendedDataGatewayViewModelBase.ts",
+    "./../ViewModels/Extension/DataWriterViewModelBase.ts",
+    "./../ViewModels/Extension/ExtensionDescriptionViewModel.ts",
+    "./../ViewModels/Extension/ExtensionIdentificationViewModel.ts"
+  ]
+}

@@ -46,13 +46,13 @@ namespace OneDas.Hdf.Explorer
 
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<Broadcaster>("/broadcaster");
+                endpoints.MapRazorPages();
+                endpoints.MapHub<Broadcaster>("/broadcaster");
             });
-
-            app.UseMvc();
         }
 
         private void Validate(ILogger logger, IOptions<HdfExplorerOptions> options)

@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="EtherCAT.NET" Version="1.0.0-alpha.2.final" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

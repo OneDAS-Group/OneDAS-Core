@@ -1,0 +1,13 @@
+{
+  "extends": "./../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "./../OneDas.Core.WebServer/wwwroot/js/site.js"
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "wwwroot",
+    "./**/*.d.ts"
+  ]
+}

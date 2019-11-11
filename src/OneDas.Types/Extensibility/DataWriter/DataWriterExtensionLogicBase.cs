@@ -107,7 +107,7 @@ namespace OneDas.Extensibility
                 remainingFilePeriod = filePeriod - fileOffset;
                 remainingDataStoragePeriod = dataStoragePeriod - dataStorageOffset;
 
-                period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingDataStoragePeriod.Ticks));              
+                period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingDataStoragePeriod.Ticks));
 
                 // check if file must be created or updated
                 if (fileStartDateTime != _lastFileStartDateTime)
@@ -157,12 +157,20 @@ namespace OneDas.Extensibility
 
         protected ulong TimeSpanToIndex(TimeSpan timeSpan, ulong samplesPerDay)
         {
-            return (ulong)(timeSpan.TotalSeconds * samplesPerDay / 86400);
+            return (ulong)(this.TimeSpanToIndexDouble(timeSpan, samplesPerDay));
+        }
+
+        // TODO: This method is required since downloading 600 s average data causes an index value < 1, 
+        // which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds
+        // when sample time mechanisms were revised.
+        protected double TimeSpanToIndexDouble(TimeSpan timeSpan, ulong samplesPerDay)
+        {
+            return timeSpan.TotalSeconds * samplesPerDay / 86400;
         }
 
         protected ulong ToChunkIndex(ulong offset, ulong samplesPerDay)
         {
-            return offset / this.TimeSpanToIndex(this.ChunkPeriod, samplesPerDay);
+            return (ulong)(offset / this.TimeSpanToIndexDouble(this.ChunkPeriod, samplesPerDay));
         }
 
         protected virtual void OnConfigure()
