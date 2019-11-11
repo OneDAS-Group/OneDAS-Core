@@ -6,7 +6,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
 
   <ItemGroup>
