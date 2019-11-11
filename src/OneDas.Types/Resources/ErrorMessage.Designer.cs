@@ -19,7 +19,7 @@ namespace OneDas {
     // -Klasse über ein Tool wie ResGen oder Visual Studio automatisch generiert.
     // Um einen Member hinzuzufügen oder zu entfernen, bearbeiten Sie die .ResX-Datei und führen dann ResGen
     // mit der /str-Option erneut aus, oder Sie erstellen Ihr VS-Projekt neu.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ErrorMessage {
@@ -61,6 +61,114 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The instance ID must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string ActionRequest_InstanceIdInvalid {
+            get {
+                return ResourceManager.GetString("ActionRequest_InstanceIdInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The MaximumDatasetAge is must be between zero and 10000. ähnelt.
+        /// </summary>
+        internal static string DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid {
+            get {
+                return ResourceManager.GetString("DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The requested period has already been written before. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionLogicBase_DateTimeAlreadyWritten {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeAlreadyWritten", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionLogicBase_DateTimeGranularityTooHigh {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeGranularityTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The file granularity value is invalid. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionSettingsBase_FileGranularityInvalid {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionSettingsBase_FileGranularityInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified extension was not found. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_ExtensionNotFound {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_ExtensionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not find any ExtensionSupporterAttribute. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_NoExtensionSupporterAttributeFound {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_NoExtensionSupporterAttributeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No matching TExtensionLogic was found. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_NoMatchingTExtensionLogicFound {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_NoMatchingTExtensionLogicFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The specified type does not implement the interface IExtensionSupporter. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_TypeDoesNotImplementIExtensionSupporter {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotImplementIExtensionSupporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The argument &apos;settingsType&apos; must be a subclass of ExtensionSettingsBase. ähnelt.
+        /// </summary>
+        internal static string ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase {
+            get {
+                return ResourceManager.GetString("ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ExtensionContextAttribute is not defined. ähnelt.
+        /// </summary>
+        internal static string ExtensionSettingsBase_ExtensionContextAttributeNotDefined {
+            get {
+                return ResourceManager.GetString("ExtensionSettingsBase_ExtensionContextAttributeNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ExtensionDescriptionAttribute is not defined. ähnelt.
+        /// </summary>
+        internal static string ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined {
+            get {
+                return ResourceManager.GetString("ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
         /// </summary>
         internal static string OneDasCampaignDescription_InvalidFormatVersion {
@@ -75,6 +183,69 @@ namespace OneDas {
         internal static string OneDasCampaignDescription_InvalidVersion {
             get {
                 return ResourceManager.GetString("OneDasCampaignDescription_InvalidVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign name is invalid. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_CampaignNameInvalid {
+            get {
+                return ResourceManager.GetString("OneDasProject_CampaignNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die One or more channel names are invalid ähnelt.
+        /// </summary>
+        internal static string OneDasProject_ChannelHubNameInvalid {
+            get {
+                return ResourceManager.GetString("OneDasProject_ChannelHubNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The channel set is invalid: A channel must be unique. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_ChannelHubNotUnqiue {
+            get {
+                return ResourceManager.GetString("OneDasProject_ChannelHubNotUnqiue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data gateway settings IDs are not unique. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_DataGatewaySettingsIdNotUnique {
+            get {
+                return ResourceManager.GetString("OneDasProject_DataGatewaySettingsIdNotUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data writer settings IDs are not unique. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_DataWriterSettingsIdNotUnique {
+            get {
+                return ResourceManager.GetString("OneDasProject_DataWriterSettingsIdNotUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The 1st level group name is invalid. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_PrimaryGroupNameInvalid {
+            get {
+                return ResourceManager.GetString("OneDasProject_PrimaryGroupNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The 2nd level group name is invalid. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_SecondaryGroupNameInvalid {
+            get {
+                return ResourceManager.GetString("OneDasProject_SecondaryGroupNameInvalid", resourceCulture);
             }
         }
         
@@ -102,6 +273,24 @@ namespace OneDas {
         internal static string OneDasUtilities_NameEmpty {
             get {
                 return ResourceManager.GetString("OneDasUtilities_NameEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The data storage type is invalid. ähnelt.
+        /// </summary>
+        internal static string VariableContext_DataStorageTypeInvalid {
+            get {
+                return ResourceManager.GetString("VariableContext_DataStorageTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IDataStorage. ähnelt.
+        /// </summary>
+        internal static string VariableDescription_DataStorageTypeInvalid {
+            get {
+                return ResourceManager.GetString("VariableDescription_DataStorageTypeInvalid", resourceCulture);
             }
         }
     }

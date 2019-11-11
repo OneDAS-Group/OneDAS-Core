@@ -15,19 +15,16 @@ namespace OneDas.Hdf.Explorer
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services
+                .AddMvc()
                 .AddRazorPagesOptions(options =>
                 {
                     options.RootDirectory = "/Web/Pages";
                 });
 
-            services.AddSignalR(options =>
-            {
-                options.EnableDetailedErrors = true;
-            }).AddJsonProtocol(options =>
-            {
-                options.PayloadSerializerSettings = new JsonSerializerSettings();
-            });
+            services
+                .AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddNewtonsoftJsonProtocol(options => options.PayloadSerializerSettings = new JsonSerializerSettings());
 
             services.AddLogging(loggingBuilder =>
             {
@@ -39,7 +36,7 @@ namespace OneDas.Hdf.Explorer
             services.AddSingleton<HdfExplorerStateManager>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
             ILogger logger;
 
@@ -49,13 +46,13 @@ namespace OneDas.Hdf.Explorer
 
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<Broadcaster>("/broadcaster");
+                endpoints.MapRazorPages();
+                endpoints.MapHub<Broadcaster>("/broadcaster");
             });
-
-            app.UseMvc();
         }
 
         private void Validate(ILogger logger, IOptions<HdfExplorerOptions> options)

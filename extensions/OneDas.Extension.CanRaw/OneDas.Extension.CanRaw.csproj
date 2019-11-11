@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <Description>Communicate via CAN Bus.</Description>
+    <PackageTags>OneDAS data aquisition measurement extension CAN</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="WebClient\CanRaw.js" />
+    <EmbeddedResource Include="WebClient\CanRawView.html" />
+    <Content Include="WebClient\tsconfig.json">
+      <Pack>false</Pack>
+    </Content>
+  </ItemGroup>
+
+   
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>OneDas.Extension.CanRaw</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+</Project>

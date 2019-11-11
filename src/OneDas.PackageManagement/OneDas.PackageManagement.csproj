@@ -1,15 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Nuget.PackageManagement" Version="4.8.0-preview1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.0.0" />
+    <PackageReference Include="NuGet.PackageManagement.NetStandard" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <CustomToolNamespace>OneDas.PackageManagement</CustomToolNamespace>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
   
 </Project>

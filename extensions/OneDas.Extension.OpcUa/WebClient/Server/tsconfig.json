@@ -1,0 +1,10 @@
+{
+  "extends": "./../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "OpcUaServer.js"
+  },
+  "include": [
+    "./../*.ts",
+    "./**/*.ts"
+  ]
+}

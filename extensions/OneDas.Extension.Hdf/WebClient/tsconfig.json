@@ -1,0 +1,9 @@
+{
+  "extends": "./../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "Hdf.js"
+  },
+  "include": [
+    "./**/*.ts"
+  ]
+}

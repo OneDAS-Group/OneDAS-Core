@@ -19,16 +19,16 @@ namespace OneDas.WebServer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc().AddRazorPagesOptions(options => {
+            services
+                .AddMvc()
+                .AddRazorPagesOptions(options => {
                 options.RootDirectory = "/Web/Pages";
                 options.Conventions.AddPageRoute("/Index", "{*url}");
             });
 
-            services.AddSignalR(options =>
-            {
-                options.EnableDetailedErrors = true;
-            }).AddJsonProtocol(options =>
+            services
+                .AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddNewtonsoftJsonProtocol(options =>
             {
                 var settings = new JsonSerializerSettings()
                 {
@@ -41,7 +41,7 @@ namespace OneDas.WebServer.Web
             services.AddResponseCompression();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<WebServerOptions> options)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<WebServerOptions> options)
         {
             WebServerOptions webServerOptions;
 
@@ -49,16 +49,15 @@ namespace OneDas.WebServer.Web
 
             app.UseResponseCompression();
             app.UseDeveloperExceptionPage();
-
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<WebClientHub>("/" + webServerOptions.WebClientHubName);
-                routes.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
+                endpoints.MapRazorPages();
+                endpoints.MapHub<WebClientHub>("/" + webServerOptions.WebClientHubName);
+                endpoints.MapHub<ConsoleHub>("/" + webServerOptions.ConsoleHubName);
             });
-
-            app.UseMvc();
         }
     }
 }

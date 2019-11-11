@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 

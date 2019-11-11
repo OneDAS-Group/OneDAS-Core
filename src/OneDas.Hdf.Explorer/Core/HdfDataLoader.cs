@@ -93,6 +93,8 @@ namespace OneDas.Hdf.Explorer.Core
                 });
             });
 
+            dataWriter = null;
+
             switch (fileFormat)
             {
                 case FileFormat.CSV:

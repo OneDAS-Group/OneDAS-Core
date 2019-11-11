@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <Description>Access EtherCAT networks to read and write data periodically.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EtherCAT.NET" Version="1.0.0-alpha.2.final" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WebClient\Export\tsconfig.json">
+      <Pack>false</Pack>
+    </Content>
+    <Content Include="WebClient\tsconfig.json">
+      <Pack>false</Pack>
+    </Content>
+    <EmbeddedResource Include="WebClient\Ethercat.js" />
+    <EmbeddedResource Include="WebClient\EthercatView.html" />
+  </ItemGroup>
+    
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>OneDas.Extension.Ethercat</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
