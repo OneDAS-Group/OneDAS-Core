@@ -1,0 +1,9 @@
+{
+  "extends": "./../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "Mat73.js"
+  },
+  "include": [
+    "./**/*.ts"
+  ]
+}

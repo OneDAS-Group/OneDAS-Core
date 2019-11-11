@@ -1,0 +1,10 @@
+{
+  "extends": "./../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "ModbusTcpClient.js"
+  },
+  "include": [
+    "./../*.ts",
+    "./**/*.ts"
+  ]
+}

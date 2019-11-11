@@ -33,9 +33,8 @@ $rootFolder = (Get-Location).Path
 # clone projects
 git clone "$origin/$projectName-Core" --quiet
 git clone "$origin/$projectName-Documentation" --quiet
-git clone "$origin/$projectName-Extensions" --quiet
 
-# Core
+# initial solution
 cd $rootFolder/$projectName-Core
 ./init_solution.ps1
 ```

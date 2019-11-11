@@ -1,0 +1,12 @@
+{
+  "extends": "./../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "Ethercat.js"
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./**/*.d.ts"
+  ]
+}

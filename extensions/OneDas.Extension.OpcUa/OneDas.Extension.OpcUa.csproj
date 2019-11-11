@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <Description>Communicate via OPC-UA.</Description>
+    <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension OPC-UA</PackageTags>
+  </PropertyGroup>
+ 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OneDas.Extensibility\OneDas.Extensibility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.4.355.26" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="WebClient\Server\OpcUaServer.js" />
+    <EmbeddedResource Include="WebClient\Server\OpcUaServerView.html" />
+    <Content Include="WebClient\Server\tsconfig.json">
+      <Pack>false</Pack>
+    </Content>
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <CustomToolNamespace>OneDas.Extension.OpcUa</CustomToolNamespace>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+</Project>
