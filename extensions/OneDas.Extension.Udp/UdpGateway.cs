@@ -137,7 +137,15 @@ namespace OneDas.Extension.Udp
             _udpClientInput?.Close();
             _udpClientOutput?.Close();
             _cts?.Cancel();
-            _udpTask?.Wait();
+
+            try
+            {
+                _udpTask?.Wait();
+            }
+            catch (Exception ex) when (ex.InnerException.GetType() == typeof(TaskCanceledException))
+            {
+                //
+            }
         }
 
         #endregion

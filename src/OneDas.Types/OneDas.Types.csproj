@@ -4,8 +4,6 @@
     <Description>Provides a common type system for all OneDAS application parts and extensions.</Description>
     <PackageTags>OneDAS data aquisition measurement</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <TargetFramework></TargetFramework>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -54,7 +54,7 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.Core.WebServer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp2.2\win10-x64\publish</WixHarvestPath>
+      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp3.0\win10-x64\publish</WixHarvestPath>
       <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-Core-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>

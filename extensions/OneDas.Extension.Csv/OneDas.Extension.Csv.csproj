@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Store data in comma-separated values format.</Description>
     <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension CSV</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <ItemGroup>

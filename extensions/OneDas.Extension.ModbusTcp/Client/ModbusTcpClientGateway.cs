@@ -223,7 +223,15 @@ namespace OneDas.Extension.ModbusTcp
 
             _cts?.Cancel();
             _manualResetEvent?.Set();
-            _task?.Wait();
+
+            try
+            {
+                _task?.Wait();
+            }
+            catch (Exception ex) when (ex.InnerException.GetType() == typeof(TaskCanceledException))
+            {
+                //
+            }
 
             _inboxSet = null;
             _outboxSet = null;

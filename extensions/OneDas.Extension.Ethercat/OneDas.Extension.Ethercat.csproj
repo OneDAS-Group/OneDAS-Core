@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Access EtherCAT networks to read and write data periodically.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <ItemGroup>

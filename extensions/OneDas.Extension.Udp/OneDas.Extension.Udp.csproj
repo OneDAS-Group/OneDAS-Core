@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Read and write data via UDP frames without overhead.</Description>
     <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension UDP</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

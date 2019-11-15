@@ -56,6 +56,8 @@ namespace OneDas.WebServer
                 Directory.CreateDirectory(options.ConfigurationDirectoryPath);
                 Directory.CreateDirectory(options.DataDirectoryPath);
                 Directory.CreateDirectory(options.NugetDirectoryPath);
+                Directory.CreateDirectory(options.NugetLocalDirectoryPath);
+                Directory.CreateDirectory(options.NugetCacheDirectoryPath);
                 Directory.CreateDirectory(options.ProjectDirectoryPath);
 
                 // client push service
@@ -192,6 +194,7 @@ namespace OneDas.WebServer
             // OneDasEngine
             serviceCollection.AddOneDas(options =>
             {
+                options.BaseDirectoryPath = _webServerOptions.BaseDirectoryPath;
                 options.RestoreRuntimeId = RuntimeEnvironment.GetRuntimeIdentifier();
             });
 

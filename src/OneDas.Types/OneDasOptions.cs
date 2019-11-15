@@ -20,6 +20,8 @@ namespace OneDas
         public string ConfigurationDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "config"); }
         public string DataDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "data"); }
         public string NugetDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "nuget"); }
+        public string NugetLocalDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "nuget", "local"); }
+        public string NugetCacheDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "nuget", "cache"); }
         public string ProjectDirectoryPath { get => Path.Combine(this.BaseDirectoryPath, "project"); }
 
         public string NugetProjectFilePath { get => Path.Combine(this.NugetDirectoryPath, "project.json"); }

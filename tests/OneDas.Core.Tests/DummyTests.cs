@@ -2,8 +2,8 @@ using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using OneDas.Extensibility;
 using OneDas.PackageManagement;
+using System.IO;
 using Xunit;
 
 namespace OneDas.Core.Tests
@@ -13,17 +13,17 @@ namespace OneDas.Core.Tests
         [Fact]
         public async void OneDasPackageManagerCreatesAssetsFile()
         {
-            var extensionFactory = Mock.Of<IExtensionFactory>();
-
             var optionsMock = new Mock<IOptions<OneDasOptions>>();
             optionsMock.SetupGet(x => x.Value).Returns(new OneDasOptions());
             optionsMock.Object.Value.RestoreRuntimeId = RuntimeEnvironment.GetRuntimeIdentifier();
 
             var loggerFactory = new LoggerFactory();
+            var packageManager = new OneDasPackageManager(optionsMock.Object, loggerFactory);
 
-            var packageManager = new OneDasPackageManager(extensionFactory, optionsMock.Object, loggerFactory);
+            Directory.CreateDirectory(optionsMock.Object.Value.NugetLocalDirectoryPath);
+
             // TODO: upload ExtensionSample to allow testing
-            await packageManager.InstallAsync("OneDas.Extension.Mat73", "https://www.myget.org/F/onedas/api/v3/index.json");
+            await packageManager.InstallAsync("OneDas.Extension.Mat73");
         }
 
         [Fact]

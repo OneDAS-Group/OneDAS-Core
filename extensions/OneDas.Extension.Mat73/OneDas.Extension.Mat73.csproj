@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Store data in Matlab's hierachical data format (v7.3).</Description>
     <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension MATLAB HDF</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <ItemGroup>

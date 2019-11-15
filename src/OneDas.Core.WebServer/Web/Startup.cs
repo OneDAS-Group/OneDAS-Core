@@ -28,6 +28,7 @@ namespace OneDas.WebServer.Web
 
             services
                 .AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddHubOptions<WebClientHub>(options => options.MaximumReceiveMessageSize = 1000000)
                 .AddNewtonsoftJsonProtocol(options =>
             {
                 var settings = new JsonSerializerSettings()
@@ -37,7 +38,7 @@ namespace OneDas.WebServer.Web
 
                 options.PayloadSerializerSettings = settings;
             });
-
+            
             services.AddResponseCompression();
         }
 

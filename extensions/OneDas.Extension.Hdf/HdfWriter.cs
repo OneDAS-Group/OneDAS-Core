@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
+using OneDas.Extension.DataWriter.Hdf;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using System;

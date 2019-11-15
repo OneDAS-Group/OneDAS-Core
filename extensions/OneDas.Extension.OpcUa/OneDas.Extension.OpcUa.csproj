@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Communicate via OPC-UA.</Description>
     <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension OPC-UA</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
  
   <ItemGroup>
@@ -10,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.4.355.26" />
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.4.357.28" />
   </ItemGroup>
 
   <ItemGroup>

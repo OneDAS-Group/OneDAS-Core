@@ -5,12 +5,14 @@ using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using OneDas.Extensibility;
 using OneDas.PackageManagement;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using static NuGet.Frameworks.FrameworkConstants;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // https://www.codeproject.com/Articles/1194332/Resolving-Assemblies-in-NET-Core
@@ -68,7 +70,14 @@ namespace OneDas.WebServer.Core
 
             assemblySet.ToList().ForEach(assembly =>
             {
-                _extensionFactory.ScanAssembly(assembly);
+                try
+                {
+                    _extensionFactory.ScanAssembly(assembly);
+                }
+                catch (Exception)
+                {
+                    //
+                }
             });
         }
 
@@ -83,7 +92,7 @@ namespace OneDas.WebServer.Core
             loadContext = new OneDasAssemblyLoadContext();
 
             lockFile = _packageManager.GetLockFile();
-            lockFileTarget = lockFile?.GetTarget(FrameworkConstants.CommonFrameworks.NetStandard20, Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier());
+            lockFileTarget = lockFile?.GetTarget(new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 1, 0, 0)), Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier());
 
             if (lockFileTarget != null)
             {

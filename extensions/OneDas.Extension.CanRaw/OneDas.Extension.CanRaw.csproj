@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Communicate via CAN Bus.</Description>
     <PackageTags>OneDAS data aquisition measurement extension CAN</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

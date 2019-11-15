@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Store data in hierachical data format files.</Description>
     <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension HDF</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <ItemGroup>

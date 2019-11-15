@@ -300,20 +300,20 @@ namespace OneDas.WebServer.Web
 
         // TODO: prevent modification of "NETStandard" package!
 
-        public Task InstallPackage(string packageId, string source)
+        public Task InstallPackage(string packageId)
         {
             return Task.Run(async () =>
             {
-                await _packageManager.InstallAsync(packageId, source);
+                await _packageManager.InstallAsync(packageId);
                 await this.UpdateClientPackagesInformation();
             });
         }
 
-        public Task UpdatePackage(string packageId, string source)
+        public Task UpdatePackage(string packageId)
         {
             return Task.Run(async () =>
             {
-                await _packageManager.UpdateAsync(packageId, source);
+                await _packageManager.UpdateAsync(packageId);
                 await this.UpdateClientPackagesInformation();
             });
         }

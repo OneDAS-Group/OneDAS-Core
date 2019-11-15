@@ -13,13 +13,13 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace OneDas.PackageManagement
 {
@@ -40,18 +40,16 @@ namespace OneDas.PackageManagement
         OneDasNuGetProjectContext _projectContext;
 
         ISettings _settings;
-        IExtensionFactory _extensionFactory;
 
         #endregion
 
         #region "Constructors"
 
-        public OneDasPackageManager(IExtensionFactory extensionFactory, IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
+        public OneDasPackageManager(IOptions<OneDasOptions> options, ILoggerFactory loggerFactory)
         {
             JObject jobject;
             VersionRange versionRange;
 
-            _extensionFactory = extensionFactory;
             _options = options.Value;
 
             // settings
@@ -63,6 +61,8 @@ namespace OneDas.PackageManagement
             {
                 _settings = new Settings(_options.NugetDirectoryPath);
                 _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
+                _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("local", "local", false) });
+                _settings.SetValues(ConfigurationConstants.Config, new List<SettingValue>() { new SettingValue("globalPackagesFolder", "cache", false) });
             }
 
             if (!File.Exists(_options.NugetProjectFilePath))
@@ -70,7 +70,7 @@ namespace OneDas.PackageManagement
                 jobject = new JObject();
                 versionRange = new VersionRange(new NuGetVersion("2.0.3"));
 
-                JsonConfigUtility.AddFramework(jobject, FrameworkConstants.CommonFrameworks.NetStandard20);
+                JsonConfigUtility.AddFramework(jobject, new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 1, 0, 0)));
                 JsonConfigUtility.AddDependency(jobject, new PackageDependency("NETStandard.Library", versionRange));
 
                 jobject.Add("runtimes", new JObject(new JProperty(_options.RestoreRuntimeId, new JObject())));
@@ -162,27 +162,32 @@ namespace OneDas.PackageManagement
             return await Task.WhenAll(taskSet);
         }
 
-        public async Task InstallAsync(string packageId, string source)
+        public async Task InstallAsync(string packageId)
         {
             ResolutionContext resolutionContext;
+            PackageDownloadContext packageDownloadContext;
             List<SourceRepository> sourceRepositorySet;
+            IEnumerable<NuGetProjectAction> actionSet;
 
             resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, VersionConstraints.None);
+            packageDownloadContext = new PackageDownloadContext(NullSourceCacheContext.Instance);
             sourceRepositorySet = this.PackageSourceSet.Select(packageSource => _sourceRepositoryProvider.CreateRepository(new PackageSource(packageSource.Source))).ToList();
+            
+            actionSet = await _packageManager.PreviewInstallPackageAsync(
+                _project,
+                packageId,
+                resolutionContext,
+                _projectContext,
+                sourceRepositorySet,
+                null,
+                CancellationToken.None);
 
-            await _packageManager.InstallPackageAsync(
-                         _project,
-                         packageId,
-                         resolutionContext,
-                         _projectContext,
-                         sourceRepositorySet,
-                         null,
-                         CancellationToken.None);
+            await _packageManager.ExecuteNuGetProjectActionsAsync(_project, actionSet, _projectContext, packageDownloadContext, CancellationToken.None);
 
             this.OnInstalledPackagesChanged();
         }
 
-        public async Task UpdateAsync(string packageId, string source)
+        public async Task UpdateAsync(string packageId)
         {
             ResolutionContext resolutionContext;
             PackageDownloadContext packageDownloadContext;
@@ -234,13 +239,11 @@ namespace OneDas.PackageManagement
         private NuGetPackageManager CreateNuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider)
         {
             NuGetPackageManager packageManager;
-            PackageSourceProvider packageSourceProvider;
             OneDasSolutionManager solutionManager;
             OneDasDeleteOnRestartManager deleteOnRestartManager;
 
             solutionManager = new OneDasSolutionManager(_projectContext, _project, _options.NugetDirectoryPath);
             deleteOnRestartManager = new OneDasDeleteOnRestartManager();
-            packageSourceProvider = (PackageSourceProvider)sourceRepositoryProvider.PackageSourceProvider;
             packageManager = new NuGetPackageManager(sourceRepositoryProvider, _settings, solutionManager, deleteOnRestartManager);
 
             return packageManager;
