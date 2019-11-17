@@ -105,7 +105,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                (dateTime, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
+                (dateTime, isEscaped) = Utilities.ReadLine(new List<string>());
 
                 if (isEscaped)
                 {
@@ -119,7 +119,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-            Program.CreateVirtualDatasetFile(Program.BaseDirectoryPath, epochStart);
+            Program.CreateVirtualDatasetFile(epochStart);
         }
 
         private void Menu_2()
@@ -188,7 +188,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                 Console.Clear();
                 Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
 
-                (dateTime, isEscaped) = VdsToolUtilities.ReadLine(new List<string>());
+                (dateTime, isEscaped) = Utilities.ReadLine(new List<string>());
 
                 if (isEscaped)
                 {
@@ -203,7 +203,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             Console.CursorVisible = false;
-            Program.CreateAggregatedFiles(Program.BaseDirectoryPath, epochStart);
+            Program.CreateAggregatedFiles(epochStart);
         }
 
         private void Menu_4()

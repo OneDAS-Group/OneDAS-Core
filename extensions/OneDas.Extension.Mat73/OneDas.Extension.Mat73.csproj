@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <Description>Store data in Matlab's hierachical data format (v7.3).</Description>
+    <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension MATLAB HDF</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="WebClient\Mat73.js" />
+    <EmbeddedResource Include="WebClient\Mat73View.html" />
+    <Content Include="WebClient\tsconfig.json">
+      <Pack>false</Pack>
+    </Content>
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <Compile Update="Resources\ErrorMessage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessage.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>OneDas.Extension.DataWriter.Mat73</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+</Project>

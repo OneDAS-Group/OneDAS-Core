@@ -13,22 +13,18 @@ namespace OneDas.Hdf.Explorer
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services
+                .AddMvc()
                 .AddRazorPagesOptions(options =>
                 {
                     options.RootDirectory = "/Web/Pages";
                 });
 
-            services.AddSignalR(options =>
-            {
-                options.EnableDetailedErrors = true;
-            }).AddJsonProtocol(options =>
-            {
-                options.PayloadSerializerSettings = new JsonSerializerSettings();
-            });
+            services
+                .AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddNewtonsoftJsonProtocol(options => options.PayloadSerializerSettings = new JsonSerializerSettings());
 
             services.AddLogging(loggingBuilder =>
             {
@@ -40,8 +36,7 @@ namespace OneDas.Hdf.Explorer
             services.AddSingleton<HdfExplorerStateManager>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
             ILogger logger;
 
@@ -51,13 +46,13 @@ namespace OneDas.Hdf.Explorer
 
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<Broadcaster>("/broadcaster");
+                endpoints.MapRazorPages();
+                endpoints.MapHub<Broadcaster>("/broadcaster");
             });
-
-            app.UseMvc();
         }
 
         private void Validate(ILogger logger, IOptions<HdfExplorerOptions> options)
@@ -77,7 +72,7 @@ namespace OneDas.Hdf.Explorer
             // asp base URL
             logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
 
-            // check if database directory is confiured and existing
+            // check if database directory is configured and existing
             if (string.IsNullOrWhiteSpace(options.Value.DataBaseFolderPath))
             {
                 logger.LogError($"No database directory path has been configured.");

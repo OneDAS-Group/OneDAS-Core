@@ -41,7 +41,7 @@ namespace OneDas.WebServer.Core
             _updateDataSnapshotTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromSeconds(1).TotalMilliseconds };
             _updateLiveValueDataTimer = new Timer() { AutoReset = true, Enabled = true, Interval = TimeSpan.FromMilliseconds(200).TotalMilliseconds };
 
-            _updatePerfInfoTimer.Elapsed += OnUpdatePerfInfoTimer;
+            _updatePerfInfoTimer.Elapsed += OnUpdatePerfInfo;
             _updateDataSnapshotTimer.Elapsed += OnUpdataDataSnapshot;
             _updateLiveValueDataTimer.Elapsed += OnUpdateLiveValueData;
         }
@@ -90,7 +90,7 @@ namespace OneDas.WebServer.Core
             return _nextSubscriptionId++;
         }
 
-        private void OnUpdatePerfInfoTimer(object sender, ElapsedEventArgs e)
+        private void OnUpdatePerfInfo(object sender, ElapsedEventArgs e)
         {
             OneDasPerformanceInformation performanceInformation;
 

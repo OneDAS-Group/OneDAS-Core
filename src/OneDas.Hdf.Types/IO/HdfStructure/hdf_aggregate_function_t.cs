@@ -41,15 +41,22 @@ namespace OneDas.Hdf.IO
         /// <returns>Returns True if both copies are equal.</returns>
         public override bool Equals(object obj)
         {
+            if (obj == null || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                hdf_aggregate_function_t _hdf_statistical_function = (hdf_aggregate_function_t)obj;
 
-            ////If TypeOf (obj) IsNot hdf_ec_info_t Then
-            ////    Return False
-            ////End If
+                return this.type == _hdf_statistical_function.type &&
+                       this.argument == _hdf_statistical_function.argument;
+            }            
+        }
 
-            hdf_aggregate_function_t _hdf_statistical_function = (hdf_aggregate_function_t)obj;
-
-            return this.type == _hdf_statistical_function.type &&
-                   this.argument == _hdf_statistical_function.argument;
+        public override int GetHashCode()
+        {
+            return this.type.Length + this.argument.Length;
         }
     }
 }

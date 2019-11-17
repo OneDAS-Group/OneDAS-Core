@@ -23,9 +23,9 @@
            Language="1033"
            Version="$(var.WixFileVersion)"
            Manufacturer="$(var.CompanyDisplayName)"
-           UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
+           UpgradeCode="fb45877e-066e-4e8b-96de-ce50b427cf3b">
 
-    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x86"/>
+    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
     <MediaTemplate EmbedCab="yes"/>
 
@@ -44,7 +44,7 @@
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="DesktopFolder" Name="Desktop" />
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="ProgramFiles64Folder">
         <Directory Id="ProductFolder" Name="$(var.ProductDisplayName)">
           <Directory Id="INSTALLFOLDER" Name="$(var.ComponentDisplayName)" />
         </Directory>
@@ -65,10 +65,10 @@
 
   <!-- COMPONENTS -->
   <Fragment>   
-    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
-    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/>
-    <!--<PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
-    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>-->
+    <!-- <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/> -->
+    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>
                 
     <Component Id="ApplicationShortcutDesktopComponent" Guid="*" Directory="DesktopFolder">
 
@@ -98,7 +98,7 @@
       </RegistryKey>
     </Component>
     <ComponentGroup Id="EventSourceComponentGroup" Directory="INSTALLFOLDER">
-      <Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
+      <!-- <Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
         <Condition>
           <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR]]>
         </Condition>
@@ -115,8 +115,8 @@
                           Name="$(var.EventLogSourceName)"
                           EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR]EventLogMessages.dll"
                           KeyPath="yes" />
-      </Component>
-      <!--<Component Id="EventSourceComponentNetFull64" Guid="06fe2dcf-3cd5-4012-ac57-bf6a03caf0bd">
+      </Component> -->
+      <Component Id="EventSourceComponentNetFull64" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146">
         <Condition>
           <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64]]>
         </Condition>
@@ -125,7 +125,7 @@
                           EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR64]EventLogMessages.dll"
                           KeyPath="yes" />
       </Component>
-      <Component Id="EventSourceComponentNetClient64" Guid="3edd2a45-05a6-4714-9a5c-0c29bffde2c4">
+      <Component Id="EventSourceComponentNetClient64" Guid="4cd7acb0-c0ea-4830-9fef-03ec290a6400">
         <Condition>
           <![CDATA[NETFRAMEWORK40CLIENTINSTALLROOTDIR64 AND VersionNT64]]>
         </Condition>
@@ -133,7 +133,7 @@
                           Name="$(var.EventLogSourceName)"
                           EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR64]EventLogMessages.dll"
                           KeyPath="yes" />
-      </Component>-->
+      </Component>
     </ComponentGroup>
     <Component Id="ServiceComponent" Guid="*" Directory="INSTALLFOLDER">
       

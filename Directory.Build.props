@@ -3,8 +3,8 @@
   <Import Project="./build/OneDas.props" />
 
   <PropertyGroup>
-    <PackageLicenseUrl Condition="$(LicenseUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core/blob/master/LICENSE.md</PackageLicenseUrl>
-    <PackageProjectUrl Condition="$(ProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</PackageProjectUrl>
+    <PackageLicenseExpression Condition="$(PackageLicenseExpression) == ''">LGPL-3.0-only</PackageLicenseExpression>
+    <PackageProjectUrl Condition="$(PackageProjectUrl) == ''">https://github.com/OneDAS-Group/OneDAS-Core</PackageProjectUrl>
   </PropertyGroup>
 
 </Project>

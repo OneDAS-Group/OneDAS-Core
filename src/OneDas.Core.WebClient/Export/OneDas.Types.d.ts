@@ -1,17 +1,17 @@
 /// <reference types="knockout" />
 declare enum DataDirectionEnum {
     Input = 1,
-    Output = 2,
+    Output = 2
 }
 declare enum EndiannessEnum {
     LittleEndian = 1,
-    BigEndian = 2,
+    BigEndian = 2
 }
 declare enum FileGranularityEnum {
     Minute_1 = 60,
     Minute_10 = 600,
     Hour = 3600,
-    Day = 86400,
+    Day = 86400
 }
 declare enum OneDasDataTypeEnum {
     BOOLEAN = 8,
@@ -21,8 +21,10 @@ declare enum OneDasDataTypeEnum {
     INT16 = 528,
     UINT32 = 288,
     INT32 = 544,
+    UINT64 = 320,
+    INT64 = 576,
     FLOAT32 = 800,
-    FLOAT64 = 832,
+    FLOAT64 = 832
 }
 declare enum OneDasStateEnum {
     Error = 1,
@@ -30,13 +32,13 @@ declare enum OneDasStateEnum {
     Idle = 3,
     ApplyConfiguration = 4,
     Ready = 5,
-    Run = 6,
+    Run = 6
 }
 declare enum SampleRateEnum {
     SampleRate_100 = 1,
     SampleRate_25 = 4,
     SampleRate_5 = 20,
-    SampleRate_1 = 100,
+    SampleRate_1 = 100
 }
 declare class ActionRequest {
     readonly ExtensionId: string;
@@ -62,7 +64,7 @@ interface IEvent<TSender, TArgs> {
 declare enum OneDasModuleSelectorModeEnum {
     Duplex = 1,
     InputOnly = 2,
-    OutputOnly = 3,
+    OutputOnly = 3
 }
 declare class BufferRequestModel {
     SampleRate: SampleRateEnum;
@@ -213,11 +215,11 @@ declare class OneDasModuleSelectorViewModel {
     SetMaxBytes: (value: number) => void;
     GetInputModuleSet: () => OneDasModuleViewModel[];
     GetOutputModuleSet: () => OneDasModuleViewModel[];
-    private InternalUpdate();
+    private InternalUpdate;
     protected Update(): void;
     protected Validate(): void;
     protected CreateNewModule(): OneDasModuleViewModel;
-    private InternalCreateNewModule();
+    private InternalCreateNewModule;
     private OnModulePropertyChanged;
     AddModule: () => void;
     DeleteModule: () => void;
@@ -238,11 +240,11 @@ declare class BufferRequestSelectorViewModel {
     private _onBufferRequestSetChanged;
     constructor(bufferRequestSet?: BufferRequestViewModel[]);
     readonly OnBufferRequestSetChanged: IEvent<BufferRequestSelectorViewModel, BufferRequestViewModel[]>;
-    private InternalUpdate();
+    private InternalUpdate;
     protected Update(): void;
     protected Validate(): void;
     protected CreateNewBufferRequest(): BufferRequestViewModel;
-    private InternalCreateNewBufferRequest();
+    private InternalCreateNewBufferRequest;
     private OnBufferRequestPropertyChanged;
     AddBufferRequest: () => void;
     DeleteBufferRequest: () => void;
@@ -260,7 +262,7 @@ declare class BufferRequestViewModel {
     Validate(): void;
     ToString(): string;
     ToModel(): any;
-    private CheckGroupFilter(value);
+    private CheckGroupFilter;
 }
 declare class DataPortViewModel {
     Name: KnockoutObservable<string>;

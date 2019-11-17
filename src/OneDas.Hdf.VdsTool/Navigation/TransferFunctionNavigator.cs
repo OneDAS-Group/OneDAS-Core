@@ -207,7 +207,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                     Console.Clear();
                     Console.Write($"Enter value for unit ({ _unit }): ");
 
-                    (_unit, _isEscaped) = VdsToolUtilities.ReadLine(_vdsUnitSet);
+                    (_unit, _isEscaped) = Utilities.ReadLine(_vdsUnitSet);
 
                     if (!_isEscaped)
                     {

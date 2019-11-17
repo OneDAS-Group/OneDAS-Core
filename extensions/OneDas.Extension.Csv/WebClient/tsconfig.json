@@ -1,0 +1,9 @@
+{
+  "extends": "./../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "Csv.js"
+  },
+  "include": [
+    "./**/*.ts"
+  ]
+}

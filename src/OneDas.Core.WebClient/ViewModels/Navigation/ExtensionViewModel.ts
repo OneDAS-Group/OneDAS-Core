@@ -97,7 +97,7 @@
             this.IsProcessing(true)
             this.MessageLog.removeAll()
 
-            await ConnectionManager.InvokeWebClientHub("InstallPackage", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
+            await ConnectionManager.InvokeWebClientHub("InstallPackage", packageMetaData.PackageId())
             await this.SearchPackages(this.SearchTerm())
         }
         catch (e)
@@ -117,7 +117,7 @@
             this.IsProcessing(true)
             this.MessageLog.removeAll()
 
-            await ConnectionManager.InvokeWebClientHub("UpdatePackage", packageMetaData.PackageId(), this.SelectedPackageSource().Address)
+            await ConnectionManager.InvokeWebClientHub("UpdatePackage", packageMetaData.PackageId())
             await this.SearchPackages(this.SearchTerm())
         }
         catch (e)

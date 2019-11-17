@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using OneDas.Hdf.Explorer.Web;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -89,6 +88,24 @@ namespace OneDas.Hdf.Explorer.Core
             return _ctsSet[connectionId].Token;
         }
 
+        public void CheckState(string connectionId)
+        {
+            switch (this.GetState(connectionId))
+            {
+                case HdfExplorerState.Inactive:
+                    throw new Exception("HDF Explorer is in scheduled inactivity mode.");
+
+                case HdfExplorerState.Updating:
+                    throw new Exception("The database is currently being updated.");
+
+                case HdfExplorerState.Loading:
+                    throw new Exception("Data request is already in progress.");
+
+                default:
+                    break;
+            }
+        }
+
         private void HandleInactivity()
         {
             TimeSpan startRemaining;
@@ -137,17 +154,13 @@ namespace OneDas.Hdf.Explorer.Core
 
             if (_isActive)
             {
-                _stateSet.ToList().ForEach(entry =>
-                {
-                    this.SetState(entry.Key, HdfExplorerState.Idle);
-                });
+                Program.UpdateCampaignInfoSet();
+
+                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Idle));
             }
             else
             {
-                _stateSet.ToList().ForEach(entry =>
-                {
-                    this.SetState(entry.Key, HdfExplorerState.Inactive);
-                });
+                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Inactive));
             }
         }
 

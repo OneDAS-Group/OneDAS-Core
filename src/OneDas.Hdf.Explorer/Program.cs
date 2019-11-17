@@ -24,6 +24,8 @@ namespace OneDas.Hdf.Explorer
         public static void Main(string[] args)
         {
             bool isUserInteractive;
+
+            string currentDirectory;
             string configurationDirectoryPath;
             string configurationFileName;
 
@@ -52,15 +54,25 @@ namespace OneDas.Hdf.Explorer
 
             _options.Save(configurationDirectoryPath);
 
+            // campaign info
             Program.UpdateCampaignInfoSet();
 
+            // change current directory to database location
+            currentDirectory = Environment.CurrentDirectory;
+
+            if (Directory.Exists(_options.DataBaseFolderPath))
+            {
+                Environment.CurrentDirectory = _options.DataBaseFolderPath;
+            }
+
+            // service vs. interactive
             if (isUserInteractive)
             {
-                Program.CreateWebHost().Run();
+                Program.CreateWebHost(currentDirectory).Run();
             }
             else
             {
-                Program.CreateWebHost().RunAsService();
+                Program.CreateWebHost(currentDirectory).RunAsService();
             }
         }
 
@@ -146,20 +158,20 @@ namespace OneDas.Hdf.Explorer
             }
         }
 
-        private static IWebHost CreateWebHost()
+        private static IWebHost CreateWebHost(string currentDirectory)
         {
             IWebHost webHost;
 
-            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
+            if (!Directory.Exists(Path.Combine(currentDirectory, "wwwroot")))
             {
-                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+                currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
             }
 
             webHost = new WebHostBuilder()
                 .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
                 .UseKestrel()
                 .UseUrls(_options.AspBaseUrl)
-                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseContentRoot(currentDirectory)
                 .UseStartup<Startup>()
                 .SuppressStatusMessages(true)
                 .Build();

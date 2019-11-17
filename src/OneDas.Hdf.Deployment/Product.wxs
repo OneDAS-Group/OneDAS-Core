@@ -65,8 +65,8 @@
 
   <!-- COMPONENTS -->
   <Fragment>
-    <!--<PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
-    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/>-->
+    <!-- <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/> -->
     <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
     <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>
 
@@ -98,7 +98,7 @@
       </RegistryKey>
     </Component>
     <ComponentGroup Id="EventSourceComponentGroup" Directory="INSTALLFOLDER">
-      <!--<Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
+      <!-- <Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
         <Condition>
           <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR]]>
         </Condition>
@@ -115,7 +115,7 @@
                           Name="$(var.EventLogSourceName)"
                           EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR]EventLogMessages.dll"
                           KeyPath="yes" />
-      </Component>-->
+      </Component> -->
       <Component Id="EventSourceComponentNetFull64" Guid="06fe2dcf-3cd5-4012-ac57-bf6a03caf0bd">
         <Condition>
           <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64]]>
