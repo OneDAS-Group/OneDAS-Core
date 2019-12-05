@@ -87,7 +87,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.Hdf", "ext
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.Mat73", "extensions\OneDas.Extension.Mat73\OneDas.Extension.Mat73.csproj", "{83E4962F-39C7-4007-A40D-BAB6D74D6240}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.ModbusTcp", "extensions\OneDas.Extension.ModbusTcp\OneDas.Extension.ModbusTcp.csproj", "{95779735-C6A9-4CA5-9602-E78DFE9BAA94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.Modbus", "extensions\OneDas.Extension.Modbus\OneDas.Extension.Modbus.csproj", "{95779735-C6A9-4CA5-9602-E78DFE9BAA94}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.OpcUa", "extensions\OneDas.Extension.OpcUa\OneDas.Extension.OpcUa.csproj", "{560E4456-B40F-4859-924B-26369F060464}"
 EndProject

@@ -1,0 +1,78 @@
+﻿<!-- ko if: IsInSettingsMode -->
+<div class="form-group row">
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>Local IPv4 address</label>
+                <input type="text"
+                       class="form-control"
+                       placeholder="e.g. 10.252.0.2"
+                       data-bind="textInput: LocalIpAddress">
+            </div>
+        </form>
+    </div>
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>Port</label>
+                <input type="text" min="1"
+                       class="form-control"
+                       placeholder="e.g. 502"
+                       data-bind="value: Port">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="form-group row">
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>Frame rate divider</label>
+                <select class="form-control"
+                        data-bind="options: Array.from(Array(100).keys()).map(i => i + 1),
+                                            value: FrameRateDivider"></select>
+            </div>
+        </form>
+    </div>
+    <div class="col-6">
+    </div>
+</div>
+    <!-- ko with: OneDasModuleSelector -->
+        <!-- ko template: { name: 'Project_OneDasModuleSelectorTemplate' } -->
+        <!-- /ko -->
+    <!-- /ko -->
+<!-- /ko -->
+
+<!-- ko ifnot: IsInSettingsMode -->
+    <!-- ko template: { name: 'Project_ModuleToDataPortMapTemplate' } -->
+    <!-- /ko -->
+<!-- /ko -->
+
+<script type="text/html" id="Modbus_OneDasModuleSettingsTemplate">
+    <div class="form-group row">
+        <div class="col-6">
+            <form>
+                <div class="form-group">
+                    <label>Starting Address</label>
+                    <input type="number" min="0" max="65535" step="1"
+                           class="form-control"
+                           placeholder="e.g. 0"
+                           data-bind="value: StartingAddress">
+                </div>
+            </form>
+        </div>
+        <div class="col-6">
+            <form>
+                <div class="form-group">
+                    <label>Object Type</label>
+                    <select class="form-control"
+                            data-bind="options: ObjectTypeSet,
+                                        optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('ModbusObjectTypeEnum', x) },
+                                        value: ObjectType"></select>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ko template: { name: 'Project_OneDasModuleTemplate' } -->
+    <!-- /ko -->
+</script>

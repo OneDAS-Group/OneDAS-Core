@@ -1,0 +1,11 @@
+{
+  "extends": "./../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outFile": "ModbusRtuServer.js"
+  },
+  "include": [
+    "./../*.ts",
+    "./../Server/*.ts",
+    "./**/*.ts"
+  ]
+}
