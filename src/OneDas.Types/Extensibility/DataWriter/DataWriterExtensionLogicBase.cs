@@ -113,9 +113,7 @@ namespace OneDas.Extensibility
                 if (fileStartDateTime != _lastFileStartDateTime)
                 {
                     foreach (var entry in sampleRateToVariableContextMap)
-                    {
                         this.OnPrepareFile(fileStartDateTime, entry.Key, entry.Value);
-                    }
 
                     _lastFileStartDateTime = fileStartDateTime;
                 }
@@ -140,13 +138,9 @@ namespace OneDas.Extensibility
                     lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, entry.Key) - 1;
 
                     if (firstChunk == lastChunk)
-                    {
                         _logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
-                    }
                     else
-                    {
                         _logger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
-                    }
                 }
 
                 dataStorageOffset += period;

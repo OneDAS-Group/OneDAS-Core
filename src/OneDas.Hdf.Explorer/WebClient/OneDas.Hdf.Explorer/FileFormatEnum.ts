@@ -1,5 +1,6 @@
 ﻿enum FileFormatEnum
 {
     CSV = 1,
-    MAT73 = 2
+    FAMOS = 2,
+    MAT73 = 3
 }

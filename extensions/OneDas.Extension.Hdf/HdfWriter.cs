@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
-using OneDas.Extension.DataWriter.Hdf;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using System;
@@ -64,12 +63,10 @@ namespace OneDas.Extension.Hdf
 
         protected override void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet)
         {
-            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z.h5");
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.h5");
 
             if (_fileId > -1)
-            {
                 this.CloseHdfFile(_fileId);
-            }
 
             this.OpenFile(_dataFilePath, startDateTime, variableContextSet);
 
@@ -93,7 +90,7 @@ namespace OneDas.Extension.Hdf
                 firstChunk = (long)this.ToChunkIndex(fileOffset, samplesPerDay);
                 lastChunk = (long)this.ToChunkIndex(fileOffset + length, samplesPerDay) - 1;
 
-                groupId = H5G.open(_fileId, $"/{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }/{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }/{ this.DataWriterContext.CampaignDescription.CampaignName }");
+                groupId = H5G.open(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}");
                 datasetId = H5D.open(groupId, "is_chunk_completed_set");
                 dataspaceId = H5D.get_space(datasetId);
                 dataspaceId_memory = H5S.create_simple(1, new ulong[] { 1 }, new ulong[] { 1 });
@@ -140,9 +137,7 @@ namespace OneDas.Extension.Hdf
             base.FreeUnmanagedResources();
 
             if (H5I.is_valid(_fileId) > 0)
-            {
                 this.CloseHdfFile(_fileId);
-            }
 
             Marshal.FreeHGlobal(_isChunkCompletedIntPtr);
         }
@@ -176,14 +171,10 @@ namespace OneDas.Extension.Hdf
                 }
 
                 if (_fileId < 0)
-                {
                     _fileId = H5F.create(filePath, H5F.ACC_TRUNC, H5P.DEFAULT, H5P.DEFAULT);
-                }
 
                 if (_fileId < 0)
-                {
                     throw new Exception($"{ ErrorMessage.HdfWriter_CouldNotOpenOrCreateFile } File: { filePath }.");
-                }
 
                 // file
                 IOHelper.PrepareAttribute(_fileId, "format_version", new int[] { typeof(HdfWriter).GetFirstAttribute<DataWriterFormatVersionAttribute>().FormatVersion }, new ulong[] { 1 }, true);
@@ -197,7 +188,7 @@ namespace OneDas.Extension.Hdf
                 }
 
                 // file -> campaign
-                groupId = IOHelper.OpenOrCreateGroup(_fileId, $"/{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }/{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }/{ this.DataWriterContext.CampaignDescription.CampaignName }").GroupId;
+                groupId = IOHelper.OpenOrCreateGroup(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}").GroupId;
 
                 IOHelper.PrepareAttribute(groupId, "campaign_version", new int[] { this.DataWriterContext.CampaignDescription.Version }, new ulong[] { 1 }, true);
 
@@ -356,9 +347,7 @@ namespace OneDas.Extension.Hdf
                 chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SamplesPerDay);
 
                 if (chunkLength <= 0)
-                {
                     throw new Exception(ErrorMessage.HdfWriter_SampleRateTooLow);
-                }
 
                 // group (GUID)
                 groupId = IOHelper.OpenOrCreateGroup(locationId, variableDescription.Guid.ToString()).GroupId;
@@ -397,9 +386,7 @@ namespace OneDas.Extension.Hdf
         private void CloseHdfFile(long fileId)
         {
             if (H5I.is_valid(fileId) > 0)
-            {
                 H5F.close(fileId);
-            }
         }
 
         #endregion

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas.Extension.DataWriter.Hdf {
+namespace OneDas.Extension.Hdf {
     using System;
     
     

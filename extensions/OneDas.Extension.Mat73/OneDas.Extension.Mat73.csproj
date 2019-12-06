@@ -31,7 +31,7 @@
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>OneDas.Extension.DataWriter.Mat73</CustomToolNamespace>
+      <CustomToolNamespace>OneDas.Extension.Mat73</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
   

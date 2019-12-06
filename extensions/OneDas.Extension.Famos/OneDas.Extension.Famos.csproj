@@ -11,11 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="WebClient\Csv.js" />
-    <EmbeddedResource Include="WebClient\CsvView.html" />
+    <EmbeddedResource Include="WebClient\Famos.js" />
+    <EmbeddedResource Include="WebClient\FamosView.html" />
     <Content Include="WebClient\tsconfig.json">
       <Pack>false</Pack>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImcFamosFile" Version="1.2.0" />
   </ItemGroup>
   
   <ItemGroup>
@@ -30,7 +34,7 @@
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>OneDas.Extension.Csv</CustomToolNamespace>
+      <CustomToolNamespace>OneDas.Extension.Famos</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
   

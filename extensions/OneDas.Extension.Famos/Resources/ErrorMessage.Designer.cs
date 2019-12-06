@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas.Extension.Mat73 {
+namespace OneDas.Extension.Famos {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace OneDas.Extension.Mat73 {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extension.Mat73.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extension.Famos.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,65 +61,20 @@ namespace OneDas.Extension.Mat73 {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The current chunk has already been written before. Possible causes are sudden negative time changes while OneDAS was not running. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The size of data to write into the variable buffer exceeds the limit of 2e+9 bytes per variable buffer.  ähnelt.
         /// </summary>
-        internal static string Mat73Writer_ChunkAlreadyWritten {
+        internal static string FamosWriter_DataSizeExceedsLimit {
             get {
-                return ResourceManager.GetString("Mat73Writer_ChunkAlreadyWritten", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create file. ähnelt.
-        /// </summary>
-        internal static string Mat73Writer_CouldNotOpenOrCreateFile {
-            get {
-                return ResourceManager.GetString("Mat73Writer_CouldNotOpenOrCreateFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not write chunk (dataset). ähnelt.
-        /// </summary>
-        internal static string Mat73Writer_CouldNotWriteChunk_Dataset {
-            get {
-                return ResourceManager.GetString("Mat73Writer_CouldNotWriteChunk_Dataset", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Could not write chunk (dataset status). ähnelt.
-        /// </summary>
-        internal static string Mat73Writer_CouldNotWriteChunk_Status {
-            get {
-                return ResourceManager.GetString("Mat73Writer_CouldNotWriteChunk_Status", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Data type mismatch. ähnelt.
-        /// </summary>
-        internal static string Mat73Writer_DataTypeMismatch {
-            get {
-                return ResourceManager.GetString("Mat73Writer_DataTypeMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The HDF library is not thread safe. ähnelt.
-        /// </summary>
-        internal static string Mat73Writer_HdfLibraryNotThreadSafe {
-            get {
-                return ResourceManager.GetString("Mat73Writer_HdfLibraryNotThreadSafe", resourceCulture);
+                return ResourceManager.GetString("FamosWriter_DataSizeExceedsLimit", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The sample rate is too low. ähnelt.
         /// </summary>
-        internal static string Mat73Writer_SampleRateTooLow {
+        internal static string FamosWriter_SampleRateTooLow {
             get {
-                return ResourceManager.GetString("Mat73Writer_SampleRateTooLow", resourceCulture);
+                return ResourceManager.GetString("FamosWriter_SampleRateTooLow", resourceCulture);
             }
         }
     }

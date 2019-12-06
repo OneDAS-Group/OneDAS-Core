@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Csv;
+using OneDas.Extension.Famos;
 using OneDas.Extension.Mat73;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
@@ -101,6 +102,13 @@ namespace OneDas.Hdf.Explorer.Core
 
                     settings = new CsvSettings() { FileGranularity = fileGranularity };
                     dataWriter = new CsvWriter((CsvSettings)settings, new LoggerFactory());
+
+                    break;
+
+                case FileFormat.FAMOS:
+
+                    settings = new FamosSettings() { FileGranularity = fileGranularity };
+                    dataWriter = new FamosWriter((FamosSettings)settings, new LoggerFactory());
 
                     break;
 
