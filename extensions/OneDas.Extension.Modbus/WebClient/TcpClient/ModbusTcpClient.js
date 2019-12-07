@@ -125,3 +125,24 @@ class ModbusTcpClientViewModel extends ModbusClientViewModel {
         model.Port = this.Port();
     }
 }
+var ParityEnum;
+(function (ParityEnum) {
+    ParityEnum[ParityEnum["None"] = 0] = "None";
+    ParityEnum[ParityEnum["Odd"] = 1] = "Odd";
+    ParityEnum[ParityEnum["Even"] = 2] = "Even";
+    ParityEnum[ParityEnum["Mark"] = 3] = "Mark";
+})(ParityEnum || (ParityEnum = {}));
+var HandshakeEnum;
+(function (HandshakeEnum) {
+    HandshakeEnum[HandshakeEnum["None"] = 0] = "None";
+    HandshakeEnum[HandshakeEnum["RequestToSend"] = 1] = "RequestToSend";
+    HandshakeEnum[HandshakeEnum["RequestToSendXOnXOff"] = 2] = "RequestToSendXOnXOff";
+    HandshakeEnum[HandshakeEnum["XOnXOff"] = 3] = "XOnXOff";
+})(HandshakeEnum || (HandshakeEnum = {}));
+var StopBits;
+(function (StopBits) {
+    StopBits[StopBits["None"] = 0] = "None";
+    StopBits[StopBits["One"] = 1] = "One";
+    StopBits[StopBits["Two"] = 2] = "Two";
+    StopBits[StopBits["OnePointFive"] = 3] = "OnePointFive";
+})(StopBits || (StopBits = {}));

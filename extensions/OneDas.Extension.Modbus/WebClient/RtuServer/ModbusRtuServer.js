@@ -1,3 +1,10 @@
+var HandshakeEnum;
+(function (HandshakeEnum) {
+    HandshakeEnum[HandshakeEnum["None"] = 0] = "None";
+    HandshakeEnum[HandshakeEnum["XOnXOff"] = 1] = "XOnXOff";
+    HandshakeEnum[HandshakeEnum["RequestToSend"] = 2] = "RequestToSend";
+    HandshakeEnum[HandshakeEnum["RequestToSendXOnXOff"] = 3] = "RequestToSendXOnXOff";
+})(HandshakeEnum || (HandshakeEnum = {}));
 class ModbusModuleModel extends OneDasModuleModel {
     constructor(startingAddress, objectType, dataType, dataDirection, endianness, size) {
         super(dataType, dataDirection, endianness, size);
@@ -78,6 +85,19 @@ var ModbusObjectTypeEnum;
     ModbusObjectTypeEnum[ModbusObjectTypeEnum["HoldingRegister"] = 4] = "HoldingRegister";
 })(ModbusObjectTypeEnum || (ModbusObjectTypeEnum = {}));
 window["ModbusObjectTypeEnum"] = ModbusObjectTypeEnum;
+var ParityEnum;
+(function (ParityEnum) {
+    ParityEnum[ParityEnum["None"] = 0] = "None";
+    ParityEnum[ParityEnum["Odd"] = 1] = "Odd";
+    ParityEnum[ParityEnum["Even"] = 2] = "Even";
+})(ParityEnum || (ParityEnum = {}));
+var StopBitsEnum;
+(function (StopBitsEnum) {
+    StopBitsEnum[StopBitsEnum["None"] = 0] = "None";
+    StopBitsEnum[StopBitsEnum["One"] = 1] = "One";
+    StopBitsEnum[StopBitsEnum["Two"] = 2] = "Two";
+    StopBitsEnum[StopBitsEnum["OnePointFive"] = 3] = "OnePointFive";
+})(StopBitsEnum || (StopBitsEnum = {}));
 class ModbusServerModuleSelectorViewModel extends OneDasModuleSelectorViewModel {
     constructor(oneDasModuleSelectorMode, moduleSet) {
         super(oneDasModuleSelectorMode, moduleSet);
@@ -115,12 +135,34 @@ let ViewModelConstructor = (model, identification) => new ModbusRtuServerViewMod
 class ModbusRtuServerViewModel extends ModbusServerViewModel {
     constructor(model, identification) {
         super(model, identification);
+        EnumerationHelper.Description["HandshakeEnum_None"] = "no control";
+        EnumerationHelper.Description["HandshakeEnum_XOnXOff"] = "XON/XOFF software control";
+        EnumerationHelper.Description["HandshakeEnum_RequestToSend"] = "RTS hardware control";
+        EnumerationHelper.Description["HandshakeEnum_RequestToSendXOnXOff"] = "XON/XOFF and RTS control";
+        EnumerationHelper.Description["Parity_None"] = "no parity";
+        EnumerationHelper.Description["Parity_Odd"] = "Odd";
+        EnumerationHelper.Description["Parity_Even"] = "Even";
+        EnumerationHelper.Description["StopBits_None"] = "0";
+        EnumerationHelper.Description["StopBits_One"] = "1";
+        EnumerationHelper.Description["StopBits_Two"] = "2";
+        EnumerationHelper.Description["StopBits_OnePointFive"] = "1.5";
         this.UnitIdentifier = ko.observable(model.UnitIdentifier);
         this.Port = ko.observable(model.Port);
+        this.BaudRate = ko.observable(model.BaudRate);
+        this.Handshake = ko.observable(model.Handshake);
+        this.Parity = ko.observable(model.Parity);
+        this.StopBits = ko.observable(model.StopBits);
+        this.HandshakeSet = ko.observableArray(EnumerationHelper.GetEnumValues("HandshakeEnum"));
+        this.ParitySet = ko.observableArray(EnumerationHelper.GetEnumValues("ParitySet"));
+        this.StopBitsSet = ko.observableArray(EnumerationHelper.GetEnumValues("StopBitsSet"));
     }
     ExtendModel(model) {
         super.ExtendModel(model);
-        model.LocalIpAddress = this.UnitIdentifier();
+        model.UnitIdentifier = this.UnitIdentifier();
         model.Port = this.Port();
+        model.BaudRate = this.BaudRate();
+        model.Handshake = this.Handshake();
+        model.Parity = this.Parity();
+        model.StopBits = this.StopBits();
     }
 }

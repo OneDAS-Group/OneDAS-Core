@@ -10,7 +10,12 @@ namespace OneDas.Extension.Modbus
         public ModbusRtuServerGateway(ModbusRtuServerSettings settings, ILoggerFactory loggerFactory) 
             : base(new ModbusRtuServer(settings.UnitIdentifier, isAsynchronous: false), settings, loggerFactory)
         {
-            //
+            var modbusServer = (ModbusRtuServer)this.ModbusServer;
+
+            modbusServer.BaudRate = settings.BaudRate;
+            modbusServer.Handshake = settings.Handshake;
+            modbusServer.Parity = settings.Parity;
+            modbusServer.StopBits = settings.StopBits;
         }
 
         #endregion

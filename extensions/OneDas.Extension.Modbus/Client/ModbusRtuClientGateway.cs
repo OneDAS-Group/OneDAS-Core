@@ -11,7 +11,12 @@ namespace OneDas.Extension.Modbus
         public ModbusRtuClientGateway(ModbusRtuClientSettings settings, ILoggerFactory loggerFactory) 
             : base(new ModbusRtuClient(), settings, loggerFactory)
         {
-            //
+            var modbusClient = (ModbusRtuClient)this.ModbusClient;
+
+            modbusClient.BaudRate = settings.BaudRate;
+            modbusClient.Handshake = settings.Handshake;
+            modbusClient.Parity = settings.Parity;
+            modbusClient.StopBits = settings.StopBits;
         }
 
         #endregion

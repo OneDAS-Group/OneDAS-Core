@@ -4,7 +4,7 @@
         <form>
             <div class="form-group">
                 <label>Unit Identifier</label>
-                <input type="text" min="1" max="247"
+                <input type="number" min="1" max="247"
                        class="form-control"
                        placeholder="1-247"
                        data-bind="value: UnitIdentifier">
@@ -14,11 +14,59 @@
     <div class="col-6">
         <form>
             <div class="form-group">
-                <label>Port</label>
-                <input type="text" min="1"
+                <label>Serial Port</label>
+                <input type="text"
                        class="form-control"
-                       placeholder="e.g. 502"
+                       placeholder="e.g. COM1"
                        data-bind="value: Port">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="form-group row">
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>Baud Rate</label>
+                <input type="number" min="0"
+                       class="form-control"
+                       placeholder="e.g. 9600"
+                       data-bind="value: BaudRate">
+            </div>
+        </form>
+    </div>
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>Parity</label>
+                <select class="form-control"
+                        data-bind="options: ParitySet,
+                                   optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('ParityEnum', x) },
+                                   value: Parity"></select>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="form-group row">
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>StopBits</label>
+                <select class="form-control"
+                        data-bind="options: StopBitsSet,
+                                   optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('StopBitsEnum', x) },
+                                   value: StopBits"></select>
+            </div>
+        </form>
+    </div>
+    <div class="col-6">
+        <form>
+            <div class="form-group">
+                <label>Handshake</label>
+                <select class="form-control"
+                        data-bind="options: HandshakeSet,
+                                   optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('HandshakeEnum', x) },
+                                   value: Handshake"></select>
             </div>
         </form>
     </div>

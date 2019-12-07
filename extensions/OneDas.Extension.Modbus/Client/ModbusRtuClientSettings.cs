@@ -15,8 +15,14 @@ namespace OneDas.Extension.Modbus
 
         public ModbusRtuClientSettings()
         {
-            this.Port = "COM1";
+            // defined in base class
             this.UnitIdentifier = 0x01;
+
+            this.Port = "COM1";
+            this.BaudRate = 9600;
+            this.Handshake = Handshake.None;
+            this.Parity = Parity.Even;
+            this.StopBits = StopBits.One;
         }
 
         #endregion
@@ -25,6 +31,18 @@ namespace OneDas.Extension.Modbus
 
         [DataMember]
         public string Port { get; set; }
+
+        [DataMember]
+        public int BaudRate { get; set; }
+
+        [DataMember]
+        public Handshake Handshake { get; set; }
+
+        [DataMember]
+        public Parity Parity { get; set; }
+
+        [DataMember]
+        public StopBits StopBits { get; set; }
 
         #endregion
 
