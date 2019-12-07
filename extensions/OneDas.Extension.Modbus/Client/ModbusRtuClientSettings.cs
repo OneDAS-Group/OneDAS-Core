@@ -52,11 +52,13 @@ namespace OneDas.Extension.Modbus
         {
             base.Validate();
 
+            if (!(0 <= this.UnitIdentifier && this.UnitIdentifier <= 247))
+                throw new Exception(ErrorMessage.ModbusRtuClientSettings_InvalidUnitIdentifier);
+
             if (!SerialPort.GetPortNames().Contains(this.Port))
                 throw new Exception(ErrorMessage.ModbusRtuSettings_ComPortDoesNotExist);
 
-            if (!(0 <= this.UnitIdentifier && this.UnitIdentifier <= 247))
-                throw new Exception(ErrorMessage.ModbusRtuClientSettings_InvalidUnitIdentifier);
+
         }
 
         #endregion
