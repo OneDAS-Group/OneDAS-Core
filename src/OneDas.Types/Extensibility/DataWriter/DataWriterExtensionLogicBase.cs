@@ -79,19 +79,13 @@ namespace OneDas.Extensibility
             ulong lastChunk;
 
             if (dateTime < _lastWrittenDateTime)
-            {
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeAlreadyWritten);
-            }
 
             if (dateTime != dateTime.RoundDown(this.ChunkPeriod))
-            {
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
-            }
 
             if (dataStoragePeriod.Seconds > 0 || dataStoragePeriod.Milliseconds > 0)
-            {
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
-            }
 
             dataStorageOffset = TimeSpan.Zero;
             filePeriod = TimeSpan.FromSeconds((int)this.Settings.FileGranularity);
@@ -154,9 +148,7 @@ namespace OneDas.Extensibility
             return (ulong)(this.TimeSpanToIndexDouble(timeSpan, samplesPerDay));
         }
 
-        // TODO: This method is required since downloading 600 s average data causes an index value < 1, 
-        // which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds
-        // when sample time mechanisms were revised.
+#warning TODO: This method is required since downloading 600 s average data causes an index value < 1, which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds when sample time mechanisms were revised.
         protected double TimeSpanToIndexDouble(TimeSpan timeSpan, ulong samplesPerDay)
         {
             return timeSpan.TotalSeconds * samplesPerDay / 86400;

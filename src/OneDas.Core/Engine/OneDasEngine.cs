@@ -49,7 +49,7 @@ namespace OneDas.Core.Engine
 
         private IServiceProvider _serviceProvider;
         private ILogger _systemLogger;
-        private ILogger _oneDasEngineLogger;
+        private ILogger _engineLogger;
 
         private OneDasOptions _options;
         private DriveInfo _driveInfo;
@@ -103,7 +103,7 @@ namespace OneDas.Core.Engine
 
             // logging
             _systemLogger = loggerFactory.CreateLogger("System");
-            _oneDasEngineLogger = loggerFactory.CreateLogger("Engine");
+            _engineLogger = loggerFactory.CreateLogger("Engine");
 
             // 
             _baseFrequency_To_DateTime = Convert.ToInt64(10000000L / OneDasConstants.NativeSampleRate);
@@ -275,14 +275,14 @@ namespace OneDas.Core.Engine
 
             this.OneDasState = OneDasState.Run;
 
-            _oneDasEngineLogger.LogInformation("data recording enabled");
+            _engineLogger.LogInformation("data recording enabled");
         }
 
         public void Pause()
         {
             this.OneDasState = OneDasState.Ready;
 
-            _oneDasEngineLogger.LogInformation("data recording paused");
+            _engineLogger.LogInformation("data recording paused");
         }
 
         public void Stop()
@@ -297,7 +297,7 @@ namespace OneDas.Core.Engine
             this.Project?.Dispose();
             this.Project = null;
 
-            _oneDasEngineLogger.LogInformation("cyclic I/O update stopped");
+            _engineLogger.LogInformation("cyclic I/O update stopped");
         }
 
         public void AcknowledgeError()
@@ -345,7 +345,7 @@ namespace OneDas.Core.Engine
 
         private void GcNotification_GcOccured(int generation)
         {
-            _oneDasEngineLogger.LogDebug($"garbage collection ({ generation }. generation)");
+            _engineLogger.LogDebug($"garbage collection ({ generation }. generation)");
         }
 
         private void OnOneDasStateChanged(OneDasState oldState, OneDasState newState)
@@ -415,7 +415,7 @@ namespace OneDas.Core.Engine
                 }
             }
 
-            _oneDasEngineLogger.LogInformation("project activated");
+            _engineLogger.LogInformation("project activated");
 
             this.OneDasState = OneDasState.Ready;
         }
@@ -498,7 +498,7 @@ namespace OneDas.Core.Engine
             {
                 if (!dataWriter.Settings.BufferRequestSet.Any())
                 {
-                    _oneDasEngineLogger.LogWarning(ErrorMessage.OneDasEngine_DataWriterHasNoBufferRequests, dataWriter.DisplayName);
+                    _engineLogger.LogWarning(ErrorMessage.OneDasEngine_DataWriterHasNoBufferRequests, dataWriter.DisplayName);
                 }
 
                 // for each buffer request
@@ -602,11 +602,11 @@ namespace OneDas.Core.Engine
 
             if (_referenceClock == null)
             {
-                _oneDasEngineLogger.LogWarning("no reference clock found (fallback to default clock)");
+                _engineLogger.LogWarning("no reference clock found (fallback to default clock)");
             }
             else
             {
-                _oneDasEngineLogger.LogInformation($"reference clock is { ((ExtensionLogicBase)_referenceClock).Settings.Description.Id } ({ ((ExtensionLogicBase)_referenceClock).Settings.Description.InstanceId })");
+                _engineLogger.LogInformation($"reference clock is { ((ExtensionLogicBase)_referenceClock).Settings.Description.Id } ({ ((ExtensionLogicBase)_referenceClock).Settings.Description.InstanceId })");
             }
 
             this.Project.DataGatewaySet.AsParallel().ForAll(dataGateway =>
@@ -662,11 +662,11 @@ namespace OneDas.Core.Engine
 
             if (Process.GetCurrentProcess().PriorityClass < ProcessPriorityClass.RealTime)
             {
-                _oneDasEngineLogger.LogWarning($"process priority is lower than RealTime: { Process.GetCurrentProcess().PriorityClass }");
+                _engineLogger.LogWarning($"process priority is lower than RealTime: { Process.GetCurrentProcess().PriorityClass }");
             }
             else
             {
-                _oneDasEngineLogger.LogInformation($"process priority is: RealTime");
+                _engineLogger.LogInformation($"process priority is: RealTime");
             }
         }
 
@@ -748,13 +748,13 @@ namespace OneDas.Core.Engine
 
                             if (_timerLateCounter == OneDasConstants.NativeSampleRate)
                             {
-                                _oneDasEngineLogger.LogWarning($"timer late by > { _ratedCycleTime_Ms } ms");
+                                _engineLogger.LogWarning($"timer late by > { _ratedCycleTime_Ms } ms");
                                 _timerLateCounter = 0;
                             }
 
                             if (_cycleTimeTooLongCounter == OneDasConstants.NativeSampleRate)
                             {
-                                _oneDasEngineLogger.LogWarning($"cycle time > { _ratedCycleTime_Ms } ms");
+                                _engineLogger.LogWarning($"cycle time > { _ratedCycleTime_Ms } ms");
                                 _cycleTimeTooLongCounter = 0;
                             }
 

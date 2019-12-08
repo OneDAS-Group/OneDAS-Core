@@ -1,5 +1,6 @@
 ﻿using ImcFamosFile;
 using Microsoft.Extensions.Logging;
+using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using System;
@@ -17,7 +18,6 @@ namespace OneDas.Extension.Famos
 
         private FamosSettings _settings;
 
-#warning Required?
         private DateTime _lastFileStartDateTime;
 
         #endregion
@@ -38,7 +38,7 @@ namespace OneDas.Extension.Famos
             string dataFilePath;
 
             _lastFileStartDateTime = startDateTime;
-            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{ this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.dat");
+            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{ this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{ samplesPerDay }_samples_per_day.dat");
 
             if (!File.Exists(dataFilePath))
             {
@@ -107,7 +107,31 @@ namespace OneDas.Extension.Famos
 
         protected override void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet)
         {
-#warning Implement OnWrite
+            string dataFilePath;
+            IList<ISimpleDataStorage> simpleDataStorageSet;
+
+            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ _lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z_{ samplesPerDay }_samples_per_day.dat");
+
+            if (length <= 0)
+                throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
+
+            simpleDataStorageSet = variableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
+
+            using (var famosFile = FamosFile.OpenEditable(dataFilePath))
+            {
+                var field = famosFile.Fields.First();
+
+                famosFile.Edit(writer =>
+                {
+                    for (int i = 0; i < simpleDataStorageSet.Count; i++)
+                    {
+                        var component = field.Components[i + 1];
+                        var data = simpleDataStorageSet[i].DataBuffer.Slice((int)dataStorageOffset, (int)length);
+
+                        famosFile.WriteSingle(writer, component, (int)fileOffset, data);
+                    }
+                });
+            }
         }
 
         private FamosFileChannel PrepareVariable(FamosFileField field, VariableDescription variableDescription, int totalLength)

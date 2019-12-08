@@ -1,13 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <Description>Store data in comma-separated values format.</Description>
-    <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension CSV</PackageTags>
+    <Description>Store data in FAMOS v2 .dat files (imc2).</Description>
+    <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension imc FAMOS</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImcFamosFile" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,11 +21,7 @@
       <Pack>false</Pack>
     </Content>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ImcFamosFile" Version="1.2.0" />
-  </ItemGroup>
-  
+ 
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DesignTime>True</DesignTime>

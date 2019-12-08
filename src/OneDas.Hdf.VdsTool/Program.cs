@@ -1263,7 +1263,8 @@ namespace OneDas.Hdf.VdsTool
                         // find proper data source
                         foreach (SampleRate testedSampleRate in Enum.GetValues(typeof(SampleRate)))
                         {
-                            sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz"; // improve: remove magic number
+#warning remove magic number
+                            sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz";
 
                             if (variableInfo.DatasetInfoSet.Where(x => x.Name == sourceDatasetName).Any())
                             {

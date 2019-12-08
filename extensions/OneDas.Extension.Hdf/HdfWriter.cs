@@ -68,6 +68,7 @@ namespace OneDas.Extension.Hdf
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
 
+#warning Use Span.GetPinnableReference, remove DataBufferPtr property and pass an already sliced Span to the writers instead of 'dataStorage.DataBufferPtr + (int)dataStorageOffset + ...' and 'simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)]'?
             this.OpenFile(_dataFilePath, startDateTime, variableContextSet);
 
             _systemTimeChangedSet.Clear();

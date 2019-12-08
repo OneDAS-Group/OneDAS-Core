@@ -110,7 +110,7 @@ namespace OneDas.Extension.Csv
                 {
                     streamWriter.Write($"{ string.Format(_numberFormatInfo, "{0:N}", fileOffset + rowIndex) };");
 
-                    for (int i = 0; i < simpleDataStorageSet.Count(); i++)
+                    for (int i = 0; i < simpleDataStorageSet.Count; i++)
                     {
                         object value;
 
