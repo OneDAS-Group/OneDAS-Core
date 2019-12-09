@@ -62,7 +62,7 @@ namespace OneDas.Extension.Famos
                 famosFile.Groups.Add(metadataGroup);
 
                 // file -> campaign
-                var campaignGroup = new FamosFileGroup($"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}");
+                var campaignGroup = new FamosFileGroup($"{this.DataWriterContext.CampaignDescription.PrimaryGroupName} / {this.DataWriterContext.CampaignDescription.SecondaryGroupName} / {this.DataWriterContext.CampaignDescription.CampaignName}");
 
                 campaignGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
                 {
@@ -88,14 +88,14 @@ namespace OneDas.Extension.Famos
                     throw new Exception(ErrorMessage.FamosWriter_DataSizeExceedsLimit);
 
                 // file -> campaign -> channels
-                var field = new FamosFileField(FamosFileFieldType.MultipleYToSingleMonotonousTime);
-                var component = new FamosFileAnalogComponent(FamosFileDataType.Int32, (int)totalLength, FamosFileComponentType.Secondary);
-
-                field.Components.Add(component);
+                var field = new FamosFileField(FamosFileFieldType.MultipleYToSingleEquidistantTime);
 
                 foreach (VariableContext variableContext in variableContextSet)
                 {
-                    campaignGroup.Channels.Add(this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength));
+                    var dx = 1.0 / (samplesPerDay / 86400);
+                    var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
+
+                    campaignGroup.Channels.Add(variable);
                 }
 
                 famosFile.Fields.Add(field);
@@ -125,7 +125,7 @@ namespace OneDas.Extension.Famos
                 {
                     for (int i = 0; i < simpleDataStorageSet.Count; i++)
                     {
-                        var component = field.Components[i + 1];
+                        var component = field.Components[i];
                         var data = simpleDataStorageSet[i].DataBuffer.Slice((int)dataStorageOffset, (int)length);
 
                         famosFile.WriteSingle(writer, component, (int)fileOffset, data);
@@ -134,12 +134,17 @@ namespace OneDas.Extension.Famos
             }
         }
 
-        private FamosFileChannel PrepareVariable(FamosFileField field, VariableDescription variableDescription, int totalLength)
+        private FamosFileChannel PrepareVariable(FamosFileField field, VariableDescription variableDescription, int totalLength, DateTime startDateTme, double dx)
         {
             // component 
             var datasetName = $"{variableDescription.VariableName}_{variableDescription.DatasetName.Replace(" ", "_")}";
             var calibration = new FamosFileCalibration(false, 1, 0, false, variableDescription.Unit);
-            var component = new FamosFileAnalogComponent(datasetName, FamosFileDataType.Float64, totalLength, calibration);
+
+            var component = new FamosFileAnalogComponent(datasetName, FamosFileDataType.Float64, totalLength, calibration)
+            {
+                XAxisScaling = new FamosFileXAxisScaling((decimal)dx) { Unit = "s" },
+                TriggerTime = new FamosFileTriggerTime(startDateTme, FamosFileTimeMode.Unknown),
+            };
 
             // attributes
             var channel = component.Channels.First();
