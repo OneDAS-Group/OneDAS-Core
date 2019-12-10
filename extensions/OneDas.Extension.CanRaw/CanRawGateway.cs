@@ -6,12 +6,19 @@ namespace OneDas.Extension.CanRaw
     public class CanRawGateway : ExtendedDataGatewayExtensionLogicBase
     {
         private CanRawSettings _settings;
-        private Random _random;
 
         public CanRawGateway(CanRawSettings settings) : base(settings)
         {
             _settings = settings;
-            _random = new Random();
+            
+            if (_settings.CanDriver == CanDriver.Ixxat)
+            {
+                
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
         protected override void OnUpdateIo(DateTime referenceDateTime)

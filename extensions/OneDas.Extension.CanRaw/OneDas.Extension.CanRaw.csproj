@@ -18,6 +18,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Ixxat.Vci4.Core" Version="4.0.439" />
+  </ItemGroup>
+
    
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
