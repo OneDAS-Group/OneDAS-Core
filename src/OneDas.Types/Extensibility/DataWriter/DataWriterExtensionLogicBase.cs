@@ -70,7 +70,7 @@ namespace OneDas.Extensibility
             TimeSpan period;
 
             List<VariableContext> variableContextSet;
-            Dictionary<ulong, List<VariableContext>> sampleRateToVariableContextMap;
+            List<VariableContextGroup> variableContextGroupSet;
 
             ulong actualFileOffset;
             ulong actualDataStorageOffset;
@@ -90,7 +90,9 @@ namespace OneDas.Extensibility
             dataStorageOffset = TimeSpan.Zero;
             filePeriod = TimeSpan.FromSeconds((int)this.Settings.FileGranularity);
             variableContextSet = _variableDescriptionSet.Zip(dataStorageSet, (variableDescription, dataStorage) => new VariableContext(variableDescription, dataStorage)).ToList();
-            sampleRateToVariableContextMap = variableContextSet.GroupBy(variableContext => variableContext.VariableDescription.SamplesPerDay).ToDictionary(group => group.Key, group => group.ToList());
+            variableContextGroupSet = variableContextSet
+                .GroupBy(variableContext => variableContext.VariableDescription.SamplesPerDay)
+                .Select(group => new VariableContextGroup(group.Key, group.ToList())).ToList();
 
             while (dataStorageOffset < dataStoragePeriod)
             {
@@ -106,30 +108,28 @@ namespace OneDas.Extensibility
                 // check if file must be created or updated
                 if (fileStartDateTime != _lastFileStartDateTime)
                 {
-                    foreach (var entry in sampleRateToVariableContextMap)
-                        this.OnPrepareFile(fileStartDateTime, entry.Key, entry.Value);
+                    this.OnPrepareFile(fileStartDateTime, variableContextGroupSet);
 
                     _lastFileStartDateTime = fileStartDateTime;
                 }
 
                 // write data
-                foreach (var entry in sampleRateToVariableContextMap)
+                foreach (var contextGroup in variableContextGroupSet)
                 {
-                    actualFileOffset = this.TimeSpanToIndex(fileOffset, entry.Key);
-                    actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, entry.Key);
-                    actualPeriod = this.TimeSpanToIndex(period, entry.Key);
+                    actualFileOffset = this.TimeSpanToIndex(fileOffset, contextGroup.SamplesPerDay);
+                    actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, contextGroup.SamplesPerDay);
+                    actualPeriod = this.TimeSpanToIndex(period, contextGroup.SamplesPerDay);
 
                     this.OnWrite(
-                        entry.Key,
+                        contextGroup,
                         actualFileOffset,
                         actualDataStorageOffset,
-                        actualPeriod,
-                        entry.Value
+                        actualPeriod
                     );
 
                     // message
-                    firstChunk = this.ToChunkIndex(actualFileOffset, entry.Key);
-                    lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, entry.Key) - 1;
+                    firstChunk = this.ToChunkIndex(actualFileOffset, contextGroup.SamplesPerDay);
+                    lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, contextGroup.SamplesPerDay) - 1;
 
                     if (firstChunk == lastChunk)
                         _logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
@@ -148,7 +148,7 @@ namespace OneDas.Extensibility
             return (ulong)(this.TimeSpanToIndexDouble(timeSpan, samplesPerDay));
         }
 
-#warning TODO: This method is required since downloading 600 s average data causes an index value < 1, which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds when sample time mechanisms were revised.
+#warning This method is required since downloading 600 s average data causes an index value < 1, which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds when sample time mechanisms were revised.
         protected double TimeSpanToIndexDouble(TimeSpan timeSpan, ulong samplesPerDay)
         {
             return timeSpan.TotalSeconds * samplesPerDay / 86400;
@@ -164,9 +164,9 @@ namespace OneDas.Extensibility
             //
         }
 
-        protected abstract void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet);
+        protected abstract void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet);
 
-        protected abstract void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet);
+        protected abstract void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length);
 
         #endregion
     }

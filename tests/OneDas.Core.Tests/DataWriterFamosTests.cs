@@ -62,6 +62,8 @@ namespace OneDas.Core.Tests
                 currentDate += period;
             }
 
+            dataWriter.Dispose();
+
             // Assert
         }
 
@@ -69,7 +71,7 @@ namespace OneDas.Core.Tests
         {
             var guid = Guid.NewGuid();
             var sampleRate = samplesPerDay / 86400;
-            var datasetName = $"{ 100 / (int)sampleRate } Hz";
+            var datasetName = $"{ (int)sampleRate } Hz";
             var transferFunctionSet = new List<TransferFunction>();
             var dataStorageType = typeof(SimpleDataStorage);
 

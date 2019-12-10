@@ -80,12 +80,10 @@ namespace OneDas.Extension.Mat73
             });
 
             if (this.DataWriterContext.CustomMetadataEntrySet.Count() > 58)
-            {
                 throw new Exception("The number of custom metadata entries must not exceed 58.");
-            }
         }
 
-        protected override void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
             _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z.mat");
 
@@ -94,10 +92,10 @@ namespace OneDas.Extension.Mat73
                 this.CloseHdfFile(_fileId);
             }
 
-            this.OpenFile(_dataFilePath, startDateTime, variableContextSet);
+            this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
         }
 
-        protected override void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
         {
             long groupId = -1;
 
@@ -106,8 +104,8 @@ namespace OneDas.Extension.Mat73
 
             try
             {
-                firstChunk = (long)(fileOffset / this.TimeSpanToIndex(this.ChunkPeriod, samplesPerDay));
-                lastChunk = (long)((fileOffset + length) / this.TimeSpanToIndex(this.ChunkPeriod, samplesPerDay)) - 1;
+                firstChunk = (long)(fileOffset / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SamplesPerDay));
+                lastChunk = (long)((fileOffset + length) / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SamplesPerDay)) - 1;
 
                 groupId = H5G.open(_fileId, $"/info");
 
@@ -119,9 +117,9 @@ namespace OneDas.Extension.Mat73
                 }
 
                 // write data
-                for (int i = 0; i < variableContextSet.Count(); i++)
+                for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
                 {
-                    this.WriteData(fileOffset, dataStorageOffset, length, variableContextSet[i]);
+                    this.WriteData(fileOffset, dataStorageOffset, length, contextGroup.VariableContextSet[i]);
                 }
 
                 // write last_completed_chunk
@@ -181,9 +179,7 @@ namespace OneDas.Extension.Mat73
                 }
 
                 if (_fileId < 0)
-                {
                     throw new Exception($"{ ErrorMessage.Mat73Writer_CouldNotOpenOrCreateFile } File: { filePath }.");
-                }
 
                 // prepare channels
                 foreach (VariableContext variableContext in variableContextSet)
@@ -197,9 +193,7 @@ namespace OneDas.Extension.Mat73
                 (datasetId, isNew) = this.OpenOrCreateVariable(groupId, "last_completed_chunk", 1, 1);
 
                 if (isNew)
-                {
                     IOHelper.Write(datasetId, new double[] { -1 }, DataContainerType.Dataset);
-                }
 
                 // text entries
                 _textEntrySet[2].Content = startDateTime.ToString("yyyy-MM-ddTHH-mm-ss");
@@ -287,9 +281,7 @@ namespace OneDas.Extension.Mat73
                 chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SamplesPerDay);
 
                 if (chunkLength <= 0)
-                {
                     throw new Exception(ErrorMessage.Mat73Writer_SampleRateTooLow);
-                }
 
                 // struct
                 groupId = this.OpenOrCreateStruct(locationId, variableDescription.VariableName).GroupId;
@@ -336,9 +328,7 @@ namespace OneDas.Extension.Mat73
             finally
             {
                 if (gcHandle_fillValue.IsAllocated)
-                {
                     gcHandle_fillValue.Free();
-                }
             }
 
             return (datasetId, isNew);

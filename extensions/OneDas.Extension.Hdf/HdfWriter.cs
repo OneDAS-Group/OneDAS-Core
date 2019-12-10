@@ -61,7 +61,7 @@ namespace OneDas.Extension.Hdf
 
         #region "Methods"
 
-        protected override void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
             _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.h5");
 
@@ -69,12 +69,12 @@ namespace OneDas.Extension.Hdf
                 this.CloseHdfFile(_fileId);
 
 #warning Use Span.GetPinnableReference, remove DataBufferPtr property and pass an already sliced Span to the writers instead of 'dataStorage.DataBufferPtr + (int)dataStorageOffset + ...' and 'simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)]'?
-            this.OpenFile(_dataFilePath, startDateTime, variableContextSet);
+            this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
 
             _systemTimeChangedSet.Clear();
         }
 
-        protected override void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
         {
             long datasetId = -1;
             long dataspaceId = -1;
@@ -88,8 +88,8 @@ namespace OneDas.Extension.Hdf
 
             try
             {
-                firstChunk = (long)this.ToChunkIndex(fileOffset, samplesPerDay);
-                lastChunk = (long)this.ToChunkIndex(fileOffset + length, samplesPerDay) - 1;
+                firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SamplesPerDay);
+                lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SamplesPerDay) - 1;
 
                 groupId = H5G.open(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}");
                 datasetId = H5D.open(groupId, "is_chunk_completed_set");
@@ -104,9 +104,9 @@ namespace OneDas.Extension.Hdf
                 }
 
                 // write data
-                for (int i = 0; i < variableContextSet.Count(); i++)
+                for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
                 {
-                    this.WriteData(fileOffset, dataStorageOffset, length, variableContextSet[i]);
+                    this.WriteData(fileOffset, dataStorageOffset, length, contextGroup.VariableContextSet[i]);
                 }
 
                 // system time changed
@@ -225,12 +225,6 @@ namespace OneDas.Extension.Hdf
             }
         }
 
-        /// <summary>
-        /// Writes data to the specified chunk.
-        /// </summary>
-        /// <param name="chunkNumber">The chunk number.</param>
-        /// <param name="dataStorage">The <see cref="DataStorage(Of T)"/>.</param>
-        /// <param name="storageType">The <see cref="StorageType"/>.</param>
         private void WriteData(ulong fileOffset, ulong dataStorageOffset, ulong length, VariableContext variableContext)
         {
             Contract.Requires(variableContext != null, nameof(variableContext));

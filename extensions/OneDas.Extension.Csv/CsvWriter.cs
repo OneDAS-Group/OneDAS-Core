@@ -39,70 +39,74 @@ namespace OneDas.Extension.Csv
 
         #region "Methods"
 
-        protected override void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
             string dataFilePath;
 
             _lastFileStartDateTime = startDateTime;
-            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z_{ samplesPerDay }_samples_per_day.csv");
 
-            if (!File.Exists(dataFilePath))
+            foreach (var contextGroup in variableContextGroupSet)
             {
-                using (StreamWriter streamWriter = new StreamWriter(File.Open(dataFilePath, FileMode.Append, FileAccess.Write)))
+                dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z_{ contextGroup.SamplesPerDay }_samples_per_day.csv");
+
+                if (!File.Exists(dataFilePath))
                 {
-                    // comment
-                    streamWriter.WriteLine($"# format_version: { this.FormatVersion };");
-                    streamWriter.WriteLine($"# system_name: { this.DataWriterContext.SystemName };");
-                    streamWriter.WriteLine($"# date_time: { startDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ") };");
-                    streamWriter.WriteLine($"# samples_per_day: { samplesPerDay };");
-
-                    foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.File))
+                    using (StreamWriter streamWriter = new StreamWriter(File.Open(dataFilePath, FileMode.Append, FileAccess.Write)))
                     {
-                        streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
+                        // comment
+                        streamWriter.WriteLine($"# format_version: { this.FormatVersion };");
+                        streamWriter.WriteLine($"# system_name: { this.DataWriterContext.SystemName };");
+                        streamWriter.WriteLine($"# date_time: { startDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ") };");
+                        streamWriter.WriteLine($"# samples_per_day: { contextGroup.SamplesPerDay };");
+
+                        foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.File))
+                        {
+                            streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
+                        }
+
+                        streamWriter.WriteLine($"# campaign_first_level: { this.DataWriterContext.CampaignDescription.PrimaryGroupName };");
+                        streamWriter.WriteLine($"# campaign_second_level: { this.DataWriterContext.CampaignDescription.SecondaryGroupName };");
+                        streamWriter.WriteLine($"# campaign_name: { this.DataWriterContext.CampaignDescription.CampaignName };");
+                        streamWriter.WriteLine($"# campaign_version: { this.DataWriterContext.CampaignDescription.Version };");
+
+                        foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
+                        {
+                            streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
+                        }
+
+                        // header
+                        streamWriter.Write("index;");
+
+                        foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                        {
+                            streamWriter.Write($"{ variableContext.VariableDescription.VariableName };");
+                        }
+
+                        streamWriter.WriteLine();
+                        streamWriter.Write("-;");
+
+                        foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                        {
+                            streamWriter.Write($"{ variableContext.VariableDescription.DatasetName };");
+                        }
+
+                        streamWriter.WriteLine();
                     }
-
-                    streamWriter.WriteLine($"# campaign_first_level: { this.DataWriterContext.CampaignDescription.PrimaryGroupName };");
-                    streamWriter.WriteLine($"# campaign_second_level: { this.DataWriterContext.CampaignDescription.SecondaryGroupName };");
-                    streamWriter.WriteLine($"# campaign_name: { this.DataWriterContext.CampaignDescription.CampaignName };");
-                    streamWriter.WriteLine($"# campaign_version: { this.DataWriterContext.CampaignDescription.Version };");
-
-                    foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
-                    {
-                        streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
-                    }
-
-                    // header
-                    streamWriter.Write("index;");
-
-                    foreach (VariableContext variableContext in variableContextSet)
-                    {
-                        streamWriter.Write($"{ variableContext.VariableDescription.VariableName };");
-                    }
-
-                    streamWriter.WriteLine();
-                    streamWriter.Write("-;");
-
-                    foreach (VariableContext variableContext in variableContextSet)
-                    {
-                        streamWriter.Write($"{ variableContext.VariableDescription.DatasetName };");
-                    }
-
-                    streamWriter.WriteLine();
                 }
             }
         }
 
-        protected override void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
         {
             string dataFilePath;
             IList<ISimpleDataStorage> simpleDataStorageSet;
 
-            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ _lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z_{ samplesPerDay }_samples_per_day.csv");
+            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ _lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z_{ contextGroup.SamplesPerDay }_samples_per_day.csv");
 
             if (length <= 0)
                 throw new Exception(ErrorMessage.CsvWriter_SampleRateTooLow);
 
-            simpleDataStorageSet = variableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
+            simpleDataStorageSet = contextGroup.VariableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
 
             using (StreamWriter streamWriter = new StreamWriter(File.Open(dataFilePath, FileMode.Append, FileAccess.Write)))
             {

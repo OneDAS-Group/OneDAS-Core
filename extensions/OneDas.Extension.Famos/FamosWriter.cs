@@ -16,9 +16,10 @@ namespace OneDas.Extension.Famos
     {
         #region "Fields"
 
+        private string _dataFilePath;
+        private FamosFile _famosFile;
         private FamosSettings _settings;
-
-        private DateTime _lastFileStartDateTime;
+        private Dictionary<ulong, int> _spdToFieldIndexMap;
 
         #endregion
 
@@ -27,57 +28,92 @@ namespace OneDas.Extension.Famos
         public FamosWriter(FamosSettings settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
         {
             _settings = settings;
+
+            _spdToFieldIndexMap = new Dictionary<ulong, int>();
         }
 
         #endregion
 
         #region "Methods"
 
-        protected override void OnPrepareFile(DateTime startDateTime, ulong samplesPerDay, IList<VariableContext> variableContextSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            string dataFilePath;
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{ this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.dat");
 
-            _lastFileStartDateTime = startDateTime;
-            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{ this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{ samplesPerDay }_samples_per_day.dat");
+            if (_famosFile != null)
+                _famosFile.Dispose();
 
-            if (!File.Exists(dataFilePath))
+            this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet);
+        }
+
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
+        {
+            IList<ISimpleDataStorage> simpleDataStorageSet;
+
+            if (length <= 0)
+                throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
+
+            simpleDataStorageSet = contextGroup.VariableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
+
+            var fieldIndex = _spdToFieldIndexMap[contextGroup.SamplesPerDay];
+            var field = _famosFile.Fields[fieldIndex];
+
+            _famosFile.Edit(writer =>
             {
-                var famosFile = new FamosFileHeader();
-
-                // file
-                var metadataGroup = new FamosFileGroup("Metadata");
-
-                metadataGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
+                for (int i = 0; i < simpleDataStorageSet.Count; i++)
                 {
-                    new FamosFileProperty("format_version", this.FormatVersion),
-                    new FamosFileProperty("system_name", this.DataWriterContext.SystemName),
-                    new FamosFileProperty("date_time", startDateTime),
-                });
+                    var component = field.Components[i];
+                    var data = simpleDataStorageSet[i].DataBuffer.Slice((int)dataStorageOffset, (int)length);
 
-                foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.File))
-                {
-                    metadataGroup.PropertyInfo.Properties.Add(new FamosFileProperty(customMetadataEntry.Key, customMetadataEntry.Value));
+                    _famosFile.WriteSingle(writer, component, (int)fileOffset, data);
                 }
+            });
+        }
 
-                famosFile.Groups.Add(metadataGroup);
+        private void OpenFile(string dataFilePath, DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
+        {
+            if (File.Exists(dataFilePath))
+                throw new Exception($"The file {dataFilePath} already exists. Extending an already existing file with additional variables is not supported.");
 
-                // file -> campaign
-                var campaignGroup = new FamosFileGroup($"{this.DataWriterContext.CampaignDescription.PrimaryGroupName} / {this.DataWriterContext.CampaignDescription.SecondaryGroupName} / {this.DataWriterContext.CampaignDescription.CampaignName}");
+            var famosFile = new FamosFileHeader();
 
-                campaignGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
-                {
-                    new FamosFileProperty("campaign_version", this.DataWriterContext.CampaignDescription.Version)
-                });
+            // file
+            var metadataGroup = new FamosFileGroup("Metadata");
 
-                foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
-                {
-                    campaignGroup.PropertyInfo.Properties.Add(new FamosFileProperty(customMetadataEntry.Key, customMetadataEntry.Value));
-                }
+            metadataGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
+            {
+                new FamosFileProperty("format_version", this.FormatVersion),
+                new FamosFileProperty("system_name", this.DataWriterContext.SystemName),
+                new FamosFileProperty("date_time", startDateTime),
+            });
 
-                famosFile.Groups.Add(campaignGroup);
+            foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.File))
+            {
+                metadataGroup.PropertyInfo.Properties.Add(new FamosFileProperty(customMetadataEntry.Key, customMetadataEntry.Value));
+            }
 
+            famosFile.Groups.Add(metadataGroup);
+
+            // file -> campaign
+            var campaignGroup = new FamosFileGroup($"{this.DataWriterContext.CampaignDescription.PrimaryGroupName} / {this.DataWriterContext.CampaignDescription.SecondaryGroupName} / {this.DataWriterContext.CampaignDescription.CampaignName}");
+
+            campaignGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
+            {
+                new FamosFileProperty("campaign_version", this.DataWriterContext.CampaignDescription.Version)
+            });
+
+            foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
+            {
+                campaignGroup.PropertyInfo.Properties.Add(new FamosFileProperty(customMetadataEntry.Key, customMetadataEntry.Value));
+            }
+
+            famosFile.Groups.Add(campaignGroup);
+
+            // for each context group
+            foreach (var contextGroup in variableContextGroupSet)
+            {
                 // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableContextSet.First().VariableDescription.SamplesPerDay);
+                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.VariableContextSet.First().VariableDescription.SamplesPerDay);
 
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
@@ -90,48 +126,21 @@ namespace OneDas.Extension.Famos
                 // file -> campaign -> channels
                 var field = new FamosFileField(FamosFileFieldType.MultipleYToSingleEquidistantTime);
 
-                foreach (VariableContext variableContext in variableContextSet)
+                foreach (VariableContext variableContext in contextGroup.VariableContextSet)
                 {
-                    var dx = 1.0 / (samplesPerDay / 86400);
+                    var dx = 1.0 / (contextGroup.SamplesPerDay / 86400);
                     var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
 
                     campaignGroup.Channels.Add(variable);
                 }
 
                 famosFile.Fields.Add(field);
-
-                //
-                famosFile.Save(dataFilePath, _ => { });
+                _spdToFieldIndexMap[contextGroup.SamplesPerDay] = famosFile.Fields.Count - 1;
             }
-        }
 
-        protected override void OnWrite(ulong samplesPerDay, ulong fileOffset, ulong dataStorageOffset, ulong length, IList<VariableContext> variableContextSet)
-        {
-            string dataFilePath;
-            IList<ISimpleDataStorage> simpleDataStorageSet;
-
-            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ _lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z_{ samplesPerDay }_samples_per_day.dat");
-
-            if (length <= 0)
-                throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
-
-            simpleDataStorageSet = variableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
-
-            using (var famosFile = FamosFile.OpenEditable(dataFilePath))
-            {
-                var field = famosFile.Fields.First();
-
-                famosFile.Edit(writer =>
-                {
-                    for (int i = 0; i < simpleDataStorageSet.Count; i++)
-                    {
-                        var component = field.Components[i];
-                        var data = simpleDataStorageSet[i].DataBuffer.Slice((int)dataStorageOffset, (int)length);
-
-                        famosFile.WriteSingle(writer, component, (int)fileOffset, data);
-                    }
-                });
-            }
+            //
+            famosFile.Save(dataFilePath, _ => { });
+            _famosFile = FamosFile.OpenEditable(dataFilePath);
         }
 
         private FamosFileChannel PrepareVariable(FamosFileField field, VariableDescription variableDescription, int totalLength, DateTime startDateTme, double dx)
@@ -159,6 +168,13 @@ namespace OneDas.Extension.Famos
             field.Components.Add(component);
 
             return channel;
+        }
+
+        protected override void FreeManagedResources()
+        {
+            base.FreeManagedResources();
+
+            _famosFile?.Dispose();
         }
 
         #endregion
