@@ -44,19 +44,13 @@ namespace OneDas.Extension.Udp
             base.Validate();
 
             if (!OneDasUtilities.ValidateIPv4(this.RemoteIpAddress, out remoteIpAddress))
-            {
                 throw new Exception(ErrorMessage.UdpSettings_RemoteIpAddressInvalid);
-            }
 
             if (this.RemoteDataPort < 1024 || this.RemoteDataPort > 65535)
-            {
                 throw new Exception(ErrorMessage.UdpSettings_DataPortInvalid);
-            }
 
             if (this.LocalDataPort < 1024 || this.LocalDataPort > 65535)
-            {
                 throw new Exception(ErrorMessage.UdpSettings_DataPortInvalid);
-            }
         }
 
         #endregion

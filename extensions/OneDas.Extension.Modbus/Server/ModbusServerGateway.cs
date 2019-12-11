@@ -5,7 +5,6 @@ using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace OneDas.Extension.Modbus
 {
@@ -56,19 +55,10 @@ namespace OneDas.Extension.Modbus
 
         protected override int SetDataPortBufferOffset(KeyValuePair<OneDasModule, List<DataPort>> moduleEntry, int bufferOffsetBase, DataDirection dataDirection)
         {
-            ModbusModule modbusModule;
-            int dataPortInputOffset;
+            base.SetDataPortBufferOffset(moduleEntry, bufferOffsetBase, dataDirection);
 
-            modbusModule = (ModbusModule)moduleEntry.Key;
+            var modbusModule = (ModbusModule)moduleEntry.Key;
             modbusModule.ByteOffset = bufferOffsetBase;
-
-            dataPortInputOffset = 0;
-
-            moduleEntry.Value.ForEach(dataPort =>
-            {
-                dataPort.DataPtr = new IntPtr(bufferOffsetBase + dataPortInputOffset);
-                dataPortInputOffset += Marshal.SizeOf(OneDasUtilities.GetTypeFromOneDasDataType(dataPort.DataType));
-            });
 
             return modbusModule.Quantity * 2; // yields only even number of bytes (rounded up)
         }

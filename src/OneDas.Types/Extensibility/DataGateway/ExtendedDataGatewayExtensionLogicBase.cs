@@ -92,9 +92,7 @@ namespace OneDas.Extensibility
 
         protected virtual int SetDataPortBufferOffset(KeyValuePair<OneDasModule, List<DataPort>> moduleEntry, int bufferOffsetBase, DataDirection dataDirection)
         {
-            int dataPortOffset;
-
-            dataPortOffset = 0;
+            var dataPortOffset = 0;
 
             moduleEntry.Value.ForEach(dataPort =>
             {

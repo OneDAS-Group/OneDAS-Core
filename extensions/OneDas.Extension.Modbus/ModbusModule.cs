@@ -53,5 +53,7 @@ namespace OneDas.Extension.Modbus
         }
 
         #endregion
+
+#warning Validation?
     }
 }

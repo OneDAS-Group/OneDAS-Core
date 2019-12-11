@@ -71,15 +71,11 @@ namespace OneDas.Extension.Udp
 
                             // check if remote IP address is correct
                             if (!udpReceiveResult.RemoteEndPoint.Address.Equals(_remoteEndpoint.Address))
-                            {
                                 continue;
-                            }
 
                             // check if udpData size is correct
                             if (udpReceiveResult.Buffer.Length != inputBufferSize)
-                            {
                                 continue;
-                            }
 
                             _udpBuffer = udpReceiveResult.Buffer;
                             this.LastSuccessfulUpdate.Restart();
@@ -114,9 +110,7 @@ namespace OneDas.Extension.Udp
             _cycleCounter++;
 
             if (_cycleCounter >= OneDasConstants.NativeSampleRate)
-            {
                 _cycleCounter = 0;
-            }
         }
 
         public UdpClient CreateUdpClient(IPEndPoint ipEndPoint)

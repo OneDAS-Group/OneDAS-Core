@@ -57,8 +57,6 @@ namespace OneDas.Extension.Modbus
 
             if (!SerialPort.GetPortNames().Contains(this.Port))
                 throw new Exception(ErrorMessage.ModbusRtuSettings_ComPortDoesNotExist);
-
-
         }
 
         #endregion

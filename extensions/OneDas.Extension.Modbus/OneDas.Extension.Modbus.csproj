@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <Description>Communicate via Modbus TCP.</Description>
-    <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension ModbusTcp</PackageTags>
+    <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension ModbusTCP ModbusRTU</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   

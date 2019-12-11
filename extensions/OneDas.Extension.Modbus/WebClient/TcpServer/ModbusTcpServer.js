@@ -22,7 +22,7 @@ class ModbusModuleViewModel extends OneDasModuleViewModel {
         this.ObjectType.subscribe(newValue => this.OnPropertyChanged());
         // improve: better would be server side generation of correct module
         if (!this._model.$type) {
-            this._model.$type = "OneDas.Extension.Modbus.ModbusTcpModule, OneDas.Extension.Modbus";
+            this._model.$type = "OneDas.Extension.Modbus.ModbusModule, OneDas.Extension.Modbus";
         }
     }
     Validate() {
@@ -81,7 +81,7 @@ window["ModbusObjectTypeEnum"] = ModbusObjectTypeEnum;
 class ModbusServerModuleSelectorViewModel extends OneDasModuleSelectorViewModel {
     constructor(oneDasModuleSelectorMode, moduleSet) {
         super(oneDasModuleSelectorMode, moduleSet);
-        this.SettingsTemplateName = ko.observable("ModbusTcp_OneDasModuleSettingsTemplate");
+        this.SettingsTemplateName = ko.observable("Modbus_OneDasModuleSettingsTemplate");
     }
     CreateNewModule() {
         return new ModbusServerModuleViewModel(new ModbusModuleModel(0, ModbusObjectTypeEnum.HoldingRegister, OneDasDataTypeEnum.UINT16, DataDirectionEnum.Input, EndiannessEnum.BigEndian, 1));

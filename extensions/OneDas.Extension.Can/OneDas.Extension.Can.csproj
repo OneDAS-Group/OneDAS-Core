@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <Description>Communicate via CAN Bus.</Description>
+    <Description>Send and received CAN 2.0a and 2.0b messages.</Description>
     <PackageTags>OneDAS data aquisition measurement extension CAN</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -11,8 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="WebClient\CanRaw.js" />
-    <EmbeddedResource Include="WebClient\CanRawView.html" />
     <Content Include="WebClient\tsconfig.json">
       <Pack>false</Pack>
     </Content>
@@ -35,7 +33,7 @@
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>OneDas.Extension.CanRaw</CustomToolNamespace>
+      <CustomToolNamespace>OneDas.Extension.Can</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
   

@@ -38,9 +38,7 @@ namespace OneDas.Extension.OpcUa
             base.Validate();
 
             if (!OneDasUtilities.ValidateIPv4(this.LocalIpAddress, out localIpAddress))
-            {
                 throw new Exception(ErrorMessage.OpcUaServerSettings_LocalIpAddressInvalid);
-            }
         }
 
         #endregion

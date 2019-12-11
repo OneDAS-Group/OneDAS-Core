@@ -1,7 +1,7 @@
 {
   "extends": "./../../tsconfig.base.json",
   "compilerOptions": {
-    "outFile": "CanRaw.js"
+    "outFile": "Can.js"
   },
   "include": [
     "./**/*.ts"

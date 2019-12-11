@@ -4,7 +4,7 @@
     {
         super(oneDasModuleSelectorMode, moduleSet)
         
-        this.SettingsTemplateName = ko.observable("ModbusTcp_OneDasModuleSettingsTemplate")
+        this.SettingsTemplateName = ko.observable("Modbus_OneDasModuleSettingsTemplate")
     }
 
     protected CreateNewModule()

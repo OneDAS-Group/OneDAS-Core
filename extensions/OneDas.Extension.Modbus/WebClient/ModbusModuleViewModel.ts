@@ -32,7 +32,7 @@
         // improve: better would be server side generation of correct module
         if (!this._model.$type)
         {
-            this._model.$type = "OneDas.Extension.Modbus.ModbusTcpModule, OneDas.Extension.Modbus"
+            this._model.$type = "OneDas.Extension.Modbus.ModbusModule, OneDas.Extension.Modbus"
         }
     }
 
@@ -104,7 +104,7 @@
     {
         super.ExtendModel(model)
 
-        model.StartingAddress = <number>this.StartingAddress(),
+        model.StartingAddress = <number>this.StartingAddress()
         model.ObjectType = <ModbusObjectTypeEnum>this.ObjectType()
     }
 }

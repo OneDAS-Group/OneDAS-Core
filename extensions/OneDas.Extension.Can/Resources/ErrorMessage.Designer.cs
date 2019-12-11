@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OneDas.Extension.CanRaw {
+namespace OneDas.Extension.Can {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace OneDas.Extension.CanRaw {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extension.CanRaw.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OneDas.Extension.Can.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,15 @@ namespace OneDas.Extension.CanRaw {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The CAN message size is limited to 8 bytes. ähnelt.
+        /// </summary>
+        internal static string MessageSizeExceeded {
+            get {
+                return ResourceManager.GetString("MessageSizeExceeded", resourceCulture);
             }
         }
     }

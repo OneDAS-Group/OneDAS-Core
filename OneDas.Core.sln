@@ -97,7 +97,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.RaspberryP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.Udp", "extensions\OneDas.Extension.Udp\OneDas.Extension.Udp.csproj", "{919CEDF6-1B26-4980-9265-3DC904D26656}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.CanRaw", "extensions\OneDas.Extension.CanRaw\OneDas.Extension.CanRaw.csproj", "{0F9D4D5C-FF5C-4005-B6BC-46D930CBEB4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.Can", "extensions\OneDas.Extension.Can\OneDas.Extension.Can.csproj", "{0F9D4D5C-FF5C-4005-B6BC-46D930CBEB4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

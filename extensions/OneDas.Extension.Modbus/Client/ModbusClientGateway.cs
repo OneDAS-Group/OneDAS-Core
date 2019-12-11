@@ -5,7 +5,6 @@ using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -121,13 +120,9 @@ namespace OneDas.Extension.Modbus
                                 case ModbusObjectTypeEnum.HoldingRegister:
 
                                     if (modbusModule.Quantity == 1)
-                                    {
                                         this.ModbusClient.WriteSingleRegister(this.Settings.UnitIdentifier, modbusModule.StartingAddress, buffer);
-                                    }
                                     else
-                                    {
                                         this.ModbusClient.WriteMultipleRegisters(this.Settings.UnitIdentifier, modbusModule.StartingAddress, buffer);
-                                    }
 
                                     break;
 
@@ -160,19 +155,10 @@ namespace OneDas.Extension.Modbus
 
         protected override int SetDataPortBufferOffset(KeyValuePair<OneDasModule, List<DataPort>> moduleEntry, int bufferOffsetBase, DataDirection dataDirection)
         {
-            ModbusModule modbusModule;
-            int dataPortInputOffset;
+            base.SetDataPortBufferOffset(moduleEntry, bufferOffsetBase, dataDirection);
 
-            modbusModule = (ModbusModule)moduleEntry.Key;
+            var modbusModule = (ModbusModule)moduleEntry.Key;
             modbusModule.ByteOffset = bufferOffsetBase;
-
-            dataPortInputOffset = 0;
-
-            moduleEntry.Value.ForEach(dataPort =>
-            {
-                dataPort.DataPtr = new IntPtr(bufferOffsetBase + dataPortInputOffset);
-                dataPortInputOffset += Marshal.SizeOf(OneDasUtilities.GetTypeFromOneDasDataType(dataPort.DataType));
-            });
 
             return modbusModule.Quantity * 2; // yields only even number of bytes (rounded up)
         }
@@ -181,7 +167,7 @@ namespace OneDas.Extension.Modbus
         {
             if (_cycleCounter % this.Settings.FrameRateDivider == 0)
             {
-                // manualResetEvent is in state "unset", i.e. ModbusTCP update task has finished
+                // manualResetEvent is in state "unset", i.e. Modbus update task has finished
                 if (!_manualResetEvent.Wait(TimeSpan.Zero))
                 {
                     // inbox set

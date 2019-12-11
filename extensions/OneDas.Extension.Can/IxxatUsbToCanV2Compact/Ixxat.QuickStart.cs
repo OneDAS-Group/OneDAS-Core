@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.Extension.CanRaw
+namespace OneDas.Extension.Can
 {
     internal class QuickStart
     {
@@ -174,7 +174,6 @@ namespace OneDas.Extension.CanRaw
         {
             while (!_cts.IsCancellationRequested)
             {
-#warning currently not cancelable
                 _autoResetEvent.WaitOne();
 
                 while (_reader.ReadMessage(out ICanMessage2 message))
