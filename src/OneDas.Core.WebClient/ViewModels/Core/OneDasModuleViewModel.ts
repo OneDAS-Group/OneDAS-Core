@@ -28,9 +28,9 @@
 
         this._onPropertyChanged = new EventDispatcher<OneDasModuleViewModel, any>();
 
-        this.DataType.subscribe(newValue => this.OnPropertyChanged())
-        this.DataDirection.subscribe(newValue => this.OnPropertyChanged())
-        this.Size.subscribe(newValue => this.OnPropertyChanged())
+        this.DataType.subscribe(_ => this.OnPropertyChanged())
+        this.DataDirection.subscribe(_ => this.OnPropertyChanged())
+        this.Size.subscribe(_ => this.OnPropertyChanged())
     }
 
     get PropertyChanged(): IEvent<OneDasModuleViewModel, any>
@@ -62,9 +62,9 @@
     {
         this.ErrorMessage("")
 
-        if (this.Size() < 1 || (isFinite(this.MaxSize()) && this.Size() > this.MaxSize()))
+        if (this.Size() < 1 || (isFinite(this.MaxSize()) && this.GetByteCount() > this.MaxSize()))
         {
-            this.ErrorMessage("Size must be within range 1.." + this.MaxSize() + ".")
+            this.ErrorMessage("Size must be within range 1.." + this.MaxSize() + " bytes.")
         }
     }
 

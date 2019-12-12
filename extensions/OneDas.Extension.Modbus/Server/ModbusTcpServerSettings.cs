@@ -6,7 +6,7 @@ namespace OneDas.Extension.Modbus
 {
     [DataContract]
     [ExtensionContext(typeof(ModbusTcpServerGateway))]
-    [ExtensionIdentification("ModbusTcpServer", "Modbus TCP Server", "Provide data to Modbus TCP clients.", @"WebClient.Server.ModbusTcpServerView.html", @"WebClient.Server.ModbusTcpServer.js")]
+    [ExtensionIdentification("ModbusTcpServer", "Modbus TCP Server", "Provide data to Modbus TCP clients.", @"WebClient.TcpServer.ModbusTcpServerView.html", @"WebClient.TcpServer.ModbusTcpServer.js")]
     public class ModbusTcpServerSettings : ModbusServerSettings
     {
         #region "Constructors"

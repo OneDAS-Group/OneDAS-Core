@@ -1,3 +1,11 @@
+var HandshakeEnum;
+(function (HandshakeEnum) {
+    HandshakeEnum[HandshakeEnum["None"] = 0] = "None";
+    HandshakeEnum[HandshakeEnum["XOnXOff"] = 1] = "XOnXOff";
+    HandshakeEnum[HandshakeEnum["RequestToSend"] = 2] = "RequestToSend";
+    HandshakeEnum[HandshakeEnum["RequestToSendXOnXOff"] = 3] = "RequestToSendXOnXOff";
+})(HandshakeEnum || (HandshakeEnum = {}));
+window["HandshakeEnum"] = HandshakeEnum;
 class ModbusModuleModel extends OneDasModuleModel {
     constructor(startingAddress, objectType, dataType, dataDirection, endianness, size) {
         super(dataType, dataDirection, endianness, size);
@@ -66,8 +74,8 @@ class ModbusModuleViewModel extends OneDasModuleViewModel {
     }
     ExtendModel(model) {
         super.ExtendModel(model);
-        model.StartingAddress = this.StartingAddress(),
-            model.ObjectType = this.ObjectType();
+        model.StartingAddress = this.StartingAddress();
+        model.ObjectType = this.ObjectType();
     }
 }
 var ModbusObjectTypeEnum;
@@ -78,6 +86,19 @@ var ModbusObjectTypeEnum;
     ModbusObjectTypeEnum[ModbusObjectTypeEnum["HoldingRegister"] = 4] = "HoldingRegister";
 })(ModbusObjectTypeEnum || (ModbusObjectTypeEnum = {}));
 window["ModbusObjectTypeEnum"] = ModbusObjectTypeEnum;
+var ParityEnum;
+(function (ParityEnum) {
+    ParityEnum[ParityEnum["None"] = 0] = "None";
+    ParityEnum[ParityEnum["Odd"] = 1] = "Odd";
+    ParityEnum[ParityEnum["Even"] = 2] = "Even";
+})(ParityEnum || (ParityEnum = {}));
+var StopBitsEnum;
+(function (StopBitsEnum) {
+    StopBitsEnum[StopBitsEnum["None"] = 0] = "None";
+    StopBitsEnum[StopBitsEnum["One"] = 1] = "One";
+    StopBitsEnum[StopBitsEnum["Two"] = 2] = "Two";
+    StopBitsEnum[StopBitsEnum["OnePointFive"] = 3] = "OnePointFive";
+})(StopBitsEnum || (StopBitsEnum = {}));
 class ModbusClientModuleSelectorViewModel extends OneDasModuleSelectorViewModel {
     constructor(oneDasModuleSelectorMode, moduleSet) {
         super(oneDasModuleSelectorMode, moduleSet);
@@ -125,24 +146,3 @@ class ModbusTcpClientViewModel extends ModbusClientViewModel {
         model.Port = this.Port();
     }
 }
-var ParityEnum;
-(function (ParityEnum) {
-    ParityEnum[ParityEnum["None"] = 0] = "None";
-    ParityEnum[ParityEnum["Odd"] = 1] = "Odd";
-    ParityEnum[ParityEnum["Even"] = 2] = "Even";
-    ParityEnum[ParityEnum["Mark"] = 3] = "Mark";
-})(ParityEnum || (ParityEnum = {}));
-var HandshakeEnum;
-(function (HandshakeEnum) {
-    HandshakeEnum[HandshakeEnum["None"] = 0] = "None";
-    HandshakeEnum[HandshakeEnum["RequestToSend"] = 1] = "RequestToSend";
-    HandshakeEnum[HandshakeEnum["RequestToSendXOnXOff"] = 2] = "RequestToSendXOnXOff";
-    HandshakeEnum[HandshakeEnum["XOnXOff"] = 3] = "XOnXOff";
-})(HandshakeEnum || (HandshakeEnum = {}));
-var StopBits;
-(function (StopBits) {
-    StopBits[StopBits["None"] = 0] = "None";
-    StopBits[StopBits["One"] = 1] = "One";
-    StopBits[StopBits["Two"] = 2] = "Two";
-    StopBits[StopBits["OnePointFive"] = 3] = "OnePointFive";
-})(StopBits || (StopBits = {}));

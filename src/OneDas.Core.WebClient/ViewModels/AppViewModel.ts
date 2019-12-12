@@ -239,7 +239,7 @@
         {
             ko.components.register(extensionIdentification.Id, {
                 template:
-                    {
+                    <any>{
                         ExtensionType: extensionType, ExtensionIdentification: extensionIdentification
                     },
                 viewModel:

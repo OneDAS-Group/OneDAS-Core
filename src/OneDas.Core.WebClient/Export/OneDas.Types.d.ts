@@ -124,7 +124,7 @@ declare function MapMany<TArrayElement, TSelect>(array: TArrayElement[], mapFunc
 declare class Guid {
     static NewGuid(): string;
 }
-declare function delay(ms: number): Promise<{}>;
+declare function delay(ms: number): Promise<unknown>;
 declare let CheckNamingConvention: (value: string) => {
     HasError: boolean;
     ErrorDescription: string;
@@ -191,7 +191,7 @@ declare class OneDasModuleViewModel {
     private _onPropertyChanged;
     protected _model: any;
     constructor(oneDasModuleModel: OneDasModuleModel);
-    readonly PropertyChanged: IEvent<OneDasModuleViewModel, any>;
+    get PropertyChanged(): IEvent<OneDasModuleViewModel, any>;
     OnPropertyChanged: () => void;
     GetByteCount: (booleanBitSize?: number) => number;
     Validate(): void;
@@ -211,7 +211,7 @@ declare class OneDasModuleSelectorViewModel {
     OneDasModuleSelectorMode: KnockoutObservable<OneDasModuleSelectorModeEnum>;
     private _onModuleSetChanged;
     constructor(oneDasModuleSelectorMode: OneDasModuleSelectorModeEnum, moduleSet?: OneDasModuleViewModel[]);
-    readonly OnModuleSetChanged: IEvent<OneDasModuleSelectorViewModel, OneDasModuleViewModel[]>;
+    get OnModuleSetChanged(): IEvent<OneDasModuleSelectorViewModel, OneDasModuleViewModel[]>;
     SetMaxBytes: (value: number) => void;
     GetInputModuleSet: () => OneDasModuleViewModel[];
     GetOutputModuleSet: () => OneDasModuleViewModel[];
@@ -239,7 +239,7 @@ declare class BufferRequestSelectorViewModel {
     HasError: KnockoutComputed<boolean>;
     private _onBufferRequestSetChanged;
     constructor(bufferRequestSet?: BufferRequestViewModel[]);
-    readonly OnBufferRequestSetChanged: IEvent<BufferRequestSelectorViewModel, BufferRequestViewModel[]>;
+    get OnBufferRequestSetChanged(): IEvent<BufferRequestSelectorViewModel, BufferRequestViewModel[]>;
     private InternalUpdate;
     protected Update(): void;
     protected Validate(): void;
@@ -257,7 +257,7 @@ declare class BufferRequestViewModel {
     SampleRateSet: KnockoutObservableArray<SampleRateEnum>;
     private _onPropertyChanged;
     constructor(model: BufferRequestModel);
-    readonly PropertyChanged: IEvent<BufferRequestViewModel, any>;
+    get PropertyChanged(): IEvent<BufferRequestViewModel, any>;
     OnPropertyChanged: () => void;
     Validate(): void;
     ToString(): string;

@@ -16,7 +16,7 @@ class ModbusTcpServerViewModel extends ModbusServerViewModel
     public ExtendModel(model: any)
     {
         super.ExtendModel(model)
-
+        
         model.LocalIpAddress = <string>this.LocalIpAddress()
         model.Port = <number>this.Port()
     }

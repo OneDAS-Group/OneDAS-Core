@@ -71,10 +71,11 @@ namespace OneDas.Extension.Can
                 // input
                 for (int i = 0; i < this.CanDriver.AvailableMessagesCount; i++)
                 {
-                    this.CanDriver.Receive(out var identifier, out var data);
-
-                    var inputModule = _inputModuleSet[identifier];
-                    data.CopyTo(this.GetInputBuffer().Slice(inputModule.ByteOffset));
+                    if (this.CanDriver.Receive(out var identifier, out var data))
+                    {
+                        var inputModule = _inputModuleSet[identifier];
+                        data.CopyTo(this.GetInputBuffer().Slice(inputModule.ByteOffset));
+                    }
                 }
 
                 // output

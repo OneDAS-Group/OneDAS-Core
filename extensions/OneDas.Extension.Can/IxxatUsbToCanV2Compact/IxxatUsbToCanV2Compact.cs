@@ -20,9 +20,9 @@ namespace OneDas.Extension.Can
 
         public IxxatUsbToCanV2Compact(CanSettings settings)
         {
-            _messageFactory = VciServer.Instance().MsgFactory;
+            _messageFactory = VciServerImpl.Instance().MsgFactory;
 
-            var deviceManager = VciServer.Instance().DeviceManager;
+            var deviceManager = VciServerImpl.Instance().DeviceManager;
             var devices = deviceManager.GetDeviceList();
 
             foreach (IVciDevice device in devices)
@@ -102,6 +102,7 @@ namespace OneDas.Extension.Can
             message.FrameType = CanMsgFrameType.Data;
             message.DataLength = (byte)data.Length;
             message.ExtendedFrameFormat = frameFormat == CanFrameFormat.Extended;
+            message.SelfReceptionRequest = true;
 
             for (int i = 0; i < data.Length; i++)
             {

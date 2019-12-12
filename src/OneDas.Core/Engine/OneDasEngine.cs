@@ -388,13 +388,9 @@ namespace OneDas.Core.Engine
             for (int i = 0; i <= retryCount; i++)
             {
                 if (i == 0)
-                {
                     _systemLogger.LogInformation($"starting engine");
-                }
                 else
-                {
                     _systemLogger.LogWarning($"starting engine (attempt {i + 1})");
-                }
 
                 try
                 {
@@ -601,13 +597,9 @@ namespace OneDas.Core.Engine
             _referenceClock = this.Project.DataGatewaySet.FirstOrDefault(x => x is IReferenceClock) as IReferenceClock;
 
             if (_referenceClock == null)
-            {
                 _engineLogger.LogWarning("no reference clock found (fallback to default clock)");
-            }
             else
-            {
                 _engineLogger.LogInformation($"reference clock is { ((ExtensionLogicBase)_referenceClock).Settings.Description.Id } ({ ((ExtensionLogicBase)_referenceClock).Settings.Description.InstanceId })");
-            }
 
             this.Project.DataGatewaySet.AsParallel().ForAll(dataGateway =>
             {

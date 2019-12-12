@@ -2,7 +2,7 @@
 
 class EthercatViewModel extends DataGatewayViewModelBase
 {
-    public NetworkInterfaceDescriptionSet: KnockoutObservableArray<any>
+    public NetworkInterfaceDescriptionSet: KnockoutObservableArray<NetworkInterfaceDescription>
     public NicHardwareAddress: KnockoutObservable<string>
     public RootSlaveInfo: KnockoutObservable<SlaveInfoViewModel>
     public SelectedSlaveInfo: KnockoutObservable<SlaveInfoViewModel>
@@ -45,7 +45,7 @@ class EthercatViewModel extends DataGatewayViewModelBase
             {
                 ko.components.register(extensionIdentification.Id, {
                     template:
-                    {
+                    <any>{
                         ExtensionType: "EthercatSlaveExtension", ExtensionIdentification: extensionIdentification
                     },
                     viewModel:

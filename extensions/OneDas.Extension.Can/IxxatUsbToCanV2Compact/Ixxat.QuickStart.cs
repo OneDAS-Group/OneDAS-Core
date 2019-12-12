@@ -27,7 +27,7 @@ namespace OneDas.Extension.Can
             _autoResetEvent = new AutoResetEvent(false);
             _cts = new CancellationTokenSource();
 
-            var deviceManager = VciServer.Instance().DeviceManager;
+            var deviceManager = VciServerImpl.Instance().DeviceManager;
             var devices = deviceManager.GetDeviceList();
 
             Console.WriteLine($"Found devices:");

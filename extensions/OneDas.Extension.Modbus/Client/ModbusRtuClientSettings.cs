@@ -8,7 +8,7 @@ namespace OneDas.Extension.Modbus
 {
     [DataContract]
     [ExtensionContext(typeof(ModbusRtuClientGateway))]
-    [ExtensionIdentification("ModbusRtuClient", "Modbus RTU Client", "Exchange data with a Modbus RTU server.", @"WebClient.Client.ModbusRtuClientView.html", @"WebClient.Client.ModbusRtuClient.js")]
+    [ExtensionIdentification("ModbusRtuClient", "Modbus RTU Client", "Exchange data with a Modbus RTU server.", @"WebClient.RtuClient.ModbusRtuClientView.html", @"WebClient.RtuClient.ModbusRtuClient.js")]
     public class ModbusRtuClientSettings : ModbusClientSettings
     {
         #region "Constructors"

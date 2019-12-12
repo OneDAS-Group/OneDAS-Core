@@ -2,7 +2,8 @@
 {
     public Identifier: KnockoutObservable<number>
     public FrameFormat: KnockoutObservable<CanFrameFormatEnum>
-    public FrameFormatSet: KnockoutObservableArray<CanFrameFormatEnum>
+
+    public CanFrameFormatSet: KnockoutObservableArray<CanFrameFormatEnum>
 
     constructor(canModuleModel: CanModuleModel)
     {
@@ -10,10 +11,18 @@
 
         this.Identifier = ko.observable<number>(canModuleModel.Identifier)
         this.FrameFormat = ko.observable<CanFrameFormatEnum>(canModuleModel.FrameFormat)
-        this.FrameFormatSet = ko.observableArray<CanFrameFormatEnum>(EnumerationHelper.GetEnumValues("CanFrameFormatEnum").filter(objectType => objectType >= 3))
 
-        this.Identifier.subscribe(newValue => this.OnPropertyChanged())
-        this.FrameFormat.subscribe(newValue => this.OnPropertyChanged())
+        this.CanFrameFormatSet = ko.observableArray<CanFrameFormatEnum>(EnumerationHelper.GetEnumValues("CanFrameFormatEnum"))
+
+        this.Identifier.subscribe(_ => this.OnPropertyChanged())
+        this.FrameFormat.subscribe(_ => this.OnPropertyChanged())
+
+        this.MaxSize(8)
+
+        // improve: better would be server side generation of correct module
+        if (!this._model.$type) {
+            this._model.$type = "OneDas.Extension.Can.CanModule, OneDas.Extension.Can"
+        }
     }
 
     public Validate()
@@ -24,7 +33,7 @@
 
             case CanFrameFormatEnum.Standard:
 
-                if (!(0 <= this.Identifier() || this.Identifier() <= Math.pow(2, 11) - 1)) {
+                if (!(0 <= this.Identifier() && this.Identifier() <= Math.pow(2, 11) - 1)) {
                     this.ErrorMessage("The identifier of a standard frame must be between 0..2047.")
                 }
 
@@ -32,7 +41,7 @@
 
             case CanFrameFormatEnum.Extended:
 
-                if (!(0 <= this.Identifier() || this.Identifier() <= Math.pow(2, 29) - 1)) {
+                if (!(0 <= this.Identifier() && this.Identifier() <= Math.pow(2, 29) - 1)) {
                     this.ErrorMessage("The identifier of an extended frame must be between 0..536870911.")
                 }
 

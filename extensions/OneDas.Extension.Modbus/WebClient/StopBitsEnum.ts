@@ -4,3 +4,5 @@
     Two = 2,
     OnePointFive = 3
 }
+
+window["StopBitsEnum"] = StopBitsEnum

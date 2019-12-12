@@ -44,17 +44,11 @@ namespace OneDas.Core.Serialization
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value is ExtensionSettingsBase) // if root object should have $type property
-            {
                 SerializationHelper.JsonSerializer.Serialize(writer, value, typeof(ExtensionSettingsBase));
-            }
             else if (value is OneDasModule) // here also
-            {
                 SerializationHelper.JsonSerializer.Serialize(writer, value, typeof(OneDasModule));
-            }
             else
-            {
                 SerializationHelper.JsonSerializer.Serialize(writer, value);
-            }
         }
     }
 }

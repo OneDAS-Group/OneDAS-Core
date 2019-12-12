@@ -31,15 +31,15 @@ namespace OneDas.Extension.Can
             {
                 case "GetDevices":
 
-                    var devices = new List<string>();
-                    var deviceManager = VciServer.Instance().DeviceManager;
+                    var devices = new Dictionary<string, string>();
+                    var deviceManager = VciServerImpl.Instance().DeviceManager;
 
                     foreach (IVciDevice device in deviceManager.GetDeviceList())
                     {
                         if (device.DeviceClass == IxxatUtils.AcceptedDeviceClass)
                         {
                             var hardwareId = IxxatUtils.TrimHardwareId((string)device.UniqueHardwareId);
-                            devices.Add(hardwareId);
+                            devices.Add(device.Description, hardwareId);
                         }
                     }
 

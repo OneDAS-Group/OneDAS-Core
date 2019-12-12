@@ -22,6 +22,6 @@
 
         model.UnitIdentifier = <number>this.UnitIdentifier()
         model.FrameRateDivider = <number>this.FrameRateDivider()
-        model.ModuleSet = <OneDasModuleModel[]>this.OneDasModuleSelector().ModuleSet().map(moduleModel => moduleModel.ToModel())
+        model.ModuleSet = <ModbusModuleModel[]>this.OneDasModuleSelector().ModuleSet().map(moduleModel => moduleModel.ToModel())
     }
 }

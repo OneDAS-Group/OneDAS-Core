@@ -6,7 +6,7 @@ namespace OneDas.Extension.Can
     [DataContract]
     [ExtensionContext(typeof(CanGateway))]
     [ExtensionSupporter(typeof(CanSupporter))]
-    [ExtensionIdentification("CAN 2.0a/b", "CAN 2.0a/b", "Send and receive CAN 2.0a and 2.0b messages.", @"WebClient.CanView.html", @"WebClient.Can.js")]
+    [ExtensionIdentification("CAN_2_0a_b", "CAN 2.0a/b", "Send and receive CAN 2.0a and 2.0b messages.", @"WebClient.CanView.html", @"WebClient.Can.js")]
     public class CanSettings : ExtendedDataGatewayExtensionSettingsBase
     {
         #region "Constructors"

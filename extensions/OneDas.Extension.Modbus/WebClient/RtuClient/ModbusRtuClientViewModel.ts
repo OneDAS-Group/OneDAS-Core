@@ -21,14 +21,14 @@ class ModbusRtuClientViewModel extends ModbusClientViewModel
         EnumerationHelper.Description["HandshakeEnum_RequestToSend"] = "RTS hardware control"
         EnumerationHelper.Description["HandshakeEnum_RequestToSendXOnXOff"] = "XON/XOFF and RTS control"
 
-        EnumerationHelper.Description["Parity_None"] = "no parity"
-        EnumerationHelper.Description["Parity_Odd"] = "Odd"
-        EnumerationHelper.Description["Parity_Even"] = "Even"
+        EnumerationHelper.Description["ParityEnum_None"] = "No parity"
+        EnumerationHelper.Description["ParityEnum_Odd"] = "Odd"
+        EnumerationHelper.Description["ParityEnum_Even"] = "Even"
 
-        EnumerationHelper.Description["StopBits_None"] = "0"
-        EnumerationHelper.Description["StopBits_One"] = "1"
-        EnumerationHelper.Description["StopBits_Two"] = "2"
-        EnumerationHelper.Description["StopBits_OnePointFive"] = "1.5"
+        EnumerationHelper.Description["StopBitsEnum_None"] = "0"
+        EnumerationHelper.Description["StopBitsEnum_One"] = "1"
+        EnumerationHelper.Description["StopBitsEnum_Two"] = "2"
+        EnumerationHelper.Description["StopBitsEnum_OnePointFive"] = "1.5"
 
         this.Port = ko.observable<string>(model.Port)
         this.BaudRate = ko.observable<number>(model.BaudRate)
@@ -37,8 +37,8 @@ class ModbusRtuClientViewModel extends ModbusClientViewModel
         this.StopBits = ko.observable<StopBitsEnum>(model.StopBits)
 
         this.HandshakeSet = ko.observableArray<HandshakeEnum>(EnumerationHelper.GetEnumValues("HandshakeEnum"))
-        this.ParitySet = ko.observableArray<ParityEnum>(EnumerationHelper.GetEnumValues("ParitySet"))
-        this.StopBitsSet = ko.observableArray<StopBitsEnum>(EnumerationHelper.GetEnumValues("StopBitsSet"))
+        this.ParitySet = ko.observableArray<ParityEnum>(EnumerationHelper.GetEnumValues("ParityEnum"))
+        this.StopBitsSet = ko.observableArray<StopBitsEnum>(EnumerationHelper.GetEnumValues("StopBitsEnum"))
     }
 
     public ExtendModel(model: any)

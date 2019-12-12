@@ -4,3 +4,5 @@
     RequestToSend = 2,
     RequestToSendXOnXOff = 3
 }
+
+window["HandshakeEnum"] = HandshakeEnum

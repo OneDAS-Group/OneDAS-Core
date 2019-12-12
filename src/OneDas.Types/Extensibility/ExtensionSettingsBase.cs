@@ -14,14 +14,10 @@ namespace OneDas.Extensibility
             ExtensionIdentificationAttribute extensionIdentificationAttribute;
 
             if (!this.GetType().IsDefined(typeof(ExtensionContextAttribute), false))
-            {
                 throw new Exception(ErrorMessage.ExtensionSettingsBase_ExtensionContextAttributeNotDefined);
-            }
 
             if (!this.GetType().IsDefined(typeof(ExtensionIdentificationAttribute), false))
-            {
                 throw new Exception(ErrorMessage.ExtensionSettingsBase_ExtensionDescriptionAttributeNotDefined);
-            }
 
             extensionIdentificationAttribute = this.GetType().GetFirstAttribute<ExtensionIdentificationAttribute>();
 

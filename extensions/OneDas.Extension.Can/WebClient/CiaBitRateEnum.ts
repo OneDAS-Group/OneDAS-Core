@@ -7,3 +7,5 @@
     Cia800KBit = 6,
     Cia1000KBit = 7
 }
+
+window["CiaBitRateEnum"] = CiaBitRateEnum

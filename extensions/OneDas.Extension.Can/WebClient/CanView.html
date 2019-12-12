@@ -15,9 +15,19 @@
         <form>
             <div class="form-group">
                 <label>Hardware ID</label>
-                <input type="text"
-                       class="form-control"
-                       data-bind="value: HardwareId">
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend url"
+                         data-toggle="modal"
+                         data-backdrop="static"
+                         data-bind="click: GetDevices, attr: { 'data-target': '#Can_SelectDeviceModal' + Description.InstanceId }">
+                        <div class="input-group-text">
+                            <span class="fa fa-list fa-fix"></span>
+                        </div>
+                    </div>
+                    <input type="text"
+                           class="form-control"
+                           data-bind="value: HardwareId">
+                </div>
             </div>
         </form>
     </div>
@@ -28,7 +38,7 @@
             <div class="form-group">
                 <label>Bit rate</label>
                 <select class="form-control"
-                        data-bind="options: BitRateSet,
+                        data-bind="options: CiaBitRateSet,
                                    optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('CiaBitRateEnum', x) },
                                    value: BitRate"></select>
             </div>
@@ -71,7 +81,41 @@
     <!-- /ko -->
 <!-- /ko -->
 
-<script type="text/html" id="Can_OneDasModuleSettingsTemplate">
+<div data-bind="attr: { id: 'Can_SelectDeviceModal' + Description.InstanceId }" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg center-vertically">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select a CAN device</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group mb-3">
+                    <!-- ko foreach: DeviceDescriptionSet -->
+                    <a class="list-group-item list-group-item-action url"
+                       role="button"
+                       data-dismiss="modal"
+                       data-bind="click: $parent.SelectDevice">
+                        <div>
+                            <h6 data-bind="text: Name"></h6>
+                            <h6><small class="text-muted" data-bind="text: HardwareId"></small></h6>
+                        </div>
+                    </a>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-primary"
+                        data-dismiss="modal"
+                        role="button">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="Can_CanModuleSettingsTemplate">
     <div class="form-group row">
         <div class="col-6">
             <form>
@@ -89,7 +133,7 @@
                 <div class="form-group">
                     <label>Frame format</label>
                     <select class="form-control"
-                            data-bind="options: FrameFormatSet,
+                            data-bind="options: CanFrameFormatSet,
                                        optionsText: function(x) { return EnumerationHelper.GetEnumLocalization('CanFrameFormatEnum', x) },
                                        value: FrameFormat"></select>
                 </div>
