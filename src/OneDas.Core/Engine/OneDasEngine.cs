@@ -762,25 +762,17 @@ namespace OneDas.Core.Engine
 
                         // late by
                         if (_timer_UpdateIo.LateBy > _ratedCycleTime_Ms)
-                        {
                             _timerLateCounter += 1;
-                        }
 
                         if (_timer_UpdateIo.LateBy > _maxLateBy)
-                        {
                             _maxLateBy = _timer_UpdateIo.LateBy;
-                        }
 
                         // cycle time
                         if (_timer_UpdateIo.LastActionTime > _ratedCycleTime_Ms)
-                        {
                             _cycleTimeTooLongCounter += 1;
-                        }
 
                         if (_timer_UpdateIo.LastActionTime > _maxCycleTime)
-                        {
                             _maxCycleTime = _timer_UpdateIo.LastActionTime;
-                        }
 
                         // get reference clock time
                         _utcDateTime = DateTime.MinValue;
@@ -793,9 +785,7 @@ namespace OneDas.Core.Engine
                             _timerDrift = _referenceClock.GetTimerDrift();
 
                             if (_utcDateTime == DateTime.MinValue) // updating IO of reference clock data gateway was not successful
-                            {
                                 return DateTime.MinValue;
-                            }
                         }
                         else // reference clock is not available
                         {
@@ -803,16 +793,12 @@ namespace OneDas.Core.Engine
                         }
 
                         if (_utcDateTime < _lastUtcDateTime)
-                        {
                             throw new Exception(ErrorMessage.OneDasEngine_ReferenceClockNotMonotonouslyRising);
-                        }
 
                         this.Project.DataGatewaySet.ForEach(dataGateway => // update IO of all remaining data-gateways
                         {
                             if (dataGateway != _referenceClock)
-                            {
                                 dataGateway.UpdateIo(_utcDateTime); // use utcDateTime as reference
-                            }
                         });
 
                         // The timer tries to fire at discrete times. It is allowed to be early or delayed by < (CycleTime - Offset) and the resulting DC time will be floored to nearest 10 ms. 
@@ -828,9 +814,7 @@ namespace OneDas.Core.Engine
                             _cachedChunkDateTime = _lastChunkDateTime;
 
                             if (this.OneDasState == OneDasState.Run)
-                            {
                                 _storageAutoResetEvent.Set();
-                            }
 
                             _currentStorageIndex = (_currentStorageIndex + 1) % STORAGE_COUNT;
                         }
@@ -841,9 +825,7 @@ namespace OneDas.Core.Engine
                             int realChunkIndex;
 
                             if (_chunkIndex % (int)entry.Key != 0 || entry.Value.Count() == 0)
-                            {
                                 continue;
-                            }
 
                             realChunkIndex = _chunkIndex / (int)entry.Key;
 
@@ -851,11 +833,12 @@ namespace OneDas.Core.Engine
                             {
                                 int referencePeriod;
 
-                                // MaximumDatasetAge is ether determined by the corresponding extension setting or by the sample period of the associated ChannelHub
-                                //
-                                // MaximumDatasetAge = 0                       -> normal behavior (no oversampling)
-                                // MaximumDatasetAge > extension IO cycle time -> compensate unstable cycle periods (packet drop tolerance)
-                                // MaximumDatasetAge >= sample period          -> allow oversampling (repeat values)
+                                /* MaximumDatasetAge is ether determined by the corresponding extension setting or by the sample period of the associated ChannelHub
+                                 * 
+                                 * MaximumDatasetAge = 0                       -> normal behavior (no oversampling)
+                                 * MaximumDatasetAge > extension IO cycle time -> compensate unstable cycle periods (packet drop tolerance)
+                                 * MaximumDatasetAge >= sample period          -> allow oversampling (repeat values)
+                                 */
                                 referencePeriod = Math.Max(dataGateway.Settings.MaximumDatasetAge, (int)entry.Key * 10);
 
                                 _hasValidDataSet[dataGateway] = dataGateway.LastSuccessfulUpdate?.Elapsed.TotalMilliseconds <= referencePeriod;
@@ -972,13 +955,9 @@ namespace OneDas.Core.Engine
                     value = *(bool*)sourcePtr;
 
                     if (value)
-                    {
                         *targetPtr |= (byte)(1 << target.BitOffset);
-                    }
                     else
-                    {
                         *targetPtr &= (byte)(~(1 << target.BitOffset));
-                    }
                 }
                 // from bit to bit
                 else if (source.BitOffset > -1 && target.BitOffset > -1)
@@ -988,13 +967,9 @@ namespace OneDas.Core.Engine
                     value = (*sourcePtr & (1 << source.BitOffset)) > 0;
 
                     if (value)
-                    {
                         *targetPtr |= (byte)(1 << target.BitOffset);
-                    }
                     else
-                    {
                         *targetPtr &= (byte)(~(1 << target.BitOffset));
-                    }
                 }
             }
             else

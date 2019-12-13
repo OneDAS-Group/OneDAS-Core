@@ -38,7 +38,7 @@ namespace OneDas.Extension.Can
                 Console.WriteLine($"  Manufacturer: {device.Manufacturer}");
                 Console.WriteLine($"   Description: {device.Description}");
                 Console.WriteLine($"         Class: {device.DeviceClass}");
-                Console.WriteLine($"Device Version: {device.DeviceVersion}");
+                Console.WriteLine($"Device Version: {device.DriverVersion}");
                 Console.WriteLine($"    HW Version: {device.HardwareVersion}");
                 Console.WriteLine($"         HW ID: {device.UniqueHardwareId}");
                 Console.WriteLine($"   Vci Obj. ID: {device.VciObjectId}");

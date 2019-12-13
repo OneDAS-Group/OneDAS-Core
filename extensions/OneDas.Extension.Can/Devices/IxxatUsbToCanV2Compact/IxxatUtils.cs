@@ -18,12 +18,12 @@ namespace OneDas.Extension.Can
             return bitRate switch
             {
                 CiaBitRate.Cia10KBit => CanBitrate.Cia10KBit,
-                CiaBitRate.Cia20KBit => CanBitrate.Cia10KBit,
-                CiaBitRate.Cia50KBit => CanBitrate.Cia10KBit,
-                CiaBitRate.Cia125KBit => CanBitrate.Cia10KBit,
-                CiaBitRate.Cia500KBit => CanBitrate.Cia10KBit,
-                CiaBitRate.Cia800KBit => CanBitrate.Cia10KBit,
-                CiaBitRate.Cia1000KBit => CanBitrate.Cia10KBit,
+                CiaBitRate.Cia20KBit => CanBitrate.Cia20KBit,
+                CiaBitRate.Cia50KBit => CanBitrate.Cia50KBit,
+                CiaBitRate.Cia125KBit => CanBitrate.Cia125KBit,
+                CiaBitRate.Cia500KBit => CanBitrate.Cia500KBit,
+                CiaBitRate.Cia800KBit => CanBitrate.Cia800KBit,
+                CiaBitRate.Cia1000KBit => CanBitrate.Cia1000KBit,
                 _ => throw new NotSupportedException()
             };
         }

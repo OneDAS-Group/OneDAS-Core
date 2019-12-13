@@ -7,6 +7,7 @@ window["BusCouplingEnum"] = BusCouplingEnum;
 var CanDeviceTypeEnum;
 (function (CanDeviceTypeEnum) {
     CanDeviceTypeEnum[CanDeviceTypeEnum["IxxatUsbToCanV2Compact"] = 1] = "IxxatUsbToCanV2Compact";
+    CanDeviceTypeEnum[CanDeviceTypeEnum["CanLoopbackDevice"] = 999] = "CanLoopbackDevice";
 })(CanDeviceTypeEnum || (CanDeviceTypeEnum = {}));
 window["CanDeviceTypeEnum"] = CanDeviceTypeEnum;
 var CanFrameFormatEnum;
@@ -28,7 +29,7 @@ class CanModuleSelectorViewModel extends OneDasModuleSelectorViewModel {
         this.SettingsTemplateName = ko.observable("Can_CanModuleSettingsTemplate");
     }
     CreateNewModule() {
-        return new CanModuleViewModel(new CanModuleModel(0, CanFrameFormatEnum.Standard, OneDasDataTypeEnum.INT32, DataDirectionEnum.Input, EndiannessEnum.BigEndian, 2));
+        return new CanModuleViewModel(new CanModuleModel(0, CanFrameFormatEnum.Standard, OneDasDataTypeEnum.INT32, DataDirectionEnum.Input, EndiannessEnum.LittleEndian, 2));
     }
 }
 class CanModuleViewModel extends OneDasModuleViewModel {
@@ -90,7 +91,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase {
             let actionResponse;
             let dictionary;
             try {
-                actionResponse = yield this.SendActionRequest(0, "GetDevices", null);
+                actionResponse = yield this.SendActionRequest(0, "GetDevices", this.CanDeviceType());
                 dictionary = actionResponse.Data;
                 this.DeviceDescriptionSet.removeAll();
                 for (var key in dictionary) {
@@ -106,6 +107,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase {
         EnumerationHelper.Description["BusCouplingEnum_Lowspeed"] = "Lowspeed";
         EnumerationHelper.Description["BusCouplingEnum_Highspeed"] = "Highspeed";
         EnumerationHelper.Description["CanDeviceTypeEnum_IxxatUsbToCanV2Compact"] = "Ixxat USB-to-CAN V2 compact";
+        EnumerationHelper.Description["CanDeviceTypeEnum_CanLoopbackDevice"] = "CAN Loopback device";
         EnumerationHelper.Description["CanFrameFormatEnum_Standard"] = "Standard (11-bit ID)";
         EnumerationHelper.Description["CanFrameFormatEnum_Extended"] = "Extended (29-bit ID)";
         EnumerationHelper.Description["CiaBitRateEnum_Cia10KBit"] = "10 KBit/s";

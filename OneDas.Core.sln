@@ -72,10 +72,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Interface", "src\OneDas.Hdf.Interface\OneDas.Hdf.Interface.csproj", "{269F03CF-0A2A-4212-AAC7-E6CF12999114}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{BD1A5739-27BA-4E2A-AA9A-95C577703EEE}"
-	ProjectSection(SolutionItems) = preProject
-		build\OneDas.props = build\OneDas.props
-		build\OneDas.targets = build\OneDas.targets
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extension", "extension", "{41AE8F8D-B51B-494B-8573-E7E9EF642BB0}"
 EndProject

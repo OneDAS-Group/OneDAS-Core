@@ -25,12 +25,6 @@ namespace OneDas.Extension.Can
             this.Settings = settings;
             this.Logger = loggerFactory.CreateLogger(this.DisplayName);
 
-            this.CanDevice = settings.CanDeviceType switch
-            {
-                CanDeviceType.IxxatUsbToCanV2Compact => new IxxatUsbToCanV2Compact(settings),
-                                                   _ => throw new NotSupportedException(),
-            };
-
             this.LastSuccessfulUpdate.Restart();
         }
 
@@ -40,7 +34,7 @@ namespace OneDas.Extension.Can
 
         private new CanSettings Settings { get; }
 
-        private ICanDevice CanDevice { get; }
+        private ICanDevice CanDevice { get; set; }
 
         private ILogger Logger { get; }
 
@@ -51,6 +45,18 @@ namespace OneDas.Extension.Can
         protected override void OnConfigure()
         {
             base.OnConfigure();
+
+            this.CanDevice?.Dispose();
+
+#warning: Implement reconnection logic, when e.h. USB device is plugged out. Do not prevent OneDAS from starting.
+            this.CanDevice = this.Settings.CanDeviceType switch
+            {
+                CanDeviceType.IxxatUsbToCanV2Compact => new IxxatUsbToCanV2Compact(this.Settings),
+                CanDeviceType.CanLoopbackDevice => new CanLoopbackDevice(),
+                _ => throw new NotSupportedException()
+            };
+
+            this.Logger.LogInformation($"Device '{this.Settings.HardwareId}' with bit rate '{this.Settings.BitRate}' initialized.");
 
             _inputModuleSet = this.Settings.GetInputModuleSet().Cast<CanModule>().ToDictionary(module => module.Identifier, module => module);
             _outputModuleSet = this.Settings.GetOutputModuleSet().Cast<CanModule>().ToList();

@@ -70,7 +70,7 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The MaximumDatasetAge is must be between zero and 10000. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The MaximumDatasetAge must be between 0 and 10000. ähnelt.
         /// </summary>
         internal static string DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid {
             get {

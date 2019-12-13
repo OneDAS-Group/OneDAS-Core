@@ -2,6 +2,7 @@
 {
     public enum CanDeviceType
     {
-        IxxatUsbToCanV2Compact = 1
+        IxxatUsbToCanV2Compact = 1,
+        CanLoopbackDevice = 999,
     }
 }

@@ -22,6 +22,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase
         EnumerationHelper.Description["BusCouplingEnum_Highspeed"] = "Highspeed"
 
         EnumerationHelper.Description["CanDeviceTypeEnum_IxxatUsbToCanV2Compact"] = "Ixxat USB-to-CAN V2 compact"
+        EnumerationHelper.Description["CanDeviceTypeEnum_CanLoopbackDevice"] = "CAN Loopback device"
 
         EnumerationHelper.Description["CanFrameFormatEnum_Standard"] = "Standard (11-bit ID)"
         EnumerationHelper.Description["CanFrameFormatEnum_Extended"] = "Extended (29-bit ID)"
@@ -57,7 +58,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase
         let dictionary: any
 
         try {
-            actionResponse = await this.SendActionRequest(0, "GetDevices", null)
+            actionResponse = await this.SendActionRequest(0, "GetDevices", this.CanDeviceType())
             dictionary = actionResponse.Data
 
             this.DeviceDescriptionSet.removeAll()

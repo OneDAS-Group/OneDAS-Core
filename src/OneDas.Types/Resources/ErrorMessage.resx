@@ -121,7 +121,7 @@
     <value>The instance ID must be equal or greater zero.</value>
   </data>
   <data name="DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid" xml:space="preserve">
-    <value>The MaximumDatasetAge is must be between zero and 10000.</value>
+    <value>The MaximumDatasetAge must be between 0 and 10000.</value>
   </data>
   <data name="DataWriterExtensionLogicBase_DateTimeAlreadyWritten" xml:space="preserve">
     <value>The requested period has already been written before.</value>
