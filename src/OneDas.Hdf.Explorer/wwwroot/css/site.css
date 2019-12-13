@@ -2,6 +2,12 @@
     padding-top: 5em;
 }
 
+.collapsing {
+    -webkit-transition: none;
+    transition: none;
+    display: none;
+}
+
 #start-date, #end-date {
     background-color: #fff;
 }
@@ -62,19 +68,19 @@
     border-top-width: 0;
 }
 
-.list-group.list-group-root > .list-group > .list-group-item {
+.list-group.list-group-root > .collapse > .list-group-item {
     padding-left: 1.4em;
     padding-top: 0.1em;
     padding-bottom: 0.1em;
 }
 
-.list-group.list-group-root > .list-group > .list-group > .list-group-item {
+.list-group.list-group-root > .collapse > .collapse > .list-group-item {
     padding-left: 2.8em;
     padding-top: 0.1em;
     padding-bottom: 0.1em;
 }
 
-.list-group.list-group-root > .list-group > .list-group > .list-group > .list-group-item {
+.list-group.list-group-root > .collapse > .collapse > .collapse > .list-group-item {
     padding-left: 4.2em;
     padding-top: 0.1em;
     padding-bottom: 0.1em;

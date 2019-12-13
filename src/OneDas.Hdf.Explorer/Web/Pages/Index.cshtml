@@ -189,21 +189,21 @@
                             </span>
 
                         </div>
-                        <div class="list-group collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
+                        <div class="collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
                             <a class="list-group-item list-group-item-action noselect"
                                role="button"
                                data-toggle="collapse"
                                data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$index() + '_' + $index() }">
                                 <span class="fa fa-caret-right"></span><span data-bind="text: Key"></span>
                             </a>
-                            <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members">
+                            <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members().filter(variableInfo => variableInfo.DatasetInfoSet.some(datasetInfo => datasetInfo.IsVisible()))">
                                 <a class="list-group-item list-group-item-action noselect"
                                    role="button"
                                    data-toggle="collapse"
                                    data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }">
                                     <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
                                 </a>
-                                <div class="list-group collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">
+                                <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">
                                     <a class="list-group-item list-group-item-action noselect"
                                        role="button"
                                        data-bind="text: GetDisplayName(),
