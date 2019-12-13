@@ -2,7 +2,7 @@
 
 namespace OneDas.Extension.Can
 {
-    interface ICanDriver
+    interface ICanDevice
     {
         #region Properties
 

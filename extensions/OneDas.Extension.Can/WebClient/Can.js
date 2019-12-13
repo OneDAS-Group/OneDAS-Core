@@ -4,11 +4,11 @@ var BusCouplingEnum;
     BusCouplingEnum[BusCouplingEnum["Highspeed"] = 2] = "Highspeed";
 })(BusCouplingEnum || (BusCouplingEnum = {}));
 window["BusCouplingEnum"] = BusCouplingEnum;
-var CanDriverTypeEnum;
-(function (CanDriverTypeEnum) {
-    CanDriverTypeEnum[CanDriverTypeEnum["IxxatUsbToCanV2Compact"] = 1] = "IxxatUsbToCanV2Compact";
-})(CanDriverTypeEnum || (CanDriverTypeEnum = {}));
-window["CanDriverTypeEnum"] = CanDriverTypeEnum;
+var CanDeviceTypeEnum;
+(function (CanDeviceTypeEnum) {
+    CanDeviceTypeEnum[CanDeviceTypeEnum["IxxatUsbToCanV2Compact"] = 1] = "IxxatUsbToCanV2Compact";
+})(CanDeviceTypeEnum || (CanDeviceTypeEnum = {}));
+window["CanDeviceTypeEnum"] = CanDeviceTypeEnum;
 var CanFrameFormatEnum;
 (function (CanFrameFormatEnum) {
     CanFrameFormatEnum[CanFrameFormatEnum["Standard"] = 1] = "Standard";
@@ -105,7 +105,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase {
         });
         EnumerationHelper.Description["BusCouplingEnum_Lowspeed"] = "Lowspeed";
         EnumerationHelper.Description["BusCouplingEnum_Highspeed"] = "Highspeed";
-        EnumerationHelper.Description["CanDriverTypeEnum_IxxatUsbToCanV2Compact"] = "Ixxat USB-to-CAN V2 compact";
+        EnumerationHelper.Description["CanDeviceTypeEnum_IxxatUsbToCanV2Compact"] = "Ixxat USB-to-CAN V2 compact";
         EnumerationHelper.Description["CanFrameFormatEnum_Standard"] = "Standard (11-bit ID)";
         EnumerationHelper.Description["CanFrameFormatEnum_Extended"] = "Extended (29-bit ID)";
         EnumerationHelper.Description["CiaBitRateEnum_Cia10KBit"] = "10 KBit/s";
@@ -116,18 +116,18 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase {
         EnumerationHelper.Description["CiaBitRateEnum_Cia800KBit"] = "800 KBit/s";
         EnumerationHelper.Description["CiaBitRateEnum_Cia1000KBit"] = "1000 KBit/s";
         this.DeviceDescriptionSet = ko.observableArray();
-        this.CanDriverType = ko.observable(model.CanDriverType);
+        this.CanDeviceType = ko.observable(model.CanDeviceType);
         this.HardwareId = ko.observable(model.HardwareId);
         this.BitRate = ko.observable(model.BitRate);
         this.BusCoupling = ko.observable(model.BusCoupling);
         this.FrameRateDivider = ko.observable(model.FrameRateDivider);
-        this.CanDriverTypeSet = ko.observableArray(EnumerationHelper.GetEnumValues("CanDriverTypeEnum"));
+        this.CanDeviceTypeSet = ko.observableArray(EnumerationHelper.GetEnumValues("CanDeviceTypeEnum"));
         this.CiaBitRateSet = ko.observableArray(EnumerationHelper.GetEnumValues("CiaBitRateEnum"));
         this.BusCouplingSet = ko.observableArray(EnumerationHelper.GetEnumValues("BusCouplingEnum"));
     }
     ExtendModel(model) {
         super.ExtendModel(model);
-        model.CanDriverType = this.CanDriverType();
+        model.CanDeviceType = this.CanDeviceType();
         model.HardwareId = this.HardwareId();
         model.BitRate = this.BitRate();
         model.BusCoupling = this.BusCoupling();

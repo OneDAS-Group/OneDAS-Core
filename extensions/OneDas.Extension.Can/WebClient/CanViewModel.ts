@@ -4,13 +4,13 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase
 {
     public DeviceDescriptionSet: KnockoutObservableArray<DeviceDescription>
 
-    public CanDriverType: KnockoutObservable<CanDriverTypeEnum>
+    public CanDeviceType: KnockoutObservable<CanDeviceTypeEnum>
     public HardwareId: KnockoutObservable<string>
     public BitRate: KnockoutObservable<CiaBitRateEnum>
     public BusCoupling: KnockoutObservable<BusCouplingEnum>
     public FrameRateDivider: KnockoutObservable<number>
 
-    public CanDriverTypeSet: KnockoutObservableArray<CanDriverTypeEnum>
+    public CanDeviceTypeSet: KnockoutObservableArray<CanDeviceTypeEnum>
     public CiaBitRateSet: KnockoutObservableArray<CiaBitRateEnum>
     public BusCouplingSet: KnockoutObservableArray<BusCouplingEnum>
 
@@ -21,7 +21,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase
         EnumerationHelper.Description["BusCouplingEnum_Lowspeed"] = "Lowspeed"
         EnumerationHelper.Description["BusCouplingEnum_Highspeed"] = "Highspeed"
 
-        EnumerationHelper.Description["CanDriverTypeEnum_IxxatUsbToCanV2Compact"] = "Ixxat USB-to-CAN V2 compact"
+        EnumerationHelper.Description["CanDeviceTypeEnum_IxxatUsbToCanV2Compact"] = "Ixxat USB-to-CAN V2 compact"
 
         EnumerationHelper.Description["CanFrameFormatEnum_Standard"] = "Standard (11-bit ID)"
         EnumerationHelper.Description["CanFrameFormatEnum_Extended"] = "Extended (29-bit ID)"
@@ -36,13 +36,13 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase
 
         this.DeviceDescriptionSet = ko.observableArray<DeviceDescription>()
 
-        this.CanDriverType = ko.observable<CanDriverTypeEnum>(model.CanDriverType)
+        this.CanDeviceType = ko.observable<CanDeviceTypeEnum>(model.CanDeviceType)
         this.HardwareId = ko.observable<string>(model.HardwareId)
         this.BitRate = ko.observable<CiaBitRateEnum>(model.BitRate)
         this.BusCoupling = ko.observable<BusCouplingEnum>(model.BusCoupling)
         this.FrameRateDivider = ko.observable<number>(model.FrameRateDivider)
 
-        this.CanDriverTypeSet = ko.observableArray<CanDriverTypeEnum>(EnumerationHelper.GetEnumValues("CanDriverTypeEnum"))
+        this.CanDeviceTypeSet = ko.observableArray<CanDeviceTypeEnum>(EnumerationHelper.GetEnumValues("CanDeviceTypeEnum"))
         this.CiaBitRateSet = ko.observableArray<CiaBitRateEnum>(EnumerationHelper.GetEnumValues("CiaBitRateEnum"))
         this.BusCouplingSet = ko.observableArray<BusCouplingEnum>(EnumerationHelper.GetEnumValues("BusCouplingEnum"))
     }
@@ -77,7 +77,7 @@ class CanViewModel extends ExtendedDataGatewayViewModelBase
     {
         super.ExtendModel(model)
 
-        model.CanDriverType = <CanDriverTypeEnum>this.CanDriverType()
+        model.CanDeviceType = <CanDeviceTypeEnum>this.CanDeviceType()
         model.HardwareId = <string>this.HardwareId()
         model.BitRate = <CiaBitRateEnum>this.BitRate()
         model.BusCoupling = <BusCouplingEnum>this.BusCoupling()

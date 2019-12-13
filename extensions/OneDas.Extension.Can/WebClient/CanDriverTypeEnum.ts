@@ -1,5 +1,5 @@
-﻿enum CanDriverTypeEnum {
+﻿enum CanDeviceTypeEnum {
     IxxatUsbToCanV2Compact = 1,
 }
 
-window["CanDriverTypeEnum"] = CanDriverTypeEnum
+window["CanDeviceTypeEnum"] = CanDeviceTypeEnum

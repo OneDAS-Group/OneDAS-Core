@@ -25,9 +25,9 @@ namespace OneDas.Extension.Can
             this.Settings = settings;
             this.Logger = loggerFactory.CreateLogger(this.DisplayName);
 
-            this.CanDriver = settings.CanDriverType switch
+            this.CanDevice = settings.CanDeviceType switch
             {
-                CanDriverType.IxxatUsbToCanV2Compact => new IxxatUsbToCanV2Compact(settings),
+                CanDeviceType.IxxatUsbToCanV2Compact => new IxxatUsbToCanV2Compact(settings),
                                                    _ => throw new NotSupportedException(),
             };
 
@@ -40,7 +40,7 @@ namespace OneDas.Extension.Can
 
         private new CanSettings Settings { get; }
 
-        private ICanDriver CanDriver { get; }
+        private ICanDevice CanDevice { get; }
 
         private ILogger Logger { get; }
 
@@ -69,9 +69,9 @@ namespace OneDas.Extension.Can
             if (_cycleCounter % this.Settings.FrameRateDivider == 0)
             {
                 // input
-                for (int i = 0; i < this.CanDriver.AvailableMessagesCount; i++)
+                for (int i = 0; i < this.CanDevice.AvailableMessagesCount; i++)
                 {
-                    if (this.CanDriver.Receive(out var identifier, out var data))
+                    if (this.CanDevice.Receive(out var identifier, out var data))
                     {
                         var inputModule = _inputModuleSet[identifier];
                         data.CopyTo(this.GetInputBuffer().Slice(inputModule.ByteOffset));
@@ -82,7 +82,7 @@ namespace OneDas.Extension.Can
                 _outputModuleSet.ForEach(module =>
                 {
                     var data = this.GetOutputBuffer().Slice(module.ByteOffset, module.GetByteCount());
-                    this.CanDriver.Send(module.Identifier, module.FrameFormat, data);
+                    this.CanDevice.Send(module.Identifier, module.FrameFormat, data);
                 });
 
                 this.LastSuccessfulUpdate.Restart();
@@ -98,7 +98,7 @@ namespace OneDas.Extension.Can
         {
             base.FreeManagedResources();
 
-            this.CanDriver?.Dispose();
+            this.CanDevice?.Dispose();
         }
 
         #endregion

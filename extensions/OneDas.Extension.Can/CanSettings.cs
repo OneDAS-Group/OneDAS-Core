@@ -13,7 +13,7 @@ namespace OneDas.Extension.Can
 
         public CanSettings()
         {
-            this.CanDriverType = CanDriverType.IxxatUsbToCanV2Compact;
+            this.CanDeviceType = CanDeviceType.IxxatUsbToCanV2Compact;
             this.HardwareId = string.Empty;
             this.BitRate = CiaBitRate.Cia125KBit;
             this.BusCoupling = BusCoupling.Highspeed;
@@ -24,7 +24,7 @@ namespace OneDas.Extension.Can
         #region "Properties"
 
         [DataMember]
-        public CanDriverType CanDriverType { get; set; }
+        public CanDeviceType CanDeviceType { get; set; }
 
         [DataMember]
         public string HardwareId { get; set; }

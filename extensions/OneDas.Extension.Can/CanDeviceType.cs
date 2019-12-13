@@ -1,6 +1,6 @@
 ﻿namespace OneDas.Extension.Can
 {
-    public enum CanDriverType
+    public enum CanDeviceType
     {
         IxxatUsbToCanV2Compact = 1
     }

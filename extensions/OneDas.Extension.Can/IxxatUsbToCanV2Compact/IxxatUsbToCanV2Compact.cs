@@ -4,7 +4,7 @@ using System;
 
 namespace OneDas.Extension.Can
 {
-    public class IxxatUsbToCanV2Compact : ICanDriver
+    public class IxxatUsbToCanV2Compact : ICanDevice
     {
         #region Fields
 
