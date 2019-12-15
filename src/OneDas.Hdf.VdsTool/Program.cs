@@ -1,9 +1,14 @@
 ﻿using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
+using OneDas.Extensibility;
+using OneDas.Extension.Hdf;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Hdf.VdsTool.FileSystem;
+using OneDas.Hdf.VdsTool.Import;
 using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
 using System;
@@ -42,6 +47,9 @@ namespace OneDas.Hdf.VdsTool
 
         static void Main(string[] args)
         {
+            Program.BaseDirectoryPath = @"X:\DATABASE";
+            Program.InternalImportGenericFiles("AIRPORT_AD8_DWGLMS", @"X:\DATABASE\DB_STAGING\AD8_DWG_LMS", new DateTime(2019, 10, 5, 1, 20, 00), "FamosImc2", "DWG LMS");
+
             bool isEscaped;
 
             Console.CursorVisible = false;
@@ -83,9 +91,7 @@ namespace OneDas.Hdf.VdsTool
                         (Program.BaseDirectoryPath, isEscaped) = Utilities.ReadLine(new List<string>());
 
                         if (isEscaped && Program.HandleEscape())
-                        {
                             return;
-                        }
                     }
 
                     if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
@@ -106,9 +112,7 @@ namespace OneDas.Hdf.VdsTool
                 new MainMenuNavigator();
 
                 if (Program.HandleEscape())
-                {
                     return;
-                }
             }
         }
 
@@ -191,7 +195,7 @@ namespace OneDas.Hdf.VdsTool
             {
                 case "import":
 
-                    Program.HandleImport(args.Skip(1).ToList());
+                    Program.HandleNativeImport(args.Skip(1).ToList());
                     break;
 
                 case "update":
@@ -223,73 +227,57 @@ namespace OneDas.Hdf.VdsTool
             return true;
         }
 
-        private static void HandleImport(List<string> args)
+        private static void HandleNativeImport(List<string> args)
         {
             // sourceDirectoryPath
             string sourceDirectoryPath = default;
 
             if (!Program.TryGetParameterValue("source", "r", args, ref sourceDirectoryPath))
-            {
                 return;
-            }
 
             // search pattern
             string searchPattern = default;
 
             if (!Program.TryGetParameterValue("search-pattern", "s", args, ref searchPattern))
-            {
                 return;
-            }
 
             // campaignName
             string campaignName = default;
 
             if (!Program.TryGetParameterValue("campaign", "c", args, ref campaignName))
-            {
                 return;
-            }
 
             // dataWriterId
             string dataWriterId = default;
 
             if (!Program.TryGetParameterValue("data-writer", "w", args, ref dataWriterId))
-            {
                 return;
-            }
 
             // days
             string daysValue = default;
             int days = default;
 
             if (!Program.TryGetParameterValue("period", "p", args, ref daysValue, value => int.TryParse(value, out days)))
-            {
                 return;
-            }
 
             // ftpConnectionString
             string ftpConnectionString = default;
 
             if (!Program.TryGetParameterValue("ftp", "f", args, ref ftpConnectionString))
-            {
                 return;
-            }
 
             //
             IFileSystemProvider provider;
 
             if (!string.IsNullOrEmpty(ftpConnectionString))
-            {
                 provider = new FtpFileSystemProvider(ftpConnectionString);
-            }
             else
-            {
                 provider = new LocalFileSystemProvider();
-            }
 
             try
             {
                 provider.Connect();
-                Program.ImportFiles(provider, searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
+                Program.ImportNativeFiles(provider, searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
                 provider.Disconnect();
             }
             catch
@@ -327,9 +315,7 @@ namespace OneDas.Hdf.VdsTool
             DateTime epochStart = default;
 
             if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
-            {
                 return;
-            }
 
             Program.CreateVirtualDatasetFile(epochStart);
         }
@@ -341,9 +327,7 @@ namespace OneDas.Hdf.VdsTool
             DateTime epochStart = default;
 
             if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
-            {
                 return;
-            }
 
             Program.CreateAggregatedFiles(epochStart);
         }
@@ -1613,14 +1597,10 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
-        #region "IMPORT"
+        #region "NATIVE_IMPORT"
 
-        private static void ImportFiles(IFileSystemProvider provider, string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
+        private static void ImportNativeFiles(IFileSystemProvider provider, string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
         {
-            DateTime dateTimeBegin;
-            DateTime dateTimeEnd;
-            DateTime currentDateTimeBegin;
-
             string targetDirectoryPath;
             string logDirectoryPath;
             string logFilePath;
@@ -1629,11 +1609,12 @@ namespace OneDas.Hdf.VdsTool
 
             targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE");
 
-            dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
-            dateTimeBegin = dateTimeEnd.AddDays(-days);
+            var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
+            var dateTimeBegin = dateTimeEnd.AddDays(-days);
 
             provider.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
             {
+#warning Implement general logging infrastructure
                 logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
                 logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
 
@@ -1649,7 +1630,7 @@ namespace OneDas.Hdf.VdsTool
                     string sourceFilePath;
                     string targetFilePath;
 
-                    currentDateTimeBegin = dateTimeBegin.AddDays(i);
+                    var currentDateTimeBegin = dateTimeBegin.AddDays(i);
                     fileName = $"{ campaignName }_{ version }_{ currentDateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ") }.h5";
 
                     sourceFilePath = Program.PathCombine(currentSourceDirectoryPath, fileName);
@@ -1658,16 +1639,14 @@ namespace OneDas.Hdf.VdsTool
                     Console.WriteLine($"checking file { fileName }");
 
                     if (provider.FileExists(sourceFilePath) && !File.Exists(targetFilePath))
-                    {
-                        Program.CopyFile(provider, sourceFilePath, targetFilePath, logFilePath);
-                    }
+                        Program.CopyNativeFile(provider, sourceFilePath, targetFilePath, logFilePath);
                 }
 
                 File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
             });
         }
 
-        private static void CopyFile(IFileSystemProvider provider, string sourceFilePath, string targetFilePath, string logFilePath)
+        private static void CopyNativeFile(IFileSystemProvider provider, string sourceFilePath, string targetFilePath, string logFilePath)
         {
             string fileName;
 
@@ -1692,6 +1671,89 @@ namespace OneDas.Hdf.VdsTool
         private static string PathCombine(params string[] paths)
         {
             return Path.Combine(paths).Replace('\\', '/');
+        }
+
+        #endregion
+
+        #region "GENERIC_IMPORT"
+
+        private static void ImportGenericFiles(string campaignName, string sourceDirectoryPath, int days, string fileFormat, string systemName)
+        {
+            var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
+            var dateTimeBegin = dateTimeEnd.AddDays(-days);
+
+            // logger
+            var logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
+            var logFilePath = Path.Combine(logDirectoryPath, $"{ sourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
+
+            // convert
+            for (int i = 0; i <= days; i++)
+            {
+                sourceDirectoryPath = Path.Combine(sourceDirectoryPath, dateTimeBegin.ToString("yyyy-MM"));
+                Program.InternalImportGenericFiles(campaignName, sourceDirectoryPath, dateTimeBegin.AddDays(i), fileFormat, systemName);
+            }
+
+            File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
+        }
+
+        private static void InternalImportGenericFiles(string campaignName, string sourceDirectoryPath, DateTime dateTimeBegin, string fileFormat, string systemName)
+        {
+            if (!Directory.Exists(sourceDirectoryPath) || !Directory.EnumerateFileSystemEntries(sourceDirectoryPath).Any())
+                return;
+
+            var targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE");
+            var contextDirectoryPath = targetDirectoryPath;
+
+            // data writer context
+            IDataReader dataReader;
+            List<VariableDescription> variableDescriptionSet;
+
+            if (fileFormat == "FamosImc2")
+            {
+                dataReader = new FamosImc2DataReader(Path.Combine(sourceDirectoryPath, dateTimeBegin.ToString("yyyy-MM")));
+                variableDescriptionSet = dataReader.GetVariableDescriptions();
+            }
+            else
+            {
+                return;
+            }
+
+            var variableNameSet = variableDescriptionSet.Select(variableDescription => variableDescription.VariableName).ToList();
+            var importContext = ImportContext.OpenOrCreate(contextDirectoryPath, campaignName, variableNameSet);
+
+            foreach (var variableDescription in variableDescriptionSet)
+            {
+                variableDescription.Guid = importContext.VariableToGuidMap[variableDescription.VariableName];
+            }
+
+            var campaignNameParts = campaignName.Split('_');
+            var campaignDescription = new OneDasCampaignDescription(importContext.CampaignGuid, 1, campaignNameParts[0], campaignNameParts[1], campaignNameParts[2]);
+            var customMetadataEntrySet = new List<CustomMetadataEntry>();
+            var dataWriterContext = new DataWriterContext(systemName, targetDirectoryPath, campaignDescription, customMetadataEntrySet);
+
+            // configure data writer
+            var settings = new HdfSettings() { FileGranularity = FileGranularity.Day };
+            var dataWriter = new HdfWriter(settings, NullLogger.Instance);
+
+            dataWriter.Configure(dataWriterContext, variableDescriptionSet);
+
+            // convert data
+            var currentOffset = TimeSpan.Zero;
+
+            while (currentOffset < TimeSpan.FromDays(1))
+            {
+                var currentDateTimeBegin = dateTimeBegin + currentOffset;
+                (var period, var dataStorageSet) = dataReader.GetData(currentDateTimeBegin);
+
+                if (period <= TimeSpan.Zero)
+                    throw new InvalidOperationException("Period must be non-zero and positive.");
+
+                dataWriter.Write(currentDateTimeBegin, period, dataStorageSet);
+                currentOffset += period;
+            }
         }
 
         #endregion

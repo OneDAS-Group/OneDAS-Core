@@ -525,7 +525,7 @@ namespace OneDas.Hdf.Explorer.Core
                     {
                         using (StreamWriter streamWriter = new StreamWriter(fileStream))
                         {
-                            streamWriter.WriteLine($"{ DateTime.UtcNow.ToString("yyyy-MM:dd hh:mm:ss") }: { message }\n");
+                            streamWriter.WriteLine($"{ DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") }: { message }\n");
                         }
                     }
                 }

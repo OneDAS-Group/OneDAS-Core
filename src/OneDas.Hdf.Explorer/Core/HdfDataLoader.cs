@@ -1,5 +1,5 @@
 ﻿using HDF.PInvoke;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Csv;
@@ -101,21 +101,21 @@ namespace OneDas.Hdf.Explorer.Core
                 case FileFormat.CSV:
 
                     settings = new CsvSettings() { FileGranularity = fileGranularity };
-                    dataWriter = new CsvWriter((CsvSettings)settings, new LoggerFactory());
+                    dataWriter = new CsvWriter((CsvSettings)settings, NullLogger.Instance);
 
                     break;
 
                 case FileFormat.FAMOS:
 
                     settings = new FamosSettings() { FileGranularity = fileGranularity };
-                    dataWriter = new FamosWriter((FamosSettings)settings, new LoggerFactory());
+                    dataWriter = new FamosWriter((FamosSettings)settings, NullLogger.Instance);
 
                     break;
 
                 case FileFormat.MAT73:
 
                     settings = new Mat73Settings() { FileGranularity = fileGranularity };
-                    dataWriter = new Mat73Writer((Mat73Settings)settings, new LoggerFactory());
+                    dataWriter = new Mat73Writer((Mat73Settings)settings, NullLogger.Instance);
 
                     break;
 
@@ -209,9 +209,7 @@ namespace OneDas.Hdf.Explorer.Core
                 dataStorageSet = new List<IDataStorage>();
 
                 if (currentStart + currentRowCount > zipSettings.Start + zipSettings.Block)
-                {
                     currentRowCount = zipSettings.Start + zipSettings.Block - currentStart;
-                }
 
                 // load data
                 foreach (var variableInfo in zipSettings.CampaignInfo.Value)
@@ -236,9 +234,7 @@ namespace OneDas.Hdf.Explorer.Core
                 GC.Collect();
 
                 if (_cancellationToken.IsCancellationRequested)
-                {
                     return false;
-                }
 
                 currentSegment++;
             }
@@ -307,7 +303,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         protected virtual void OnProgressUpdated(ProgressUpdatedEventArgs e)
         {
-            ProgressUpdated?.Invoke(this, e);
+            this.ProgressUpdated?.Invoke(this, e);
         }
     }
 }

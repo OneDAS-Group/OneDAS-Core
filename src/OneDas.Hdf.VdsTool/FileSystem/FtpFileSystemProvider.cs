@@ -59,6 +59,25 @@ namespace OneDas.Hdf.VdsTool.FileSystem
             return _client.FileExists(filePath);
         }
 
+        public string[] GetFiles(string sourceDirectoryPath, string searchPattern, SearchOption searchOption)
+        {
+            FtpListOption option;
+
+            switch (searchOption)
+            {
+                case SearchOption.AllDirectories:
+                    option = FtpListOption.Auto | FtpListOption.Recursive;
+                    break;
+                default:
+                    option = FtpListOption.Auto;
+                    break;
+            }
+
+            return _client.GetListing(sourceDirectoryPath, option)
+                       .Where(item => item.Type == FtpFileSystemObjectType.File && Regex.IsMatch(item.FullName, searchPattern.Replace("*", ".*")))
+                       .Select(item => item.FullName).ToArray();
+        }
+
         public string[] GetDirectories(string sourceDirectoryPath, string searchPattern, SearchOption searchOption)
         {
             FtpListOption option;
@@ -66,7 +85,7 @@ namespace OneDas.Hdf.VdsTool.FileSystem
             switch (searchOption)
             {
                 case SearchOption.AllDirectories:
-                    option = FtpListOption.Recursive;
+                    option = FtpListOption.Auto | FtpListOption.Recursive;
                     break;
                 default:
                     option = FtpListOption.Auto;

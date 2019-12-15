@@ -5,7 +5,7 @@ namespace OneDas.Extension.Famos
 {
     [DataContract]
     [ExtensionContext(typeof(FamosWriter))]
-    [ExtensionIdentification("Famos", "FAMOS (imc2)", "Store data in FAMOS v2 .dat files (imc2).", @"WebClient.FamosView.html", @"WebClient.Famos.js")]
+    [ExtensionIdentification("FamosImc2", "FAMOS (imc2)", "Store data in FAMOS v2 .dat files (imc2).", @"WebClient.FamosView.html", @"WebClient.Famos.js")]
     public class FamosSettings : DataWriterExtensionSettingsBase
     {
         #region "Constructors"

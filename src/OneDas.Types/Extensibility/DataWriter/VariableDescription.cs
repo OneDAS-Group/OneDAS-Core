@@ -22,23 +22,29 @@ namespace OneDas.Extensibility
             this.DataStorageType = dataStorageType;
 
             if (!typeof(IDataStorage).IsAssignableFrom(dataStorageType))
-            {
                 throw new ArgumentException(ErrorMessage.VariableContext_DataStorageTypeInvalid);
-            }
         }
 
         #endregion
 
         #region "Properties"
 
-        public Guid Guid { get; private set; }
+        public Guid Guid { get; set; }
+
         public string VariableName { get; private set; }
+
         public string DatasetName { get; private set; }
+
         public string Group { get; private set; }
+
         public OneDasDataType DataType { get; private set; }
+
         public ulong SamplesPerDay { get; private set; }
+
         public string Unit { get; private set; }
+
         public List<TransferFunction> TransferFunctionSet { get; private set; }
+
         public Type DataStorageType { get; private set; }
 
         #endregion

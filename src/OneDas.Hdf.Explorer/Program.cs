@@ -67,13 +67,9 @@ namespace OneDas.Hdf.Explorer
 
             // service vs. interactive
             if (isUserInteractive)
-            {
                 Program.CreateWebHost(currentDirectory).Run();
-            }
             else
-            {
                 Program.CreateWebHost(currentDirectory).RunAsService();
-            }
         }
 
         public static List<CampaignInfo> CampaignInfoSet
@@ -160,14 +156,10 @@ namespace OneDas.Hdf.Explorer
 
         private static IWebHost CreateWebHost(string currentDirectory)
         {
-            IWebHost webHost;
-
             if (!Directory.Exists(Path.Combine(currentDirectory, "wwwroot")))
-            {
                 currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            }
 
-            webHost = new WebHostBuilder()
+            var webHost = new WebHostBuilder()
                 .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
                 .UseKestrel()
                 .UseUrls(_options.AspBaseUrl)

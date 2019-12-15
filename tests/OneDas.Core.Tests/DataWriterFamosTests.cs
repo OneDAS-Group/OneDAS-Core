@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Famos;
@@ -80,12 +81,7 @@ namespace OneDas.Core.Tests
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(current => new FamosWriter(new FamosSettings() { FileGranularity = FileGranularity.Minute_10 }, current.GetRequiredService<ILoggerFactory>()));
-
-            services.AddLogging(loggingBuilder =>
-            {
-                //
-            });
+            services.AddSingleton(current => new FamosWriter(new FamosSettings() { FileGranularity = FileGranularity.Minute_10 }, NullLogger.Instance));
         }
     }
 }

@@ -2,16 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="FluentFTP" Version="28.0.3" />
+    <PackageReference Include="FluentFTP" Version="28.0.5" />
+    <PackageReference Include="ImcFamosFile" Version="1.2.1" />
     <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
+    <ProjectReference Include="..\..\extensions\OneDas.Extension.Hdf\OneDas.Extension.Hdf.csproj" />
     <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
   
