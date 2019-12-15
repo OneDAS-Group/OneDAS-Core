@@ -20,10 +20,9 @@ namespace OneDas.Extension.Can
 
         #region "Constructors"
 
-        public CanGateway(CanSettings settings, ILoggerFactory loggerFactory) : base(settings)
+        public CanGateway(CanSettings settings, ILogger logger) : base(settings, logger)
         {
             this.Settings = settings;
-            this.Logger = loggerFactory.CreateLogger(this.DisplayName);
 
             this.LastSuccessfulUpdate.Restart();
         }
@@ -36,8 +35,6 @@ namespace OneDas.Extension.Can
 
         private ICanDevice CanDevice { get; set; }
 
-        private ILogger Logger { get; }
-
         #endregion
 
         #region "Methods"
@@ -48,7 +45,7 @@ namespace OneDas.Extension.Can
 
             this.CanDevice?.Dispose();
 
-#warning: Implement reconnection logic, when e.h. USB device is plugged out. Do not prevent OneDAS from starting.
+#warning: Implement reconnection logic, when e.g. USB device is plugged out. Do not prevent OneDAS from starting.
             this.CanDevice = this.Settings.CanDeviceType switch
             {
                 CanDeviceType.IxxatUsbToCanV2Compact => new IxxatUsbToCanV2Compact(this.Settings),

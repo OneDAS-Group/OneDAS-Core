@@ -29,12 +29,10 @@ namespace OneDas.Extension.Modbus
 
         #region "Constructors"
 
-        public ModbusClientGateway(ModbusClient modbusClient, ModbusClientSettings settings, ILoggerFactory loggerFactory) : base(settings)
+        public ModbusClientGateway(ModbusClient modbusClient, ModbusClientSettings settings, ILogger logger) : base(settings, logger)
         {
             this.ModbusClient = modbusClient;
             this.Settings = settings;
-
-            this.Logger = loggerFactory.CreateLogger(this.DisplayName);
 
             _manualResetEvent = new ManualResetEventSlim(false);
         }

@@ -7,8 +7,8 @@ namespace OneDas.Extension.Modbus
     {
         #region Constructors
 
-        public ModbusRtuServerGateway(ModbusRtuServerSettings settings, ILoggerFactory loggerFactory) 
-            : base(new ModbusRtuServer(settings.UnitIdentifier, isAsynchronous: false), settings, loggerFactory)
+        public ModbusRtuServerGateway(ModbusRtuServerSettings settings, ILogger logger) 
+            : base(new ModbusRtuServer(settings.UnitIdentifier, isAsynchronous: false), settings, logger)
         {
             var modbusServer = (ModbusRtuServer)this.ModbusServer;
 

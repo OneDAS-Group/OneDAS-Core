@@ -14,8 +14,8 @@ namespace OneDas.Extension.Modbus
 
         #region "Constructors"
 
-        public ModbusTcpServerGateway(ModbusTcpServerSettings settings, ILoggerFactory loggerFactory) 
-            : base(new ModbusTcpServer(isAsynchronous: false), settings, loggerFactory)
+        public ModbusTcpServerGateway(ModbusTcpServerSettings settings, ILogger logger) 
+            : base(new ModbusTcpServer(isAsynchronous: false), settings, logger)
         {
             _localEndpoint = new IPEndPoint(IPAddress.Parse(settings.LocalIpAddress), (int)settings.Port);
         }

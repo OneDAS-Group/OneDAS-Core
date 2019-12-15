@@ -1,4 +1,5 @@
-﻿using OneDas.Extensibility;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.Extensibility;
 using System;
 using System.Linq;
 using System.Net;
@@ -29,7 +30,7 @@ namespace OneDas.Extension.Udp
 
         #region "Constructors"
 
-        public UdpGateway(UdpSettings settings) : base(settings)
+        public UdpGateway(UdpSettings settings, ILogger logger) : base(settings, logger)
         {
             _settings = settings;
 

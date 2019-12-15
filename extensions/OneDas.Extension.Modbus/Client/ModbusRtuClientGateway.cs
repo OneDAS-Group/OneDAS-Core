@@ -8,8 +8,8 @@ namespace OneDas.Extension.Modbus
     {
         #region "Constructors"
 
-        public ModbusRtuClientGateway(ModbusRtuClientSettings settings, ILoggerFactory loggerFactory) 
-            : base(new ModbusRtuClient(), settings, loggerFactory)
+        public ModbusRtuClientGateway(ModbusRtuClientSettings settings, ILogger logger) 
+            : base(new ModbusRtuClient(), settings, logger)
         {
             var modbusClient = (ModbusRtuClient)this.ModbusClient;
 

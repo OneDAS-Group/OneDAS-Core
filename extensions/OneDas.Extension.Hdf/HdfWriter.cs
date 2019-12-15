@@ -36,7 +36,7 @@ namespace OneDas.Extension.Hdf
 
         #region "Constructors"
 
-        public HdfWriter(HdfSettings settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
+        public HdfWriter(HdfSettings settings, ILogger logger) : base(settings, logger)
         {
             uint isLibraryThreadSafe;
 

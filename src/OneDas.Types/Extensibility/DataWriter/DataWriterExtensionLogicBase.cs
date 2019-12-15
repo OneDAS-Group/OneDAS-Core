@@ -13,34 +13,34 @@ namespace OneDas.Extensibility
         private DateTime _lastFileStartDateTime;
         private DateTime _lastWrittenDateTime;
 
-        private ILogger _logger;
         private IList<VariableDescription> _variableDescriptionSet;
 
         #endregion
 
         #region "Constructors"
 
-        public DataWriterExtensionLogicBase(DataWriterExtensionSettingsBase settings, ILoggerFactory loggerFactory) : base(settings)
+        public DataWriterExtensionLogicBase(DataWriterExtensionSettingsBase settings, ILogger logger)
+            : base(settings, logger)
         {
             this.Settings = settings;
             this.ChunkPeriod = TimeSpan.FromMinutes(1);
             this.ChunkCount = (ulong)((int)settings.FileGranularity / this.ChunkPeriod.TotalSeconds);
             this.FormatVersion = this.GetType().GetFirstAttribute<DataWriterFormatVersionAttribute>().FormatVersion;
-
-            _logger = loggerFactory.CreateLogger(this.DisplayName);
         }
 
         #endregion
 
         #region "Properties"
 
-        public new DataWriterExtensionSettingsBase Settings { get; private set; }
+        public new DataWriterExtensionSettingsBase Settings { get; }
 
-        public int FormatVersion { get; private set; }
+        public int FormatVersion { get; }
 
         protected DataWriterContext DataWriterContext { get; private set; }
-        protected TimeSpan ChunkPeriod { get; private set; }
-        protected ulong ChunkCount { get; private set; }
+
+        protected TimeSpan ChunkPeriod { get; }
+
+        protected ulong ChunkCount { get; }
 
         #endregion
 
@@ -132,9 +132,9 @@ namespace OneDas.Extensibility
                     lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, contextGroup.SamplesPerDay) - 1;
 
                     if (firstChunk == lastChunk)
-                        _logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
+                        this.Logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
                     else
-                        _logger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
+                        this.Logger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
                 }
 
                 dataStorageOffset += period;

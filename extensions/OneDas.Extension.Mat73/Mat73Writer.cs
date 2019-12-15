@@ -36,7 +36,7 @@ namespace OneDas.Extension.Mat73
 
         #region "Constructors"
 
-        public Mat73Writer(Mat73Settings settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
+        public Mat73Writer(Mat73Settings settings, ILogger logger) : base(settings, logger)
         {
             uint isLibraryThreadSafe;
 

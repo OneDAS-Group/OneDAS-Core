@@ -1,23 +1,35 @@
-﻿using System;
-using System.Diagnostics.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using System;
 
 namespace OneDas.Extensibility
 {
     public abstract class ExtensionLogicBase : IDisposable 
     {
-        public ExtensionLogicBase(ExtensionSettingsBase settings)
-        {
-            Contract.Requires(settings != null);
+        #region Constructors
 
+        public ExtensionLogicBase(ExtensionSettingsBase settings, ILogger logger)
+        {
             this.Settings = settings;
             this.Settings.Validate();
+
+            this.Logger = logger;
 
             this.DisplayName = $"{ settings.Description.Id } ({ settings.Description.InstanceId })";
         }
 
+        #endregion
+
+        #region Properties
+
         public string DisplayName { get; }
 
         public ExtensionSettingsBase Settings { get; }
+
+        protected ILogger Logger { get; }
+
+        #endregion
+
+        #region Methods
 
         // don't force inherited classes to overwrite this
         protected virtual void FreeManagedResources()
@@ -29,6 +41,8 @@ namespace OneDas.Extensibility
         {
             //
         }
+
+        #endregion
 
         #region IDisposable Support
 

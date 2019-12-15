@@ -21,12 +21,11 @@ namespace OneDas.Extension.Modbus
 
         #region "Constructors"
 
-        public ModbusServerGateway(ModbusServer modbusServer, ModbusServerSettings settings, ILoggerFactory loggerFactory) : base(settings)
+        public ModbusServerGateway(ModbusServer modbusServer, ModbusServerSettings settings, ILogger logger) 
+            : base(settings, logger)
         {
             this.ModbusServer = modbusServer;
             this.Settings = settings;
-
-            this.Logger = loggerFactory.CreateLogger(this.DisplayName);
 
             this.LastSuccessfulUpdate.Restart();
         }
@@ -38,8 +37,6 @@ namespace OneDas.Extension.Modbus
         protected ModbusServer ModbusServer { get; }
 
         protected new ModbusServerSettings Settings { get; }
-
-        protected ILogger Logger { get; }
 
         #endregion
 

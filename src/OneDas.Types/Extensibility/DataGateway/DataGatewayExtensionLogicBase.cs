@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -14,7 +15,7 @@ namespace OneDas.Extensibility
 
         #region "Constructors"
 
-        public DataGatewayExtensionLogicBase(DataGatewayExtensionSettingsBase settings) : base(settings)
+        public DataGatewayExtensionLogicBase(DataGatewayExtensionSettingsBase settings, ILogger logger) : base(settings, logger)
         {
             this.Settings = settings;
         }

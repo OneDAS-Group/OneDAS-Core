@@ -12,7 +12,6 @@ namespace OneDas.Extension.Ethercat
     {
         #region "Fields"
 
-        private ILogger _logger;
         private IExtensionFactory _extensionFactory;
         private EthercatSupporter _ethercatSupporter;
         private EthercatSettings _settings;
@@ -23,18 +22,18 @@ namespace OneDas.Extension.Ethercat
 
         #region "Constructors"
 
-        public EthercatGateway(EthercatSettings settings, IExtensionFactory extensionFactory, ILoggerFactory loggerFactory, IOptions<OneDasOptions> options) : base(settings)
+        public EthercatGateway(EthercatSettings settings, IExtensionFactory extensionFactory, ILogger logger, IOptions<OneDasOptions> options) 
+            : base(settings, logger)
         {
             EcSettings ecSettings;
 
             _settings = settings;
             _extensionFactory = extensionFactory;
-            _logger = loggerFactory.CreateLogger(this.DisplayName);
             _options = options.Value;
 
             _ethercatSupporter = (EthercatSupporter)extensionFactory.BuildSupporter(typeof(EthercatSettings));
             ecSettings = new EcSettings(OneDasConstants.NativeSampleRate, _ethercatSupporter.EsiSourceDirectoryPath, settings.NicHardwareAddress);
-            _ecMaster = new EcMaster(ecSettings, extensionFactory, _logger);
+            _ecMaster = new EcMaster(ecSettings, extensionFactory, this.Logger);
         }
 
         #endregion

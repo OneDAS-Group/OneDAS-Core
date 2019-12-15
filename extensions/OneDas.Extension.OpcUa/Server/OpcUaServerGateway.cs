@@ -25,16 +25,14 @@ namespace OneDas.Extension.OpcUa
         private OpcUaServerSettings _settings;
         private OpcUaServer _opcServer;
 
-        private ILogger _logger;
-
         #endregion
 
         #region "Constructors"
 
-        public OpcUaServerGateway(OpcUaServerSettings settings, ILoggerFactory loggerFactory, IOptions<OneDasOptions> options) : base(settings)
+        public OpcUaServerGateway(OpcUaServerSettings settings, ILogger logger, IOptions<OneDasOptions> options) 
+            : base(settings, logger)
         {
             _settings = settings;
-            _logger = loggerFactory.CreateLogger(this.DisplayName);
             _options = options.Value;
 
             this.LastSuccessfulUpdate.Restart();
@@ -60,10 +58,10 @@ namespace OneDas.Extension.OpcUa
             if (config.SecurityConfiguration.ApplicationCertificate.Certificate == null)
             {
                 certificate = CertificateManager.CreateApplicationInstanceCertificate(config, lifeTimeInMonths: 36).Result;
-                _logger.LogInformation($"Certificate with thumbprint = {certificate.Thumbprint} created.");
+                this.Logger.LogInformation($"Certificate with thumbprint = {certificate.Thumbprint} created.");
             }
 
-            _opcServer = new OpcUaServer((OpcUaServerSettings)this.Settings, _logger);
+            _opcServer = new OpcUaServer((OpcUaServerSettings)this.Settings, this.Logger);
             _opcServer.Start(config);
         }
 

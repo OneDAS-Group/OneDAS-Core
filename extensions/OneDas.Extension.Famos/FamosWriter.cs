@@ -25,7 +25,7 @@ namespace OneDas.Extension.Famos
 
         #region "Constructors"
 
-        public FamosWriter(FamosSettings settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
+        public FamosWriter(FamosSettings settings, ILogger logger) : base(settings, logger)
         {
             _settings = settings;
 

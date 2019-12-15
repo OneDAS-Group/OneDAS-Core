@@ -24,7 +24,7 @@ namespace OneDas.Extension.Csv
 
         #region "Constructors"
 
-        public CsvWriter(CsvSettings settings, ILoggerFactory loggerFactory) : base(settings, loggerFactory)
+        public CsvWriter(CsvSettings settings, ILogger logger) : base(settings, logger)
         {
             _settings = settings;
 
