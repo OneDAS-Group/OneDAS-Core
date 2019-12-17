@@ -1,4 +1,5 @@
-﻿using OneDas.Infrastructure;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace OneDas.Extensibility.DataGatewaySample
         private DataGatewaySampleSettings _settings;
         private List<DataGatewaySampleNumberGeneratorBase> _numberGeneratorSet;
 
-        public DataGatewaySampleGateway(DataGatewaySampleSettings settings) : base(settings)
+        public DataGatewaySampleGateway(DataGatewaySampleSettings settings) : base(settings, NullLogger.Instance)
         {
             Random random;
 
