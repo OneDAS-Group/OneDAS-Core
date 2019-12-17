@@ -48,7 +48,7 @@
     {
         if (booleanBitSize && this.DataType() === OneDasDataTypeEnum.BOOLEAN)
         {
-            booleanBitSize = parseInt(<any>booleanBitSize)
+            booleanBitSize = Number.parseInt(<any>booleanBitSize)
 
             return Math.ceil(booleanBitSize * this.Size() / 8);
         }

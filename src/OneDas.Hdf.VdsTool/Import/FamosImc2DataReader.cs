@@ -4,107 +4,128 @@ using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace OneDas.Hdf.VdsTool.Import
 {
     public class FamosImc2DataReader : IDataReader
     {
-        #region Fields
-
-        string _sourceDirectoryPath;
-
-        #endregion
-
         #region Constructors
 
-        public FamosImc2DataReader(string sourceDirectoryPath)
+        public FamosImc2DataReader()
         {
-            _sourceDirectoryPath = sourceDirectoryPath;
+            //
         }
 
         #endregion
 
         #region Methods
 
-        public List<VariableDescription> GetVariableDescriptions()
+        public List<VariableDescription> GetVariableDescriptions(string filePath, TimeSpan periodPerFile)
         {
-            var firstFilePath = Directory.EnumerateFiles(_sourceDirectoryPath).FirstOrDefault();
+            using var famosFile = FamosFile.Open(filePath);
+            var fields = famosFile.Fields.Where(field => field.Type == FamosFileFieldType.MultipleYToSingleEquidistantTime).ToList();
 
-            if (string.IsNullOrWhiteSpace(firstFilePath))
+            return fields.SelectMany(field =>
             {
-                return new List<VariableDescription>();
-            }
-            else
-            {
-                using var famosFile = FamosFile.Open(firstFilePath);
-                var fields = famosFile.Fields.Where(field => field.Type == FamosFileFieldType.MultipleYToSingleEquidistantTime).ToList();
+                var variableDescriptions = new List<VariableDescription>();
 
-                return fields.SelectMany(field =>
+                foreach (var component in field.Components)
                 {
-                    var variableDescriptions = new List<VariableDescription>();
+                    var analogComponent = component as FamosFileAnalogComponent;
 
-                    foreach (var component in field.Components)
-                    {
-                        var analogComponent = component as FamosFileAnalogComponent;
+                    if (analogComponent == null)
+                        continue;
 
-                        if (analogComponent == null)
-                            continue;
+                    if (analogComponent.CalibrationInfo == null)
+                        continue;
 
-                        if (analogComponent.CalibrationInfo == null) // unfortunately XAxisScaling is null
-                            continue;
+                    var channel = component.Channels.First();
 
-#warning Generic data reader is difficult to implement. Better would be powershell scripts or command line arguments to define things like sample rate
-                        var channel = component.Channels.First();
+                    // variable name
+                    var variableName = OneDasUtilities.EnforceNamingConvention(channel.Name);
 
-                        // variable name
-                        var variableName = OneDasUtilities.EnforceNamingConvention(channel.Name);
+                    // samples per day
+                    ulong samplesPerDay = (ulong)(component.GetSize() * 86400.0 / periodPerFile.TotalSeconds);
 
-                        // samples per day
-#warning This is a magic number
-                        var period = TimeSpan.FromMinutes(10).TotalSeconds;
-                        ulong samplesPerDay = (ulong)(component.GetSize() * 86400.0 / period);
+                    // dataset name
+                    var datasetName = $"{(ulong)(samplesPerDay / 86400)} Hz";
 
-                        // dataset name
-                        var datasetName = $"{(ulong)(samplesPerDay/86400)} Hz";
+                    // group name
+                    var group = famosFile.Groups.FirstOrDefault(group => group.Channels.Contains(channel));
+                    var groupName = group != null ? group.Name : "General";
 
-                        // group name
-                        var group = famosFile.Groups.FirstOrDefault(group => group.Channels.Contains(channel));
-                        var groupName = group != null ? group.Name : "General";
+                    // data type
+                    var dataType = this.GetOneDasDataTypeFromFamosFileDataType(component.PackInfo.DataType);
 
-                        // data type
-                        var dataType = this.FamosFileDataTypeToOneDasDataType(component.PackInfo.DataType);
+                    // unit
+                    var unit = analogComponent.CalibrationInfo.Unit;
 
-                        // unit
-                        var unit = analogComponent.CalibrationInfo.Unit;
+                    // transfer function set
+                    var argument = $"{analogComponent.CalibrationInfo.Factor};{analogComponent.CalibrationInfo.Offset}";
+                    var transferFunctionSet = new List<TransferFunction>() { new TransferFunction(DateTime.MinValue, "polynomial", string.Empty, argument) };
 
-                        // transfer function set
-                        var argument = $"{analogComponent.CalibrationInfo.Factor};{analogComponent.CalibrationInfo.Offset}";
-                        var transferFunctionSet = new List<TransferFunction>() { new TransferFunction(DateTime.MinValue, "polynomial", string.Empty, argument) };
+                    // data storage type
+                    var dataStorageType = typeof(ExtendedDataStorageBase);
 
-                        // data storage type
-                        var dataStorageType = typeof(ExtendedDataStorageBase);
+                    // create variable description
+                    var variableDescription = new VariableDescription(Guid.Empty, variableName, datasetName, groupName, dataType, samplesPerDay, unit, transferFunctionSet, dataStorageType);
+                    variableDescriptions.Add(variableDescription);
+                }
 
-                        // create variable description
-                        var variableDescription = new VariableDescription(Guid.Empty, variableName, datasetName, groupName, dataType, samplesPerDay, unit, transferFunctionSet, dataStorageType);
-                        variableDescriptions.Add(variableDescription);
-                    }
-
-                    return variableDescriptions;
-                }).ToList();
-            }
+                return variableDescriptions;
+            }).ToList();
         }
 
-        public (TimeSpan Period, List<IDataStorage> DataStorageSet) GetData(DateTime startDateTime)
+        public List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet, bool convertToDouble)
         {
-            var dataStorageSet = Enumerable.Range(0, 40).Select(_ => new ExtendedDataStorage<float>(1024)).Cast<IDataStorage>().ToList();
+            using var famosFile = FamosFile.Open(filePath);
 
-            return (TimeSpan.FromMinutes(10), dataStorageSet);
+            var channels = famosFile.Groups.SelectMany(group => group.Channels).Concat(famosFile.Channels).ToList();
+
+            return variableDescriptionSet.Select(variableDescription =>
+            {
+                var channel = channels.First(channel => OneDasUtilities.EnforceNamingConvention(channel.Name) == variableDescription.VariableName);
+                var channelData = famosFile.ReadSingle(channel);
+                var componentsData = channelData.ComponentsData.First();
+                var rawData = componentsData.RawData;
+                var elementSize = OneDasUtilities.SizeOf(this.GetOneDasDataTypeFromFamosFileDataType(channelData.ComponentsData.First().PackInfo.DataType));
+                var statusSet = new byte[rawData.Length / elementSize];
+                
+                statusSet.AsSpan().Fill(0x01);
+
+#warning Improve DataStorage system. Using managed memory, Span<T> and work only with byte arrays is more suitable for everything
+
+                // Do not use variableInfo.DataType because it could have been modified to double if 'convertToDouble' is true!
+                var dataStorage = componentsData.PackInfo.DataType switch
+                {
+                    FamosFileDataType.UInt8         => this.CreateDataStorage<byte>(rawData, statusSet),
+                    FamosFileDataType.Int8          => this.CreateDataStorage<sbyte>(rawData, statusSet),
+                    FamosFileDataType.UInt16        => this.CreateDataStorage<ushort>(rawData, statusSet),
+                    FamosFileDataType.Int16         => this.CreateDataStorage<short>(rawData, statusSet),
+                    FamosFileDataType.UInt32        => this.CreateDataStorage<uint>(rawData, statusSet),
+                    FamosFileDataType.Int32         => this.CreateDataStorage<int>(rawData, statusSet),
+                    FamosFileDataType.Float32       => this.CreateDataStorage<float>(rawData, statusSet),
+                    FamosFileDataType.Float64       => this.CreateDataStorage<double>(rawData, statusSet),
+                    FamosFileDataType.Digital16Bit  => this.CreateDataStorage<ushort>(rawData, statusSet),
+                    _                               => throw new NotSupportedException()
+                };
+
+                if (convertToDouble)
+                    return dataStorage.ToSimpleDataStorage();
+                else
+                    return dataStorage;
+            }).ToList();
         }
 
-        private OneDasDataType FamosFileDataTypeToOneDasDataType(FamosFileDataType dataType)
+        private IDataStorage CreateDataStorage<T>(byte[] rawData, byte[] statusSet) where T : unmanaged
+        {
+            var data = MemoryMarshal.Cast<byte, T>(rawData.AsSpan());
+            return new ExtendedDataStorage<T>(data, statusSet);
+        }
+
+        private OneDasDataType GetOneDasDataTypeFromFamosFileDataType(FamosFileDataType dataType)
         {
             return dataType switch
             {

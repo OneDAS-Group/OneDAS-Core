@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OneDas.Extensibility;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -35,9 +36,9 @@ namespace OneDas.Hdf.VdsTool.Import
 
         #region Methods
 
-        public static ImportContext OpenOrCreate(string importDirectoryPath, string campaignName, List<string> variableNameSet)
+        public static ImportContext OpenOrCreate(string importDirectoryPath, string campaignName, int version, List<VariableDescription> variableDescriptionSet)
         {
-            var filePath = Path.Combine(importDirectoryPath, $"{campaignName}.json");
+            var filePath = Path.Combine(importDirectoryPath, $"{campaignName.Replace('/', '_')}_V{version}.json");
 
             ImportContext importContext;
 
@@ -46,7 +47,7 @@ namespace OneDas.Hdf.VdsTool.Import
             else
                 importContext = new ImportContext(campaignName);
 
-            importContext.AddVariables(variableNameSet);
+            importContext.AddVariables(variableDescriptionSet);
 
             // save file
             var options = new JsonSerializerOptions { WriteIndented = true };
@@ -57,12 +58,12 @@ namespace OneDas.Hdf.VdsTool.Import
             return importContext;
         }
 
-        private void AddVariables(List<string> variableNameSet)
+        private void AddVariables(List<VariableDescription> variableDescriptionSet)
         {
-            foreach (var variableName in variableNameSet)
+            foreach (var variableDescription in variableDescriptionSet)
             {
-                if (!this.VariableToGuidMap.ContainsKey(variableName))
-                    this.VariableToGuidMap[variableName] = Guid.NewGuid();
+                if (!this.VariableToGuidMap.ContainsKey(variableDescription.VariableName))
+                    this.VariableToGuidMap[variableDescription.VariableName] = Guid.NewGuid();
             }
         }
 

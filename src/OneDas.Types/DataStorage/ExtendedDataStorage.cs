@@ -11,7 +11,7 @@ namespace OneDas.DataStorage
             //
         }
 
-        public ExtendedDataStorage(T[] dataset, byte[] statusSet) : base(typeof(T), statusSet)
+        public ExtendedDataStorage(Span<T> dataset, byte[] statusSet) : base(typeof(T), statusSet)
         {
             dataset.CopyTo(this.GetDataBuffer<T>());
         }

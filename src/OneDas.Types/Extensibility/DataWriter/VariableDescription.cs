@@ -37,7 +37,7 @@ namespace OneDas.Extensibility
 
         public string Group { get; private set; }
 
-        public OneDasDataType DataType { get; private set; }
+        public OneDasDataType DataType { get; set; }
 
         public ulong SamplesPerDay { get; private set; }
 
@@ -45,7 +45,7 @@ namespace OneDas.Extensibility
 
         public List<TransferFunction> TransferFunctionSet { get; private set; }
 
-        public Type DataStorageType { get; private set; }
+        public Type DataStorageType { get; set; }
 
         #endregion
     }

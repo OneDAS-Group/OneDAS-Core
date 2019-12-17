@@ -7,7 +7,7 @@ namespace OneDas.DataStorage
     /// <summary>
     /// Represents an infrastructure to buffer data.
     /// </summary>
-    public abstract class ExtendedDataStorageBase : DataStorageBase, IExtendedDataStorage, IDisposable
+    public abstract class ExtendedDataStorageBase : DataStorageBase, IExtendedDataStorage
     {
         #region "Fields"
 

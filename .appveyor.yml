@@ -63,7 +63,7 @@ deploy:
     api_key:
       secure: DVadlPknnKPMR4F2+3VqeU7BFFmtLcXDHzkySA590MqQNIdzbx8HRuaPwDVbHRqX
     skip_symbols: true
-    artifact: /.*\.nupkg/ 
+    artifact: /.*\.nupkg/
     on:
       branch: dev
       CI_WINDOWS: true

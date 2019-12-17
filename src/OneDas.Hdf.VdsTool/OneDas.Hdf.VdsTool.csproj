@@ -7,7 +7,7 @@
   
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="28.0.5" />
-    <PackageReference Include="ImcFamosFile" Version="1.2.1" />
+    <PackageReference Include="ImcFamosFile" Version="1.2.2" />
     <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
   </ItemGroup>
   

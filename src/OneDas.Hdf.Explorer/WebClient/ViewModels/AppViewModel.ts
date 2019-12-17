@@ -244,39 +244,23 @@ class AppViewModel
         {
             return 0;
         }
-        
-        if (datasetName.startsWith("100 Hz"))
-        {
-            return 86400 * 100;
-        }
-        else if (datasetName.startsWith("25 Hz"))
-        {
-            return 86400 * 25;
-        }
-        else if (datasetName.startsWith("5 Hz"))
-        {
-            return 86400 * 5;
-        }
-        else if (datasetName.startsWith("1 Hz"))
-        {
-            return 86400 * 1;
-        }
-        else if (datasetName.startsWith("1 s"))
-        {
-            return 86400 * 1;
-        }
-        else if (datasetName.startsWith("60 s"))
-        {
-            return 86400 / 60;
-        }
-        else if (datasetName.startsWith("600 s"))
-        {
-            return 86400 / 600;
-        }
-        else
-        {
-            throw new Error("DatasetName cannot be converted to samples per day.");
-        }
+
+        // Hz
+        var regexHz = /([0-9|\.]+)\sHz/;
+        var matchHz = regexHz.exec(datasetName);
+
+        if (matchHz)
+            return 86400 * Number.parseInt(matchHz[1]);
+
+        // s
+        var regexT = /([0-9|\.]+)\ss/;
+        var matchT = regexT.exec(datasetName);
+
+        if (matchT)
+            return 86400 / Number.parseInt(matchT[1]);
+
+        // else
+        throw new Error("DatasetName cannot be converted to samples per day.");
     }
 
     private RemoveTimeZoneOffset = (date: Date) =>

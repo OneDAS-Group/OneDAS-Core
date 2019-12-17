@@ -271,7 +271,7 @@ namespace OneDas.Extension.Hdf
 
                 if (elementType.IsPrimitive)
                 {
-                    if (H5D.write(datasetId, datasetTypeId, dataspaceId_Memory, dataspaceId, H5P.DEFAULT, dataStorage.DataBufferPtr + (int)dataStorageOffset * extendedDataStorage.ElementSize) < 0)
+                    if (H5D.write(datasetId, datasetTypeId, dataspaceId_Memory, dataspaceId, H5P.DEFAULT, dataStorage.DataBufferPtr + (int)dataStorageOffset * dataStorage.ElementSize) < 0)
                         throw new Exception(ErrorMessage.HdfWriter_CouldNotWriteChunk_Dataset);
                 }
                 else

@@ -44,21 +44,26 @@ namespace OneDas
             };
         }
 
-        // Improve! RegEx
         public static ulong GetSamplesPerDayFromString(string datasetName)
         {
-            return true switch
-            {
-                true when datasetName.StartsWith("100 Hz")                  => 86400UL * 100,
-                true when datasetName.StartsWith("25 Hz")                   => 86400UL * 25,
-                true when datasetName.StartsWith("5 Hz")                    => 86400UL * 5,
-                true when datasetName.StartsWith("1 Hz")                    => 86400UL * 1,
-                true when datasetName.StartsWith("1 s")                     => 86400UL * 1,
-                true when datasetName.StartsWith("60 s")                    => 86400UL / 60,
-                true when datasetName.StartsWith("600 s")                   => 86400UL / 600,
-                true when datasetName.StartsWith("is_chunk_completed_set")  => 86400UL / 60,
-                _                                                           => throw new ArgumentException(nameof(datasetName))
-            };
+            // is_chunk_completed_set
+            if (datasetName.StartsWith("is_chunk_completed_set"))
+                return 86400UL / 60;
+
+            // Hz
+            var matchHz = Regex.Match(datasetName, @"([0-9|\.]+)\sHz");
+
+            if (matchHz.Success)
+                return 86400UL * ulong.Parse(matchHz.Groups[1].Value);
+
+            // s
+            var matchT = Regex.Match(datasetName, @"([0-9|\.]+)\ss");
+
+            if (matchT.Success)
+                return 86400UL / ulong.Parse(matchT.Groups[1].Value);
+
+            // else
+            throw new ArgumentException(nameof(datasetName));
         }
 
         public static OneDasDataType GetOneDasDataTypeFromType(Type type)

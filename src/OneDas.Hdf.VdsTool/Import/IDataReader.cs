@@ -7,8 +7,9 @@ namespace OneDas.Hdf.VdsTool.Import
 {
     public interface IDataReader
     {
-        (TimeSpan Period, List<IDataStorage> DataStorageSet) GetData(DateTime startDateTime);
+        // pass period per file parameter because its not always determinable from the file itself
+        List<VariableDescription> GetVariableDescriptions(string filePath, TimeSpan periodPerFile);
 
-        List<VariableDescription> GetVariableDescriptions();
+        List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet, bool convertToDouble);
     }
 }

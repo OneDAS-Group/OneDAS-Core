@@ -25,9 +25,7 @@ namespace OneDas.Core.Serialization
                 assemblyProductAttribute = assembly.GetCustomAttribute<AssemblyProductAttribute>();
 
                 if (assemblyProductAttribute != null && assemblyProductAttribute.Product.Contains("OneDAS"))
-                {
                     OneDasConverter.AssemblySet.Add(assembly);
-                }
             } 
         }
 
