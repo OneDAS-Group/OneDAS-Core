@@ -36,9 +36,9 @@ namespace OneDas.Hdf.VdsTool.Import
 
         #region Methods
 
-        public static ImportContext OpenOrCreate(string importDirectoryPath, string campaignName, int version, List<VariableDescription> variableDescriptionSet)
+        public static ImportContext OpenOrCreate(string importDirectoryPath, string campaignName, List<VariableDescription> variableDescriptionSet)
         {
-            var filePath = Path.Combine(importDirectoryPath, $"{campaignName.Replace('/', '_')}_V{version}.json");
+            var filePath = Path.Combine(importDirectoryPath, $"{campaignName.Replace('/', '_')}.json");
 
             ImportContext importContext;
 

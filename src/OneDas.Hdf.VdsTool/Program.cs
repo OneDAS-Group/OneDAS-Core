@@ -63,9 +63,7 @@ namespace OneDas.Hdf.VdsTool
                 Environment.CurrentDirectory = Program.BaseDirectoryPath;
 
                 if (Program.ParseCommandLineArguments(args))
-                {
                     return;
-                };
             }
 
             H5.is_library_threadsafe(ref _isLibraryThreadSafe);
@@ -1794,7 +1792,7 @@ namespace OneDas.Hdf.VdsTool
                 return;
             }
 
-            var importContext = ImportContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, version, variableDescriptionSet);
+            var importContext = ImportContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
 
             foreach (var variableDescription in variableDescriptionSet)
             {
@@ -1843,7 +1841,6 @@ namespace OneDas.Hdf.VdsTool
                 try
                 {
                     var dataStorageSet = dataReader.GetData(filePath, variableDescriptionSet, convertToDouble: true);
-
                     dataWriter.Write(currentDateTimeBegin, periodPerFile, dataStorageSet);
 
                     foreach (DataStorageBase dataStorage in dataStorageSet)
@@ -1851,10 +1848,9 @@ namespace OneDas.Hdf.VdsTool
                         dataStorage.Dispose();
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-
-                    throw;
+                    // skip this file
                 }
             }
         }
