@@ -55,9 +55,9 @@ namespace OneDas.Hdf.Explorer.Core
                         var transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
 
                         var oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                        var samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
+                        var sampleRate = new SampleRateContainer(datasetName);
 
-                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, DataStorageType.Simple));
+                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, sampleRate.SamplesPerDay, unit, transferFunctionSet, DataStorageType.Simple));
                     }
                     finally
                     {

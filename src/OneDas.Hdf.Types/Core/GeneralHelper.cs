@@ -34,11 +34,9 @@ namespace OneDas.Hdf.Core
 
         public static void SuppressErrors(Action action)
         {
-            H5E.auto_t func;
-            IntPtr clientData;
+            H5E.auto_t func = null;
 
-            func = null;
-            clientData = IntPtr.Zero;
+            var clientData = IntPtr.Zero;
 
             H5E.get_auto(H5E.DEFAULT, ref func, ref clientData);
             H5E.set_auto(H5E.DEFAULT, null, IntPtr.Zero);
@@ -50,14 +48,10 @@ namespace OneDas.Hdf.Core
 
         public static List<CampaignInfo> InternalUpdateCampaignInfoSet(long fileId, bool isLazyLoading, List<CampaignInfo> campaignInfoSet = null, string campaignGroupPath = "")
         {
-            ulong idx;
-
-            idx = 0;
+            var idx = 0UL;
 
             if (campaignInfoSet == null)
-            {
                 campaignInfoSet = new List<CampaignInfo>();
-            }
 
             GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
 
@@ -70,36 +64,24 @@ namespace OneDas.Hdf.Core
                 long groupId = -1;
                 long datasetId = -1;
 
-                int level;
                 int formatVersion;
 
-                string name;
-                string fullName;
-                string userData;
-
                 H5O.type_t objectType;
-                CampaignInfo currentCampaignInfo;
-                StringBuilder filePath;
-                DateTime dateTime;
 
                 //
                 if (H5A.exists(fileId, "format_version") > 0) // raw file
-                {
                     formatVersion = IOHelper.ReadAttribute<int>(fileId, "format_version").First();
-                }
                 else // virtual file
-                {
                     formatVersion = -1;
-                }
 
-                filePath = new StringBuilder(260);
+                var filePath = new StringBuilder(260);
                 H5F.get_name(fileId, filePath, new IntPtr(260));
-                dateTime = DateTime.ParseExact(IOHelper.ReadAttribute<string>(fileId, "date_time").First(), "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                var dateTime = DateTime.ParseExact(IOHelper.ReadAttribute<string>(fileId, "date_time").First(), "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
 
-                name = Marshal.PtrToStringAnsi(intPtrName);
-                userData = Marshal.PtrToStringAnsi(intPtrUserData);
-                fullName = GeneralHelper.CombinePath(userData, name);
-                level = userData.Split("/".ToArray()).Count();
+                var name = Marshal.PtrToStringAnsi(intPtrName);
+                var userData = Marshal.PtrToStringAnsi(intPtrUserData);
+                var fullName = GeneralHelper.CombinePath(userData, name);
+                var level = userData.Split("/".ToArray()).Count();
 
                 // this is necessary, since H5Oget_info_by_name is slow because it wants verbose object header data 
                 // and H5G_loc_info is not directly accessible
@@ -115,13 +97,9 @@ namespace OneDas.Hdf.Core
                     groupId = H5G.open(campaignGroupId, name);
 
                     if (H5I.is_valid(groupId) > 0)
-                    {
                         objectType = H5O.type_t.GROUP;
-                    }
                     else
-                    {
                         objectType = H5O.type_t.UNKNOWN;
-                    }
                 }
 
                 switch (level)
@@ -135,11 +113,9 @@ namespace OneDas.Hdf.Core
                         if (objectType == H5O.type_t.GROUP)
                         {
                             if (!string.IsNullOrWhiteSpace(campaignGroupPath) && fullName != campaignGroupPath)
-                            {
                                 return 0;
-                            }
 
-                            currentCampaignInfo = campaignInfoSet.FirstOrDefault(campaignInfo => campaignInfo.Name == fullName);
+                            var currentCampaignInfo = campaignInfoSet.FirstOrDefault(campaignInfo => campaignInfo.Name == fullName);
 
                             if (currentCampaignInfo == null)
                             {
@@ -154,9 +130,7 @@ namespace OneDas.Hdf.Core
                 }
 
                 if (objectType == H5O.type_t.GROUP && level < 3)
-                {
                     H5L.iterate(groupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx2, Callback, Marshal.StringToHGlobalAnsi(fullName));
-                }
 
                 // clean up
                 if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
@@ -168,15 +142,10 @@ namespace OneDas.Hdf.Core
 
         public static List<(string Path, string Name)> GetPathSet(long locationId, int maxDepth, bool includeGroups, bool includeDatasets)
         {
-            ulong idx;
-            List<(string Path, string Name)> datasetPathSet;
-            H5E.auto_t func;
-            IntPtr clientData;
-
-            idx = default;
-            datasetPathSet = new List<(string Path, string Name)>();
-            func = null;
-            clientData = IntPtr.Zero;
+            var idx = 0UL;
+            H5E.auto_t func = null;
+            var datasetPathSet = new List<(string Path, string Name)>();
+            var clientData = IntPtr.Zero;
 
             H5E.get_auto(H5E.DEFAULT, ref func, ref clientData);
             H5E.set_auto(H5E.DEFAULT, null, IntPtr.Zero);
@@ -188,18 +157,12 @@ namespace OneDas.Hdf.Core
             int Callback(long groupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
             {
                 long datasetId = -1;
-
-                ulong idx2 = default;
-                int level;
-
-                string name;
-                string userData;
-
                 H5O.type_t objectType;
 
-                name = Marshal.PtrToStringAnsi(intPtrName);
-                userData = Marshal.PtrToStringAnsi(intPtrUserData);
-                level = userData.Split("/".ToArray()).Count();
+                var idx2 = 0UL;
+                var name = Marshal.PtrToStringAnsi(intPtrName);
+                var userData = Marshal.PtrToStringAnsi(intPtrUserData);
+                var level = userData.Split("/".ToArray()).Count();
 
                 // this is necessary, since H5Oget_info_by_name is slow because it wants verbose object header data 
                 // and H5G_loc_info is not directly accessible
@@ -215,13 +178,9 @@ namespace OneDas.Hdf.Core
                     groupId = H5G.open(groupId, name);
 
                     if (groupId > -1)
-                    {
                         objectType = H5O.type_t.GROUP;
-                    }
                     else
-                    {
                         objectType = H5O.type_t.UNKNOWN;
-                    }
                 }
 
                 switch (objectType)
@@ -233,9 +192,7 @@ namespace OneDas.Hdf.Core
                             H5L.iterate(groupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx2, Callback, Marshal.StringToHGlobalAnsi(GeneralHelper.CombinePath(userData, name)));
 
                             if (includeGroups)
-                            {
                                 datasetPathSet.Add((userData, name));
-                            }
 
                             H5G.close(groupId);
                         }
@@ -245,9 +202,7 @@ namespace OneDas.Hdf.Core
                     case H5O.type_t.DATASET:
 
                         if (includeDatasets)
-                        {
                             datasetPathSet.Add((userData, name));
-                        }
 
                         H5D.close(datasetId);
                         break;
@@ -265,32 +220,10 @@ namespace OneDas.Hdf.Core
             return $"{ path1 }/{ path2 }".Replace("///", "/").Replace("//", "/");
         }
 
-        public static double ToSampleRate(this string datasetName)
-        {
-            string[] datasetNamePartSet;
-
-            datasetNamePartSet = datasetName.Split(' ', '_');
-
-            switch (datasetNamePartSet[1])
-            {
-                case "Hz":
-                    return Double.Parse(datasetNamePartSet[0]);
-
-                case "s":
-                    return 1 / Double.Parse(datasetNamePartSet[0]);
-
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
         public static object InvokeGenericMethod(Type methodParent, object instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)
         {
-            MethodInfo methodInfo;
-            MethodInfo genericMethodInfo;
-
-            methodInfo = methodParent.GetMethod(methodName, bindingFlags);
-            genericMethodInfo = methodInfo.MakeGenericMethod(genericType);
+            var methodInfo = methodParent.GetMethod(methodName, bindingFlags);
+            var genericMethodInfo = methodInfo.MakeGenericMethod(genericType);
 
             return genericMethodInfo.Invoke(instance, parameters);
         }

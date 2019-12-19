@@ -111,11 +111,12 @@ namespace OneDas.Hdf.Explorer.Web
             return channel;
         }
 
-        public async Task<string> GetData(DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
+        public async Task<string> GetData(DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateWithUnit, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
             var downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
+            var sampleRate = new SampleRateContainer(sampleRateWithUnit);
 
-            return await downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+            return await downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRate, fileFormat, fileGranularity, campaignInfoSet);
         }
 
         public Task<string> GetCampaignDocumentation(string campaigInfoName)

@@ -1,9 +1,9 @@
 ﻿using HDF.PInvoke;
 using Microsoft.Extensions.Logging;
-using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -38,18 +38,14 @@ namespace OneDas.Extension.Mat73
 
         public Mat73Writer(Mat73Settings settings, ILogger logger) : base(settings, logger)
         {
-            uint isLibraryThreadSafe;
-
             _settings = settings;
 
             // check thread safety
-            isLibraryThreadSafe = 0;
+            var isLibraryThreadSafe = 0U;
             H5.is_library_threadsafe(ref isLibraryThreadSafe);
 
             if (isLibraryThreadSafe <= 0)
-            {
                 throw new Exception(ErrorMessage.Mat73Writer_HdfLibraryNotThreadSafe);
-            }
         }
 
         #endregion
@@ -88,9 +84,7 @@ namespace OneDas.Extension.Mat73
             _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z.mat");
 
             if (_fileId > -1)
-            {
                 this.CloseHdfFile(_fileId);
-            }
 
             this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
         }
@@ -99,22 +93,17 @@ namespace OneDas.Extension.Mat73
         {
             long groupId = -1;
 
-            long firstChunk;
-            long lastChunk;
-
             try
             {
-                firstChunk = (long)(fileOffset / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SamplesPerDay));
-                lastChunk = (long)((fileOffset + length) / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SamplesPerDay)) - 1;
+                var firstChunk = (long)(fileOffset / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SampleRate));
+                var lastChunk = (long)((fileOffset + length) / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SampleRate)) - 1;
 
                 groupId = H5G.open(_fileId, $"/info");
 
                 _lastCompletedChunk = IOHelper.ReadDataset<double>(groupId, "last_completed_chunk").FirstOrDefault();
 
                 if (firstChunk <= _lastCompletedChunk)
-                {
                     throw new Exception(ErrorMessage.Mat73Writer_ChunkAlreadyWritten);
-                }
 
                 // write data
                 for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
@@ -131,6 +120,11 @@ namespace OneDas.Extension.Mat73
 
                 H5F.flush(_fileId, H5F.scope_t.GLOBAL);
             }
+        }
+
+        private ulong TimeSpanToIndex(TimeSpan chunkPeriod, object sampleRate)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void FreeUnmanagedResources()
@@ -229,20 +223,16 @@ namespace OneDas.Extension.Mat73
             long dataspaceId = -1;
             long dataspaceId_Memory = -1;
 
-            string datasetName;
-
-            IDataStorage simpleDataStorage;
-
             try
             {
                 groupId = H5G.open(_fileId, $"/{ variableContext.VariableDescription.VariableName }");
 
-                datasetName = $"dataset_{ variableContext.VariableDescription.DatasetName.Replace(" ", "_") }";
+                var datasetName = $"dataset_{ variableContext.VariableDescription.DatasetName.Replace(" ", "_") }";
                 datasetId = H5D.open(groupId, datasetName);
                 dataspaceId = H5D.get_space(datasetId);
                 dataspaceId_Memory = H5S.create_simple(1, new ulong[] { length }, null);
 
-                simpleDataStorage = variableContext.DataStorage.ToSimpleDataStorage();
+                var simpleDataStorage = variableContext.DataStorage.ToSimpleDataStorage();
 
                 // dataset
                 H5S.select_hyperslab(dataspaceId,
@@ -273,12 +263,10 @@ namespace OneDas.Extension.Mat73
             long groupId = -1;
             long datasetId = -1;
 
-            ulong chunkLength;
-
             try
             {
                 // chunk length
-                chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SamplesPerDay);
+                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, new SampleRateContainer(variableDescription.SamplesPerDay));
 
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.Mat73Writer_SampleRateTooLow);
@@ -304,15 +292,12 @@ namespace OneDas.Extension.Mat73
         private (long DatasetId, bool IsNew) OpenOrCreateVariable(long locationId, string name, ulong chunkLength, ulong chunkCount)
         {
             long datasetId = -1;
-            double fillValue;
-            GCHandle gcHandle_fillValue;
+            GCHandle gcHandle_fillValue = default;
             bool isNew;
-
-            gcHandle_fillValue = default;
 
             try
             {
-                fillValue = Double.NaN;
+                var fillValue = Double.NaN;
                 gcHandle_fillValue = GCHandle.Alloc(fillValue, GCHandleType.Pinned);
 
                 (datasetId, isNew) = IOHelper.OpenOrCreateDataset(locationId, name, H5T.NATIVE_DOUBLE, chunkLength, chunkCount, gcHandle_fillValue.AddrOfPinnedObject());
@@ -357,8 +342,6 @@ namespace OneDas.Extension.Mat73
 
         private void PrepareStringAttribute(long locationId, string name, string value)
         {
-            IntPtr classNamePtr;
-
             long typeId = -1;
             long attributeId = -1;
 
@@ -366,7 +349,7 @@ namespace OneDas.Extension.Mat73
 
             try
             {
-                classNamePtr = Marshal.StringToHGlobalAnsi(value);
+                var classNamePtr = Marshal.StringToHGlobalAnsi(value);
 
                 typeId = H5T.copy(H5T.C_S1);
                 H5T.set_size(typeId, new IntPtr(value.Length));
@@ -390,9 +373,7 @@ namespace OneDas.Extension.Mat73
                 });
 
                 if (isNew)
-                {
                     H5A.write(attributeId, typeId, classNamePtr);
-                }
             }
             finally
             {
@@ -411,9 +392,7 @@ namespace OneDas.Extension.Mat73
                 (attributeId, isNew) = IOHelper.OpenOrCreateAttribute(locationId, name, H5T.NATIVE_INT32, 1, new ulong[] { 1 });
 
                 if (isNew)
-                {
                     IOHelper.Write(attributeId, new Int32[] { value }, DataContainerType.Attribute);
-                }
             }
             finally
             {
@@ -424,21 +403,13 @@ namespace OneDas.Extension.Mat73
         private string GetMatTypeFromType(Type type)
         {
             if (type == typeof(Double))
-            {
                 return "double";
-            }
             else if (type == typeof(char))
-            {
                 return "char";
-            }
             else if (type == typeof(string))
-            {
                 return "cell";
-            }
             else
-            {
                 throw new NotImplementedException();
-            }
         }
 
         // low level -> preamble
@@ -447,13 +418,9 @@ namespace OneDas.Extension.Mat73
         {
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Write))
             {
-                byte[] streamData1;
-                byte[] streamData2;
-                byte[] streamData3;
-
-                streamData1 = Encoding.ASCII.GetBytes($"MATLAB 7.3 MAT-file, Platform: PCWIN64, Created on: { DateTime.Now.ToString("ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture) } HDF5 schema 1.00 .                     ");
-                streamData2 = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x49, 0x4D };
-                streamData3 = new byte[512 - streamData1.Length - streamData2.Length];
+                var streamData1 = Encoding.ASCII.GetBytes($"MATLAB 7.3 MAT-file, Platform: PCWIN64, Created on: { DateTime.Now.ToString("ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture) } HDF5 schema 1.00 .                     ");
+                var streamData2 = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x49, 0x4D };
+                var streamData3 = new byte[512 - streamData1.Length - streamData2.Length];
 
                 fileStream.Write(streamData1, 0, streamData1.Length);
                 fileStream.Write(streamData2, 0, streamData2.Length);
@@ -465,32 +432,20 @@ namespace OneDas.Extension.Mat73
         private char GetRefsName(byte index)
         {
             if (index < 26)
-            {
                 return (char)(index + 0x61);
-            }
             else if (index < 54)
-            {
                 return (char)(index + 0x41);
-            }
             else if (index < 63)
-            {
                 return (char)(index + 0x31);
-            }
             else if (index < 64)
-            {
                 return (char)(index + 0x30);
-            }
             else
-            {
                 throw new ArgumentException("argument 'index' must be < 64");
-            }
         }
 
         private void PrepareAllTextEntries(IList<TextEntry> textEntrySet)
         {
-            byte index;
-
-            index = 0;
+            var index = (byte)0;
 
             textEntrySet.ToList().ForEach(textEntry =>
             {
@@ -517,14 +472,13 @@ namespace OneDas.Extension.Mat73
             long datasetId = -1;
             bool isNew;
 
-            UInt16[] data;
             GCHandle gcHandle_data;
 
             gcHandle_data = default;
 
             try
             {
-                data = textEntry.Content.ToCodePoints().ToList().ConvertAll(value => (UInt16)value).ToArray();
+                var data = textEntry.Content.ToCodePoints().ToList().ConvertAll(value => (UInt16)value).ToArray();
                 gcHandle_data = GCHandle.Alloc(data, GCHandleType.Pinned);
 
                 (datasetId, isNew) = IOHelper.OpenOrCreateDataset(_fileId, $"/#refs#/{ refsEntryName }", H5T.NATIVE_UINT16, () =>
@@ -555,9 +509,7 @@ namespace OneDas.Extension.Mat73
                 });
 
                 if (isNew)
-                {
                     H5D.write(datasetId, H5T.NATIVE_UINT16, H5S.ALL, H5S.ALL, H5P.DEFAULT, gcHandle_data.AddrOfPinnedObject());
-                }
 
                 this.PrepareStringAttribute(datasetId, "MATLAB_class", this.GetMatTypeFromType(typeof(char)));
                 this.PrepareInt32Attribute(datasetId, "MATLAB_int_decode", 2);
@@ -565,9 +517,7 @@ namespace OneDas.Extension.Mat73
             finally
             {
                 if (gcHandle_data.IsAllocated)
-                {
                     gcHandle_data.Free();
-                }
 
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
             }
@@ -576,11 +526,9 @@ namespace OneDas.Extension.Mat73
         private void PrepareTextEntryCellString(TextEntry textEntry, string refsEntryName)
         {
             long datasetId = -1;
-
             bool isNew;
-            IntPtr objectReferencePointer;
 
-            objectReferencePointer = IntPtr.Zero;
+            var objectReferencePointer = IntPtr.Zero;
 
             try
             {
@@ -620,9 +568,7 @@ namespace OneDas.Extension.Mat73
             finally
             {
                 if (objectReferencePointer != IntPtr.Zero)
-                {
                     Marshal.FreeHGlobal(objectReferencePointer);
-                }
 
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
             }

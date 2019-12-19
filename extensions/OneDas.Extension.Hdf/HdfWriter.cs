@@ -4,6 +4,7 @@ using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -88,8 +89,8 @@ namespace OneDas.Extension.Hdf
 
             try
             {
-                firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SamplesPerDay);
-                lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SamplesPerDay) - 1;
+                firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SampleRate);
+                lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SampleRate) - 1;
 
                 groupId = H5G.open(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}");
                 datasetId = H5D.open(groupId, "is_chunk_completed_set");
@@ -328,16 +329,14 @@ namespace OneDas.Extension.Hdf
             long datasetTypeId = -1;
             long datasetId_status = -1;
 
-            ulong chunkLength;
-
             string datasetName = null;
-
-            hdf_transfer_function_t[] transferFunctionSet;
 
             try
             {
+                var sampleRate = new SampleRateContainer(variableDescription.SamplesPerDay);
+
                 // chunk length
-                chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SamplesPerDay);
+                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, sampleRate);
 
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.HdfWriter_SampleRateTooLow);
@@ -346,7 +345,7 @@ namespace OneDas.Extension.Hdf
                 groupId = IOHelper.OpenOrCreateGroup(locationId, variableDescription.Guid.ToString()).GroupId;
 
                 // attributes
-                transferFunctionSet = variableDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), tf.Type, tf.Option, tf.Argument)).ToArray();
+                var transferFunctionSet = variableDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), tf.Type, tf.Option, tf.Argument)).ToArray();
 
                 IOHelper.PrepareAttribute(groupId, "name_set", new string[] { variableDescription.VariableName }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "group_set", new string[] { variableDescription.Group }, new ulong[] { H5S.UNLIMITED }, true);

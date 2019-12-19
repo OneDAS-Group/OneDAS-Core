@@ -41,22 +41,8 @@ namespace OneDas.Hdf.Explorer.Core
         {
             long fileId = -1;
 
-            ulong lengthPerDay;
             ulong offset;
-
-            ulong start;
-            ulong stride;
-            ulong block;
-            ulong count;
-
-            double totalDays;
-
-            int[] data;
             int[] aggregatedData;
-
-            DateTime epochStart;
-            DateTime epochEnd;
-
             DataAvailabilityGranularity granularity;
 
             return Task.Run(() =>
@@ -67,24 +53,22 @@ namespace OneDas.Hdf.Explorer.Core
                 fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
                 // epoch & hyperslab
-                epochStart = new DateTime(2000, 01, 01);
-                epochEnd = new DateTime(2030, 01, 01);
+                var epochStart = new DateTime(2000, 01, 01);
+                var epochEnd = new DateTime(2030, 01, 01);
 
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
-                {
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
-                }
 
-                lengthPerDay = OneDasUtilities.GetSamplesPerDayFromString("is_chunk_completed_set");
+                var samplesPerDay = new SampleRateContainer("is_chunk_completed_set").SamplesPerDay;
 
-                start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalDays * lengthPerDay));
-                stride = 1;
-                block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * lengthPerDay));
-                count = 1;
+                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
+                var stride = 1UL;
+                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
+                var count = 1UL;
 
                 // get data
-                totalDays = (dateTimeEnd - dateTimeBegin).TotalDays;
-                data = IOHelper.ReadDataset<byte>(fileId, $"{ campaignName }/is_chunk_completed_set", start, stride, block, count).Select(value => (int)value).ToArray();
+                var totalDays = (dateTimeEnd - dateTimeBegin).TotalDays;
+                var data = IOHelper.ReadDataset<byte>(fileId, $"{ campaignName }/is_chunk_completed_set", start, stride, block, count).Select(value => (int)value).ToArray();
 
                 if (totalDays <= 7)
                 {
@@ -99,40 +83,27 @@ namespace OneDas.Hdf.Explorer.Core
 
                     Parallel.For(0, (int)Math.Ceiling(totalDays), day =>
                     {
-                        ulong startIndex; // inclusive
-                        ulong endIndex; // exclusive
-
-                        startIndex = (ulong)day * lengthPerDay;
-                        endIndex = startIndex + lengthPerDay;
+                        var startIndex = (ulong)day * samplesPerDay; // inclusive
+                        var endIndex = startIndex + samplesPerDay; // exclusive
 
                         if ((int)startIndex - (int)offset < 0)
-                        {
                             startIndex = 0;
-                        }
                         else
-                        {
                             startIndex = startIndex - offset;
-                        }
 
                         if (endIndex - offset >= (ulong)data.Length)
-                        {
                             endIndex = (ulong)data.Length;
-                        }
                         else
-                        {
                             endIndex = endIndex - offset;
-                        }
 
                         aggregatedData[day] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
                     });
                 }
                 else
                 {
-                    int totalMonths;
-                    DateTime totalDateTimeBegin;
+                    var totalMonths = (dateTimeEnd.Month - dateTimeBegin.Month) + 1 + 12 * (dateTimeEnd.Year - dateTimeBegin.Year);
+                    var totalDateTimeBegin = new DateTime(dateTimeBegin.Year, dateTimeBegin.Month, 1);
 
-                    totalMonths = (dateTimeEnd.Month - dateTimeBegin.Month) + 1 + 12 * (dateTimeEnd.Year - dateTimeBegin.Year);
-                    totalDateTimeBegin = new DateTime(dateTimeBegin.Year, dateTimeBegin.Month, 1);
                     granularity = DataAvailabilityGranularity.MonthLevel;
                     offset = (ulong)(dateTimeBegin - totalDateTimeBegin).TotalMinutes;
                     aggregatedData = new int[totalMonths];
@@ -149,22 +120,14 @@ namespace OneDas.Hdf.Explorer.Core
                         currentDateTimeEnd = currentDateTimeBegin.AddMonths(1);
 
                         if ((currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset < 0)
-                        {
                             startIndex = 0;
-                        }
                         else
-                        {
                             startIndex = (ulong)(currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset;
-                        }
 
                         if ((currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset >= data.Length)
-                        {
                             endIndex = (ulong)data.Length;
-                        }
                         else
-                        {
                             endIndex = (ulong)(currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset;
-                        }
 
                         aggregatedData[month] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
                     });
@@ -177,22 +140,16 @@ namespace OneDas.Hdf.Explorer.Core
             });
         }
 
-        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
+        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateWithUnit, string campaignPath, List<string> variableNameSet)
         {
-            string url;
-            CampaignInfo campaignInfo;
-            Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet;
-
             try
             {
-                campaignInfo = Program.CampaignInfoSet.FirstOrDefault(current => current.Name == campaignPath);
+                var campaignInfo = Program.CampaignInfoSet.FirstOrDefault(current => current.Name == campaignPath);
 
                 if (campaignInfo == null)
-                {
                     throw new Exception($"Could not find campaign with path '{campaignPath}'.");
-                }
 
-                campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
+                var campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
                 campaignInfoSet[campaignInfo.Name] = new Dictionary<string, List<string>>();
 
                 foreach (var variableName in variableNameSet)
@@ -202,19 +159,15 @@ namespace OneDas.Hdf.Explorer.Core
                     variableInfo = campaignInfo.VariableInfoSet.FirstOrDefault(current => current.VariableNameSet.Contains(variableName));
 
                     if (campaignInfo == null)
-                    {
                         throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaignInfo.Name}'.");
-                    }
 
-                    if (!variableInfo.DatasetInfoSet.Any(current => current.Name == sampleRateDescription))
-                    {
+                    if (!variableInfo.DatasetInfoSet.Any(current => current.Name == sampleRateWithUnit))
                         throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNameSet.First()}) in campaign '{campaignInfo.Name}'.");
-                    }
 
-                    campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateDescription };
+                    campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateWithUnit };
                 }
 
-                url = await this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRateDescription, fileFormat, fileGranularity, campaignInfoSet);
+                var url = await this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, new SampleRateContainer(sampleRateWithUnit), fileFormat, fileGranularity, campaignInfoSet);
                 await writer.WriteAsync(url);
             }
             catch (Exception ex)
@@ -226,26 +179,10 @@ namespace OneDas.Hdf.Explorer.Core
             writer.TryComplete();
         }
 
-        public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, string sampleRateDescription, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
+        public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, SampleRateContainer sampleRate, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
             long fileId = -1;
             long datasetId = -1;
-
-            ulong start;
-            ulong stride;
-            ulong block;
-            ulong count;
-
-            ulong segmentLength;
-            ulong segmentSize;
-            ulong bytesPerRow;
-
-            double sampleRate;
-
-            DateTime epochStart;
-            DateTime epochEnd;
-
-            string zipFilePath;
 
             // task 
             return Task.Run(() =>
@@ -253,29 +190,27 @@ namespace OneDas.Hdf.Explorer.Core
                 _stateManager.CheckState(_connectionId);
 
                 if (!campaignInfoSet.Any() || dateTimeBegin == dateTimeEnd)
-                {
                     return string.Empty;
-                }
 
                 // zip file
-                zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ dateTimeBegin.ToString("yyyy-MM-ddTHH-mm") }_{ sampleRateDescription }_{ Guid.NewGuid().ToString() }.zip");
+                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-                sampleRate = sampleRateDescription.ToSampleRate();
+                var samplesPerSecond = sampleRate.SamplesPerSecond;
 
                 // epoch & hyperslab
-                epochStart = new DateTime(2000, 01, 01);
-                epochEnd = new DateTime(2030, 01, 01);
+                var epochStart = new DateTime(2000, 01, 01);
+                var epochEnd = new DateTime(2030, 01, 01);
 
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
                 {
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
                 }
 
-                start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalSeconds * sampleRate));
-                stride = 1;
-                block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * sampleRate));
-                count = 1;
+                var start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond));
+                var stride = 1UL;
+                var block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond));
+                var count = 1UL;
 
                 try
                 {
@@ -283,7 +218,7 @@ namespace OneDas.Hdf.Explorer.Core
                     fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
 
                     // byte count
-                    bytesPerRow = 0;
+                    var bytesPerRow = 0UL;
 
                     foreach (var campaignInfo in campaignInfoSet)
                     {
@@ -293,7 +228,7 @@ namespace OneDas.Hdf.Explorer.Core
                             {
                                 try
                                 {
-                                    datasetId = H5D.open(fileId, $"{ campaignInfo.Key }/{ variableInfo.Key }/{ datasetInfo }");
+                                    datasetId = H5D.open(fileId, $"{campaignInfo.Key}/{variableInfo.Key}/{datasetInfo}");
                                     bytesPerRow += (ulong)OneDasUtilities.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
                                 }
                                 finally
@@ -306,14 +241,12 @@ namespace OneDas.Hdf.Explorer.Core
 
                     this.GetClient().SendAsync("SendByteCount", bytesPerRow * block);
 
-                    segmentSize = (50 * 1024 * 1024) / bytesPerRow * bytesPerRow;
-                    segmentLength = segmentSize / bytesPerRow;
+                    var segmentSize = (50 * 1024 * 1024) / bytesPerRow * bytesPerRow;
+                    var segmentLength = segmentSize / bytesPerRow;
 
                     // ensure that dataset length is multiple of 1 minute
-                    if ((segmentLength / sampleRate) % 60 != 0)
-                    {
-                        segmentLength = (ulong)((ulong)(segmentLength / sampleRate / 60) * 60 * sampleRate);
-                    }
+                    if ((segmentLength / samplesPerSecond) % 60 != 0)
+                        segmentLength = (ulong)((ulong)(segmentLength / samplesPerSecond / 60) * 60 * samplesPerSecond);
 
                     // start
                     _stateManager.SetState(_connectionId, HdfExplorerState.Loading);
@@ -327,7 +260,7 @@ namespace OneDas.Hdf.Explorer.Core
                             hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, sampleRate, start, stride, block, count, segmentLength)))
+                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, samplesPerSecond, start, stride, block, count, segmentLength)))
                                 return string.Empty;
                         }
                     }
@@ -353,12 +286,7 @@ namespace OneDas.Hdf.Explorer.Core
         {
             long vdsMetaFileId = -1;
 
-            string csvFileName;
-
-            CampaignInfo campaignInfo;
-            List<string> groupNameSet;
-
-            campaignInfo = Program.CampaignInfoSet.First(campaign => campaign.Name == campaigInfoName);
+            var campaignInfo = Program.CampaignInfoSet.First(campaign => campaign.Name == campaigInfoName);
 
             return Task.Run(() =>
             {
@@ -371,8 +299,8 @@ namespace OneDas.Hdf.Explorer.Core
                         vdsMetaFileId = H5F.open(_options.VdsMetaFilePath, H5F.ACC_RDONLY);
                     }
 
-                    csvFileName = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }_{ Guid.NewGuid().ToString() }.csv");
-                    groupNameSet = campaignInfo.VariableInfoSet.SelectMany(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n')).Distinct().ToList();
+                    var csvFileName = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }_{ Guid.NewGuid().ToString() }.csv");
+                    var groupNameSet = campaignInfo.VariableInfoSet.SelectMany(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n')).Distinct().ToList();
 
                     using (StreamWriter streamWriter = new StreamWriter(new FileStream(csvFileName, FileMode.Create, FileAccess.Write, FileShare.Read), Encoding.UTF8))
                     {
@@ -397,44 +325,28 @@ namespace OneDas.Hdf.Explorer.Core
                             {
                                 long variable_groupId = -1;
 
-                                string transferFunction;
-                                string aggregateFunction;
-                                string groupPath;
-                                string name;
-                                string guid;
-                                string unit;
-
-                                List<hdf_transfer_function_t> transferFunctionSet;
-                                List<hdf_aggregate_function_t> aggregateFunctionSet;
-
-                                name = variableInfo.VariableNameSet.Last();
-                                guid = variableInfo.Name;
-                                unit = string.Empty;
-                                transferFunctionSet = new List<hdf_transfer_function_t>();
-                                aggregateFunctionSet = new List<hdf_aggregate_function_t>();
+                                var name = variableInfo.VariableNameSet.Last();
+                                var guid = variableInfo.Name;
+                                var unit = string.Empty;
+                                var transferFunctionSet = new List<hdf_transfer_function_t>();
+                                var aggregateFunctionSet = new List<hdf_aggregate_function_t>();
 
                                 try
                                 {
-                                    groupPath = GeneralHelper.CombinePath(campaignInfo.Name, variableInfo.Name);
+                                    var groupPath = GeneralHelper.CombinePath(campaignInfo.Name, variableInfo.Name);
 
                                     if (H5I.is_valid(vdsMetaFileId) > 0 && IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
                                     {
                                         variable_groupId = H5G.open(vdsMetaFileId, groupPath);
 
                                         if (H5A.exists(variable_groupId, "unit") > 0)
-                                        {
                                             unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
-                                        }
 
                                         if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
-                                        {
                                             transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
-                                        }
 
                                         if (H5A.exists(variable_groupId, "aggregate_function_set") > 0)
-                                        {
                                             aggregateFunctionSet = IOHelper.ReadAttribute<hdf_aggregate_function_t>(variable_groupId, "aggregate_function_set").ToList();
-                                        }
                                     }
                                 }
                                 finally
@@ -443,22 +355,20 @@ namespace OneDas.Hdf.Explorer.Core
                                 }
 
                                 // transfer function
-                                transferFunction = string.Empty;
+                                var transferFunction = string.Empty;
 
                                 transferFunctionSet.ForEach(tf =>
                                 {
                                     if (!string.IsNullOrWhiteSpace(transferFunction))
-                                    {
                                         transferFunction += " | ";
-                                    }
 
-                                    transferFunction += $"{ tf.date_time }, { tf.type }, { tf.option }, { tf.argument }";
+                                    transferFunction += $"{tf.date_time}, {tf.type}, {tf.option}, {tf.argument}";
                                 });
 
-                                transferFunction = $"\"{ transferFunction }\"";
+                                transferFunction = $"\"{transferFunction}\"";
 
                                 // aggregate function
-                                aggregateFunction = string.Empty;
+                                var aggregateFunction = string.Empty;
 
                                 aggregateFunctionSet.ForEach(af =>
                                 {
@@ -467,18 +377,18 @@ namespace OneDas.Hdf.Explorer.Core
                                         aggregateFunction += " | ";
                                     }
 
-                                    aggregateFunction += $"{ af.type }, { af.argument }";
+                                    aggregateFunction += $"{af.type}, {af.argument}";
                                 });
 
-                                aggregateFunction = $"\"{ aggregateFunction  }\"";
+                                aggregateFunction = $"\"{aggregateFunction}\"";
 
                                 // write row
-                                streamWriter.WriteLine($"{ groupName };{ name };{ unit };{ transferFunction };{ aggregateFunction };{ guid }");
+                                streamWriter.WriteLine($"{groupName};{name};{unit};{transferFunction};{aggregateFunction};{guid}");
                             });
                         }
                     }
 
-                    return $"download/{ Path.GetFileName(csvFileName) }";
+                    return $"download/{Path.GetFileName(csvFileName)}";
                 }
                 finally
                 {

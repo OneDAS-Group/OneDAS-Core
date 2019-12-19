@@ -32,40 +32,6 @@ namespace OneDas
             return type.GetCustomAttributes(false).OfType<T>().FirstOrDefault();
         }
 
-        public static ulong GetSamplesPerDayFromSampleRate(SampleRate sampleRate)
-        {
-            return sampleRate switch
-            {
-                SampleRate.SampleRate_100   => 86400UL * 100,
-                SampleRate.SampleRate_25    => 86400UL * 25,
-                SampleRate.SampleRate_5     => 86400UL * 5,
-                SampleRate.SampleRate_1     => 86400UL * 1,
-                _                           => throw new ArgumentException()
-            };
-        }
-
-        public static ulong GetSamplesPerDayFromString(string datasetName)
-        {
-            // is_chunk_completed_set
-            if (datasetName.StartsWith("is_chunk_completed_set"))
-                return 86400UL / 60;
-
-            // Hz
-            var matchHz = Regex.Match(datasetName, @"([0-9|\.]+)\sHz");
-
-            if (matchHz.Success)
-                return 86400UL * ulong.Parse(matchHz.Groups[1].Value);
-
-            // s
-            var matchT = Regex.Match(datasetName, @"([0-9|\.]+)\ss");
-
-            if (matchT.Success)
-                return 86400UL / ulong.Parse(matchT.Groups[1].Value);
-
-            // else
-            throw new ArgumentException(nameof(datasetName));
-        }
-
         public static OneDasDataType GetOneDasDataTypeFromType(Type type)
         {
             return true switch

@@ -55,7 +55,7 @@ namespace OneDas.Extension.Famos
 
             simpleDataStorageSet = contextGroup.VariableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
 
-            var fieldIndex = _spdToFieldIndexMap[contextGroup.SamplesPerDay];
+            var fieldIndex = _spdToFieldIndexMap[contextGroup.SampleRate.SamplesPerDay];
             var field = _famosFile.Fields[fieldIndex];
 
             _famosFile.Edit(writer =>
@@ -113,7 +113,7 @@ namespace OneDas.Extension.Famos
             foreach (var contextGroup in variableContextGroupSet)
             {
                 // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.VariableContextSet.First().VariableDescription.SamplesPerDay);
+                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SampleRate);
 
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
@@ -128,14 +128,14 @@ namespace OneDas.Extension.Famos
 
                 foreach (VariableContext variableContext in contextGroup.VariableContextSet)
                 {
-                    var dx = 1.0 / (contextGroup.SamplesPerDay / 86400);
+                    var dx = 1.0 / contextGroup.SampleRate.SamplesPerSecond;
                     var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
 
                     campaignGroup.Channels.Add(variable);
                 }
 
                 famosFile.Fields.Add(field);
-                _spdToFieldIndexMap[contextGroup.SamplesPerDay] = famosFile.Fields.Count - 1;
+                _spdToFieldIndexMap[contextGroup.SampleRate.SamplesPerDay] = famosFile.Fields.Count - 1;
             }
 
             //

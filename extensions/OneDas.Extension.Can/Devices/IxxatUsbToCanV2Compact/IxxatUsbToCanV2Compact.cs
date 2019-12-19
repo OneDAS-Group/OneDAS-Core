@@ -1,6 +1,5 @@
 ﻿using Ixxat.Vci4;
 using Ixxat.Vci4.Bal.Can;
-using Microsoft.Extensions.Logging;
 using System;
 
 namespace OneDas.Extension.Can

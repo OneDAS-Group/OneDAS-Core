@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +93,7 @@ namespace OneDas.Extensibility
             variableContextSet = _variableDescriptionSet.Zip(dataStorageSet, (variableDescription, dataStorage) => new VariableContext(variableDescription, dataStorage)).ToList();
             variableContextGroupSet = variableContextSet
                 .GroupBy(variableContext => variableContext.VariableDescription.SamplesPerDay)
-                .Select(group => new VariableContextGroup(group.Key, group.ToList())).ToList();
+                .Select(group => new VariableContextGroup(new SampleRateContainer(group.Key), group.ToList())).ToList();
 
             while (dataStorageOffset < dataStoragePeriod)
             {
@@ -116,9 +117,11 @@ namespace OneDas.Extensibility
                 // write data
                 foreach (var contextGroup in variableContextGroupSet)
                 {
-                    actualFileOffset = this.TimeSpanToIndex(fileOffset, contextGroup.SamplesPerDay);
-                    actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, contextGroup.SamplesPerDay);
-                    actualPeriod = this.TimeSpanToIndex(period, contextGroup.SamplesPerDay);
+                    var sampleRate = contextGroup.SampleRate;
+
+                    actualFileOffset = this.TimeSpanToIndex(fileOffset, sampleRate);
+                    actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, sampleRate);
+                    actualPeriod = this.TimeSpanToIndex(period, sampleRate);
 
                     this.OnWrite(
                         contextGroup,
@@ -128,8 +131,8 @@ namespace OneDas.Extensibility
                     );
 
                     // message
-                    firstChunk = this.ToChunkIndex(actualFileOffset, contextGroup.SamplesPerDay);
-                    lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, contextGroup.SamplesPerDay) - 1;
+                    firstChunk = this.ToChunkIndex(actualFileOffset, sampleRate);
+                    lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, sampleRate) - 1;
 
                     if (firstChunk == lastChunk)
                         this.Logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
@@ -143,20 +146,20 @@ namespace OneDas.Extensibility
             _lastWrittenDateTime = dateTime + dataStoragePeriod;
         }
 
-        protected ulong TimeSpanToIndex(TimeSpan timeSpan, ulong samplesPerDay)
+        protected ulong TimeSpanToIndex(TimeSpan timeSpan, SampleRateContainer samplesRate)
         {
-            return (ulong)(this.TimeSpanToIndexDouble(timeSpan, samplesPerDay));
+            return (ulong)(this.TimeSpanToIndexDouble(timeSpan, samplesRate));
         }
 
 #warning This method is required since downloading 600 s average data causes an index value < 1, which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds when sample time mechanisms were revised.
-        protected double TimeSpanToIndexDouble(TimeSpan timeSpan, ulong samplesPerDay)
+        protected double TimeSpanToIndexDouble(TimeSpan timeSpan, SampleRateContainer samplesRate)
         {
-            return timeSpan.TotalSeconds * samplesPerDay / 86400;
+            return timeSpan.TotalSeconds * samplesRate.SamplesPerSecond;
         }
 
-        protected ulong ToChunkIndex(ulong offset, ulong samplesPerDay)
+        protected ulong ToChunkIndex(ulong offset, SampleRateContainer sampleRate)
         {
-            return (ulong)(offset / this.TimeSpanToIndexDouble(this.ChunkPeriod, samplesPerDay));
+            return (ulong)(offset / this.TimeSpanToIndexDouble(this.ChunkPeriod, sampleRate));
         }
 
         protected virtual void OnConfigure()

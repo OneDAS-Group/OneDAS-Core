@@ -79,7 +79,7 @@ namespace OneDas.Core.Engine
         private DateTime _lastActivationDateTime;
 
         private List<(DataPort Source, DataPort Target)> _linkedDataPortSet;
-        private Dictionary<SampleRate, List<DataStorageContext>> _sampleRateToDataStorageContextMap;
+        private Dictionary<SampleRateContainer, List<DataStorageContext>> _sampleRateToDataStorageContextMap;
         private Dictionary<DataWriterExtensionLogicBase, List<VariableDescription>> _dataWriterToVariableDescriptionMap;
         private Dictionary<DataWriterExtensionLogicBase, List<List<IDataStorage>>> _dataWriterToStorageSetMap;
         private Dictionary<DataGatewayExtensionLogicBase, bool> _hasValidDataSet;
@@ -110,9 +110,7 @@ namespace OneDas.Core.Engine
             _timer_UpdateIo = new RtTimer();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 _executionState = SafeNativeMethods.SetThreadExecutionState(ExecutionState.CONTINUOUS | ExecutionState.SYSTEM_REQUIRED);
-            }
             
             _ratedCycleTime_Ms = 1.0 / OneDasConstants.NativeSampleRate * 1000.0;
 
@@ -178,61 +176,47 @@ namespace OneDas.Core.Engine
             private set
             {
                 if (this.OneDasState == value)
-                {
                     return;
-                }
 
                 bool isTransitionValid = false;
 
                 if (this.OneDasState == OneDasState.Error && value != OneDasState.Error && value != OneDasState.Initialization)
-                {
                     throw new Exception(ErrorMessage.OneDasEngine_SystemFaultedAcknowledgeFirst);
-                }
 
                 switch (value)
                 {
                     case OneDasState.Initialization:
 
                         if (this.OneDasState == OneDasState.Error)
-                        {
                             isTransitionValid = true;
-                        }
 
                         break;
 
                     case OneDasState.Idle:
 
                         if (this.OneDasState == OneDasState.Initialization || this.OneDasState == OneDasState.ApplyConfiguration || this.OneDasState == OneDasState.Ready)
-                        {
                             isTransitionValid = true;
-                        }
 
                         break;
 
                     case OneDasState.ApplyConfiguration:
 
                         if (this.OneDasState == OneDasState.Idle || this.OneDasState == OneDasState.Ready)
-                        {
                             isTransitionValid = true;
-                        }
 
                         break;
 
                     case OneDasState.Ready:
 
                         if (this.OneDasState == OneDasState.ApplyConfiguration || this.OneDasState == OneDasState.Run)
-                        {
                             isTransitionValid = true;
-                        }
 
                         break;
 
                     case OneDasState.Run:
 
                         if (this.OneDasState == OneDasState.Ready)
-                        {
                             isTransitionValid = true;
-                        }
 
                         break;
 
@@ -244,14 +228,10 @@ namespace OneDas.Core.Engine
                 }
 
                 if (!isTransitionValid)
-                {
                     throw new Exception($"invalid transition from state { this.OneDasState } to state { value }");
-                }
 
                 if (value != OneDasState.Error)
-                {
                     this.LastError = string.Empty;
-                }
 
                 _systemLogger.LogInformation($"transition from state { _oneDasState.ToString() } to state { value.ToString() }");
 
@@ -288,9 +268,7 @@ namespace OneDas.Core.Engine
         public void Stop()
         {
             if (this.OneDasState == OneDasState.Run)
-            {
                 this.Pause();
-            }
 
             this.OneDasState = OneDasState.Idle;
 
@@ -476,9 +454,7 @@ namespace OneDas.Core.Engine
 
         private void Step_2_PrepareBuffers()
         {
-            Dictionary<SampleRate, Dictionary<ChannelHubBase, HashSet<DataWriterExtensionLogicBase>>> sr_to_ch_map;
-
-            sr_to_ch_map = new Dictionary<SampleRate, Dictionary<ChannelHubBase, HashSet<DataWriterExtensionLogicBase>>>();
+            var sr_to_ch_map = new Dictionary<SampleRateContainer, Dictionary<ChannelHubBase, HashSet<DataWriterExtensionLogicBase>>>();
 
             /* ---------------------------------------------- */
             //                  sr_to_ch_map
@@ -503,14 +479,16 @@ namespace OneDas.Core.Engine
                     Dictionary<ChannelHubBase, HashSet<DataWriterExtensionLogicBase>> ch_to_dw_map;
 
                     // ensure that there is a sample rate entry
-                    if (sr_to_ch_map.ContainsKey(bufferRequest.SampleRate))
+                    var sampleRate = new SampleRateContainer(bufferRequest.SampleRate);
+
+                    if (sr_to_ch_map.ContainsKey(sampleRate))
                     {
-                        ch_to_dw_map = sr_to_ch_map[bufferRequest.SampleRate];
+                        ch_to_dw_map = sr_to_ch_map[sampleRate];
                     }
                     else
                     {
                         ch_to_dw_map = new Dictionary<ChannelHubBase, HashSet<DataWriterExtensionLogicBase>>();
-                        sr_to_ch_map[bufferRequest.SampleRate] = ch_to_dw_map;
+                        sr_to_ch_map[sampleRate] = ch_to_dw_map;
                     }
 
                     // add channel hubs
@@ -550,20 +528,13 @@ namespace OneDas.Core.Engine
 
             _sampleRateToDataStorageContextMap = sr_to_ch_map.ToDictionary(entry => entry.Key, entry => entry.Value.Select(subEntry =>
             {
-                SampleRate sampleRate;
-                ChannelHubBase channelHub;
-                ChannelHubSettings channelHubSettings;
-
-                List<IExtendedDataStorage> dataStorageSet;
-                List<DataWriterExtensionLogicBase> dataWriterSet;
-
-                sampleRate = entry.Key;
-                channelHub = subEntry.Key;
-                channelHubSettings = subEntry.Key.Settings;
-                dataWriterSet = subEntry.Value.ToList();
+                var sampleRate = entry.Key;
+                var channelHub = subEntry.Key;
+                var channelHubSettings = subEntry.Key.Settings;
+                var dataWriterSet = subEntry.Value.ToList();
 
                 // create data storages
-                dataStorageSet = this.CreateDataStorages(sampleRate, channelHub.Settings.DataType, STORAGE_COUNT);
+                var dataStorageSet = this.CreateDataStorages(sampleRate, channelHub.Settings.DataType, STORAGE_COUNT);
 
                 // helper dictionaries
                 dataWriterSet.ForEach(dataWriter =>
@@ -578,13 +549,13 @@ namespace OneDas.Core.Engine
                     _dataWriterToVariableDescriptionMap[dataWriter].Add(new VariableDescription(
                         channelHubSettings.Guid,
                         channelHubSettings.Name,
-                        $"{ 100 / (int)sampleRate } Hz",
+                        sampleRate.ToUnitString(underscore: true),
                         channelHubSettings.Group,
                         channelHubSettings.DataType,
-                        OneDasUtilities.GetSamplesPerDayFromSampleRate(sampleRate),
+                        sampleRate.SamplesPerDay,
                         channelHubSettings.Unit,
                         channelHubSettings.TransferFunctionSet,
-                        typeof(IExtendedDataStorage)
+                        DataStorageType.Extended
                     ));
                 });
 
@@ -612,13 +583,10 @@ namespace OneDas.Core.Engine
 
         private void Step_4_PrepareDataWriter()
         {
-            DateTime currentDateTime;
-            IList<CustomMetadataEntry> customMetadataEntrySet;
-
-            customMetadataEntrySet = new List<CustomMetadataEntry>();
+            var customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS", CustomMetadataEntryLevel.File));
 
-            currentDateTime = DateTime.UtcNow;
+            var currentDateTime = DateTime.UtcNow;
 
             this.Project.DataWriterSet.ForEach(dataWriter =>
             {
@@ -642,42 +610,30 @@ namespace OneDas.Core.Engine
 
         private void Step_5_PrepareIoTimer()
         {
-            TimeSpan interval;
-            TimeSpan timeShift;
-
             _timer_UpdateIo.Stop();
 
-            interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(1.0 / OneDasConstants.NativeSampleRate * 1000.0));
-            timeShift = new TimeSpan(0, 0, 0, 0, TIMER_SHIFT);
+            var interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(1.0 / OneDasConstants.NativeSampleRate * 1000.0));
+            var timeShift = new TimeSpan(0, 0, 0, 0, TIMER_SHIFT);
 
             _timer_UpdateIo.Start(interval, timeShift, this.UpdateIo);
 
             if (Process.GetCurrentProcess().PriorityClass < ProcessPriorityClass.RealTime)
-            {
                 _engineLogger.LogWarning($"process priority is lower than RealTime: { Process.GetCurrentProcess().PriorityClass }");
-            }
             else
-            {
                 _engineLogger.LogInformation($"process priority is: RealTime");
-            }
         }
 
-        private List<IExtendedDataStorage> CreateDataStorages(SampleRate sampleRate, OneDasDataType dataType, int count)
+        private List<IExtendedDataStorage> CreateDataStorages(SampleRateContainer sampleRate, OneDasDataType dataType, int count)
         {
-            int length;
-            Type type;
-
-            length = Convert.ToInt32(OneDasConstants.NativeSampleRate / Convert.ToInt32(sampleRate) * OneDasConstants.ChunkPeriod);
-            type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(dataType) });
+            var length = Convert.ToInt32(sampleRate.SamplesPerSecond * OneDasConstants.ChunkPeriod);
+            var type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(dataType) });
 
             return Enumerable.Range(0, count).Select(x => (IExtendedDataStorage)Activator.CreateInstance(type, length)).ToList();
         }
 
         private List<ChannelHubBase> FilterChannelHubs(List<ChannelHubBase> channelHubSet, string groupFilter)
         {
-            HashSet<ChannelHubBase> filteredChannelHubSet;
-
-            filteredChannelHubSet = new HashSet<ChannelHubBase>();
+            var filteredChannelHubSet = new HashSet<ChannelHubBase>();
 
             groupFilter.Split(';').ToList().ForEach(groupFilterPart =>
             {
@@ -717,9 +673,7 @@ namespace OneDas.Core.Engine
         //                       |__________________| 
         private DateTime UpdateIo()
         {
-            DateTime currentWindowsDateTime;
-
-            currentWindowsDateTime = DateTime.UtcNow;
+            var currentWindowsDateTime = DateTime.UtcNow;
 
             if (_exception != null)
             {
@@ -824,10 +778,10 @@ namespace OneDas.Core.Engine
                         {
                             int realChunkIndex;
 
-                            if (_chunkIndex % (int)entry.Key != 0 || entry.Value.Count() == 0)
+                            if (_chunkIndex % (int)entry.Key.NativeSampleRateFactor != 0 || entry.Value.Count() == 0)
                                 continue;
 
-                            realChunkIndex = _chunkIndex / (int)entry.Key;
+                            realChunkIndex = _chunkIndex / (int)entry.Key.NativeSampleRateFactor;
 
                             foreach (DataGatewayExtensionLogicBase dataGateway in this.Project.DataGatewaySet)
                             {
@@ -839,7 +793,7 @@ namespace OneDas.Core.Engine
                                  * MaximumDatasetAge > extension IO cycle time -> compensate unstable cycle periods (packet drop tolerance)
                                  * MaximumDatasetAge >= sample period          -> allow oversampling (repeat values)
                                  */
-                                referencePeriod = Math.Max(dataGateway.Settings.MaximumDatasetAge, (int)entry.Key * 10);
+                                referencePeriod = Math.Max(dataGateway.Settings.MaximumDatasetAge, (int)entry.Key.NativeSampleRateFactor * 10);
 
                                 _hasValidDataSet[dataGateway] = dataGateway.LastSuccessfulUpdate?.Elapsed.TotalMilliseconds <= referencePeriod;
                             }
@@ -880,13 +834,9 @@ namespace OneDas.Core.Engine
 
         public unsafe void CopyToDataStorage(IExtendedDataStorage dataStorage, int index, DataPort dataPort, byte status)
         {
-            int elementSize;
-            byte* sourcePtr;
-            byte* targetPtr;
-
-            elementSize = dataStorage.ElementSize;
-            sourcePtr = (byte*)dataPort.DataPtr.ToPointer();
-            targetPtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index * elementSize;
+            var elementSize = dataStorage.ElementSize;
+            var sourcePtr = (byte*)dataPort.DataPtr.ToPointer();
+            var targetPtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index * elementSize;
 
             dataStorage.GetStatusBuffer()[index] = status;
 
@@ -921,7 +871,6 @@ namespace OneDas.Core.Engine
                         break;
 
                     default:
-
                         throw new ArgumentException();
                 }
             }
@@ -929,13 +878,9 @@ namespace OneDas.Core.Engine
 
         public unsafe void CopyToDataPort(DataPort source, DataPort target)
         {
-            int elementSize;
-            byte* sourcePtr;
-            byte* targetPtr;
-
-            elementSize = OneDasUtilities.SizeOf(source.DataType);
-            sourcePtr = (byte*)source.DataPtr.ToPointer();
-            targetPtr = (byte*)target.DataPtr.ToPointer();
+            var elementSize = OneDasUtilities.SizeOf(source.DataType);
+            var sourcePtr = (byte*)source.DataPtr.ToPointer();
+            var targetPtr = (byte*)target.DataPtr.ToPointer();
 
             if (source.DataType == OneDasDataType.BOOLEAN && (source.BitOffset > -1 || target.BitOffset > -1)) // special handling for boolean
             {
@@ -962,9 +907,7 @@ namespace OneDas.Core.Engine
                 // from bit to bit
                 else if (source.BitOffset > -1 && target.BitOffset > -1)
                 {
-                    bool value;
-
-                    value = (*sourcePtr & (1 << source.BitOffset)) > 0;
+                    var value = (*sourcePtr & (1 << source.BitOffset)) > 0;
 
                     if (value)
                         *targetPtr |= (byte)(1 << target.BitOffset);

@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using OneDas.Infrastructure;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace OneDas.Extensibility
 {
     public class VariableContextGroup
     {
-        public VariableContextGroup(ulong samplesPerDay, IList<VariableContext> variableContextSet)
+        public VariableContextGroup(SampleRateContainer sampleRate, IList<VariableContext> variableContextSet)
         {
-            this.SamplesPerDay = samplesPerDay;
+            this.SampleRate = sampleRate;
             this.VariableContextSet = variableContextSet.ToList();
         }
 
-        public ulong SamplesPerDay { get; }
+        public SampleRateContainer SampleRate { get; }
         public List<VariableContext> VariableContextSet { get; }
     }
 }
