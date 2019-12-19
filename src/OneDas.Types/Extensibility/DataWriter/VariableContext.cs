@@ -12,10 +12,8 @@ namespace OneDas.Extensibility
             this.VariableDescription = variableDescription;
             this.DataStorage = dataStorage;
 
-            if (!variableDescription.DataStorageType.IsAssignableFrom(dataStorage.GetType()))
-            {
+            if (!(variableDescription.DataStorageType == dataStorage.Type))
                 throw new ArgumentException(ErrorMessage.VariableContext_DataStorageTypeInvalid);
-            }
         }
 
         #endregion

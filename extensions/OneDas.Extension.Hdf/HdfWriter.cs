@@ -360,7 +360,7 @@ namespace OneDas.Extension.Hdf
                 datasetId = IOHelper.OpenOrCreateDataset(groupId, datasetName, datasetTypeId, chunkLength, this.ChunkCount).DatasetId;
 
                 // dataset (status)
-                if (typeof(IExtendedDataStorage).IsAssignableFrom(variableDescription.DataStorageType))
+                if (variableDescription.DataStorageType == DataStorageType.Extended)
                 {
                     datasetName = $"{datasetName}_status";
                     datasetId_status = IOHelper.OpenOrCreateDataset(groupId, datasetName, H5T.NATIVE_UINT8, chunkLength, this.ChunkCount).DatasetId;

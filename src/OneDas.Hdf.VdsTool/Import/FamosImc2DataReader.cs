@@ -22,7 +22,7 @@ namespace OneDas.Hdf.VdsTool.Import
 
         #region Methods
 
-        public List<VariableDescription> GetVariableDescriptions(string filePath, TimeSpan periodPerFile)
+        public List<VariableDescription> GetVariableDescriptions(string filePath)
         {
             using var famosFile = FamosFile.Open(filePath);
             var fields = famosFile.Fields.Where(field => field.Type == FamosFileFieldType.MultipleYToSingleEquidistantTime).ToList();
@@ -47,10 +47,17 @@ namespace OneDas.Hdf.VdsTool.Import
                     var variableName = OneDasUtilities.EnforceNamingConvention(channel.Name);
 
                     // samples per day
-                    ulong samplesPerDay = (ulong)(component.GetSize() * 86400.0 / periodPerFile.TotalSeconds);
+                    ulong samplesPerDay;
+
+                    var xAxisScaling = component.XAxisScaling;
+
+                    if (xAxisScaling != null && xAxisScaling.Unit == "s")
+                        samplesPerDay = (ulong)((decimal)86400UL / xAxisScaling.DeltaX);
+                    else
+                        throw new Exception("Could not determine the sample rate.");
 
                     // dataset name
-                    var datasetName = $"{(ulong)(samplesPerDay / 86400)} Hz";
+                    var datasetName = $"{(samplesPerDay / 86400)} Hz";
 
                     // group name
                     var group = famosFile.Groups.FirstOrDefault(group => group.Channels.Contains(channel));
@@ -94,7 +101,6 @@ namespace OneDas.Hdf.VdsTool.Import
                 var statusSet = new byte[rawData.Length / elementSize];
                 
                 statusSet.AsSpan().Fill(0x01);
-
 #warning Improve DataStorage system. Using managed memory, Span<T> and work only with byte arrays is more suitable for everything
 
                 // Do not use variableInfo.DataType because it could have been modified to double if 'convertToDouble' is true!

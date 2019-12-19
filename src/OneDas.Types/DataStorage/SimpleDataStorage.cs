@@ -6,12 +6,12 @@ namespace OneDas.DataStorage
     {
         #region "Constuctors"
 
-        public SimpleDataStorage(int elementCount) : base(typeof(double), elementCount)
+        public SimpleDataStorage(int elementCount) : base(typeof(double), elementCount, DataStorageType.Simple)
         {
             //
         }
 
-        public SimpleDataStorage(double[] dataset) : base(typeof(double), dataset.Length)
+        public SimpleDataStorage(double[] dataset) : base(typeof(double), dataset.Length, DataStorageType.Simple)
         {
             dataset.CopyTo(this.DataBuffer);
         }

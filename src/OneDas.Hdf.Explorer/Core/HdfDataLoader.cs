@@ -31,23 +31,8 @@ namespace OneDas.Hdf.Explorer.Core
 
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
         {
-            IList<VariableDescription> variableDescriptionSet;
-            IList<CustomMetadataEntry> customMetadataEntrySet;
-
-            ZipArchiveEntry zipArchiveEntry;
-            DataWriterExtensionLogicBase dataWriter;
-            DataWriterExtensionSettingsBase settings;
-            DataWriterContext dataWriterContext;
-
-            string directoryPath;
-            string[] campaignName_splitted;
-            string[] filePathSet;
-
-            int currentFile;
-            int fileCount;
-
             // build variable descriptions
-            variableDescriptionSet = new List<VariableDescription>();
+            var variableDescriptionSet = new List<VariableDescription>();
 
             zipSettings.CampaignInfo.Value.ToList().ForEach(variableInfo =>
             {
@@ -57,33 +42,22 @@ namespace OneDas.Hdf.Explorer.Core
                     long typeId = -1;
                     long datasetId = -1;
 
-                    string displayName;
-                    string groupName;
-                    string unit;
-
-                    ulong samplesPerDay;
-
-                    OneDasDataType oneDasDataType;
-
-                    hdf_transfer_function_t[] hdf_transfer_function_t_set;
-                    List<TransferFunction> transferFunctionSet;
-
                     try
                     {
                         groupId = H5G.open(zipSettings.SourceFileId, $"{ zipSettings.CampaignInfo.Key }/{ variableInfo.Key }");
                         datasetId = H5D.open(groupId, datasetName);
                         typeId = H5D.get_type(datasetId);
 
-                        displayName = IOHelper.ReadAttribute<string>(groupId, "name_set").Last();
-                        groupName = IOHelper.ReadAttribute<string>(groupId, "group_set").Last();
-                        unit = IOHelper.ReadAttribute<string>(groupId, "unit_set").LastOrDefault();
-                        hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
-                        transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
+                        var displayName = IOHelper.ReadAttribute<string>(groupId, "name_set").Last();
+                        var groupName = IOHelper.ReadAttribute<string>(groupId, "group_set").Last();
+                        var unit = IOHelper.ReadAttribute<string>(groupId, "unit_set").LastOrDefault();
+                        var hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
+                        var transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
 
-                        oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                        samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
+                        var oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
+                        var samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
 
-                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, typeof(ISimpleDataStorage)));
+                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, samplesPerDay, unit, transferFunctionSet, DataStorageType.Simple));
                     }
                     finally
                     {
@@ -94,7 +68,8 @@ namespace OneDas.Hdf.Explorer.Core
                 });
             });
 
-            dataWriter = null;
+            DataWriterExtensionSettingsBase settings;
+            DataWriterExtensionLogicBase dataWriter = null;
 
             switch (fileFormat)
             {
@@ -124,16 +99,16 @@ namespace OneDas.Hdf.Explorer.Core
             }
 
             // create temp directory
-            directoryPath = Path.Combine(Path.GetTempPath(), "OneDas.Hdf.Explorer", Guid.NewGuid().ToString());
+            var directoryPath = Path.Combine(Path.GetTempPath(), "OneDas.Hdf.Explorer", Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryPath);
 
             // create custom meta data
-            customMetadataEntrySet = new List<CustomMetadataEntry>();
+            var customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "HDF Explorer", CustomMetadataEntryLevel.File));
 
             // initialize data writer
-            campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
-            dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
+            var campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
+            var dataWriterContext = new DataWriterContext("HDF Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 
             // create temp files
@@ -152,15 +127,15 @@ namespace OneDas.Hdf.Explorer.Core
             }
 
             // write zip archive entries
-            filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
-            currentFile = 0;
-            fileCount = filePathSet.Count();
+            var filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
+            var currentFile = 0;
+            var fileCount = filePathSet.Count();
 
             foreach (string filePath in filePathSet)
             {
-                zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
+                var zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
 
-                this.OnProgressUpdated(new ProgressUpdatedEventArgs(currentFile / (double)fileCount * 100, $"Writing file { currentFile + 1 } / { fileCount } to ZIP archive ..."));
+                this.OnProgressUpdated(new ProgressUpdatedEventArgs(currentFile / (double)fileCount * 100, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));
 
                 using (FileStream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
                 {
@@ -180,33 +155,20 @@ namespace OneDas.Hdf.Explorer.Core
 
         private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, ZipSettings zipSettings)
         {
-            DateTime dateTime;
-            TimeSpan dataStoragePeriod;
-
-            ulong currentRowCount;
-            ulong lastRow;
-
             // START progress
-            ulong currentDataset;
-            ulong datasetCount;
-            ulong currentSegment;
-            ulong segmentCount;
-
-            datasetCount = (ulong)zipSettings.CampaignInfo.Value.SelectMany(variableInfo => variableInfo.Value).Count();
-            currentSegment = 0;
-            segmentCount = (ulong)Math.Ceiling(zipSettings.Block / (double)zipSettings.SegmentLength);
+            var datasetCount = (ulong)zipSettings.CampaignInfo.Value.SelectMany(variableInfo => variableInfo.Value).Count();
+            var currentSegment = 0UL;
+            var segmentCount = (ulong)Math.Ceiling(zipSettings.Block / (double)zipSettings.SegmentLength);
             // END progress
 
-            currentRowCount = zipSettings.SegmentLength;
-            lastRow = zipSettings.Start + zipSettings.Block;
-
-            IList<IDataStorage> dataStorageSet;
+            var currentRowCount = zipSettings.SegmentLength;
+            var lastRow = zipSettings.Start + zipSettings.Block;
 
             // for each segment
             for (ulong currentStart = zipSettings.Start; currentStart < lastRow; currentStart += currentRowCount)
             {
-                currentDataset = 0;
-                dataStorageSet = new List<IDataStorage>();
+                var currentDataset = 0UL;
+                var dataStorageSet = new List<IDataStorage>();
 
                 if (currentStart + currentRowCount > zipSettings.Start + zipSettings.Block)
                     currentRowCount = zipSettings.Start + zipSettings.Block - currentStart;
@@ -224,8 +186,8 @@ namespace OneDas.Hdf.Explorer.Core
 
                 this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Writing data of segment { currentSegment + 1 } / { segmentCount } ..."));
 
-                dateTime = zipSettings.DateTimeBegin.AddSeconds((currentStart - zipSettings.Start) / zipSettings.SampleRate);
-                dataStoragePeriod = TimeSpan.FromSeconds(currentRowCount / zipSettings.SampleRate);
+                var dateTime = zipSettings.DateTimeBegin.AddSeconds((currentStart - zipSettings.Start) / zipSettings.SampleRate);
+                var dataStoragePeriod = TimeSpan.FromSeconds(currentRowCount / zipSettings.SampleRate);
 
                 dataWriter.Write(dateTime, dataStoragePeriod, dataStorageSet);
 
@@ -247,15 +209,7 @@ namespace OneDas.Hdf.Explorer.Core
             long datasetId = -1;
             long typeId = -1;
 
-            Array dataset;
-            Array dataset_status;
-
-            Type genericType;
-
-            ExtendedDataStorageBase extendedDataStorage;
-            ISimpleDataStorage simpleDataStorage;
-
-            dataset = IOHelper.ReadDataset(sourceFileId, datasetPath, start, stride, block, count);
+            var dataset = IOHelper.ReadDataset(sourceFileId, datasetPath, start, stride, block, count);
 
             // apply status (only if native dataset)
             if (H5L.exists(sourceFileId, datasetPath + "_status") > 0)
@@ -265,23 +219,23 @@ namespace OneDas.Hdf.Explorer.Core
                     datasetId = H5D.open(sourceFileId, datasetPath);
                     typeId = H5D.get_type(datasetId);
 
-                    dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<byte>().ToArray();
+                    var dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<byte>().ToArray();
 
-                    genericType = typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                    extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(genericType, dataset, dataset_status);
+                    var genericType = typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
+                    var extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(genericType, dataset, dataset_status);
 
                     dataset_status = null;
+
+                    var simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
+                    extendedDataStorage.Dispose();
+
+                    return simpleDataStorage;
                 }
                 finally
                 {
                     if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                     if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
                 }
-
-                simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
-                extendedDataStorage.Dispose();
-
-                return simpleDataStorage;
             }
             else
             {

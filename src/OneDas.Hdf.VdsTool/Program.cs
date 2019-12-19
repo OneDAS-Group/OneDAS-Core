@@ -1751,10 +1751,11 @@ namespace OneDas.Hdf.VdsTool
                 var currentSourceDirectoryPath = Path.Combine(sourceDirectoryPath, dateTimeBegin.ToString("yyyy-MM"));
                 var currentTargetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_IMPORT", dateTimeBegin.ToString("yyyy-MM"));
                 var currentTargetFileName = $"{campaignName.Replace('/', '_')}_V{version}_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+                var currentTargetFilePath = Path.Combine(currentTargetDirectoryPath, currentTargetFileName);
 
-                if (File.Exists(Path.Combine(currentTargetDirectoryPath, currentTargetFileName)))
+                if (File.Exists(currentTargetFilePath))
                 {
-                    // skip                   
+                    Console.WriteLine($"File '{currentTargetFilePath}' already exists.");
 #warning Add proper logging here.
                 }
                 else if (!Directory.Exists(currentSourceDirectoryPath) || !Directory.EnumerateFileSystemEntries(currentSourceDirectoryPath).Any())
@@ -1785,7 +1786,7 @@ namespace OneDas.Hdf.VdsTool
                 var firstFilePath = Directory.EnumerateFiles(sourceDirectoryPath).FirstOrDefault();
 
                 dataReader = new FamosImc2DataReader();
-                variableDescriptionSet = dataReader.GetVariableDescriptions(firstFilePath, periodPerFile);
+                variableDescriptionSet = dataReader.GetVariableDescriptions(firstFilePath);
             }
             else
             {
@@ -1801,12 +1802,11 @@ namespace OneDas.Hdf.VdsTool
                 if (convertToDouble)
                 {
                     variableDescription.DataType = OneDasDataType.FLOAT64;
-                    variableDescription.DataStorageType = typeof(SimpleDataStorage);
+                    variableDescription.DataStorageType = DataStorageType.Simple;
                 }
                 else
                 {
-#warning Remove DataStorageType property from VariableDescription
-                    variableDescription.DataStorageType = typeof(ExtendedDataStorageBase);
+                    variableDescription.DataStorageType = DataStorageType.Extended;
                 }
             }
 
@@ -1834,22 +1834,39 @@ namespace OneDas.Hdf.VdsTool
 
                 if (!File.Exists(filePath))
                 {
+                    Console.WriteLine($"File '{filePath}' does not exist.");
 #warning Write Log entry.
                     continue;
                 }
 
                 try
                 {
+                    Console.Write($"Processing file '{filePath}' ... ");
+
                     var dataStorageSet = dataReader.GetData(filePath, variableDescriptionSet, convertToDouble: true);
+
+                    // check actual file size
+                    for (int i = 0; i < variableDescriptionSet.Count; i++)
+                    {
+                        var elementCount = dataStorageSet[i].DataBuffer.Length / dataStorageSet[i].ElementSize;
+                        var period = (double)elementCount / (variableDescriptionSet[i].SamplesPerDay / 86400);
+
+                        if (TimeSpan.FromSeconds(period) != periodPerFile)
+                            throw new Exception("The file is not complete.");
+                    }
+                    
                     dataWriter.Write(currentDateTimeBegin, periodPerFile, dataStorageSet);
 
                     foreach (DataStorageBase dataStorage in dataStorageSet)
                     {
                         dataStorage.Dispose();
                     }
+
+                    Console.WriteLine($"Done.");
                 }
                 catch (Exception)
                 {
+                    Console.WriteLine($"Failed.");
                     // skip this file
                 }
             }

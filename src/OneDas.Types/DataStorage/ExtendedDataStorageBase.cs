@@ -17,7 +17,7 @@ namespace OneDas.DataStorage
 
         #region "Constructors"
 
-        public ExtendedDataStorageBase(Type type, int elementCount) : base(type, elementCount)
+        public ExtendedDataStorageBase(Type type, int elementCount) : base(type, elementCount, DataStorageType.Extended)
         {
             _byteCount = elementCount;
 
@@ -25,7 +25,7 @@ namespace OneDas.DataStorage
             this.StatusBuffer.Clear();
         }
 
-        public ExtendedDataStorageBase(Type type, byte[] statusSet) : base(type, statusSet.Length)
+        public ExtendedDataStorageBase(Type type, byte[] statusSet) : base(type, statusSet.Length, DataStorageType.Extended)
         {
             _byteCount = statusSet.Length;
 

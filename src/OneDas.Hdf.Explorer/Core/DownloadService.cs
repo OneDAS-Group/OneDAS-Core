@@ -328,9 +328,7 @@ namespace OneDas.Hdf.Explorer.Core
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
                             if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, sampleRate, start, stride, block, count, segmentLength)))
-                            {
                                 return string.Empty;
-                            }
                         }
                     }
                 }

@@ -16,8 +16,9 @@ namespace OneDas.DataStorage
 
         #region "Constructors"
 
-        public unsafe DataStorageBase(Type type, int elementCount)
+        public unsafe DataStorageBase(Type type, int elementCount, DataStorageType dataStorageType)
         {
+            this.Type = dataStorageType;
             this.ElementSize = OneDasUtilities.SizeOf(type);
 
             _byteCount = this.ElementSize * elementCount;
@@ -43,6 +44,8 @@ namespace OneDas.DataStorage
                 return new Span<byte>(this.DataBufferPtr.ToPointer(), _byteCount);
             }
         }
+
+        public DataStorageType Type { get; }
 
         #endregion
 

@@ -9,7 +9,7 @@ namespace OneDas.Extensibility
     {
         #region "Constructors"
 
-        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, Type dataStorageType)
+        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, DataStorageType dataStorageType)
         {
             this.Guid = guid;
             this.VariableName = variableName;
@@ -20,9 +20,6 @@ namespace OneDas.Extensibility
             this.Unit = unit;
             this.TransferFunctionSet = transferFunctionSet;
             this.DataStorageType = dataStorageType;
-
-            if (!typeof(IDataStorage).IsAssignableFrom(dataStorageType))
-                throw new ArgumentException(ErrorMessage.VariableContext_DataStorageTypeInvalid);
         }
 
         #endregion
@@ -45,7 +42,7 @@ namespace OneDas.Extensibility
 
         public List<TransferFunction> TransferFunctionSet { get; private set; }
 
-        public Type DataStorageType { get; set; }
+        public DataStorageType DataStorageType { get; set; }
 
         #endregion
     }

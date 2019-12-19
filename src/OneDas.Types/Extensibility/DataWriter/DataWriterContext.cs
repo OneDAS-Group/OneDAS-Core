@@ -17,9 +17,7 @@ namespace OneDas.Extensibility
             customMetadataEntrySet.ToList().ForEach(customMetaDataEntry =>
             {
                 if (!OneDasUtilities.CheckNamingConvention(customMetaDataEntry.Key, out errorDescription))
-                {
                     throw new ArgumentException($"Argument '{ nameof(customMetadataEntrySet) }', value '{ customMetaDataEntry.Key }': { errorDescription }");
-                }
             });
 
             this.SystemName = systemName;
@@ -29,8 +27,11 @@ namespace OneDas.Extensibility
         }
 
         public string SystemName { get; private set; }
+
         public string DataDirectoryPath { get; private set; }
+
         public OneDasCampaignDescription CampaignDescription { get; private set; }
+
         public IList<CustomMetadataEntry> CustomMetadataEntrySet { get; private set; }
     }
 }

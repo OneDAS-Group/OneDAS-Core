@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using OneDas.DataStorage;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using System;
@@ -61,9 +62,7 @@ namespace OneDas.Hdf.Explorer
             currentDirectory = Environment.CurrentDirectory;
 
             if (Directory.Exists(_options.DataBaseFolderPath))
-            {
                 Environment.CurrentDirectory = _options.DataBaseFolderPath;
-            }
 
             // service vs. interactive
             if (isUserInteractive)

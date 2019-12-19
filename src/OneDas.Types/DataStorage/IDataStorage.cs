@@ -6,6 +6,7 @@ namespace OneDas.DataStorage
     {
         #region "Properties"
 
+        DataStorageType Type { get; }
         IntPtr DataBufferPtr { get; }
         int ElementSize { get; }
         Span<byte> DataBuffer { get; }

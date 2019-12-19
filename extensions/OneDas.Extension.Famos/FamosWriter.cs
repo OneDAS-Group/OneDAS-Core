@@ -22,7 +22,7 @@ namespace OneDas.Extension.Famos
         private Dictionary<ulong, int> _spdToFieldIndexMap;
 
         #endregion
-
+        
         #region "Constructors"
 
         public FamosWriter(FamosSettings settings, ILogger logger) : base(settings, logger)

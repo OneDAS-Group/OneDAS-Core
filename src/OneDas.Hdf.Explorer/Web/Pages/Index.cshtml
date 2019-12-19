@@ -196,11 +196,11 @@
                                data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$index() + '_' + $index() }">
                                 <span class="fa fa-caret-right"></span><span data-bind="text: Key"></span>
                             </a>
-                            <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members().filter(variableInfo => variableInfo.DatasetInfoSet.some(datasetInfo => datasetInfo.IsVisible()))">
+                            <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$index() + '_' + $index() }, foreach: Members">
                                 <a class="list-group-item list-group-item-action noselect"
                                    role="button"
                                    data-toggle="collapse"
-                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }">
+                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, style: { color: DatasetInfoSet.some(datasetInfo => datasetInfo.IsVisible()) ? 'black' : 'darkgrey' }">
                                     <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
                                 </a>
                                 <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">

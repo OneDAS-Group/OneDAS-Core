@@ -11,6 +11,12 @@ namespace OneDas.DataStorage
             //
         }
 
+        // required for HdfDataLoader (Activator.CreateInstance) because it uses a non-typed 'Array'.
+        public ExtendedDataStorage(T[] dataset, byte[] statusSet) : base(typeof(T), statusSet)
+        {
+            dataset.CopyTo(this.GetDataBuffer<T>());
+        }
+
         public ExtendedDataStorage(Span<T> dataset, byte[] statusSet) : base(typeof(T), statusSet)
         {
             dataset.CopyTo(this.GetDataBuffer<T>());
