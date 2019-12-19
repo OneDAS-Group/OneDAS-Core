@@ -73,9 +73,8 @@ namespace OneDas.Core.Tests
             var sampleRate = samplesPerDay / 86400;
             var datasetName = $"{ (int)sampleRate } Hz";
             var transferFunctionSet = new List<TransferFunction>();
-            var dataStorageType = typeof(SimpleDataStorage);
 
-            return new VariableDescription(guid, variableName, datasetName, group, dataType, samplesPerDay, unit, transferFunctionSet, dataStorageType);
+            return new VariableDescription(guid, variableName, datasetName, group, dataType, samplesPerDay, unit, transferFunctionSet, DataStorageType.Simple);
         }
 
         private static void ConfigureServices(IServiceCollection services)
