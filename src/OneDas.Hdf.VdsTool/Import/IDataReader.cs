@@ -8,6 +8,6 @@ namespace OneDas.Hdf.VdsTool.Import
     {
         List<VariableDescription> GetVariableDescriptions(string filePath);
 
-        List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet, bool convertToDouble);
+        List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet, bool convertToDouble, bool applyCalibration);
     }
 }

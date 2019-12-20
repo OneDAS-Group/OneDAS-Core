@@ -38,9 +38,6 @@ namespace OneDas.Hdf.VdsTool.Import
                     if (analogComponent == null)
                         continue;
 
-                    if (analogComponent.CalibrationInfo == null)
-                        continue;
-
                     var channel = component.Channels.First();
 
                     // variable name
@@ -67,11 +64,11 @@ namespace OneDas.Hdf.VdsTool.Import
                     var dataType = this.GetOneDasDataTypeFromFamosFileDataType(component.PackInfo.DataType);
 
                     // unit
-                    var unit = analogComponent.CalibrationInfo.Unit;
+                    var unit = analogComponent.CalibrationInfo == null ? string.Empty : analogComponent.CalibrationInfo.Unit;
 
                     // transfer function set
-                    var argument = $"{analogComponent.CalibrationInfo.Factor};{analogComponent.CalibrationInfo.Offset}";
-                    var transferFunctionSet = new List<TransferFunction>() { new TransferFunction(DateTime.MinValue, "polynomial", string.Empty, argument) };
+                    //var argument = $"{analogComponent.CalibrationInfo.Factor};{analogComponent.CalibrationInfo.Offset}";
+                    var transferFunctionSet = new List<TransferFunction>() { };// new TransferFunction(DateTime.MinValue, "polynomial", string.Empty, argument) };
 
                     // create variable description
                     var variableDescription = new VariableDescription(Guid.Empty, variableName, datasetName, groupName, dataType, sampleRate, unit, transferFunctionSet, DataStorageType.Extended);
@@ -82,8 +79,11 @@ namespace OneDas.Hdf.VdsTool.Import
             }).ToList();
         }
 
-        public List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet, bool convertToDouble)
+        public List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet, bool convertToDouble, bool applyCalibration)
         {
+            if (!applyCalibration)
+                throw new Exception("Currently, only applyCalibration = true is supported.");
+
             using var famosFile = FamosFile.Open(filePath);
 
             var channels = famosFile.Groups.SelectMany(group => group.Channels).Concat(famosFile.Channels).ToList();
@@ -116,9 +116,30 @@ namespace OneDas.Hdf.VdsTool.Import
                 };
 
                 if (convertToDouble)
-                    return dataStorage.ToSimpleDataStorage();
+                {
+                    var simpleDataStorage = dataStorage.ToSimpleDataStorage();
+                    var analogComponent = famosFile.FindComponent(channel) as FamosFileAnalogComponent;
+                    var calibrationInfo = analogComponent?.CalibrationInfo;
+
+                    if (calibrationInfo != null && calibrationInfo.ApplyTransformation)
+                    {
+                        var data = simpleDataStorage.DataBuffer;
+
+                        for (int i = 0; i < data.Length; i++)
+                        {
+                            data[i] = (double)((decimal)data[i] * calibrationInfo.Factor + calibrationInfo.Offset);
+                        }
+                    }
+
+                    return simpleDataStorage;
+                }
                 else
+                {
+                    if (applyCalibration)
+                        throw new Exception("Apply calibration is only allowed in conjunction with the --convert-to-double option.");
+
                     return dataStorage;
+                }
             }).ToList();
         }
 

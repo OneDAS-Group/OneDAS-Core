@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -177,7 +178,13 @@ namespace OneDas.Hdf.VdsTool
             {
                 case "import":
 
+#warning HandleNativeImport could be replaced by custom-import
                     Program.HandleNativeImport(args.Skip(1).ToList());
+                    break;
+
+                case "custom-import":
+
+                    Program.HandleCustomImport(args.Skip(1).ToList());
                     break;
 
                 case "convert":
@@ -273,6 +280,24 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
+        private static void HandleCustomImport(List<string> args)
+        {
+            // scriptFilePath
+            string scriptFilePath = default;
+
+            if (!Program.TryGetParameterValue("script-path", "s", args, ref scriptFilePath))
+                return;
+
+            try
+            {
+                Program.ImportCustomFiles(scriptFilePath);
+            }
+            catch
+            {
+                Console.WriteLine("Could not import custom data. Aborting action.");
+            }
+        }
+
         private static void HandleConvert(List<string> args)
         {
             // campaignName
@@ -326,10 +351,16 @@ namespace OneDas.Hdf.VdsTool
             if (args.IndexOf($"-x") >= 0 || args.IndexOf($"--convert-to-double") >= 0)
                 convertToDouble = true;
 
+            // applyCalibration
+            bool applyCalibration = false;
+
+            if (args.IndexOf($"-x") >= 0 || args.IndexOf($"--apply-calibration") >= 0)
+                applyCalibration = true;
+
             //
             try
             {
-                Program.ConvertFiles(campaignName, version, fileFormat, fileNameFormat, periodPerFile, days, systemName, convertToDouble);
+                Program.ConvertFiles(campaignName, version, fileFormat, fileNameFormat, periodPerFile, days, systemName, convertToDouble, applyCalibration);
             }
             catch
             {
@@ -1593,9 +1624,23 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
+        #region "CUSTOM_IMPORT"
+
+        private static void ImportCustomFiles(string scriptFilePath)
+        {
+            using (PowerShell ps = PowerShell.Create())
+            {
+                //ps.Runspace.SessionStateProxy.SetVariable("ftpClient", ftpClient);
+                ps.AddScript(File.ReadAllText(scriptFilePath))
+                  .Invoke();
+            }
+        }
+
+        #endregion
+
         #region "CONVERT"
 
-        private static void ConvertFiles(string campaignName, int version, string fileFormat, string fileNameFormat, uint periodPerFile, int days, string systemName, bool convertToDouble)
+        private static void ConvertFiles(string campaignName, int version, string fileFormat, string fileNameFormat, uint periodPerFile, int days, string systemName, bool convertToDouble, bool applyCalibration)
         {
             var sourceDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_ORIGIN", $"{campaignName.Replace('/', '_')}_V{version}");
             var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
@@ -1633,14 +1678,15 @@ namespace OneDas.Hdf.VdsTool
 
                     Program.InternalConvertFiles(currentSourceDirectoryPath, currentTargetDirectoryPath,
                                                 dateTimeBegin, campaignName, version, fileFormat,
-                                                fileNameFormat, TimeSpan.FromSeconds(periodPerFile), systemName, convertToDouble);
+                                                fileNameFormat, TimeSpan.FromSeconds(periodPerFile), 
+                                                systemName, convertToDouble, applyCalibration);
                 }
             }
 
             File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
         }
 
-        private static void InternalConvertFiles(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileFormat, string fileNameFormat, TimeSpan periodPerFile, string systemName, bool convertToDouble)
+        private static void InternalConvertFiles(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileFormat, string fileNameFormat, TimeSpan periodPerFile, string systemName, bool convertToDouble, bool applyCalibration)
         {
             // data writer context
             IDataReader dataReader;
@@ -1708,7 +1754,7 @@ namespace OneDas.Hdf.VdsTool
                 {
                     Console.Write($"Processing file '{filePath}' ... ");
 
-                    var dataStorageSet = dataReader.GetData(filePath, variableDescriptionSet, convertToDouble: true);
+                    var dataStorageSet = dataReader.GetData(filePath, variableDescriptionSet, convertToDouble, applyCalibration);
 
                     // check actual file size
                     for (int i = 0; i < variableDescriptionSet.Count; i++)
