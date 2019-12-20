@@ -626,59 +626,39 @@ namespace OneDas.Hdf.VdsTool
 
         private static void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath, Dictionary<string, List<byte>> isChunkCompletedMap, bool closeType)
         {
-            bool createDataset;
-
-            string datasetName;
-
-            ulong samplesPerDay;
-            ulong vdsLength;
-
             long datasetId = -1;
             long spaceId = -1;
             long propertyId = -1;
 
-            GCHandle gcHandle;
-
-            createDataset = false;
+            var createDataset = false;
 
             try
             {
-                datasetName = datasetInfo.Name;
-                samplesPerDay = OneDasUtilities.GetSamplesPerDayFromString(datasetName);
-                vdsLength = (ulong)(epochEnd - epochStart).Days * samplesPerDay;
+                var datasetName = datasetInfo.Name;
+                var sampleRate = new SampleRateContainer(datasetName);
+                var vdsLength = (ulong)(epochEnd - epochStart).Days * sampleRate.SamplesPerDay;
+
                 spaceId = H5S.create_simple(1, new ulong[] { vdsLength }, new ulong[] { H5S.UNLIMITED });
                 propertyId = H5P.create(H5P.DATASET_CREATE);
 
                 foreach (SourceFileInfo sourceFileInfo in datasetInfo.SourceFileInfoSet)
                 {
-                    ulong offset;
-                    ulong start;
-                    ulong stride;
-                    ulong count;
-                    ulong block;
-
-                    int chunkCount;
-                    int firstIndex;
-                    int lastIndex;
-
                     long sourceSpaceId = -1;
 
-                    string key;
-                    string relativeFilePath;
+                    var relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Program.BaseDirectoryPath.TrimEnd('\\').TrimEnd('/').Length)}";
 
-                    relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Program.BaseDirectoryPath.TrimEnd('\\').TrimEnd('/').Length)}";
                     sourceSpaceId = H5S.create_simple(1, new ulong[] { sourceFileInfo.Length }, new ulong[] { sourceFileInfo.Length });
 
-                    key = $"{ sourceFileInfo.FilePath }+{ campaignPath }";
-                    chunkCount = isChunkCompletedMap[key].Count;
-                    firstIndex = isChunkCompletedMap[key].FindIndex(value => value > 0);
-                    lastIndex = isChunkCompletedMap[key].FindLastIndex(value => value > 0);
+                    var key = $"{ sourceFileInfo.FilePath }+{ campaignPath }";
+                    var chunkCount = isChunkCompletedMap[key].Count;
+                    var firstIndex = isChunkCompletedMap[key].FindIndex(value => value > 0);
+                    var lastIndex = isChunkCompletedMap[key].FindLastIndex(value => value > 0);
 
-                    offset = (ulong)((sourceFileInfo.StartDateTime - epochStart).TotalDays * samplesPerDay);
-                    start = (ulong)((double)sourceFileInfo.Length * firstIndex / chunkCount);
-                    stride = 1;
-                    count = 1;
-                    block = (ulong)((double)sourceFileInfo.Length * (lastIndex - firstIndex + 1) / chunkCount);
+                    var offset = (ulong)((sourceFileInfo.StartDateTime - epochStart).TotalDays * sampleRate.SamplesPerDay);
+                    var start = (ulong)((double)sourceFileInfo.Length * firstIndex / chunkCount);
+                    var stride = 1UL;
+                    var count = 1UL;
+                    var block = (ulong)((double)sourceFileInfo.Length * (lastIndex - firstIndex + 1) / chunkCount);
 
                     if (firstIndex >= 0)
                     {
@@ -687,9 +667,7 @@ namespace OneDas.Hdf.VdsTool
                         try
                         {
                             if (offset + start + block > vdsLength)
-                            {
                                 throw new Exception($"start + block = { offset + start + block } > { vdsLength }");
-                            }
 
                             H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { offset + start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
                             H5S.select_hyperslab(sourceSpaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
@@ -706,15 +684,13 @@ namespace OneDas.Hdf.VdsTool
 
                 if (TypeConversionHelper.GetTypeFromHdfTypeId(datasetInfo.TypeId) == typeof(double))
                 {
-                    gcHandle = GCHandle.Alloc(Double.NaN, GCHandleType.Pinned);
+                    var gcHandle = GCHandle.Alloc(Double.NaN, GCHandleType.Pinned);
                     H5P.set_fill_value(propertyId, datasetInfo.TypeId, gcHandle.AddrOfPinnedObject());
                     gcHandle.Free();
                 }
 
                 if (createDataset) // otherwise there will be an error, if set_virtual has never been called.
-                {
                     datasetId = H5D.create(groupId, datasetName, datasetInfo.TypeId, spaceId, H5P.DEFAULT, propertyId);
-                }
             }
             finally
             {
@@ -723,9 +699,7 @@ namespace OneDas.Hdf.VdsTool
                 if (H5I.is_valid(spaceId) > 0) { H5S.close(spaceId); }
 
                 if (closeType && H5I.is_valid(datasetInfo.TypeId) > 0)
-                {
                     H5T.close(datasetInfo.TypeId);
-                }
             }
         }
 
@@ -735,14 +709,7 @@ namespace OneDas.Hdf.VdsTool
 
         public static hdf_aggregate_function_t PromptAggregateFunctionData(hdf_aggregate_function_t hdf_aggregate_function)
         {
-            string type;
-            string argument;
-            string tmp;
-            bool isEscaped;
-            HashSet<string> optionSet;
-
-            // 
-            tmp = string.Empty;
+            var tmp = string.Empty;
 
             Console.CursorVisible = true;
 
@@ -752,14 +719,12 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for type ({ hdf_aggregate_function.type }): ");
 
-                optionSet = new HashSet<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
+                var optionSet = new HashSet<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.type))
-                {
                     optionSet.Add(hdf_aggregate_function.type);
-                }
 
-                (type, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var type, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(type) && OneDasUtilities.CheckNamingConvention(type, out tmp))
                 {
@@ -778,14 +743,12 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for argument ({ hdf_aggregate_function.argument }): ");
 
-                optionSet = new HashSet<string>() { "none" };
+                var optionSet = new HashSet<string>() { "none" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.argument))
-                {
                     optionSet.Add(hdf_aggregate_function.argument);
-                }
 
-                (argument, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var argument, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(argument))
                 {
@@ -807,14 +770,6 @@ namespace OneDas.Hdf.VdsTool
         public static hdf_transfer_function_t PromptTransferFunctionData(hdf_transfer_function_t hdf_transfer_function)
         {
             DateTime dateTime;
-            string dateTime_tmp;
-            string type;
-            string argument;
-            string option;
-            bool isEscaped;
-            HashSet<string> optionSet;
-
-            //
             Console.CursorVisible = true;
 
             // date / time
@@ -823,14 +778,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for date/time ({ hdf_transfer_function.date_time }): ");
 
-                optionSet = new HashSet<string>() { "0001-01-01" };
+                var optionSet = new HashSet<string>() { "0001-01-01" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_transfer_function.date_time))
                 {
                     optionSet.Add(hdf_transfer_function.date_time);
                 }
 
-                (dateTime_tmp, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var dateTime_tmp, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
@@ -854,14 +809,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for type ({ hdf_transfer_function.type }): ");
 
-                optionSet = new HashSet<string>() { "polynomial", "function" };
+                var optionSet = new HashSet<string>() { "polynomial", "function" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_transfer_function.type))
                 {
                     optionSet.Add(hdf_transfer_function.type);
                 }
 
-                (type, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var type, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(type))
                 {
@@ -880,14 +835,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for option ({ hdf_transfer_function.option }): ");
 
-                optionSet = new HashSet<string>() { "permanent" };
+                var optionSet = new HashSet<string>() { "permanent" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_transfer_function.option))
                 {
                     optionSet.Add(hdf_transfer_function.option);
                 }
 
-                (option, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var option, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(option))
                 {
@@ -906,14 +861,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for argument ({ hdf_transfer_function.argument }): ");
 
-                optionSet = new HashSet<string>() { };
+                var optionSet = new HashSet<string>() { };
 
                 if (!string.IsNullOrWhiteSpace(hdf_transfer_function.argument))
                 {
                     optionSet.Add(hdf_transfer_function.argument);
                 }
 
-                (argument, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var argument, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(argument))
                 {
@@ -936,15 +891,8 @@ namespace OneDas.Hdf.VdsTool
         {
             DateTime dateTime;
 
-            string dateTime_tmp;
-            string name;
-            string mode;
-            string comment;
-            string tmp = string.Empty;
-            bool isEscaped;
-            HashSet<string> optionSet;
+            var tmp = string.Empty;
 
-            //
             Console.CursorVisible = true;
 
             // date / time
@@ -953,14 +901,12 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for date/time ({ hdf_tag.date_time }): ");
 
-                optionSet = new HashSet<string>() { "0001-01-01" };
+                var optionSet = new HashSet<string>() { "0001-01-01" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_tag.date_time))
-                {
                     optionSet.Add(hdf_tag.date_time);
-                }
 
-                (dateTime_tmp, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var dateTime_tmp, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
                 {
@@ -984,14 +930,12 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for name ({ hdf_tag.name }): ");
 
-                optionSet = new HashSet<string>() { };
+                var optionSet = new HashSet<string>() { };
 
                 if (!string.IsNullOrWhiteSpace(hdf_tag.name))
-                {
                     optionSet.Add(hdf_tag.name);
-                }
 
-                (name, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var name, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(name) && OneDasUtilities.CheckNamingConvention(name, out tmp))
                 {
@@ -1010,14 +954,12 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for mode ({ hdf_tag.mode }): ");
 
-                optionSet = new HashSet<string>() { "none", "start", "end" };
+                var optionSet = new HashSet<string>() { "none", "start", "end" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_tag.mode))
-                {
                     optionSet.Add(hdf_tag.mode);
-                }
 
-                (comment, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var comment, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (!string.IsNullOrWhiteSpace(comment))
                 {
@@ -1036,14 +978,12 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for comment ({ hdf_tag.comment }): ");
 
-                optionSet = new HashSet<string>() { "none" };
+                var optionSet = new HashSet<string>() { "none" };
 
                 if (!string.IsNullOrWhiteSpace(hdf_tag.comment))
-                {
                     optionSet.Add(hdf_tag.comment);
-                }
 
-                (mode, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var mode, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (mode.Any())
                 {
@@ -1064,11 +1004,6 @@ namespace OneDas.Hdf.VdsTool
 
         public static string PromptDirectoryPath(string directoryPath)
         {
-            string value;
-            bool isEscaped;
-            HashSet<string> optionSet;
-
-            //
             Console.CursorVisible = true;
 
             // name
@@ -1077,14 +1012,14 @@ namespace OneDas.Hdf.VdsTool
                 Console.Clear();
                 Console.Write($"Enter value for output directory ({ directoryPath }): ");
 
-                optionSet = new HashSet<string>() { };
+                var optionSet = new HashSet<string>() { };
 
                 if (!string.IsNullOrWhiteSpace(directoryPath))
                 {
                     optionSet.Add(directoryPath);
                 }
 
-                (value, isEscaped) = Utilities.ReadLine(optionSet.ToList());
+                (var value, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
 
                 if (Directory.Exists(value))
                 {
@@ -1109,31 +1044,20 @@ namespace OneDas.Hdf.VdsTool
 
         public static void CreateAggregatedFiles(DateTime epochStart)
         {
-            string sourceDirectoryPath;
-            string targetDirectoryPath;
-            string logDirectoryPath;
-            string vdsMetaFilePath;
-
-            DateTime epochEnd;
-
-            vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
+            var vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
 
             if (!File.Exists(vdsMetaFilePath))
-            {
                 return;
-            }
 
-            epochEnd = epochStart.AddMonths(1);
-            sourceDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
-            targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
-            logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
+            var epochEnd = epochStart.AddMonths(1);
+            var sourceDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
+            var targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
+            var logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
 
             Directory.CreateDirectory(logDirectoryPath);
 
             if (Console.CursorTop > 0 || Console.CursorLeft > 0)
-            {
                 Console.WriteLine();
-            }
 
             Console.WriteLine($"Epoch start: { epochStart.ToString("yyyy-MM-dd") }");
             Console.WriteLine($"Epoch end:   { epochEnd.ToString("yyyy-MM-dd") }");
@@ -1148,24 +1072,14 @@ namespace OneDas.Hdf.VdsTool
             long sourceFileId = -1;
             long targetFileId = -1;
 
-            string targetFilePath;
-            string logFilePath;
-
-            IList<string> dateTime;
             IList<string> filePathSet;
 
-            List<CampaignInfo> campaignInfoSet;
-
-            campaignInfoSet = new List<CampaignInfo>();
+            var campaignInfoSet = new List<CampaignInfo>();
 
             if (Directory.Exists(sourceDirectoryPath))
-            {
                 filePathSet = Directory.GetFiles(sourceDirectoryPath);
-            }
             else
-            {
                 filePathSet = new List<string>();
-            }
 
             vdsMetaFileId = H5F.open(vdsMetaFilePath, H5F.ACC_RDONLY);
 
@@ -1174,7 +1088,7 @@ namespace OneDas.Hdf.VdsTool
                 foreach (string sourceFilePath in filePathSet)
                 {
                     targetFileId = -1;
-                    logFilePath = Path.Combine(logDirectoryPath, $"aggregations_{ Path.GetFileNameWithoutExtension(sourceFilePath) }.txt");
+                    var logFilePath = Path.Combine(logDirectoryPath, $"aggregations_{ Path.GetFileNameWithoutExtension(sourceFilePath) }.txt");
 
                     using (StreamWriter messageLog = new StreamWriter(new FileStream(logFilePath, FileMode.Append)))
                     {
@@ -1186,29 +1100,23 @@ namespace OneDas.Hdf.VdsTool
                         campaignInfoSet = GeneralHelper.GetCampaignInfoSet(sourceFileId, false);
 
                         // targetFileId
-                        targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
+                        var targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
 
                         if (!Directory.Exists(targetDirectoryPath))
-                        {
                             Directory.CreateDirectory(targetDirectoryPath);
-                        }
 
                         if (File.Exists(targetFilePath))
-                        {
                             targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
-                        }
 
                         if (targetFileId == -1)
-                        {
                             targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
-                        }
 
                         try
                         {
                             // create attribute if necessary
                             if (H5A.exists(targetFileId, "date_time") == 0)
                             {
-                                dateTime = IOHelper.ReadAttribute<string>(sourceFileId, "date_time");
+                                var dateTime = IOHelper.ReadAttribute<string>(sourceFileId, "date_time");
                                 IOHelper.PrepareAttribute(targetFileId, "date_time", dateTime.ToArray(), new ulong[] { 1 }, true);
                             }
 
@@ -1236,21 +1144,14 @@ namespace OneDas.Hdf.VdsTool
 
         private static void AggregateCampaign(long sourceFileId, long targetFileId, long vdsMetaFileId, CampaignInfo campaignInfo, StreamWriter messageLog)
         {
-            int index;
-            string datasetPath;
-            long groupId;
-            bool isNew;
-
-            index = 0;
-            datasetPath = $"{ campaignInfo.GetPath() }/is_chunk_completed_set";
-            (groupId, isNew) = IOHelper.OpenOrCreateGroup(targetFileId, campaignInfo.GetPath());
+            var index = 0;
+            var datasetPath = $"{ campaignInfo.GetPath() }/is_chunk_completed_set";
+            (var groupId, var isNew) = IOHelper.OpenOrCreateGroup(targetFileId, campaignInfo.GetPath());
 
             try
             {
                 if (isNew || !IOHelper.CheckLinkExists(targetFileId, datasetPath))
-                {
                     H5O.copy(sourceFileId, datasetPath, targetFileId, datasetPath);
-                }
 
                 foreach (var variableInfo in campaignInfo.VariableInfoSet)
                 {
@@ -1275,14 +1176,8 @@ namespace OneDas.Hdf.VdsTool
             long sourceDatasetId_status = -1;
             long typeId = -1;
 
-            string groupPath;
-            string sourceDatasetName;
-
-            SampleRate sampleRate;
-            hdf_aggregate_function_t[] aggregate_function_set;
-
-            sampleRate = default;
-            groupPath = variableInfo.GetPath();
+            var sampleRate = (SampleRate)0;
+            var groupPath = variableInfo.GetPath();
 
             // if meta data entry exists
             if (IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
@@ -1293,13 +1188,13 @@ namespace OneDas.Hdf.VdsTool
                 {
                     if (H5A.exists(vdsMetaGroupId, "aggregate_function_set") > 0)
                     {
-                        aggregate_function_set = IOHelper.ReadAttribute<hdf_aggregate_function_t>(vdsMetaGroupId, "aggregate_function_set");
+                        var aggregate_function_set = IOHelper.ReadAttribute<hdf_aggregate_function_t>(vdsMetaGroupId, "aggregate_function_set");
 
                         // find proper data source
                         foreach (SampleRate testedSampleRate in Enum.GetValues(typeof(SampleRate)))
                         {
 #warning remove magic number
-                            sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz";
+                            var sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz";
 
                             if (variableInfo.DatasetInfoSet.Where(x => x.Name == sourceDatasetName).Any())
                             {
@@ -1349,9 +1244,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static void AggregateDataset<T>(string groupPath, long sourceDatasetId, long sourceDatasetId_status, long targetFileId, SampleRate sampleRate, hdf_aggregate_function_t[] aggregate_function_set, StreamWriter messageLog)
         {
-            int chunkCount;
             long targetDatasetId = -1;
-            string targetDatasetPath;
             double[] targetValueSet;
             double[] sourceValueSet_double = null;
             byte[] sourceValueSet_status = null;
@@ -1365,7 +1258,7 @@ namespace OneDas.Hdf.VdsTool
                 // for each period
                 foreach (Period period in Enum.GetValues(typeof(Period)))
                 {
-                    targetDatasetPath = $"{ groupPath }/{ (int)period} s_{aggregation_function.type }";
+                    var targetDatasetPath = $"{ groupPath }/{ (int)period} s_{aggregation_function.type }";
 
                     // if target dataset does not yet exist
                     if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
@@ -1378,7 +1271,7 @@ namespace OneDas.Hdf.VdsTool
                             sourceValueSet_status = IOHelper.Read<byte>(sourceDatasetId_status, DataContainerType.Dataset);
                         }
 
-                        chunkCount = sourceValueSet.Count() / (int)period / 100 * (int)sampleRate; // Improve: remove magic number
+                        var chunkCount = sourceValueSet.Count() / (int)period / 100 * (int)sampleRate; // Improve: remove magic number
 
                         switch (aggregation_function.type)
                         {
@@ -1437,12 +1330,8 @@ namespace OneDas.Hdf.VdsTool
 
         private static double[] ApplyAggregationFunction(hdf_aggregate_function_t aggregation_function, int targetDatasetLength, double[] valueSet, StreamWriter messageLog)
         {
-            int chunkSize;
-            double[] result;
-
-            //
-            chunkSize = valueSet.Count() / targetDatasetLength;
-            result = new double[targetDatasetLength];
+            var chunkSize = valueSet.Count() / targetDatasetLength;
+            var result = new double[targetDatasetLength];
 
             switch (aggregation_function.type)
             {
@@ -1565,12 +1454,8 @@ namespace OneDas.Hdf.VdsTool
 
         private static double[] ApplyAggregationFunction<T>(hdf_aggregate_function_t aggregation_function, int targetDatasetLength, T[] valueSet, byte[] valueSet_status, StreamWriter messageLog)
         {
-            int chunkSize;
-            double[] result;
-
-            //
-            chunkSize = valueSet.Count() / targetDatasetLength;
-            result = new double[targetDatasetLength];
+            var chunkSize = valueSet.Count() / targetDatasetLength;
+            var result = new double[targetDatasetLength];
 
             switch (aggregation_function.type)
             {
@@ -1592,13 +1477,9 @@ namespace OneDas.Hdf.VdsTool
                             else
                             {
                                 if (i == 0)
-                                {
                                     bitField_and[x] = GenericBitOr<T>.BitOr(bitField_and[x], valueSet[baseIndex + i]);
-                                }
                                 else
-                                {
                                     bitField_and[x] = GenericBitAnd<T>.BitAnd(bitField_and[x], valueSet[baseIndex + i]);
-                                }
                             }
                         }
 
@@ -1636,9 +1517,7 @@ namespace OneDas.Hdf.VdsTool
                     break;
 
                 default:
-
                     messageLog.WriteLine($"The type {aggregation_function.type} of attribute 'aggregate_function_set' is unknown. Skipping period.");
-
                     break;
 
             }
@@ -1652,13 +1531,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static void ImportNativeFiles(IFileSystemProvider provider, string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
         {
-            string targetDirectoryPath;
-            string logDirectoryPath;
-            string logFilePath;
-
-            string version;
-
-            targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE");
+            var targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE");
 
             var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
             var dateTimeBegin = dateTimeEnd.AddDays(-days);
@@ -1666,26 +1539,22 @@ namespace OneDas.Hdf.VdsTool
             provider.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
             {
 #warning Implement general logging infrastructure
-                logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
-                logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
+                var logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
+                var logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
 
                 Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
                 File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
 
-                version = Regex.Match(currentSourceDirectoryPath, "V[0-9]+(?!.*V[0-9]+)").Value;
+                var version = Regex.Match(currentSourceDirectoryPath, "V[0-9]+(?!.*V[0-9]+)").Value;
                 currentSourceDirectoryPath = Program.PathCombine(currentSourceDirectoryPath, dataWriterId);
 
                 for (int i = 0; i <= days; i++)
                 {
-                    string fileName;
-                    string sourceFilePath;
-                    string targetFilePath;
-
                     var currentDateTimeBegin = dateTimeBegin.AddDays(i);
-                    fileName = $"{campaignName}_{version}_{currentDateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+                    var fileName = $"{campaignName}_{version}_{currentDateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
 
-                    sourceFilePath = Program.PathCombine(currentSourceDirectoryPath, fileName);
-                    targetFilePath = Path.Combine(targetDirectoryPath, currentDateTimeBegin.ToString("yyyy-MM"), fileName);
+                    var sourceFilePath = Program.PathCombine(currentSourceDirectoryPath, fileName);
+                    var targetFilePath = Path.Combine(targetDirectoryPath, currentDateTimeBegin.ToString("yyyy-MM"), fileName);
 
                     Console.WriteLine($"checking file { fileName }");
 
@@ -1699,9 +1568,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static void CopyNativeFile(IFileSystemProvider provider, string sourceFilePath, string targetFilePath, string logFilePath)
         {
-            string fileName;
-
-            fileName = Path.GetFileName(sourceFilePath);
+            var fileName = Path.GetFileName(sourceFilePath);
 
             try
             {
@@ -1847,7 +1714,7 @@ namespace OneDas.Hdf.VdsTool
                     for (int i = 0; i < variableDescriptionSet.Count; i++)
                     {
                         var elementCount = dataStorageSet[i].DataBuffer.Length / dataStorageSet[i].ElementSize;
-                        var period = (double)elementCount / (variableDescriptionSet[i].SamplesPerDay / 86400);
+                        var period = (double)elementCount / (variableDescriptionSet[i].SampleRate.SamplesPerSecond);
 
                         if (TimeSpan.FromSeconds(period) != periodPerFile)
                             throw new Exception("The file is not complete.");

@@ -92,7 +92,7 @@ namespace OneDas.Extensibility
             filePeriod = TimeSpan.FromSeconds((int)this.Settings.FileGranularity);
             variableContextSet = _variableDescriptionSet.Zip(dataStorageSet, (variableDescription, dataStorage) => new VariableContext(variableDescription, dataStorage)).ToList();
             variableContextGroupSet = variableContextSet
-                .GroupBy(variableContext => variableContext.VariableDescription.SamplesPerDay)
+                .GroupBy(variableContext => variableContext.VariableDescription.SampleRate.SamplesPerDay)
                 .Select(group => new VariableContextGroup(new SampleRateContainer(group.Key), group.ToList())).ToList();
 
             while (dataStorageOffset < dataStoragePeriod)

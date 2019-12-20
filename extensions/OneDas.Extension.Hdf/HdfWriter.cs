@@ -333,10 +333,8 @@ namespace OneDas.Extension.Hdf
 
             try
             {
-                var sampleRate = new SampleRateContainer(variableDescription.SamplesPerDay);
-
                 // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, sampleRate);
+                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SampleRate);
 
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.HdfWriter_SampleRateTooLow);

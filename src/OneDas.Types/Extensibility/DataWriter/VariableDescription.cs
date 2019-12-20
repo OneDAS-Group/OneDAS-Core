@@ -9,14 +9,14 @@ namespace OneDas.Extensibility
     {
         #region "Constructors"
 
-        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, ulong samplesPerDay, string unit, List<TransferFunction> transferFunctionSet, DataStorageType dataStorageType)
+        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, SampleRateContainer sampleRate, string unit, List<TransferFunction> transferFunctionSet, DataStorageType dataStorageType)
         {
             this.Guid = guid;
             this.VariableName = variableName;
             this.DatasetName = datasetName;
             this.Group = group;
             this.DataType = dataType;
-            this.SamplesPerDay = samplesPerDay;
+            this.SampleRate = sampleRate;
             this.Unit = unit;
             this.TransferFunctionSet = transferFunctionSet;
             this.DataStorageType = dataStorageType;
@@ -36,7 +36,7 @@ namespace OneDas.Extensibility
 
         public OneDasDataType DataType { get; set; }
 
-        public ulong SamplesPerDay { get; private set; }
+        public SampleRateContainer SampleRate { get; private set; }
 
         public string Unit { get; private set; }
 

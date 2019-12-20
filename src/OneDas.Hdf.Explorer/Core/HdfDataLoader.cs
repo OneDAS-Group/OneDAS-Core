@@ -57,7 +57,7 @@ namespace OneDas.Hdf.Explorer.Core
                         var oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
                         var sampleRate = new SampleRateContainer(datasetName);
 
-                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, sampleRate.SamplesPerDay, unit, transferFunctionSet, DataStorageType.Simple));
+                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, sampleRate, unit, transferFunctionSet, DataStorageType.Simple));
                     }
                     finally
                     {

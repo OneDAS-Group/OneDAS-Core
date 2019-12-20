@@ -266,7 +266,7 @@ namespace OneDas.Extension.Mat73
             try
             {
                 // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, new SampleRateContainer(variableDescription.SamplesPerDay));
+                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SampleRate);
 
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.Mat73Writer_SampleRateTooLow);

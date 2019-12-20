@@ -549,10 +549,10 @@ namespace OneDas.Core.Engine
                     _dataWriterToVariableDescriptionMap[dataWriter].Add(new VariableDescription(
                         channelHubSettings.Guid,
                         channelHubSettings.Name,
-                        sampleRate.ToUnitString(underscore: true),
+                        sampleRate.ToUnitString(),
                         channelHubSettings.Group,
                         channelHubSettings.DataType,
-                        sampleRate.SamplesPerDay,
+                        sampleRate,
                         channelHubSettings.Unit,
                         channelHubSettings.TransferFunctionSet,
                         DataStorageType.Extended

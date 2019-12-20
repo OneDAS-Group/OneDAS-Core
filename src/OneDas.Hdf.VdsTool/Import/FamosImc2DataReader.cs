@@ -47,17 +47,17 @@ namespace OneDas.Hdf.VdsTool.Import
                     var variableName = OneDasUtilities.EnforceNamingConvention(channel.Name);
 
                     // samples per day
-                    ulong samplesPerDay;
+                    SampleRateContainer sampleRate;
 
                     var xAxisScaling = component.XAxisScaling;
 
                     if (xAxisScaling != null && xAxisScaling.Unit == "s")
-                        samplesPerDay = (ulong)((decimal)86400UL / xAxisScaling.DeltaX);
+                        sampleRate = new SampleRateContainer((ulong)((decimal)86400UL / xAxisScaling.DeltaX));
                     else
                         throw new Exception("Could not determine the sample rate.");
 
                     // dataset name
-                    var datasetName = $"{(samplesPerDay / 86400)} Hz";
+                    var datasetName = sampleRate.ToUnitString();
 
                     // group name
                     var group = famosFile.Groups.FirstOrDefault(group => group.Channels.Contains(channel));
@@ -73,11 +73,8 @@ namespace OneDas.Hdf.VdsTool.Import
                     var argument = $"{analogComponent.CalibrationInfo.Factor};{analogComponent.CalibrationInfo.Offset}";
                     var transferFunctionSet = new List<TransferFunction>() { new TransferFunction(DateTime.MinValue, "polynomial", string.Empty, argument) };
 
-                    // data storage type
-                    var dataStorageType = typeof(ExtendedDataStorageBase);
-
                     // create variable description
-                    var variableDescription = new VariableDescription(Guid.Empty, variableName, datasetName, groupName, dataType, samplesPerDay, unit, transferFunctionSet, dataStorageType);
+                    var variableDescription = new VariableDescription(Guid.Empty, variableName, datasetName, groupName, dataType, sampleRate, unit, transferFunctionSet, DataStorageType.Extended);
                     variableDescriptions.Add(variableDescription);
                 }
 
