@@ -27,7 +27,10 @@ namespace OneDas.Infrastructure
         {
             // is_chunk_completed_set
             if (sampleRateWithUnit.StartsWith("is_chunk_completed_set"))
+            {
                 this.SamplesPerDay = 86400UL / 60;
+                return;
+            }
 
             // Hz
             var matchHz = Regex.Match(sampleRateWithUnit, @"([0-9|\.]+)\sHz");
@@ -100,13 +103,13 @@ namespace OneDas.Infrastructure
             }
         }
 
-        public string ToUnitString(bool underscore = true)
+        public string ToUnitString(bool underscore = false)
         {
             var frequency = this.SamplesPerDay / 86400.0;
             var period = 86400.0 / this.SamplesPerDay;
             var fillChar = underscore ? '_' : ' ';
 
-            if (frequency < 1)
+            if (frequency > 1)
                 return $"{frequency:0.##}{fillChar}Hz";
             else
                 return $"{period:0.##}{fillChar}s";

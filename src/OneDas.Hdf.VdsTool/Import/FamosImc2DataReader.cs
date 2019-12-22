@@ -44,14 +44,12 @@ namespace OneDas.Hdf.VdsTool.Import
                     var variableName = OneDasUtilities.EnforceNamingConvention(channel.Name);
 
                     // samples per day
-                    SampleRateContainer sampleRate;
-
                     var xAxisScaling = component.XAxisScaling;
 
-                    if (xAxisScaling != null && xAxisScaling.Unit == "s")
-                        sampleRate = new SampleRateContainer((ulong)((decimal)86400UL / xAxisScaling.DeltaX));
-                    else
+                    if (xAxisScaling?.Unit != "s")
                         throw new Exception("Could not determine the sample rate.");
+
+                    var sampleRate = new SampleRateContainer((ulong)((decimal)86400UL / xAxisScaling.DeltaX));
 
                     // dataset name
                     var datasetName = sampleRate.ToUnitString();
