@@ -1,12 +1,14 @@
-﻿using HDF.PInvoke;
+﻿using FluentFTP;
+using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Hdf;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
-using OneDas.Hdf.VdsTool.FileSystem;
 using OneDas.Hdf.VdsTool.Import;
 using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
@@ -18,7 +20,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static uint _isLibraryThreadSafe;
         private static string _databaseDirectoryPath;
+        private static ILoggerFactory _loggerFactory;
 
         #endregion
 
@@ -54,12 +56,24 @@ namespace OneDas.Hdf.VdsTool
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
+            // 
             if (args.Any())
             {
-                Program.BaseDirectoryPath = Directory.GetCurrentDirectory();
-                Program.TryGetParameterValue("database", "d", args.ToList(), ref _databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value));
+                if (!Program.TryGetParameterValue("database", "d", args.ToList(), ref _databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
+                {
+                    return;
+                }
 
                 Environment.CurrentDirectory = Program.BaseDirectoryPath;
+
+                // configure logging
+                var serviceProvider = new ServiceCollection().AddLogging(builder =>
+                {
+                    builder.AddConsole();
+                    builder.AddFile(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"));
+                }).BuildServiceProvider();
+
+                _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
                 if (Program.ParseCommandLineArguments(args))
                     return;
@@ -176,15 +190,9 @@ namespace OneDas.Hdf.VdsTool
         {
             switch (args[0])
             {
-                case "import":
+                case "pwsh":
 
-#warning HandleNativeImport could be replaced by custom-import
-                    Program.HandleNativeImport(args.Skip(1).ToList());
-                    break;
-
-                case "custom-import":
-
-                    Program.HandleCustomImport(args.Skip(1).ToList());
+                    Program.HandlePwsh(args.Skip(1).ToList());
                     break;
 
                 case "convert":
@@ -221,67 +229,14 @@ namespace OneDas.Hdf.VdsTool
             return true;
         }
 
-        private static void HandleNativeImport(List<string> args)
+        private static void HandlePwsh(List<string> args)
         {
-            // sourceDirectoryPath
-            string sourceDirectoryPath = default;
+            // transactionId
+            string transactionId = default;
 
-            if (!Program.TryGetParameterValue("source", "r", args, ref sourceDirectoryPath))
+            if (!Program.TryGetParameterValue("transaction-id", "t", args, ref transactionId))
                 return;
 
-            // search pattern
-            string searchPattern = default;
-
-            if (!Program.TryGetParameterValue("search-pattern", "s", args, ref searchPattern))
-                return;
-
-            // campaignName
-            string campaignName = default;
-
-            if (!Program.TryGetParameterValue("campaign", "c", args, ref campaignName))
-                return;
-
-            // dataWriterId
-            string dataWriterId = default;
-
-            if (!Program.TryGetParameterValue("data-writer", "w", args, ref dataWriterId))
-                return;
-
-            // days
-            string daysValue = default;
-            int days = default;
-
-            if (!Program.TryGetParameterValue("period", "p", args, ref daysValue, value => int.TryParse(value, out days)))
-                return;
-
-            // ftpConnectionString
-            string ftpConnectionString = default;
-
-            if (!Program.TryGetParameterValue("ftp", "f", args, ref ftpConnectionString))
-                return;
-
-            //
-            IFileSystemProvider provider;
-
-            if (!string.IsNullOrEmpty(ftpConnectionString))
-                provider = new FtpFileSystemProvider(ftpConnectionString);
-            else
-                provider = new LocalFileSystemProvider();
-
-            try
-            {
-                provider.Connect();
-                Program.ImportNativeFiles(provider, searchPattern, campaignName, dataWriterId, sourceDirectoryPath, days);
-                provider.Disconnect();
-            }
-            catch
-            {
-                Console.WriteLine("Could not connect or access data. Aborting action.");
-            }
-        }
-
-        private static void HandleCustomImport(List<string> args)
-        {
             // scriptFilePath
             string scriptFilePath = default;
 
@@ -290,7 +245,7 @@ namespace OneDas.Hdf.VdsTool
 
             try
             {
-                Program.ImportCustomFiles(scriptFilePath);
+                Program.ExecutePwsh(transactionId, scriptFilePath);
             }
             catch
             {
@@ -1558,81 +1513,33 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
-        #region "NATIVE_IMPORT"
+        #region "PWSH"
 
-        private static void ImportNativeFiles(IFileSystemProvider provider, string searchPattern, string campaignName, string dataWriterId, string sourceDirectoryPath, int days)
-        {
-            var targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE");
-
-            var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
-            var dateTimeBegin = dateTimeEnd.AddDays(-days);
-
-            provider.GetDirectories(sourceDirectoryPath, searchPattern, SearchOption.TopDirectoryOnly).ToList().ForEach(currentSourceDirectoryPath =>
-            {
-#warning Implement general logging infrastructure
-                var logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
-                var logFilePath = Path.Combine(logDirectoryPath, $"{ currentSourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
-
-                Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
-                File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
-
-                var version = Regex.Match(currentSourceDirectoryPath, "V[0-9]+(?!.*V[0-9]+)").Value;
-                currentSourceDirectoryPath = Program.PathCombine(currentSourceDirectoryPath, dataWriterId);
-
-                for (int i = 0; i <= days; i++)
-                {
-                    var currentDateTimeBegin = dateTimeBegin.AddDays(i);
-                    var fileName = $"{campaignName}_{version}_{currentDateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
-
-                    var sourceFilePath = Program.PathCombine(currentSourceDirectoryPath, fileName);
-                    var targetFilePath = Path.Combine(targetDirectoryPath, currentDateTimeBegin.ToString("yyyy-MM"), fileName);
-
-                    Console.WriteLine($"checking file { fileName }");
-
-                    if (provider.FileExists(sourceFilePath) && !File.Exists(targetFilePath))
-                        Program.CopyNativeFile(provider, sourceFilePath, targetFilePath, logFilePath);
-                }
-
-                File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
-            });
-        }
-
-        private static void CopyNativeFile(IFileSystemProvider provider, string sourceFilePath, string targetFilePath, string logFilePath)
-        {
-            var fileName = Path.GetFileName(sourceFilePath);
-
-            try
-            {
-                Console.Write($" copying file { fileName } ... ");
-                Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
-                provider.DownloadFile(sourceFilePath, targetFilePath);
-                Console.WriteLine($"Done.");
-                File.AppendAllText(logFilePath, $"\tsuccessful: { fileName }{ Environment.NewLine }");
-            }
-            catch
-            {
-                File.Delete(targetFilePath);
-                Console.WriteLine($"Failed.");
-                File.AppendAllText(logFilePath, $"\tfailed: { fileName }{ Environment.NewLine }");
-            }
-        }
-
-        private static string PathCombine(params string[] paths)
-        {
-            return Path.Combine(paths).Replace('\\', '/');
-        }
-
-        #endregion
-
-        #region "CUSTOM_IMPORT"
-
-        private static void ImportCustomFiles(string scriptFilePath)
+        private static void ExecutePwsh(string transactionId, string scriptFilePath)
         {
             using (PowerShell ps = PowerShell.Create())
             {
-                //ps.Runspace.SessionStateProxy.SetVariable("ftpClient", ftpClient);
-                ps.AddScript(File.ReadAllText(scriptFilePath))
-                  .Invoke();
+                // ensure FluentFTP lib is loaded
+                var ftpClient = new FtpClient();
+
+                var logger = new VdsToolLogger(_loggerFactory.CreateLogger(transactionId));
+                logger.LogInformation($"Executing script '{scriptFilePath}'.");
+
+                ps.Runspace.SessionStateProxy.SetVariable("dbRoot", Program.BaseDirectoryPath);
+                ps.Runspace.SessionStateProxy.SetVariable("logger", logger);
+
+                try
+                {
+                    ps.AddScript(File.ReadAllText(scriptFilePath))
+                      .Invoke();
+
+                    logger.LogInformation($"Execution of script '{scriptFilePath}' finished successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Execution of script '{scriptFilePath}' failed. Error message: '{ex.Message}'.");
+                    throw;
+                }
             }
         }
 
