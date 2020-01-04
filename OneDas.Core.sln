@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackageManagementSample", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Types", "src\OneDas.Types\OneDas.Types.csproj", "{19EE6C78-A363-4E5A-8FDC-429802739608}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Import", "src\OneDas.Hdf.Import\OneDas.Hdf.Import.csproj", "{19EE6C78-A363-4E5A-8FDC-429902739608}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Convert", "src\OneDas.Hdf.Convert\OneDas.Hdf.Convert.csproj", "{19EE6C78-A363-4E5A-8FDC-429902739608}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core", "src\OneDas.Core\OneDas.Core.csproj", "{74655BA1-DF54-42E8-8EFF-99A3971D995D}"
 EndProject

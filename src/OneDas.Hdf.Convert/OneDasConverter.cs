@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace OneDas.Hdf.Import
 {
-    public class OneDasImporter
+    public class OneDasConverter
     {
         #region Fields
 
@@ -24,7 +24,7 @@ namespace OneDas.Hdf.Import
 
         #region Constructors
 
-        public OneDasImporter(string databaseDirectoryPath, IDataReader dataReader, ILogger logger)
+        public OneDasConverter(string databaseDirectoryPath, IDataReader dataReader, ILogger logger)
         {
             OneDasUtilities.ValidateDatabaseFolderPath(databaseDirectoryPath);
 
@@ -37,7 +37,7 @@ namespace OneDas.Hdf.Import
 
         #region Methods
 
-        public void ConvertFiles(string campaignName, int version, string fileNameFormat, uint periodPerFile, int days, string systemName, bool convertToDouble)
+        public void Start(string campaignName, int version, string fileNameFormat, uint periodPerFile, int days, string systemName, bool convertToDouble)
         {
             var sourceDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_ORIGIN", $"{campaignName.Replace('/', '_')}_V{version}");
             var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
@@ -73,11 +73,11 @@ namespace OneDas.Hdf.Import
             }
         }
 
-        private void InternalConvertFiles(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileNameFormat, TimeSpan periodPerFile, string systemName, bool convertToDouble)
+        private void InternalStart(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileNameFormat, TimeSpan periodPerFile, string systemName, bool convertToDouble)
         {
             var firstFilePath = Directory.EnumerateFiles(sourceDirectoryPath).FirstOrDefault();
             var variableDescriptionSet = _dataReader.GetVariableDescriptions(firstFilePath);
-            var importContext = OneDasImportContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
+            var importContext = OneDasConvertContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
 
             foreach (var variableDescription in variableDescriptionSet)
             {
