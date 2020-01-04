@@ -27,6 +27,7 @@ before_build:
 build_script:
   - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                         -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
   - ps: dotnet build ./src/OneDas.Hdf.Types/OneDas.Hdf.Types.csproj               -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./src/OneDas.Hdf.Convert/OneDas.Hdf.Convert.csproj           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
   - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj         -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
   - ps: dotnet pack  ./src/OneDas.Core.WebServer/OneDas.Core.WebServer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
