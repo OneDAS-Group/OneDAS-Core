@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace OneDas.Hdf.Import
+namespace OneDas.Hdf.Convert
 {
     public class OneDasConvertContext
     {

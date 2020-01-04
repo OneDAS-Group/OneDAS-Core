@@ -2,7 +2,7 @@
 using OneDas.Extensibility;
 using System.Collections.Generic;
 
-namespace OneDas.Hdf.Import
+namespace OneDas.Hdf.Convert
 {
     public interface IDataReader
     {

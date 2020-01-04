@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace OneDas.Hdf.Import
+namespace OneDas.Hdf.Convert
 {
     public class OneDasConverter
     {
