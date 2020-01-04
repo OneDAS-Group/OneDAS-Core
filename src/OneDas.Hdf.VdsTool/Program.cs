@@ -1,7 +1,6 @@
 ﻿using FluentFTP;
 using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
@@ -10,10 +9,11 @@ using OneDas.Extension.Hdf;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
 using OneDas.Hdf.VdsTool.Import;
-using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -47,80 +47,203 @@ namespace OneDas.Hdf.VdsTool
 
         #region "Methods"
 
-        static void Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
-            bool isEscaped;
+            // IMPORTANT: ENSURE CURRENT PATH POINTS TO DATABASE
+
+            // EXPERIMENTAL
+
+            // Create a root command with some options
+            var rootCommand = new RootCommand("Virtual dataset tool");
+
+            rootCommand.AddCommand(Program.PreparePwshCommand());
+
+            // run
+            return await rootCommand.InvokeAsync(args);
 
             Console.CursorVisible = false;
             Console.Title = "VdsTool";
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-            // 
-            if (args.Any())
+            //// 
+            //if (args.Any())
+            //{
+            //    if (!Program.TryGetParameterValue("database", "d", args.ToList(), ref _databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
+            //    {
+            //        return;
+            //    }
+
+            //    Environment.CurrentDirectory = Program.BaseDirectoryPath;
+
+            //    // configure logging
+            //    var serviceProvider = new ServiceCollection().AddLogging(builder =>
+            //    {
+            //        builder.AddConsole();
+            //        builder.AddFile(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"));
+            //    }).BuildServiceProvider();
+
+            //    _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            //    if (Program.ParseCommandLineArguments(args))
+            //        return;
+            //}
+
+            //H5.is_library_threadsafe(ref _isLibraryThreadSafe);
+
+            //if (_isLibraryThreadSafe <= 0)
+            //    Console.WriteLine("Warning: libary is not thread safe!");
+
+            //while (true)
+            //{
+            //    Console.CursorVisible = true;
+
+            //    while (true)
+            //    {
+            //        Console.Clear();
+            //        Console.WriteLine("Please enter the base directory path of the HDF files:");
+
+            //        if (string.IsNullOrWhiteSpace(Program.BaseDirectoryPath))
+            //        {
+            //            bool isEscaped;
+
+            //            (Program.BaseDirectoryPath, isEscaped) = Utilities.ReadLine(new List<string>());
+
+            //            if (isEscaped && Program.HandleEscape())
+            //                return;
+            //        }
+
+            //        if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
+            //        {
+            //            Console.Title = $"VdsTool - { Program.BaseDirectoryPath }";
+            //            break;
+            //        }
+            //        else
+            //        {
+            //            Program.BaseDirectoryPath = string.Empty;
+            //        }
+            //    }
+
+            //    Environment.CurrentDirectory = Program.BaseDirectoryPath;
+
+            //    Console.CursorVisible = false;
+
+            //    new MainMenuNavigator();
+
+            //    if (Program.HandleEscape())
+            //        return;
+            //}
+        }
+
+        private static Command PreparePwshCommand()
+        {
+            var command = new Command("pwsh", "Runs the provided Powershell script")
             {
-                if (!Program.TryGetParameterValue("database", "d", args.ToList(), ref _databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
+                new Option("--script-path", "The location of the powershell script")
                 {
-                    return;
+                    Argument = new Argument<string>(),
+                    Required = true
+                },
+                new Option("--transaction-id", "Log messages are tagged with the transaction identifier")
+                {
+                    Argument = new Argument<string>(),
+                    Required = true
+                }
+            };
+
+            command.Handler = CommandHandler.Create<string, string>((scriptPath, transactionId) =>
+            {
+                try
+                {
+                    Program.ExecutePwsh(scriptPath, transactionId);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Could not import custom data. Aborting action.");
+                    return 1;
                 }
 
-                Environment.CurrentDirectory = Program.BaseDirectoryPath;
+                return 0;
+            });
 
-                // configure logging
-                var serviceProvider = new ServiceCollection().AddLogging(builder =>
-                {
-                    builder.AddConsole();
-                    builder.AddFile(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"));
-                }).BuildServiceProvider();
+            return command;
+        }
 
-                _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-                if (Program.ParseCommandLineArguments(args))
-                    return;
-            }
-
-            H5.is_library_threadsafe(ref _isLibraryThreadSafe);
-
-            if (_isLibraryThreadSafe <= 0)
-                Console.WriteLine("Warning: libary is not thread safe!");
-
-            while (true)
+        private static Command PrepareUpdateCommand()
+        {
+            var command = new Command("update", "Updates the database index")
             {
-                Console.CursorVisible = true;
+                //
+            };
 
-                while (true)
+            command.Handler = CommandHandler.Create(() =>
+            {
+                try
                 {
-                    Console.Clear();
-                    Console.WriteLine("Please enter the base directory path of the HDF files:");
+                    DateTime epochStart;
 
-                    if (string.IsNullOrWhiteSpace(Program.BaseDirectoryPath))
+                    var date = DateTime.UtcNow.Date;
+
+                    if (date.Day == 1)
                     {
-                        (Program.BaseDirectoryPath, isEscaped) = Utilities.ReadLine(new List<string>());
-
-                        if (isEscaped && Program.HandleEscape())
-                            return;
+                        epochStart = new DateTime(date.Year, date.Month, 1);
+                        epochStart = epochStart.AddMonths(-1);
+                        Program.CreateVirtualDatasetFile(epochStart);
                     }
 
-                    if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
-                    {
-                        Console.Title = $"VdsTool - { Program.BaseDirectoryPath }";
-                        break;
-                    }
-                    else
-                    {
-                        Program.BaseDirectoryPath = string.Empty;
-                    }
+                    epochStart = new DateTime(date.Year, date.Month, 1);
+                    Program.CreateVirtualDatasetFile(epochStart);
+
+                    epochStart = DateTime.MinValue;
+                    Program.CreateVirtualDatasetFile(epochStart);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Could not update the database index. Aborting action.");
+                    return 1;
                 }
 
-                Environment.CurrentDirectory = Program.BaseDirectoryPath;
+                return 0;
+            });
 
-                Console.CursorVisible = false;
+            return command;
+        }
 
-                new MainMenuNavigator();
-
-                if (Program.HandleEscape())
-                    return;
+        private static Command PrepareVdsCommand()
+        {
+            bool TryConvertArgument(SymbolResult a, out DateTime value)
+            {
+                //https://github.com/dotnet/command-line-api/blob/549c3abc5ca36821c5d02a33ab0b47acbc05d639/src/System.CommandLine.Tests/Binding/TypeConversionTests.cs
+                value = DateTime.MinValue;
+                return true;
             }
+
+
+            var command = new Command("vds", "Updates the database index of files that are part of the specified epoch")
+            {
+                new Option("--epoch-start", "The start date of the epoch")
+                {
+                    Argument = new Argument<DateTime>(new TryConvertArgument),
+                    Required = true
+                }
+            };
+
+            command.Handler = CommandHandler.Create(() =>
+            {
+                try
+                {
+                    
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Could not update the database index. Aborting action.");
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            return command;
         }
 
         private static bool HandleEscape()
@@ -149,65 +272,13 @@ namespace OneDas.Hdf.VdsTool
                    Directory.Exists(Path.Combine(databaseDirectoryPath, "VDS"));
         }
 
-        private static bool TryGetParameterValue(string parameterName, string parameterShortName, List<string> args, ref string parameterValue, Func<string, bool> validate = null)
-        {
-            int index;
-
-            index = -1;
-
-            if (args.Count < 2)
-                return false;
-
-            if (index < 0)
-                index = args.IndexOf($"-{ parameterShortName }");
-
-            if (index < 0)
-                index = args.IndexOf($"--{ parameterName }");
-
-            if (validate == null)
-                validate = value => true;
-
-            if (index >= 0 && validate.Invoke(args[index + 1]))
-            {
-                if (args.Count() > index + 1)
-                    parameterValue = args[index + 1];
-                else
-                    return false;
-            }
-            else if (index < 0 && !string.IsNullOrWhiteSpace(parameterValue) && validate.Invoke(args[index + 1]))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         private static bool ParseCommandLineArguments(string[] args)
         {
             switch (args[0])
             {
-                case "pwsh":
-
-                    Program.HandlePwsh(args.Skip(1).ToList());
-                    break;
-
                 case "convert":
 
                     Program.HandleConvert(args.Skip(1).ToList());
-                    break;
-
-                case "update":
-
-                    Program.HandleUpdate(args.Skip(1).ToList());
-                    break;
-
-                case "vds":
-
-                    Program.HandleVds(args.Skip(1).ToList());
                     break;
 
                 case "aggregate":
@@ -227,30 +298,6 @@ namespace OneDas.Hdf.VdsTool
             }
 
             return true;
-        }
-
-        private static void HandlePwsh(List<string> args)
-        {
-            // transactionId
-            string transactionId = default;
-
-            if (!Program.TryGetParameterValue("transaction-id", "t", args, ref transactionId))
-                return;
-
-            // scriptFilePath
-            string scriptFilePath = default;
-
-            if (!Program.TryGetParameterValue("script-path", "s", args, ref scriptFilePath))
-                return;
-
-            try
-            {
-                Program.ExecutePwsh(transactionId, scriptFilePath);
-            }
-            catch
-            {
-                Console.WriteLine("Could not import custom data. Aborting action.");
-            }
         }
 
         private static void HandleConvert(List<string> args)
@@ -321,28 +368,6 @@ namespace OneDas.Hdf.VdsTool
             {
                 Console.WriteLine("Could not import data. Aborting action.");
             }
-        }
-
-        private static void HandleUpdate(List<string> args)
-        {
-            // epoch start
-            DateTime date;
-            DateTime epochStart;
-
-            date = DateTime.UtcNow.Date;
-
-            if (date.Day == 1)
-            {
-                epochStart = new DateTime(date.Year, date.Month, 1);
-                epochStart = epochStart.AddMonths(-1);
-                Program.CreateVirtualDatasetFile(epochStart);
-            }
-
-            epochStart = new DateTime(date.Year, date.Month, 1);
-            Program.CreateVirtualDatasetFile(epochStart);
-
-            epochStart = DateTime.MinValue;
-            Program.CreateVirtualDatasetFile(epochStart);
         }
 
         private static void HandleVds(List<string> args)
@@ -1515,7 +1540,7 @@ namespace OneDas.Hdf.VdsTool
 
         #region "PWSH"
 
-        private static void ExecutePwsh(string transactionId, string scriptFilePath)
+        private static void ExecutePwsh(string scriptFilePath, string transactionId)
         {
             using (PowerShell ps = PowerShell.Create())
             {
