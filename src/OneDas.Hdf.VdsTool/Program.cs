@@ -30,18 +30,13 @@ namespace OneDas.Hdf.VdsTool
         #region "Fields"
 
         private static uint _isLibraryThreadSafe;
-        private static string _databaseDirectoryPath;
         private static ILoggerFactory _loggerFactory;
 
         #endregion
 
         #region "Properties"
 
-        public static string BaseDirectoryPath
-        {
-            get => _databaseDirectoryPath;
-            private set => _databaseDirectoryPath = value;
-        }
+        public static string BaseDirectoryPath { get; set; }
 
         #endregion
 
@@ -57,6 +52,8 @@ namespace OneDas.Hdf.VdsTool
             var rootCommand = new RootCommand("Virtual dataset tool");
 
             rootCommand.AddCommand(Program.PreparePwshCommand());
+            rootCommand.AddCommand(Program.PrepareUpdateCommand());
+            rootCommand.AddCommand(Program.PrepareVdsCommand());
 
             // run
             return await rootCommand.InvokeAsync(args);
@@ -213,6 +210,7 @@ namespace OneDas.Hdf.VdsTool
         {
             bool TryConvertArgument(SymbolResult a, out DateTime value)
             {
+                
                 //https://github.com/dotnet/command-line-api/blob/549c3abc5ca36821c5d02a33ab0b47acbc05d639/src/System.CommandLine.Tests/Binding/TypeConversionTests.cs
                 value = DateTime.MinValue;
                 return true;
