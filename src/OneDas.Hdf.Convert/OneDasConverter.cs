@@ -65,10 +65,10 @@ namespace OneDas.Hdf.Import
                 {
                     Directory.CreateDirectory(currentTargetDirectoryPath);
 
-                    this.InternalConvertFiles(currentSourceDirectoryPath, currentTargetDirectoryPath,
-                                              dateTimeBegin, campaignName, version, fileNameFormat, 
-                                              TimeSpan.FromSeconds(periodPerFile), systemName, 
-                                              convertToDouble);
+                    this.InternalStart(currentSourceDirectoryPath, currentTargetDirectoryPath,
+                                       dateTimeBegin, campaignName, version, fileNameFormat, 
+                                       TimeSpan.FromSeconds(periodPerFile), systemName, 
+                                       convertToDouble);
                 }
             }
         }
