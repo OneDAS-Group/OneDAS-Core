@@ -36,7 +36,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static async Task<int> Main(string[] args)
         {
-            Program.ValidateDatabaseFolderPath(Environment.CurrentDirectory);
+            OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory);
 
             try
             {
@@ -103,19 +103,6 @@ namespace OneDas.Hdf.VdsTool
             }
 
             return false;
-        }
-
-        private static void ValidateDatabaseFolderPath(string databaseFolderPath)
-        {
-            var exists = Directory.Exists(databaseFolderPath) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_AGGREGATION")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_IMPORT")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_NATIVE")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_ORIGIN")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "VDS"));
-
-            if (!exists)
-                throw new Exception("The current path does not contain a valid database. Change to a database location before executing this tool.");
         }
 
         private static void ClearCurrentLine()

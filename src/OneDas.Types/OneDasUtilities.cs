@@ -1,5 +1,6 @@
 ﻿using OneDas.Infrastructure;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -9,6 +10,19 @@ namespace OneDas
 {
     public static class OneDasUtilities
     {
+        public static void ValidateDatabaseFolderPath(string databaseFolderPath)
+        {
+            var exists = Directory.Exists(databaseFolderPath) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_AGGREGATION")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_IMPORT")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_NATIVE")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_ORIGIN")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "VDS"));
+
+            if (!exists)
+                throw new Exception("The provided path does not contain a OneDAS database.");
+        }
+
         public static int SizeOf(OneDasDataType dataType)
         {
             return OneDasUtilities.SizeOf(OneDasUtilities.GetTypeFromOneDasDataType(dataType));

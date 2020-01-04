@@ -131,9 +131,7 @@ namespace OneDas.Hdf.Explorer
                                 groupId = H5G.open(vdsMetaFileId, campaignInfo.Name);
 
                                 if (H5A.exists(groupId, "description") > 0)
-                                {
                                     return IOHelper.ReadAttribute<string>(groupId, "description").First();
-                                }
                             }
                             finally
                             {
