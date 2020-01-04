@@ -15,10 +15,10 @@ namespace OneDas.Hdf.Convert
     {
         #region Fields
 
-        string _databaseDirectoryPath;
+        private string _databaseDirectoryPath;
 
-        ILogger _logger;
-        IDataReader _dataReader;
+        private ILogger _logger;
+        private IDataReader _dataReader;
 
         #endregion
 
@@ -37,7 +37,7 @@ namespace OneDas.Hdf.Convert
 
         #region Methods
 
-        public void Start(string campaignName, int version, string fileNameFormat, uint periodPerFile, int days, string systemName, bool convertToDouble)
+        public void Start(string campaignName, int version, string fileNameFormat, uint periodPerFile, int days, string systemName)
         {
             var sourceDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_ORIGIN", $"{campaignName.Replace('/', '_')}_V{version}");
             var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
@@ -67,13 +67,12 @@ namespace OneDas.Hdf.Convert
 
                     this.InternalStart(currentSourceDirectoryPath, currentTargetDirectoryPath,
                                        dateTimeBegin, campaignName, version, fileNameFormat, 
-                                       TimeSpan.FromSeconds(periodPerFile), systemName, 
-                                       convertToDouble);
+                                       TimeSpan.FromSeconds(periodPerFile), systemName);
                 }
             }
         }
 
-        private void InternalStart(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileNameFormat, TimeSpan periodPerFile, string systemName, bool convertToDouble)
+        private void InternalStart(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileNameFormat, TimeSpan periodPerFile, string systemName)
         {
             var firstFilePath = Directory.EnumerateFiles(sourceDirectoryPath).FirstOrDefault();
             var variableDescriptionSet = _dataReader.GetVariableDescriptions(firstFilePath);
@@ -82,16 +81,6 @@ namespace OneDas.Hdf.Convert
             foreach (var variableDescription in variableDescriptionSet)
             {
                 variableDescription.Guid = importContext.VariableToGuidMap[variableDescription.VariableName];
-
-                if (convertToDouble)
-                {
-                    variableDescription.DataType = OneDasDataType.FLOAT64;
-                    variableDescription.DataStorageType = DataStorageType.Simple;
-                }
-                else
-                {
-                    variableDescription.DataStorageType = DataStorageType.Extended;
-                }
             }
 
             var campaignNameParts = campaignName.Split('/');
@@ -128,7 +117,7 @@ namespace OneDas.Hdf.Convert
                 {
                     _logger.LogInformation(message);
 
-                    var dataStorageSet = _dataReader.GetData(sourceFilePath, variableDescriptionSet, convertToDouble);
+                    var dataStorageSet = _dataReader.GetData(sourceFilePath, variableDescriptionSet);
 
                     // check actual file size
                     for (int i = 0; i < variableDescriptionSet.Count(); i++)
