@@ -75,10 +75,6 @@ namespace OneDas.Hdf.Core
             {
                 type = typeof(string);
             }
-            else if (H5T.equal(typeId, typeId_reference = TypeConversionHelper.GetHdfTypeIdFromType(typeof(hdf_aggregate_function_t))) > 0)
-            {
-                type = typeof(hdf_aggregate_function_t);
-            }
             else if (H5T.equal(typeId, typeId_reference = TypeConversionHelper.GetHdfTypeIdFromType(typeof(hdf_tag_t))) > 0)
             {
                 type = typeof(hdf_tag_t);

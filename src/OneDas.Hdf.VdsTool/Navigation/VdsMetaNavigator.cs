@@ -54,7 +54,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
             Console.WriteLine("   previous level: arrow left, ESC");
             Console.WriteLine("description / tag: 1");
             Console.WriteLine("transfer function: 2");
-            Console.WriteLine(" aggreg. function: 3");
             Console.WriteLine("    documentation: d");
             Console.WriteLine("            purge: p");
         }
@@ -127,18 +126,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
                         variableInfo = (VariableInfo)_currentList[this.SelectedIndex];
                         _vdsGroupId = H5G.open(_vdsLocationId, _currentList[this.SelectedIndex].Name);
                         new TransferFunctionNavigator(_vdsGroupId, _vdsMetaFileId, GeneralHelper.CombinePath(_currentPath, variableInfo.Name), variableInfo.UnitSet, variableInfo.TransferFunctionSet);
-                        H5G.close(_vdsGroupId);
-                        this.OnRedraw();
-                    }
-
-                    break;
-
-                case ConsoleKey.D3:
-
-                    if (this.SelectedIndex >= 0 && _currentList[this.SelectedIndex] is VariableInfo)
-                    {
-                        _vdsGroupId = H5G.open(_vdsLocationId, _currentList[this.SelectedIndex].Name);
-                        new AggregateFunctionNavigator(_vdsGroupId, _vdsMetaFileId, GeneralHelper.CombinePath(_currentPath, _currentList[this.SelectedIndex].Name));
                         H5G.close(_vdsGroupId);
                         this.OnRedraw();
                     }
@@ -263,7 +250,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             string unit;
 
                             List<hdf_transfer_function_t> transferFunctionSet;
-                            List<hdf_aggregate_function_t> aggregateFunctionSet;
 
                             // name
                             name = variableInfo.VariableNameSet.Last();
@@ -276,7 +262,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             // guid
                             guid = $"{ variableInfo.Name.Substring(0, 8) }...";
 
-                            // unit, transferFunctionSet, aggregateFunctionSet
+                            // unit, transferFunctionSet
                             unit = string.Empty;
 
                             try
@@ -296,11 +282,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
                                     {
                                         transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
                                     }
-
-                                    if (H5A.exists(variable_groupId, "aggregate_function_set") > 0)
-                                    {
-                                        aggregateFunctionSet = IOHelper.ReadAttribute<hdf_aggregate_function_t>(variable_groupId, "aggregate_function_set").ToList();
-                                    }
                                 }
                             }
                             finally
@@ -312,7 +293,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
                             restructuredTextTable.AddRow(new List<string> { name, unit, guid });
 
                             //transferFunctionSet.ForEach(x => streamWriter.Write($"{ x.date_time }, { x.type }, { x.option }, { x.argument } | "));
-                            //aggregateFunctionSet.ForEach(x => streamWriter.Write($"{ x.type }, { x.argument } | "));
                         });
 
                         restructuredTextWriter.WriteTable(restructuredTextTable);

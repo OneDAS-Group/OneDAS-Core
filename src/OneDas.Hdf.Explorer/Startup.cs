@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OneDas.Hdf.Explorer.Core;
 using OneDas.Hdf.Explorer.Web;
+using System;
 using System.IO;
 
 namespace OneDas.Hdf.Explorer
@@ -30,6 +31,7 @@ namespace OneDas.Hdf.Explorer
             {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.AddConsole();
+                loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "HdfExplorer-{Date}.txt"));
                 loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
             });
 

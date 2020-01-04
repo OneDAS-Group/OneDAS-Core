@@ -2,7 +2,6 @@
 using OneDas.Hdf.Core;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -23,8 +22,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
             _actionSet.Add(() => this.Menu_1());
             _actionSet.Add(() => this.Menu_2());
-            _actionSet.Add(() => this.Menu_3());
-            _actionSet.Add(() => this.Menu_4());
 
             this.SelectedIndex = 0;
 
@@ -34,9 +31,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
         protected override void OnRedraw()
         {
             Console.Clear();
-            Console.WriteLine("[x] VDS file");
-            Console.WriteLine("[ ] VDS metadata file");
-            Console.WriteLine("[ ] Aggregations");
+            Console.WriteLine("[x] VDS metadata file");
             Console.WriteLine("[ ] Editor");
         }
 
@@ -92,38 +87,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
         private void Menu_1()
         {
-            string dateTime;
-            bool isEscaped;
-            DateTime epochStart;
-
-            epochStart = default;
-
-            Console.CursorVisible = true;
-
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
-
-                (dateTime, isEscaped) = Utilities.ReadLine(new List<string>());
-
-                if (isEscaped)
-                {
-                    Console.CursorVisible = false;
-                    return;
-                }
-                else if (string.IsNullOrWhiteSpace(dateTime) || DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
-                {
-                    break;
-                }
-            }
-
-            Console.CursorVisible = false;
-            Program.CreateVirtualDatasetFile(epochStart);
-        }
-
-        private void Menu_2()
-        {
             long vdsFileId = -1;
             long vdsMetaFileId = -1;
             long fcPropertyId = -1;
@@ -135,8 +98,8 @@ namespace OneDas.Hdf.VdsTool.Navigation
             IList<HdfElementBase> currentList;
 
             //
-            vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
-            vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
+            vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS.h5");
+            vdsMetaFilePath = Path.Combine(Environment.CurrentDirectory, "VDS_META.h5");
 
             try
             {
@@ -173,40 +136,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
         }
 
-        private void Menu_3()
-        {
-            string dateTime;
-            bool isEscaped;
-
-            DateTime epochStart = default;
-
-            //
-            Console.CursorVisible = true;
-
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine("Please enter the year and month (yyyy-mm) of the source files:");
-
-                (dateTime, isEscaped) = Utilities.ReadLine(new List<string>());
-
-                if (isEscaped)
-                {
-                    Console.CursorVisible = false;
-
-                    return;
-                }
-                else if (DateTime.TryParseExact(dateTime, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart))
-                {
-                    break;
-                }
-            }
-
-            Console.CursorVisible = false;
-            Program.CreateAggregatedFiles(epochStart);
-        }
-
-        private void Menu_4()
+        private void Menu_2()
         {
             new EditorNavigator();
         }

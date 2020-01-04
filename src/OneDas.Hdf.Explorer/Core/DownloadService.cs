@@ -25,7 +25,6 @@ namespace OneDas.Hdf.Explorer.Core
         private IHubContext<Broadcaster> _context;
         private HdfExplorerOptions _options;
         private string _connectionId;
-        private object _lock;
 
         public DownloadService(HdfExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options, string connectionId)
         {
@@ -34,7 +33,6 @@ namespace OneDas.Hdf.Explorer.Core
             _logger = loggerFactory.CreateLogger("HDF Explorer");
             _options = options.Value;
             _connectionId = connectionId;
-            _lock = new object();
         }
 
         public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
@@ -203,9 +201,7 @@ namespace OneDas.Hdf.Explorer.Core
                 var epochEnd = new DateTime(2030, 01, 01);
 
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
-                {
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
-                }
 
                 var start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond));
                 var stride = 1UL;
@@ -267,7 +263,7 @@ namespace OneDas.Hdf.Explorer.Core
                 }
                 catch (Exception ex)
                 {
-                    this.WriteLogEntry(ex.Message, true);
+                    _logger.LogError(ex.Message);
                     throw;
                 }
                 finally
@@ -277,8 +273,10 @@ namespace OneDas.Hdf.Explorer.Core
                     if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                 }
 
-                this.WriteLogEntry($"{ remoteIpAddress } requested data: { dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss") } to { dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss") }", false);
-                return $"download/{ Path.GetFileName(zipFilePath) }";
+                var message = $"{remoteIpAddress} requested data: {dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss")} to {dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss")}";
+                _logger.LogInformation(message);
+
+                return $"download/{Path.GetFileName(zipFilePath)}";
             }, _stateManager.GetToken(_connectionId));
         }
 
@@ -295,14 +293,12 @@ namespace OneDas.Hdf.Explorer.Core
                 try
                 {
                     if (File.Exists(_options.VdsMetaFilePath))
-                    {
                         vdsMetaFileId = H5F.open(_options.VdsMetaFilePath, H5F.ACC_RDONLY);
-                    }
 
                     var csvFileName = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }_{ Guid.NewGuid().ToString() }.csv");
                     var groupNameSet = campaignInfo.VariableInfoSet.SelectMany(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n')).Distinct().ToList();
 
-                    using (StreamWriter streamWriter = new StreamWriter(new FileStream(csvFileName, FileMode.Create, FileAccess.Write, FileShare.Read), Encoding.UTF8))
+                    using (var streamWriter = new StreamWriter(new FileStream(csvFileName, FileMode.Create, FileAccess.Write, FileShare.Read), Encoding.UTF8))
                     {
                         // campaign header
                         streamWriter.WriteLine($"# { campaignInfo.Name.TrimStart('/').Replace("/", " / ") }");
@@ -311,7 +307,7 @@ namespace OneDas.Hdf.Explorer.Core
                         streamWriter.WriteLine($"# { Program.CampaignDescriptionSet[campaigInfoName] }");
 
                         // header
-                        streamWriter.WriteLine("Group;Name;Unit;Transfer function;Aggregate function;Guid");
+                        streamWriter.WriteLine("Group;Name;Unit;Transfer function;Guid");
 
                         // groups
                         foreach (string groupName in groupNameSet)
@@ -329,7 +325,6 @@ namespace OneDas.Hdf.Explorer.Core
                                 var guid = variableInfo.Name;
                                 var unit = string.Empty;
                                 var transferFunctionSet = new List<hdf_transfer_function_t>();
-                                var aggregateFunctionSet = new List<hdf_aggregate_function_t>();
 
                                 try
                                 {
@@ -344,9 +339,6 @@ namespace OneDas.Hdf.Explorer.Core
 
                                         if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
                                             transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
-
-                                        if (H5A.exists(variable_groupId, "aggregate_function_set") > 0)
-                                            aggregateFunctionSet = IOHelper.ReadAttribute<hdf_aggregate_function_t>(variable_groupId, "aggregate_function_set").ToList();
                                     }
                                 }
                                 finally
@@ -367,23 +359,8 @@ namespace OneDas.Hdf.Explorer.Core
 
                                 transferFunction = $"\"{transferFunction}\"";
 
-                                // aggregate function
-                                var aggregateFunction = string.Empty;
-
-                                aggregateFunctionSet.ForEach(af =>
-                                {
-                                    if (!string.IsNullOrWhiteSpace(aggregateFunction))
-                                    {
-                                        aggregateFunction += " | ";
-                                    }
-
-                                    aggregateFunction += $"{af.type}, {af.argument}";
-                                });
-
-                                aggregateFunction = $"\"{aggregateFunction}\"";
-
                                 // write row
-                                streamWriter.WriteLine($"{groupName};{name};{unit};{transferFunction};{aggregateFunction};{guid}");
+                                streamWriter.WriteLine($"{groupName};{name};{unit};{transferFunction};{guid}");
                             });
                         }
                     }
@@ -405,43 +382,6 @@ namespace OneDas.Hdf.Explorer.Core
         private IClientProxy GetClient()
         {
             return _context.Clients.Client(_connectionId);
-        }
-
-        private void WriteLogEntry(string message, bool isException)
-        {
-            string logFilePath;
-
-            if (isException)
-            {
-                _logger.LogError(message);
-                logFilePath = Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer", "errors.txt");
-            }
-            else
-            {
-                _logger.LogInformation(message);
-                logFilePath = Path.Combine(_options.SupportDirectoryPath, "LOGS", "HDF Explorer", "requests.txt");
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
-
-            // file
-            lock (_lock)
-            {
-                try
-                {
-                    using (FileStream fileStream = new FileStream(logFilePath, FileMode.Append, FileAccess.Write))
-                    {
-                        using (StreamWriter streamWriter = new StreamWriter(fileStream))
-                        {
-                            streamWriter.WriteLine($"{ DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") }: { message }\n");
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    //
-                }
-            }
         }
     }
 }

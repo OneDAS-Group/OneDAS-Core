@@ -7,7 +7,6 @@
   
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="28.0.5" />
-    <PackageReference Include="ImcFamosFile" Version="1.3.0" />
     <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.0" />
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.1" />

@@ -208,7 +208,7 @@ namespace OneDas.Hdf.VdsTool.Navigation
                     {
                         if (!uri.IsAbsoluteUri)
                         {
-                            uri = new Uri(new Uri(Program.BaseDirectoryPath), uri);
+                            uri = new Uri(new Uri(Environment.CurrentDirectory), uri);
                         }
 
                         if (uri.IsFile)

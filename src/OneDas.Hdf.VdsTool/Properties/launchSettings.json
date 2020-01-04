@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "OneDas.Hdf.VdsTool": {
-      "commandName": "Project",
-      "commandLineArgs": "pwsh --database-path \"a\" --script-path b --transaction-id c"
-    }
-  }
-}

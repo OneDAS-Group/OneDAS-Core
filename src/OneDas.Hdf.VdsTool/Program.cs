@@ -1,14 +1,12 @@
 ﻿using FluentFTP;
 using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
-using OneDas.Extensibility;
-using OneDas.Extension.Hdf;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
-using OneDas.Hdf.VdsTool.Import;
+using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -20,6 +18,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,14 +28,7 @@ namespace OneDas.Hdf.VdsTool
     {
         #region "Fields"
 
-        private static uint _isLibraryThreadSafe;
         private static ILoggerFactory _loggerFactory;
-
-        #endregion
-
-        #region "Properties"
-
-        public static string BaseDirectoryPath { get; set; }
 
         #endregion
 
@@ -44,93 +36,96 @@ namespace OneDas.Hdf.VdsTool
 
         private static async Task<int> Main(string[] args)
         {
-            // IMPORTANT: ENSURE CURRENT PATH POINTS TO DATABASE
+            Program.ValidateDatabaseFolderPath(Environment.CurrentDirectory);
 
-            // EXPERIMENTAL
-
-            // Create a root command with some options
-            var rootCommand = new RootCommand("Virtual dataset tool");
-
-            rootCommand.AddCommand(Program.PreparePwshCommand());
-            rootCommand.AddCommand(Program.PrepareUpdateCommand());
-            rootCommand.AddCommand(Program.PrepareVdsCommand());
-
-            // run
-            return await rootCommand.InvokeAsync(args);
-
-            Console.CursorVisible = false;
-            Console.Title = "VdsTool";
+            try
+            {
+                Console.CursorVisible = false;
+                Console.Title = "VdsTool";
+            }
+            catch (Exception)
+            {
+                //
+            }
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-            //// 
-            //if (args.Any())
-            //{
-            //    if (!Program.TryGetParameterValue("database", "d", args.ToList(), ref _databaseDirectoryPath, value => Program.ValidateDatabaseDirectoryPath(value)))
-            //    {
-            //        return;
-            //    }
+            // configure logging
+            var serviceProvider = new ServiceCollection().AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"));
+            }).BuildServiceProvider();
 
-            //    Environment.CurrentDirectory = Program.BaseDirectoryPath;
+            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            //    // configure logging
-            //    var serviceProvider = new ServiceCollection().AddLogging(builder =>
-            //    {
-            //        builder.AddConsole();
-            //        builder.AddFile(Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"));
-            //    }).BuildServiceProvider();
+            // if CLI mode
+            if (args.Any())
+            {
+                // configure CLI
+                var rootCommand = new RootCommand("Virtual dataset tool");
 
-            //    _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                rootCommand.AddCommand(Program.PreparePwshCommand());
+                rootCommand.AddCommand(Program.PrepareUpdateCommand());
+                rootCommand.AddCommand(Program.PrepareVdsCommand());
+                rootCommand.AddCommand(Program.PrepareAggregateCommand());
 
-            //    if (Program.ParseCommandLineArguments(args))
-            //        return;
-            //}
+                return await rootCommand.InvokeAsync(args);
+            }
 
-            //H5.is_library_threadsafe(ref _isLibraryThreadSafe);
+            uint isLibraryThreadSafe = 0;
+            H5.is_library_threadsafe(ref isLibraryThreadSafe);
 
-            //if (_isLibraryThreadSafe <= 0)
-            //    Console.WriteLine("Warning: libary is not thread safe!");
+            if (isLibraryThreadSafe <= 0)
+                Console.WriteLine("Warning: libary is not thread safe!");
 
-            //while (true)
-            //{
-            //    Console.CursorVisible = true;
+            while (true)
+            {
+                new MainMenuNavigator();
 
-            //    while (true)
-            //    {
-            //        Console.Clear();
-            //        Console.WriteLine("Please enter the base directory path of the HDF files:");
-
-            //        if (string.IsNullOrWhiteSpace(Program.BaseDirectoryPath))
-            //        {
-            //            bool isEscaped;
-
-            //            (Program.BaseDirectoryPath, isEscaped) = Utilities.ReadLine(new List<string>());
-
-            //            if (isEscaped && Program.HandleEscape())
-            //                return;
-            //        }
-
-            //        if (Program.ValidateDatabaseDirectoryPath(Program.BaseDirectoryPath))
-            //        {
-            //            Console.Title = $"VdsTool - { Program.BaseDirectoryPath }";
-            //            break;
-            //        }
-            //        else
-            //        {
-            //            Program.BaseDirectoryPath = string.Empty;
-            //        }
-            //    }
-
-            //    Environment.CurrentDirectory = Program.BaseDirectoryPath;
-
-            //    Console.CursorVisible = false;
-
-            //    new MainMenuNavigator();
-
-            //    if (Program.HandleEscape())
-            //        return;
-            //}
+                if (Program.HandleEscape())
+                    return 0;
+            }
         }
+
+        private static bool HandleEscape()
+        {
+            ConsoleKeyInfo consoleKeyInfo;
+
+            Console.Clear();
+            Console.WriteLine("The application will be closed. Proceed (y/n)?");
+
+            consoleKeyInfo = Console.ReadKey(true);
+
+            if (consoleKeyInfo.Key == ConsoleKey.Y)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void ValidateDatabaseFolderPath(string databaseFolderPath)
+        {
+            var exists = Directory.Exists(databaseFolderPath) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_AGGREGATION")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_IMPORT")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_NATIVE")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_ORIGIN")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "VDS"));
+
+            if (!exists)
+                throw new Exception("The current path does not contain a valid database. Change to a database location before executing this tool.");
+        }
+
+        private static void ClearCurrentLine()
+        {
+            Console.Write($"\r{ new string(' ', Console.WindowWidth - 1) }\r");
+        }
+
+        #endregion
+
+        #region Commands
 
         private static Command PreparePwshCommand()
         {
@@ -148,7 +143,7 @@ namespace OneDas.Hdf.VdsTool
                 }
             };
 
-            command.Handler = CommandHandler.Create<string, string>((scriptPath, transactionId) =>
+            command.Handler = CommandHandler.Create((string scriptPath, string transactionId) =>
             {
                 try
                 {
@@ -156,7 +151,7 @@ namespace OneDas.Hdf.VdsTool
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Could not import custom data. Aborting action.");
+                    Console.WriteLine("Could not execute pwsh command. Aborting action.");
                     return 1;
                 }
 
@@ -208,29 +203,25 @@ namespace OneDas.Hdf.VdsTool
 
         private static Command PrepareVdsCommand()
         {
-            bool TryConvertArgument(SymbolResult a, out DateTime value)
+            bool TryConvertArgument(SymbolResult result, out DateTime value)
             {
-                
-                //https://github.com/dotnet/command-line-api/blob/549c3abc5ca36821c5d02a33ab0b47acbc05d639/src/System.CommandLine.Tests/Binding/TypeConversionTests.cs
-                value = DateTime.MinValue;
-                return true;
+                return DateTime.TryParseExact(result.Token.Value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
             }
-
 
             var command = new Command("vds", "Updates the database index of files that are part of the specified epoch")
             {
                 new Option("--epoch-start", "The start date of the epoch")
                 {
-                    Argument = new Argument<DateTime>(new TryConvertArgument),
+                    Argument = new Argument<DateTime>(TryConvertArgument),
                     Required = true
                 }
             };
 
-            command.Handler = CommandHandler.Create(() =>
+            command.Handler = CommandHandler.Create((DateTime epochStart) =>
             {
                 try
                 {
-                    
+                    Program.CreateVirtualDatasetFile(epochStart);
                 }
                 catch (Exception)
                 {
@@ -244,152 +235,95 @@ namespace OneDas.Hdf.VdsTool
             return command;
         }
 
-        private static bool HandleEscape()
+        private static Command PrepareAggregateCommand()
         {
-            ConsoleKeyInfo consoleKeyInfo;
-
-            Console.Clear();
-            Console.WriteLine("The application will be closed. Proceed (y/n)?");
-
-            consoleKeyInfo = Console.ReadKey(true);
-
-            if (consoleKeyInfo.Key == ConsoleKey.Y)
+            bool TryConvertArgument(SymbolResult result, out DateTime value)
             {
-                return true;
+                return DateTime.TryParseExact(result.Token.Value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
             }
 
-            return false;
-        }
-
-        private static bool ValidateDatabaseDirectoryPath(string databaseDirectoryPath)
-        {
-            return Directory.Exists(databaseDirectoryPath) &&
-                   Directory.Exists(Path.Combine(databaseDirectoryPath, "DB_AGGREGATION")) &&
-                   Directory.Exists(Path.Combine(databaseDirectoryPath, "DB_IMPORT")) &&
-                   Directory.Exists(Path.Combine(databaseDirectoryPath, "DB_NATIVE")) &&
-                   Directory.Exists(Path.Combine(databaseDirectoryPath, "VDS"));
-        }
-
-        private static bool ParseCommandLineArguments(string[] args)
-        {
-            switch (args[0])
+            var command = new Command("aggregate", "Aggregates data of channels that match the filter conditions.")
             {
-                case "convert":
+                new Option("--epoch-start", "The start date of the epoch")
+                {
+                    Argument = new Argument<DateTime>(TryConvertArgument),
+                    Required = true
+                },
+                new Option("--method", "Possible arguments are 'mean', 'mean_polar', 'min', 'max', 'std', 'min_bitwise' and 'max_bitwise'")
+                {
+                    Argument = new Argument<string>(),
+                    Required = true
+                },
+                new Option("--argument", "Zero or more arguments for the selected aggregation method.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = true
+                },
+                new Option("--include-channel", "A regex based filter to include channels with certain names.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = false
+                },
+                new Option("--include-group", "A regex based filter to include channels within certain groups.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = false
+                },
+                new Option("--include-unit", "A regex based filter to include channels with certain unit.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = false
+                },
+                new Option("--exclude-channel", "A regex based filter to exclude channels with certain names.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = false
+                },
+                new Option("--exclude-group", "A regex based filter to exclude channels within certain groups.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = false
+                },
+                new Option("--exclude-unit", "A regex based filter to exclude channels with certain unit.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = false
+                }
+            };
 
-                    Program.HandleConvert(args.Skip(1).ToList());
-                    break;
+            command.Handler = CommandHandler.Create((DateTime epochStart, string method, string argument, ParseResult parseResult) =>
+            {
+                var filters = new Dictionary<string, string>();
+                var skip = 7;
+                var isOption = true;
 
-                case "aggregate":
-
-                    Program.HandleAggregations(args.Skip(1).ToList());
-                    break;
-
-                case "--database":
-
-                    if (args.Count() > 1 && Program.ValidateDatabaseDirectoryPath(args[1]))
+                for (int i = skip; i < parseResult.Tokens.Count - 1; i++)
+                {
+                    if (isOption)
                     {
-                        Program.BaseDirectoryPath = args[1];
-                        return false;
+                        var filterOption = parseResult.Tokens[i].Value;
+                        var filterArgument = parseResult.Tokens[i + 1].Value;
+
+                        filters[filterOption] = filterArgument;
                     }
 
-                    break;
-            }
+                    isOption = !isOption;
+                }
 
-            return true;
-        }
+                try
+                {
+                    Program.CreateAggregatedFiles(epochStart, method, argument, filters);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Could not calculate aggregations. Aborting action.");
+                    return 1;
+                }
 
-        private static void HandleConvert(List<string> args)
-        {
-            // campaignName
-            string campaignName = default;
+                return 0;
+            });
 
-            if (!Program.TryGetParameterValue("campaign", "c", args, ref campaignName))
-                return;
-
-            // version
-            string versionValue = default;
-            int version = default;
-
-            if (!Program.TryGetParameterValue("version", "v", args, ref versionValue, value => int.TryParse(value, out version)))
-                return;
-
-            // fileFormat
-            string fileFormat = default;
-
-            if (!Program.TryGetParameterValue("format", "f", args, ref fileFormat))
-                return;
-
-            // fileFormat
-            string fileNameFormat = default;
-
-            if (!Program.TryGetParameterValue("file-name-format", "n", args, ref fileNameFormat))
-                return;
-
-            // periodPerFile
-            string periodPerFileValue = default;
-            uint periodPerFile = default;
-
-            if (!Program.TryGetParameterValue("period-per-file", "p", args, ref periodPerFileValue, value => uint.TryParse(value, out periodPerFile)))
-                return;
-
-            // days
-            string daysValue = default;
-            int days = default;
-
-            if (!Program.TryGetParameterValue("days", "d", args, ref daysValue, value => int.TryParse(value, out days)))
-                return;
-
-            // systemName
-            string systemName = default;
-
-            if (!Program.TryGetParameterValue("system-name", "s", args, ref systemName))
-                return;
-
-            // converToDouble
-            bool convertToDouble = false;
-
-            if (args.IndexOf($"-x") >= 0 || args.IndexOf($"--convert-to-double") >= 0)
-                convertToDouble = true;
-
-            // applyCalibration
-            bool applyCalibration = false;
-
-            if (args.IndexOf($"-x") >= 0 || args.IndexOf($"--apply-calibration") >= 0)
-                applyCalibration = true;
-
-            //
-            try
-            {
-                Program.ConvertFiles(campaignName, version, fileFormat, fileNameFormat, periodPerFile, days, systemName, convertToDouble, applyCalibration);
-            }
-            catch
-            {
-                Console.WriteLine("Could not import data. Aborting action.");
-            }
-        }
-
-        private static void HandleVds(List<string> args)
-        {
-            // epoch start
-            string dateTime = default;
-            DateTime epochStart = default;
-
-            if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
-                return;
-
-            Program.CreateVirtualDatasetFile(epochStart);
-        }
-
-        private static void HandleAggregations(List<string> args)
-        {
-            // epoch start
-            string dateTime = default;
-            DateTime epochStart = default;
-
-            if (!Program.TryGetParameterValue("epoch-start", "e", args, ref dateTime, value => DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out epochStart)))
-                return;
-
-            Program.CreateAggregatedFiles(epochStart);
+            return command;
         }
 
         #endregion
@@ -400,70 +334,64 @@ namespace OneDas.Hdf.VdsTool
         {
             string vdsFilePath;
             DateTime epochEnd;
-            List<string> sourceDirectoryPathSet;
 
-            sourceDirectoryPathSet = new List<string>();
+            var logger = _loggerFactory.CreateLogger("VDS");
+            var sourceDirectoryPathSet = new List<string>();
 
             if (epochStart > DateTime.MinValue)
             {
                 epochEnd = epochStart.AddMonths(1);
-                sourceDirectoryPathSet.Add(Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(Program.BaseDirectoryPath, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
-                vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS", $"{ epochStart.ToString("yyyy-MM") }.h5");
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
+                vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS", $"{ epochStart.ToString("yyyy-MM") }.h5");
             }
             else
             {
                 epochStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
                 epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                sourceDirectoryPathSet.Add(Path.Combine(Program.BaseDirectoryPath, "VDS"));
-                vdsFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS.h5");
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "VDS"));
+                vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS.h5");
             }
 
             if (Console.CursorTop > 0 || Console.CursorLeft > 0)
-            {
                 Console.WriteLine();
-            }
 
-            Console.WriteLine($"Epoch start: { epochStart.ToString("yyyy-MM-dd") }");
-            Console.WriteLine($"Epoch end:   { epochEnd.ToString("yyyy-MM-dd") }");
+            logger.LogInformation($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
+            logger.LogInformation($"Epoch end: {epochEnd.ToString("yyyy-MM-dd")}");
             Console.WriteLine();
 
-            Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd);
+            try
+            {
+                Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd, logger);
+                logger.LogInformation($"Creation of VDS file finished successfully.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Creation of VDS file failed. Error message: '{ex.Message}'.");
+                throw;
+            }
         }
 
-        private static unsafe void InternalCreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd)
+        private static unsafe void InternalCreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd, ILogger logger)
         {
             long vdsFileId = -1;
 
-            ulong[] actualDimenionSet;
-            ulong[] maximumDimensionSet;
+            var actualDimenionSet = new ulong[1];
+            var maximumDimensionSet = new ulong[1];
 
-            string lastVariablePath;
-            string tempFilePath;
+            var lastVariablePath = String.Empty;
+            var tempFilePath = Path.GetTempFileName();
 
-            List<CampaignInfo> campaignInfoSet;
-            List<string> sourceFilePathSet;
-            Dictionary<string, List<byte>> isChunkCompletedMap;
-
-            //
-            actualDimenionSet = new ulong[1];
-            maximumDimensionSet = new ulong[1];
-
-            lastVariablePath = String.Empty;
-            tempFilePath = Path.GetTempFileName();
-
-            campaignInfoSet = new List<CampaignInfo>();
-            sourceFilePathSet = new List<string>();
-            isChunkCompletedMap = new Dictionary<string, List<byte>>();
+            var campaignInfoSet = new List<CampaignInfo>();
+            var sourceFilePathSet = new List<string>();
+            var isChunkCompletedMap = new Dictionary<string, List<byte>>();
 
             // fill sourceFilePathSet
             sourceDirectoryPathSet.ToList().ForEach(x =>
             {
                 if (Directory.Exists(x))
-                {
                     sourceFilePathSet.AddRange(Directory.GetFiles(x, "*.h5", SearchOption.TopDirectoryOnly).ToList());
-                }
             });
 
             try
@@ -477,7 +405,7 @@ namespace OneDas.Hdf.VdsTool
                 // create an index of all campaigns, variables and datasets
                 foreach (string sourceFilePath in sourceFilePathSet)
                 {
-                    Program.VdsSourceFile(sourceFilePath, campaignInfoSet, isChunkCompletedMap);
+                    Program.VdsSourceFile(sourceFilePath, campaignInfoSet, isChunkCompletedMap, logger);
                 }
 
                 //foreach (var variableInfo in variableInfoSet)
@@ -509,9 +437,7 @@ namespace OneDas.Hdf.VdsTool
             try
             {
                 if (File.Exists(vdsFilePath))
-                {
                     File.Delete(vdsFilePath);
-                }
 
                 File.Copy(tempFilePath, vdsFilePath);
             }
@@ -528,20 +454,19 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
-        private static void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaignInfoSet, Dictionary<string, List<byte>> isChunkCompletedMap)
+        private static void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaignInfoSet, Dictionary<string, List<byte>> isChunkCompletedMap, ILogger logger)
         {
             long sourceFileId = -1;
 
-            Console.Write($"Processing file { Path.GetFileName(sourceFilePath) } ... ");
+            var message = $"Processing file { Path.GetFileName(sourceFilePath) } ... ";
+            logger.LogInformation(message);
 
             sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
 
             try
             {
                 if (sourceFileId < 0)
-                {
                     throw new Exception(ErrorMessage.Program_CouldNotOpenFile);
-                }
 
                 GeneralHelper.UpdateCampaignInfoSet(sourceFileId, campaignInfoSet);
 
@@ -563,7 +488,7 @@ namespace OneDas.Hdf.VdsTool
                     }
                 });
 
-                Console.WriteLine("Done.");
+                logger.LogInformation($"{message}Done.");
             }
             finally
             {
@@ -654,7 +579,7 @@ namespace OneDas.Hdf.VdsTool
                 {
                     long sourceSpaceId = -1;
 
-                    var relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Program.BaseDirectoryPath.TrimEnd('\\').TrimEnd('/').Length)}";
+                    var relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Environment.CurrentDirectory.TrimEnd('\\').TrimEnd('/').Length)}";
 
                     sourceSpaceId = H5S.create_simple(1, new ulong[] { sourceFileInfo.Length }, new ulong[] { sourceFileInfo.Length });
 
@@ -715,66 +640,6 @@ namespace OneDas.Hdf.VdsTool
         #endregion
 
         #region "VDS_META"
-
-        public static hdf_aggregate_function_t PromptAggregateFunctionData(hdf_aggregate_function_t hdf_aggregate_function)
-        {
-            var tmp = string.Empty;
-
-            Console.CursorVisible = true;
-
-            // type
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for type ({ hdf_aggregate_function.type }): ");
-
-                var optionSet = new HashSet<string>() { "mean", "min", "max", "std", "min_bitwise", "max_bitwise" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.type))
-                    optionSet.Add(hdf_aggregate_function.type);
-
-                (var type, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(type) && OneDasUtilities.CheckNamingConvention(type, out tmp))
-                {
-                    hdf_aggregate_function.type = type;
-                    break;
-                }
-                else if (string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(hdf_aggregate_function.type))
-                {
-                    break;
-                }
-            }
-
-            // argument
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for argument ({ hdf_aggregate_function.argument }): ");
-
-                var optionSet = new HashSet<string>() { "none" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.argument))
-                    optionSet.Add(hdf_aggregate_function.argument);
-
-                (var argument, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(argument))
-                {
-                    hdf_aggregate_function.argument = argument;
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_aggregate_function.argument))
-                {
-                    break;
-                }
-            }
-
-            //
-            Console.CursorVisible = false;
-
-            return hdf_aggregate_function;
-        }
 
         public static hdf_transfer_function_t PromptTransferFunctionData(hdf_transfer_function_t hdf_transfer_function)
         {
@@ -1051,110 +916,103 @@ namespace OneDas.Hdf.VdsTool
 
         #region "AGGREGATION"
 
-        public static void CreateAggregatedFiles(DateTime epochStart)
+        public static void CreateAggregatedFiles(DateTime epochStart, string method, string argument, Dictionary<string, string> filters)
         {
-            var vdsMetaFilePath = Path.Combine(Program.BaseDirectoryPath, "VDS_META.h5");
-
-            if (!File.Exists(vdsMetaFilePath))
-                return;
-
             var epochEnd = epochStart.AddMonths(1);
-            var sourceDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
-            var targetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
-            var logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "HDF VdsTool");
-
-            Directory.CreateDirectory(logDirectoryPath);
+            var sourceDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
+            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
 
             if (Console.CursorTop > 0 || Console.CursorLeft > 0)
                 Console.WriteLine();
 
-            Console.WriteLine($"Epoch start: { epochStart.ToString("yyyy-MM-dd") }");
-            Console.WriteLine($"Epoch end:   { epochEnd.ToString("yyyy-MM-dd") }");
+            var logger = _loggerFactory.CreateLogger("AGGREGATE");
+            logger.LogInformation($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
+            logger.LogInformation($"Epoch end: {epochEnd.ToString("yyyy-MM-dd")}");
             Console.WriteLine();
 
-            Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, logDirectoryPath, vdsMetaFilePath, epochStart, epochEnd);
+            try
+            {
+                Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, method, argument, filters, logger);
+                logger.LogInformation($"Execution of the aggregate command finished successfully.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Execution of the aggregate command failed. Error message: '{ex.Message}'.");
+                throw;
+            }
         }
 
-        private static void InternalCreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string logDirectoryPath, string vdsMetaFilePath, DateTime epochStart, DateTime epochEnd)
+        private static void InternalCreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string method, string argument, Dictionary<string, string> filters, ILogger logger)
         {
-            long vdsMetaFileId = -1;
             long sourceFileId = -1;
             long targetFileId = -1;
 
             IList<string> filePathSet;
-
-            var campaignInfoSet = new List<CampaignInfo>();
 
             if (Directory.Exists(sourceDirectoryPath))
                 filePathSet = Directory.GetFiles(sourceDirectoryPath);
             else
                 filePathSet = new List<string>();
 
-            vdsMetaFileId = H5F.open(vdsMetaFilePath, H5F.ACC_RDONLY);
-
             try
             {
                 foreach (string sourceFilePath in filePathSet)
                 {
                     targetFileId = -1;
-                    var logFilePath = Path.Combine(logDirectoryPath, $"aggregations_{ Path.GetFileNameWithoutExtension(sourceFilePath) }.txt");
 
-                    using (StreamWriter messageLog = new StreamWriter(new FileStream(logFilePath, FileMode.Append)))
+                    logger.LogInformation($"file: {sourceFilePath}");
+                    Console.WriteLine();
+
+                    // sourceFileId
+                    sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
+                    var campaignInfoSet = GeneralHelper.GetCampaignInfoSet(sourceFileId, isLazyLoading: false);
+
+                    // targetFileId
+                    var targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
+
+                    if (!Directory.Exists(targetDirectoryPath))
+                        Directory.CreateDirectory(targetDirectoryPath);
+
+                    if (File.Exists(targetFilePath))
+                        targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
+
+                    if (targetFileId == -1)
+                        targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
+
+                    try
                     {
-                        Console.WriteLine($"file: { sourceFilePath }");
-                        Console.WriteLine();
-
-                        // sourceFileId
-                        sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-                        campaignInfoSet = GeneralHelper.GetCampaignInfoSet(sourceFileId, false);
-
-                        // targetFileId
-                        var targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
-
-                        if (!Directory.Exists(targetDirectoryPath))
-                            Directory.CreateDirectory(targetDirectoryPath);
-
-                        if (File.Exists(targetFilePath))
-                            targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
-
-                        if (targetFileId == -1)
-                            targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
-
-                        try
+                        // create attribute if necessary
+                        if (H5A.exists(targetFileId, "date_time") == 0)
                         {
-                            // create attribute if necessary
-                            if (H5A.exists(targetFileId, "date_time") == 0)
-                            {
-                                var dateTime = IOHelper.ReadAttribute<string>(sourceFileId, "date_time");
-                                IOHelper.PrepareAttribute(targetFileId, "date_time", dateTime.ToArray(), new ulong[] { 1 }, true);
-                            }
-
-                            // campaignInfo
-                            foreach (var campaignInfo in campaignInfoSet)
-                            {
-                                Program.AggregateCampaign(sourceFileId, targetFileId, vdsMetaFileId, campaignInfo, messageLog);
-                            }
-
-                            Console.CursorTop -= 1;
+                            var dateTime = IOHelper.ReadAttribute<string>(sourceFileId, "date_time");
+                            IOHelper.PrepareAttribute(targetFileId, "date_time", dateTime.ToArray(), new ulong[] { 1 }, true);
                         }
-                        finally
+
+                        // campaignInfo
+                        foreach (var campaignInfo in campaignInfoSet)
                         {
-                            if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
-                            if (H5I.is_valid(sourceFileId) > 0) { H5F.close(sourceFileId); }
+                            Program.AggregateCampaign(sourceFileId, targetFileId, campaignInfo, method, argument, filters, logger);
                         }
+
+                        Console.CursorTop -= 1;
+                    }
+                    finally
+                    {
+                        if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
+                        if (H5I.is_valid(sourceFileId) > 0) { H5F.close(sourceFileId); }
                     }
                 }
             }
             finally
             {
-                if (H5I.is_valid(vdsMetaFileId) > 0) { H5F.close(vdsMetaFileId); }
+                //
             }
         }
 
-        private static void AggregateCampaign(long sourceFileId, long targetFileId, long vdsMetaFileId, CampaignInfo campaignInfo, StreamWriter messageLog)
+        private static void AggregateCampaign(long sourceFileId, long targetFileId, CampaignInfo campaignInfo, string method, string argument, Dictionary<string, string> filters, ILogger logger)
         {
             var index = 0;
-            var datasetPath = $"{ campaignInfo.GetPath() }/is_chunk_completed_set";
+            var datasetPath = $"{campaignInfo.GetPath()}/is_chunk_completed_set";
             (var groupId, var isNew) = IOHelper.OpenOrCreateGroup(targetFileId, campaignInfo.GetPath());
 
             try
@@ -1166,10 +1024,13 @@ namespace OneDas.Hdf.VdsTool
                 {
                     index++;
 
-                    Console.WriteLine($"{ variableInfo.VariableNameSet.Last() } ({ index }/{ campaignInfo.VariableInfoSet.Count() })");
-                    Program.AggregateVariable(sourceFileId, targetFileId, vdsMetaFileId, variableInfo, messageLog);
-                    Console.CursorTop -= 1;
-                    Program.ClearCurrentLine();
+                    if (Program.ApplyAggregationFilter(variableInfo, filters))
+                    {
+                        Console.WriteLine($"{variableInfo.VariableNameSet.Last()} ({index}/{campaignInfo.VariableInfoSet.Count()})");
+                        Program.AggregateVariable(sourceFileId, targetFileId, variableInfo, method, argument, logger);
+                        Console.CursorTop -= 1;
+                        Program.ClearCurrentLine();
+                    }
                 }
             }
             finally
@@ -1178,9 +1039,8 @@ namespace OneDas.Hdf.VdsTool
             }
         }
 
-        private static void AggregateVariable(long sourceFileId, long targetFileId, long vdsMetaFileId, VariableInfo variableInfo, StreamWriter messageLog)
+        private static void AggregateVariable(long sourceFileId, long targetFileId, VariableInfo variableInfo, string method, string argument, ILogger logger)
         {
-            long vdsMetaGroupId = -1;
             long sourceDatasetId = -1;
             long sourceDatasetId_status = -1;
             long typeId = -1;
@@ -1188,70 +1048,50 @@ namespace OneDas.Hdf.VdsTool
             var sampleRate = (SampleRate)0;
             var groupPath = variableInfo.GetPath();
 
-            // if meta data entry exists
-            if (IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
+            try
             {
-                vdsMetaGroupId = H5G.open(vdsMetaFileId, groupPath);
-
-                try
+                // find proper data source
+                foreach (SampleRate testedSampleRate in Enum.GetValues(typeof(SampleRate)))
                 {
-                    if (H5A.exists(vdsMetaGroupId, "aggregate_function_set") > 0)
+                    var sourceDatasetName = new SampleRateContainer(testedSampleRate).ToUnitString();
+
+                    if (variableInfo.DatasetInfoSet.Where(x => x.Name == sourceDatasetName).Any())
                     {
-                        var aggregate_function_set = IOHelper.ReadAttribute<hdf_aggregate_function_t>(vdsMetaGroupId, "aggregate_function_set");
-
-                        // find proper data source
-                        foreach (SampleRate testedSampleRate in Enum.GetValues(typeof(SampleRate)))
-                        {
-#warning remove magic number
-                            var sourceDatasetName = $"{ 100 / (int)testedSampleRate } Hz";
-
-                            if (variableInfo.DatasetInfoSet.Where(x => x.Name == sourceDatasetName).Any())
-                            {
-                                sampleRate = testedSampleRate;
-                                sourceDatasetId = H5D.open(sourceFileId, $"{ groupPath }/{ sourceDatasetName }");
-                                sourceDatasetId_status = H5D.open(sourceFileId, $"{ groupPath }/{sourceDatasetName }_status");
-                                typeId = H5D.get_type(sourceDatasetId);
-
-                                break;
-                            }
-                        }
-
-                        if (sampleRate == default)
-                        {
-                            messageLog.WriteLine($"No appropriate data source was found. Skipping variable.");
-                            return;
-                        }
-
+                        sampleRate = testedSampleRate;
+                        sourceDatasetId = H5D.open(sourceFileId, $"{groupPath}/{sourceDatasetName}");
+                        sourceDatasetId_status = H5D.open(sourceFileId, $"{groupPath}/{sourceDatasetName}_status");
                         typeId = H5D.get_type(sourceDatasetId);
 
-                        // invoke Program.DoAggregationStuff
-                        GeneralHelper.InvokeGenericMethod(typeof(Program), null, nameof(Program.AggregateDataset),
-                                                      BindingFlags.NonPublic | BindingFlags.Static,
-                                                      TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                      new object[] { groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, aggregate_function_set, messageLog });
+                        break;
+                    }
+                }
 
-                        // clean up
-                        H5D.close(sourceDatasetId_status);
-                        H5D.close(sourceDatasetId);
-                        H5T.close(typeId);
-                    }
-                    else
-                    {
-                        messageLog.WriteLine($"The attribute 'aggregate_function_set' of variable { groupPath } does not exist in file VDS_META.h5. Skipping variable.");
-                    }
-                }
-                finally
+                if (sampleRate == default)
                 {
-                    if (H5I.is_valid(vdsMetaGroupId) > 0) { H5G.close(vdsMetaGroupId); }
+                    logger.LogInformation($"No appropriate data source was found. Skipping variable '{variableInfo.Name}'.");
+                    return;
                 }
+
+                typeId = H5D.get_type(sourceDatasetId);
+
+                // invoke Program.AggregateDataset
+                GeneralHelper.InvokeGenericMethod(typeof(Program), null, nameof(Program.AggregateDataset),
+                                              BindingFlags.NonPublic | BindingFlags.Static,
+                                              TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
+                                              new object[] { groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, method, argument, logger });
+
+                // clean up
+                H5D.close(sourceDatasetId_status);
+                H5D.close(sourceDatasetId);
+                H5T.close(typeId);
             }
-            else
+            finally
             {
-                messageLog.WriteLine($"The variable { groupPath } does not exist in file VDS_META.h5. Skipping variable.");
+                //
             }
         }
 
-        private static void AggregateDataset<T>(string groupPath, long sourceDatasetId, long sourceDatasetId_status, long targetFileId, SampleRate sampleRate, hdf_aggregate_function_t[] aggregate_function_set, StreamWriter messageLog)
+        private static void AggregateDataset<T>(string groupPath, long sourceDatasetId, long sourceDatasetId_status, long targetFileId, SampleRate sampleRate, string method, string argument, ILogger logger)
         {
             long targetDatasetId = -1;
             double[] targetValueSet;
@@ -1259,100 +1099,93 @@ namespace OneDas.Hdf.VdsTool
             byte[] sourceValueSet_status = null;
             T[] sourceValueSet = null;
 
-            // for each aggregation_function
-            foreach (hdf_aggregate_function_t aggregation_function in aggregate_function_set)
+            Console.WriteLine($"\t{method}");
+
+            // for each period
+            foreach (Period period in Enum.GetValues(typeof(Period)))
             {
-                Console.WriteLine($"\t{ aggregation_function.type }");
+                var targetDatasetPath = $"{groupPath}/{(int)period} s_{method}";
 
-                // for each period
-                foreach (Period period in Enum.GetValues(typeof(Period)))
+                // if target dataset does not yet exist
+                if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
                 {
-                    var targetDatasetPath = $"{ groupPath }/{ (int)period} s_{aggregation_function.type }";
+                    Console.WriteLine($"\t\t{ (int)period } s");
 
-                    // if target dataset does not yet exist
-                    if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                    if (sourceValueSet == null)
                     {
-                        Console.WriteLine($"\t\t{ (int)period } s");
+                        sourceValueSet = IOHelper.Read<T>(sourceDatasetId, DataContainerType.Dataset);
+                        sourceValueSet_status = IOHelper.Read<byte>(sourceDatasetId_status, DataContainerType.Dataset);
+                    }
 
-                        if (sourceValueSet == null)
-                        {
-                            sourceValueSet = IOHelper.Read<T>(sourceDatasetId, DataContainerType.Dataset);
-                            sourceValueSet_status = IOHelper.Read<byte>(sourceDatasetId_status, DataContainerType.Dataset);
-                        }
+                    var chunkCount = sourceValueSet.Count() / (int)period / 100 * (int)sampleRate; // Improve: remove magic number
 
-                        var chunkCount = sourceValueSet.Count() / (int)period / 100 * (int)sampleRate; // Improve: remove magic number
+                    switch (method)
+                    {
+                        case "mean":
+                        case "mean_polar":
+                        case "min":
+                        case "max":
+                        case "std":
 
-                        switch (aggregation_function.type)
-                        {
-                            case "mean":
-                            case "mean_polar":
-                            case "min":
-                            case "max":
-                            case "std":
+                            if (sourceValueSet_double == null)
+                            {
+                                sourceValueSet_double = ExtendedDataStorageBase.ApplyDatasetStatus(sourceValueSet, sourceValueSet_status);
+                            }
 
-                                if (sourceValueSet_double == null)
-                                {
-                                    sourceValueSet_double = ExtendedDataStorageBase.ApplyDatasetStatus(sourceValueSet, sourceValueSet_status);
-                                }
+                            targetValueSet = Program.ApplyAggregationFunction(method, argument, chunkCount, sourceValueSet_double, logger);
 
-                                targetValueSet = Program.ApplyAggregationFunction(aggregation_function, chunkCount, sourceValueSet_double, messageLog);
+                            break;
 
-                                break;
+                        case "min_bitwise":
+                        case "max_bitwise":
 
-                            case "min_bitwise":
-                            case "max_bitwise":
+                            targetValueSet = Program.ApplyAggregationFunction(method, argument, chunkCount, sourceValueSet, sourceValueSet_status, logger);
 
-                                targetValueSet = Program.ApplyAggregationFunction(aggregation_function, chunkCount, sourceValueSet, sourceValueSet_status, messageLog);
+                            break;
 
-                                break;
+                        default:
 
-                            default:
+                            logger.LogWarning($"The aggregation method '{method}' is not known. Skipping period {period}.");
 
-                                messageLog.WriteLine($"The type { aggregation_function.type } of attribute 'aggregate_function_set' is unknown. Skipping period { period }.");
+                            continue;
+                    }
 
-                                continue;
-                        }
+                    targetDatasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, (ulong)chunkCount, 1).DatasetId;
 
-                        targetDatasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, (ulong)chunkCount, 1).DatasetId;
+                    try
+                    {
+                        IOHelper.Write(targetDatasetId, targetValueSet.ToArray(), DataContainerType.Dataset);
 
-                        try
-                        {
-                            IOHelper.Write(targetDatasetId, targetValueSet.ToArray(), DataContainerType.Dataset);
-                            IOHelper.PrepareAttribute(targetDatasetId, "aggregate_function_set", new hdf_aggregate_function_t[] { aggregation_function }, new ulong[] { 1 }, true);
+                        Console.CursorTop -= 1;
+                        Program.ClearCurrentLine();
 
-                            Console.CursorTop -= 1;
-                            Program.ClearCurrentLine();
-
-                            H5F.flush(targetDatasetId, H5F.scope_t.LOCAL);
-                        }
-                        finally
-                        {
-                            if (H5I.is_valid(targetDatasetId) > 0) { H5D.close(targetDatasetId); }
-                        }
+                        H5F.flush(targetDatasetId, H5F.scope_t.LOCAL);
+                    }
+                    finally
+                    {
+                        if (H5I.is_valid(targetDatasetId) > 0) { H5D.close(targetDatasetId); }
                     }
                 }
-
-                Console.CursorTop -= 1;
-                Program.ClearCurrentLine();
             }
+
+            Console.CursorTop -= 1;
+            Program.ClearCurrentLine();
         }
 
-        private static double[] ApplyAggregationFunction(hdf_aggregate_function_t aggregation_function, int targetDatasetLength, double[] valueSet, StreamWriter messageLog)
+        private static double[] ApplyAggregationFunction(string method, string argument, int targetDatasetLength, double[] valueSet, ILogger logger)
         {
             var chunkSize = valueSet.Count() / targetDatasetLength;
             var result = new double[targetDatasetLength];
 
-            switch (aggregation_function.type)
+            switch (method)
             {
                 case "mean":
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        double[] chunkValueSet;
-                        int baseIndex;
 
-                        baseIndex = (int)(x * chunkSize);
-                        chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * chunkSize;
+                        var chunkValueSet = new double[chunkSize];
 
                         Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
 
@@ -1365,23 +1198,18 @@ namespace OneDas.Hdf.VdsTool
 
                     double[] sin = new double[targetDatasetLength];
                     double[] cos = new double[targetDatasetLength];
-                    double factor;
                     double limit;
 
-                    if (aggregation_function.argument.Contains("*PI"))
-                    {
-                        limit = Double.Parse(aggregation_function.argument.Replace("*PI", "")) * Math.PI;
-                    }
+                    if (argument.Contains("*PI"))
+                        limit = Double.Parse(argument.Replace("*PI", "")) * Math.PI;
                     else
-                    {
-                        limit = Double.Parse(aggregation_function.argument);
-                    }
+                        limit = Double.Parse(argument);
 
-                    factor = 2 * Math.PI / limit;
+                    var factor = 2 * Math.PI / limit;
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        int baseIndex = (int)(x * chunkSize);
+                        var baseIndex = x * chunkSize;
 
                         for (int i = 0; i < chunkSize; i++)
                         {
@@ -1392,9 +1220,7 @@ namespace OneDas.Hdf.VdsTool
                         result[x] = Math.Atan2(sin[x], cos[x]) / factor;
 
                         if (result[x] < 0)
-                        {
                             result[x] += limit;
-                        }
                     });
 
                     break;
@@ -1403,11 +1229,8 @@ namespace OneDas.Hdf.VdsTool
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        double[] chunkValueSet;
-                        int baseIndex;
-
-                        baseIndex = (int)(x * chunkSize);
-                        chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * chunkSize;
+                        var chunkValueSet = new double[chunkSize];
 
                         Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
 
@@ -1420,11 +1243,8 @@ namespace OneDas.Hdf.VdsTool
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        double[] chunkValueSet;
-                        int baseIndex;
-
-                        baseIndex = (int)(x * chunkSize);
-                        chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * chunkSize;
+                        var chunkValueSet = new double[chunkSize];
 
                         Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
 
@@ -1437,11 +1257,8 @@ namespace OneDas.Hdf.VdsTool
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        double[] chunkValueSet;
-                        int baseIndex;
-
-                        baseIndex = (int)(x * chunkSize);
-                        chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * chunkSize;
+                        var chunkValueSet = new double[chunkSize];
 
                         Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
 
@@ -1452,7 +1269,7 @@ namespace OneDas.Hdf.VdsTool
 
                 default:
 
-                    messageLog.WriteLine($"The type {aggregation_function.type} of attribute 'aggregate_function_set' is unknown. Skipping period.");
+                    logger.LogWarning($"The aggregation method '{method}' is not known. Skipping period.");
 
                     break;
 
@@ -1461,12 +1278,12 @@ namespace OneDas.Hdf.VdsTool
             return result;
         }
 
-        private static double[] ApplyAggregationFunction<T>(hdf_aggregate_function_t aggregation_function, int targetDatasetLength, T[] valueSet, byte[] valueSet_status, StreamWriter messageLog)
+        private static double[] ApplyAggregationFunction<T>(string method, string argument, int targetDatasetLength, T[] valueSet, byte[] valueSet_status, ILogger logger)
         {
             var chunkSize = valueSet.Count() / targetDatasetLength;
             var result = new double[targetDatasetLength];
 
-            switch (aggregation_function.type)
+            switch (method)
             {
                 case "min_bitwise":
 
@@ -1474,7 +1291,7 @@ namespace OneDas.Hdf.VdsTool
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        int baseIndex = (int)(x * chunkSize);
+                        var baseIndex = x * chunkSize;
 
                         for (int i = 0; i < chunkSize; i++)
                         {
@@ -1504,7 +1321,7 @@ namespace OneDas.Hdf.VdsTool
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        int baseIndex = (int)(x * chunkSize);
+                        var baseIndex = x * chunkSize;
 
                         for (int i = 0; i < chunkSize; i++)
                         {
@@ -1526,10 +1343,38 @@ namespace OneDas.Hdf.VdsTool
                     break;
 
                 default:
-                    messageLog.WriteLine($"The type {aggregation_function.type} of attribute 'aggregate_function_set' is unknown. Skipping period.");
+                    logger.LogWarning($"The aggregation method '{method}' is not known. Skipping period.");
                     break;
 
             }
+
+            return result;
+        }
+
+        private static bool ApplyAggregationFilter(VariableInfo variableInfo, Dictionary<string, string> filters)
+        {
+            bool result = false;
+
+            // channel
+            if (filters.ContainsKey("--include-channel"))
+                result = result & Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--include-channel"]);
+
+            if (filters.ContainsKey("--exclude-channel"))
+                result = result & !Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--exclude-channel"]);
+
+            // group
+            if (filters.ContainsKey("--include-group"))
+                result = result & Regex.IsMatch(variableInfo.VariableGroupSet.Last(), filters["--include-group"]);
+
+            if (filters.ContainsKey("--exclude-group"))
+                result = result & !Regex.IsMatch(variableInfo.VariableGroupSet.Last(), filters["--exclude-group"]);
+
+            // unit
+            if (filters.ContainsKey("--include-unit"))
+                result = result & Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--include-unit"]);
+
+            if (filters.ContainsKey("--exclude-unit"))
+                result = result & !Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--exclude-unit"]);
 
             return result;
         }
@@ -1543,12 +1388,12 @@ namespace OneDas.Hdf.VdsTool
             using (PowerShell ps = PowerShell.Create())
             {
                 // ensure FluentFTP lib is loaded
-                var ftpClient = new FtpClient();
+                var dummy = FtpExists.NoCheck;
 
-                var logger = new VdsToolLogger(_loggerFactory.CreateLogger(transactionId));
+                var logger = new VdsToolLogger(_loggerFactory.CreateLogger($"PWSH ({transactionId})"));
                 logger.LogInformation($"Executing script '{scriptFilePath}'.");
 
-                ps.Runspace.SessionStateProxy.SetVariable("dbRoot", Program.BaseDirectoryPath);
+                ps.Runspace.SessionStateProxy.SetVariable("dbRoot", Environment.CurrentDirectory);
                 ps.Runspace.SessionStateProxy.SetVariable("logger", logger);
 
                 try
@@ -1567,157 +1412,5 @@ namespace OneDas.Hdf.VdsTool
         }
 
         #endregion
-
-        #region "CONVERT"
-
-        private static void ConvertFiles(string campaignName, int version, string fileFormat, string fileNameFormat, uint periodPerFile, int days, string systemName, bool convertToDouble, bool applyCalibration)
-        {
-            var sourceDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_ORIGIN", $"{campaignName.Replace('/', '_')}_V{version}");
-            var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
-            var dateTimeBegin = dateTimeEnd.AddDays(-days);
-
-            // logger
-            var logDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "SUPPORT", "LOGS", "VdsTool");
-            var logFilePath = Path.Combine(logDirectoryPath, $"{ sourceDirectoryPath.Split('\\').Last().Split('/').Last() }.txt");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
-            File.AppendAllText(logFilePath, $"BEGIN from { dateTimeBegin.ToString("yyyy-MM-dd") } to { dateTimeEnd.ToString("yyyy-MM-dd") }{ Environment.NewLine }");
-
-            // convert
-            for (int i = 0; i <= days; i++)
-            {
-                dateTimeBegin = dateTimeBegin.AddDays(1);
-
-                var currentSourceDirectoryPath = Path.Combine(sourceDirectoryPath, dateTimeBegin.ToString("yyyy-MM"));
-                var currentTargetDirectoryPath = Path.Combine(Program.BaseDirectoryPath, "DB_IMPORT", dateTimeBegin.ToString("yyyy-MM"));
-                var currentTargetFileName = $"{campaignName.Replace('/', '_')}_V{version}_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
-                var currentTargetFilePath = Path.Combine(currentTargetDirectoryPath, currentTargetFileName);
-
-                if (File.Exists(currentTargetFilePath))
-                {
-                    Console.WriteLine($"File '{currentTargetFilePath}' already exists.");
-#warning Add proper logging here.
-                }
-                else if (!Directory.Exists(currentSourceDirectoryPath) || !Directory.EnumerateFileSystemEntries(currentSourceDirectoryPath).Any())
-                {
-                    // skip
-                }
-                else
-                {
-                    Directory.CreateDirectory(currentTargetDirectoryPath);
-
-                    Program.InternalConvertFiles(currentSourceDirectoryPath, currentTargetDirectoryPath,
-                                                dateTimeBegin, campaignName, version, fileFormat,
-                                                fileNameFormat, TimeSpan.FromSeconds(periodPerFile), 
-                                                systemName, convertToDouble, applyCalibration);
-                }
-            }
-
-            File.AppendAllText(logFilePath, $"END{ Environment.NewLine }{ Environment.NewLine }");
-        }
-
-        private static void InternalConvertFiles(string sourceDirectoryPath, string targetDirectoryPath, DateTime dateTimeBegin, string campaignName, int version, string fileFormat, string fileNameFormat, TimeSpan periodPerFile, string systemName, bool convertToDouble, bool applyCalibration)
-        {
-            // data writer context
-            IDataReader dataReader;
-            List<VariableDescription> variableDescriptionSet;
-
-            if (fileFormat == "FamosImc2")
-            {
-                var firstFilePath = Directory.EnumerateFiles(sourceDirectoryPath).FirstOrDefault();
-
-                dataReader = new FamosImc2DataReader();
-                variableDescriptionSet = dataReader.GetVariableDescriptions(firstFilePath);
-            }
-            else
-            {
-                return;
-            }
-
-            var importContext = ImportContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
-
-            foreach (var variableDescription in variableDescriptionSet)
-            {
-                variableDescription.Guid = importContext.VariableToGuidMap[variableDescription.VariableName];
-
-                if (convertToDouble)
-                {
-                    variableDescription.DataType = OneDasDataType.FLOAT64;
-                    variableDescription.DataStorageType = DataStorageType.Simple;
-                }
-                else
-                {
-                    variableDescription.DataStorageType = DataStorageType.Extended;
-                }
-            }
-
-            var campaignNameParts = campaignName.Split('/');
-            var campaignDescription = new OneDasCampaignDescription(importContext.CampaignGuid, version, campaignNameParts[0], campaignNameParts[1], campaignNameParts[2]);
-            var customMetadataEntrySet = new List<CustomMetadataEntry>();
-            var dataWriterContext = new DataWriterContext(systemName, targetDirectoryPath, campaignDescription, customMetadataEntrySet);
-
-            // configure data writer
-            var settings = new HdfSettings() { FileGranularity = FileGranularity.Day };
-            using var dataWriter = new HdfWriter(settings, NullLogger.Instance);
-
-            dataWriter.Configure(dataWriterContext, variableDescriptionSet);
-
-            // convert data
-            var currentOffset = TimeSpan.Zero;
-
-            while (currentOffset < TimeSpan.FromDays(1))
-            {
-                var currentDateTimeBegin = dateTimeBegin + currentOffset;
-                var fileName = currentDateTimeBegin.ToString(fileNameFormat);
-                var filePath = Path.Combine(sourceDirectoryPath, fileName);
-
-                currentOffset += periodPerFile;
-
-                if (!File.Exists(filePath))
-                {
-                    Console.WriteLine($"File '{filePath}' does not exist.");
-#warning Write Log entry.
-                    continue;
-                }
-
-                try
-                {
-                    Console.Write($"Processing file '{filePath}' ... ");
-
-                    var dataStorageSet = dataReader.GetData(filePath, variableDescriptionSet, convertToDouble, applyCalibration);
-
-                    // check actual file size
-                    for (int i = 0; i < variableDescriptionSet.Count; i++)
-                    {
-                        var elementCount = dataStorageSet[i].DataBuffer.Length / dataStorageSet[i].ElementSize;
-                        var period = (double)elementCount / (variableDescriptionSet[i].SampleRate.SamplesPerSecond);
-
-                        if (TimeSpan.FromSeconds(period) != periodPerFile)
-                            throw new Exception("The file is not complete.");
-                    }
-                    
-                    dataWriter.Write(currentDateTimeBegin, periodPerFile, dataStorageSet);
-
-                    foreach (DataStorageBase dataStorage in dataStorageSet)
-                    {
-                        dataStorage.Dispose();
-                    }
-
-                    Console.WriteLine($"Done.");
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine($"Failed.");
-                    // skip this file
-                }
-            }
-        }
-
-        #endregion
-
-        private static void ClearCurrentLine()
-        {
-            Console.Write($"\r{ new string(' ', Console.WindowWidth - 1) }\r");
-        }
     }
 }
