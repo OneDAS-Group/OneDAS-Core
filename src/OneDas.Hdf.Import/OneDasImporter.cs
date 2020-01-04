@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace OneDas.Hdf.Import
 {
-    public class Importer
+    public class OneDasImporter
     {
         #region Fields
 
@@ -24,7 +24,7 @@ namespace OneDas.Hdf.Import
 
         #region Constructors
 
-        public Importer(string databaseDirectoryPath, IDataReader dataReader, ILogger logger)
+        public OneDasImporter(string databaseDirectoryPath, IDataReader dataReader, ILogger logger)
         {
             OneDasUtilities.ValidateDatabaseFolderPath(databaseDirectoryPath);
 
@@ -77,7 +77,7 @@ namespace OneDas.Hdf.Import
         {
             var firstFilePath = Directory.EnumerateFiles(sourceDirectoryPath).FirstOrDefault();
             var variableDescriptionSet = _dataReader.GetVariableDescriptions(firstFilePath);
-            var importContext = ImportContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
+            var importContext = OneDasImportContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
 
             foreach (var variableDescription in variableDescriptionSet)
             {

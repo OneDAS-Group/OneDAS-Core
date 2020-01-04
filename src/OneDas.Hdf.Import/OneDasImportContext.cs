@@ -6,16 +6,16 @@ using System.Text.Json;
 
 namespace OneDas.Hdf.Import
 {
-    public class ImportContext
+    public class OneDasImportContext
     {
         #region Constructors
 
-        private ImportContext()
+        private OneDasImportContext()
         {
             //
         }
 
-        private ImportContext(string campaignName)
+        private OneDasImportContext(string campaignName)
         {
             this.CampaignName = campaignName;
             this.CampaignGuid = Guid.NewGuid();
@@ -36,16 +36,16 @@ namespace OneDas.Hdf.Import
 
         #region Methods
 
-        public static ImportContext OpenOrCreate(string importDirectoryPath, string campaignName, List<VariableDescription> variableDescriptionSet)
+        public static OneDasImportContext OpenOrCreate(string importDirectoryPath, string campaignName, List<VariableDescription> variableDescriptionSet)
         {
             var filePath = Path.Combine(importDirectoryPath, $"{campaignName.Replace('/', '_')}.json");
 
-            ImportContext importContext;
+            OneDasImportContext importContext;
 
             if (File.Exists(filePath))
-                importContext = JsonSerializer.Deserialize<ImportContext>(File.ReadAllText(filePath));
+                importContext = JsonSerializer.Deserialize<OneDasImportContext>(File.ReadAllText(filePath));
             else
-                importContext = new ImportContext(campaignName);
+                importContext = new OneDasImportContext(campaignName);
 
             importContext.AddVariables(variableDescriptionSet);
 
