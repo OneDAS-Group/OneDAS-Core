@@ -8,6 +8,7 @@ namespace OneDas.DataStorage
     /// </summary>
     public abstract class DataStorageBase : IDataStorage, IDisposable
     {
+#warning Improve DataStorage system. Using managed memory, Span<T> and work only with byte arrays is more suitable for everything
         #region "Fields"
 
         int _byteCount;
