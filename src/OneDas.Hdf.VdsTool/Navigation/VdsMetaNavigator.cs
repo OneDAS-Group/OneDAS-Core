@@ -54,7 +54,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
             Console.WriteLine("   previous level: arrow left, ESC");
             Console.WriteLine("description / tag: 1");
             Console.WriteLine("transfer function: 2");
-            Console.WriteLine("    documentation: d");
             Console.WriteLine("            purge: p");
         }
 
@@ -132,28 +131,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
 
                     break;
 
-                case ConsoleKey.D:
-
-                    if (_currentList[this.SelectedIndex] is CampaignInfo)
-                    {
-                        string directoryPath;
-
-                        try
-                        {
-                            directoryPath = Program.PromptDirectoryPath(Directory.GetCurrentDirectory());
-
-                            this.WriteCampaignDocumentation(directoryPath, (CampaignInfo)_currentList[this.SelectedIndex]);
-                        }
-                        catch
-                        {
-                            //
-                        }
-
-                        this.OnRedraw();
-                    }
-
-                    break;
-
                 case ConsoleKey.P:
 
                     _vdsGroupId = H5G.open(_vdsLocationId, _currentList[this.SelectedIndex].Name);
@@ -169,147 +146,6 @@ namespace OneDas.Hdf.VdsTool.Navigation
             }
 
             return false;
-        }
-
-        public void WriteCampaignDocumentation(string directoryPath, CampaignInfo campaignInfo)
-        {
-            long campaign_groupId = -1;
-
-            string description;
-            string filePath;
-
-            RestructuredTextWriter restructuredTextWriter;
-            List<string> groupNameSet;
-
-            Console.Clear();
-
-            groupNameSet = campaignInfo.VariableInfoSet.Select(variableInfo => variableInfo.VariableGroupSet.Last()).Distinct().ToList();
-            filePath = Path.Combine(directoryPath, $"{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }.rst");
-
-            try
-            {
-                using (StreamWriter streamWriter = new StreamWriter(new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read)))
-                {
-                    restructuredTextWriter = new RestructuredTextWriter(streamWriter);
-
-                    // campaign header
-                    restructuredTextWriter.WriteHeading(campaignInfo.Name.TrimStart('/').Replace("/", " / "), SectionHeader.Section);
-
-                    // campaign description
-                    restructuredTextWriter.WriteLine();
-
-                    try
-                    {
-                        if (IOHelper.CheckLinkExists(_vdsMetaFileId, campaignInfo.Name))
-                        {
-                            campaign_groupId = H5G.open(_vdsMetaFileId, campaignInfo.Name);
-
-                            if (H5A.exists(campaign_groupId, "description") > 0)
-                            {
-                                description = IOHelper.ReadAttribute<string>(campaign_groupId, "description").First();
-                            }
-                            else
-                            {
-                                description = "no description available";
-                            }
-                        }
-                        else
-                        {
-                            description = "no description available";
-                        }
-
-                        restructuredTextWriter.WriteNote(description);
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(campaign_groupId) > 0) { H5G.close(campaign_groupId); }
-                    }
-
-                    // groups
-                    foreach (string groupName in groupNameSet)
-                    {
-                        RestructuredTextTable restructuredTextTable;
-
-                        List<VariableInfo> groupedVariableInfoSet;
-
-                        restructuredTextWriter.WriteLine();
-                        restructuredTextWriter.WriteHeading(groupName, SectionHeader.SubSection);
-                        restructuredTextWriter.WriteLine();
-
-                        restructuredTextTable = new RestructuredTextTable(new List<string>() { "Name", "Unit", "Guid" });
-                        groupedVariableInfoSet = campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableGroupSet.Last() == groupName).OrderBy(variableInfo => variableInfo.VariableNameSet.Last()).ToList();
-
-                        // variables
-                        groupedVariableInfoSet.ForEach(variableInfo =>
-                        {
-                            long variable_groupId = -1;
-
-                            string groupPath;
-                            string name;
-                            string guid;
-                            string unit;
-
-                            List<hdf_transfer_function_t> transferFunctionSet;
-
-                            // name
-                            name = variableInfo.VariableNameSet.Last();
-
-                            if (name.Count() > 43)
-                            {
-                                name = $"{ name.Substring(0, 40) }...";
-                            }
-
-                            // guid
-                            guid = $"{ variableInfo.Name.Substring(0, 8) }...";
-
-                            // unit, transferFunctionSet
-                            unit = string.Empty;
-
-                            try
-                            {
-                                groupPath = variableInfo.GetPath();
-
-                                if (IOHelper.CheckLinkExists(_vdsMetaFileId, groupPath))
-                                {
-                                    variable_groupId = H5G.open(_vdsMetaFileId, groupPath);
-
-                                    if (H5A.exists(variable_groupId, "unit") > 0)
-                                    {
-                                        unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
-                                    }
-
-                                    if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
-                                    {
-                                        transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
-                                    }
-                                }
-                            }
-                            finally
-                            {
-                                if (H5I.is_valid(variable_groupId) > 0) { H5G.close(variable_groupId); }
-                            }
-
-                            // 
-                            restructuredTextTable.AddRow(new List<string> { name, unit, guid });
-
-                            //transferFunctionSet.ForEach(x => streamWriter.Write($"{ x.date_time }, { x.type }, { x.option }, { x.argument } | "));
-                        });
-
-                        restructuredTextWriter.WriteTable(restructuredTextTable);
-                        restructuredTextWriter.WriteLine();
-                    }
-                }
-
-                Console.WriteLine($"The file has been successfully written to:\n{ filePath }");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-
-            Console.WriteLine("\nPress any key to continue ...");
-            Console.ReadKey();
-
         }
     }
 }

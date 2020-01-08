@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using OneDas.DataStorage;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
+using OneDas.Hdf.VdsTool.Documentation;
 using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
 using System;
@@ -26,13 +27,13 @@ namespace OneDas.Hdf.VdsTool
 {
     class Program
     {
-        #region "Fields"
+        #region Fields
 
         private static ILoggerFactory _loggerFactory;
 
         #endregion
 
-        #region "Methods"
+        #region Methods
 
         private static async Task<int> Main(string[] args)
         {
@@ -69,6 +70,7 @@ namespace OneDas.Hdf.VdsTool
                 rootCommand.AddCommand(Program.PrepareUpdateCommand());
                 rootCommand.AddCommand(Program.PrepareVdsCommand());
                 rootCommand.AddCommand(Program.PrepareAggregateCommand());
+                rootCommand.AddCommand(Program.PrepareDocCommand());
 
                 return await rootCommand.InvokeAsync(args);
             }
@@ -246,6 +248,11 @@ namespace OneDas.Hdf.VdsTool
                     Argument = new Argument<string>(),
                     Required = true
                 },
+                new Option("--campaign-name", "The campaign name, e.g /A/B/C.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = true
+                },
                 new Option("--include-channel", "A regex based filter to include channels with certain names.")
                 {
                     Argument = new Argument<string>(),
@@ -278,7 +285,7 @@ namespace OneDas.Hdf.VdsTool
                 }
             };
 
-            command.Handler = CommandHandler.Create((DateTime epochStart, string method, string argument, ParseResult parseResult) =>
+            command.Handler = CommandHandler.Create((DateTime epochStart, string method, string argument, string campaignName, ParseResult parseResult) =>
             {
                 var filters = new Dictionary<string, string>();
                 var skip = 7;
@@ -299,7 +306,7 @@ namespace OneDas.Hdf.VdsTool
 
                 try
                 {
-                    Program.CreateAggregatedFiles(epochStart, method, argument, filters);
+                    Program.CreateAggregatedFiles(epochStart, method, argument, campaignName, filters);
                 }
                 catch (Exception)
                 {
@@ -313,9 +320,43 @@ namespace OneDas.Hdf.VdsTool
             return command;
         }
 
+        private static Command PrepareDocCommand()
+        {
+            var command = new Command("doc", "Exports the current VDS content to the specified directory.")
+            {
+                new Option("--campaign-name", "The campaign name to export the documentation for.")
+                {
+                    Argument = new Argument<string>(),
+                    Required = true
+                },
+                new Option("--output-dir", "The output directory, where the exported VDS file content will be written to")
+                {
+                    Argument = new Argument<string>(),
+                    Required = true
+                }
+            };
+
+            command.Handler = CommandHandler.Create((string campaignName, string outputDir) =>
+            {
+                try
+                {
+                    Program.WriteCampaignDocumentation(campaignName, outputDir);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Could not write campaign documentation. Aborting action.");
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            return command;
+        }
+
         #endregion
 
-        #region "VDS"
+        #region VDS
 
         public static void CreateVirtualDatasetFile(DateTime epochStart)
         {
@@ -351,11 +392,11 @@ namespace OneDas.Hdf.VdsTool
             try
             {
                 Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd, logger);
-                logger.LogInformation($"Creation of VDS file finished successfully.");
+                logger.LogInformation($"Execution of the 'vds' command finished successfully.");
             }
             catch (Exception ex)
             {
-                logger.LogError($"Creation of VDS file failed. Error message: '{ex.Message}'.");
+                logger.LogError($"Execution of the 'vds' command failed. Error message: '{ex.Message}'.");
                 throw;
             }
         }
@@ -626,7 +667,7 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
-        #region "VDS_META"
+        #region VDS_META
 
         public static hdf_transfer_function_t PromptTransferFunctionData(hdf_transfer_function_t hdf_transfer_function)
         {
@@ -901,35 +942,30 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
-        #region "AGGREGATION"
+        #region AGGREGATION
 
-        public static void CreateAggregatedFiles(DateTime epochStart, string method, string argument, Dictionary<string, string> filters)
+        public static void CreateAggregatedFiles(DateTime epochStart, string method, string argument, string campaignName, Dictionary<string, string> filters)
         {
             var epochEnd = epochStart.AddMonths(1);
             var sourceDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
-
-            if (Console.CursorTop > 0 || Console.CursorLeft > 0)
-                Console.WriteLine();
-
             var logger = _loggerFactory.CreateLogger("AGGREGATE");
-            logger.LogInformation($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
-            logger.LogInformation($"Epoch end: {epochEnd.ToString("yyyy-MM-dd")}");
-            Console.WriteLine();
+
+            logger.LogInformation($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}{Environment.NewLine}Epoch   end: {epochEnd.ToString("yyyy-MM-dd")}");
 
             try
             {
-                Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, method, argument, filters, logger);
-                logger.LogInformation($"Execution of the aggregate command finished successfully.");
+                Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, method, argument, campaignName, filters, logger);
+                logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
             }
             catch (Exception ex)
             {
-                logger.LogError($"Execution of the aggregate command failed. Error message: '{ex.Message}'.");
+                logger.LogError($"Execution of the 'aggregate' command failed. Error message: '{ex.Message}'.");
                 throw;
             }
         }
 
-        private static void InternalCreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string method, string argument, Dictionary<string, string> filters, ILogger logger)
+        private static void InternalCreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string method, string argument, string campaignName, Dictionary<string, string> filters, ILogger logger)
         {
             long sourceFileId = -1;
             long targetFileId = -1;
@@ -952,7 +988,10 @@ namespace OneDas.Hdf.VdsTool
 
                     // sourceFileId
                     sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-                    var campaignInfoSet = GeneralHelper.GetCampaignInfoSet(sourceFileId, isLazyLoading: false);
+                    var campaign = GeneralHelper.GetCampaignInfo(sourceFileId, isLazyLoading: false, campaignName);
+
+                    if (campaign == null)
+                        throw new Exception($"The campaign named '{campaignName}' could not be found.");
 
                     // targetFileId
                     var targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
@@ -976,10 +1015,7 @@ namespace OneDas.Hdf.VdsTool
                         }
 
                         // campaignInfo
-                        foreach (var campaignInfo in campaignInfoSet)
-                        {
-                            Program.AggregateCampaign(sourceFileId, targetFileId, campaignInfo, method, argument, filters, logger);
-                        }
+                        Program.AggregateCampaign(sourceFileId, targetFileId, campaign, method, argument, filters, logger);
 
                         Console.CursorTop -= 1;
                     }
@@ -1007,17 +1043,16 @@ namespace OneDas.Hdf.VdsTool
                 if (isNew || !IOHelper.CheckLinkExists(targetFileId, datasetPath))
                     H5O.copy(sourceFileId, datasetPath, targetFileId, datasetPath);
 
-                foreach (var variableInfo in campaignInfo.VariableInfoSet)
+                var filteredVariableInfos = campaignInfo.VariableInfoSet.Where(variableInfo => Program.ApplyAggregationFilter(variableInfo, filters)).ToList();
+
+                foreach (var filteredVariableInfo in filteredVariableInfos)
                 {
                     index++;
 
-                    if (Program.ApplyAggregationFilter(variableInfo, filters))
-                    {
-                        Console.WriteLine($"{variableInfo.VariableNameSet.Last()} ({index}/{campaignInfo.VariableInfoSet.Count()})");
-                        Program.AggregateVariable(sourceFileId, targetFileId, variableInfo, method, argument, logger);
-                        Console.CursorTop -= 1;
-                        Program.ClearCurrentLine();
-                    }
+                    Console.WriteLine($"{filteredVariableInfo.VariableNameSet.Last()} ({index}/{filteredVariableInfos.Count()})");
+                    Program.AggregateVariable(sourceFileId, targetFileId, filteredVariableInfo, method, argument, logger);
+                    Console.CursorTop -= 1;
+                    Program.ClearCurrentLine();
                 }
             }
             finally
@@ -1340,35 +1375,35 @@ namespace OneDas.Hdf.VdsTool
 
         private static bool ApplyAggregationFilter(VariableInfo variableInfo, Dictionary<string, string> filters)
         {
-            bool result = false;
+            bool result = true;
 
             // channel
             if (filters.ContainsKey("--include-channel"))
-                result = result & Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--include-channel"]);
+                result &= Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--include-channel"]);
 
             if (filters.ContainsKey("--exclude-channel"))
-                result = result & !Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--exclude-channel"]);
+                result &= !Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--exclude-channel"]);
 
             // group
             if (filters.ContainsKey("--include-group"))
-                result = result & Regex.IsMatch(variableInfo.VariableGroupSet.Last(), filters["--include-group"]);
+                result &= variableInfo.VariableGroupSet.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
 
             if (filters.ContainsKey("--exclude-group"))
-                result = result & !Regex.IsMatch(variableInfo.VariableGroupSet.Last(), filters["--exclude-group"]);
+                result &= !variableInfo.VariableGroupSet.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
 
             // unit
             if (filters.ContainsKey("--include-unit"))
-                result = result & Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--include-unit"]);
+                result &= Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--include-unit"]);
 
             if (filters.ContainsKey("--exclude-unit"))
-                result = result & !Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--exclude-unit"]);
+                result &= !Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--exclude-unit"]);
 
             return result;
         }
 
         #endregion
 
-        #region "PWSH"
+        #region PWSH
 
         private static void ExecutePwsh(string scriptFilePath, string transactionId)
         {
@@ -1392,10 +1427,152 @@ namespace OneDas.Hdf.VdsTool
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError($"Execution of script '{scriptFilePath}' failed. Error message: '{ex.Message}'.");
+                    logger.LogError($"Execution 'pwsh' command failed (path: '{scriptFilePath}'). Error message: '{ex.Message}'.");
                     throw;
                 }
             }
+        }
+
+        #endregion
+
+        #region DOC
+
+        public static void WriteCampaignDocumentation(string campaignName, string targetDirectoryPath)
+        {
+            long vdsFileId = -1;
+            long vdsMetaFileId = -1;
+
+            var logger = _loggerFactory.CreateLogger("DOC");
+
+            vdsFileId = H5F.open(Path.Combine(Environment.CurrentDirectory, "VDS.h5"), H5F.ACC_RDONLY);
+            vdsMetaFileId = H5F.open(Path.Combine(Environment.CurrentDirectory, "VDS_META.h5"), H5F.ACC_RDONLY);
+
+            try
+            {
+                var campaign = GeneralHelper.GetCampaignInfo(vdsFileId, isLazyLoading: false, campaignName);
+
+                if (campaign == null)
+                    throw new Exception($"The campaign named '{campaignName}' could not be found.");
+
+                Program.InternalWriteCampaignDocumentation(campaign, targetDirectoryPath, vdsMetaFileId, logger);
+                logger.LogInformation($"Execution of the 'doc' command finished successfully.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Execution of the 'doc' command failed. Error message: '{ex.Message}'.");
+                throw;
+            }
+            finally
+            {
+                if (H5I.is_valid(vdsMetaFileId) > 0) { H5F.close(vdsMetaFileId); }
+                if (H5I.is_valid(vdsFileId) > 0) { H5F.close(vdsFileId); }
+            }
+        }
+
+        public static void InternalWriteCampaignDocumentation(CampaignInfo campaign, string targetDirectoryPath, long vdsMetaFileId, ILogger logger)
+        {
+            long campaign_groupId = -1;
+
+            var groupNameSet = campaign.VariableInfoSet.Select(variableInfo => variableInfo.VariableGroupSet.Last()).Distinct().ToList();
+            var filePath = Path.Combine(targetDirectoryPath, $"{ campaign.Name.ToLower().Replace("/", "_").TrimStart('_') }.rst");          
+
+            using (var streamWriter = new StreamWriter(new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read)))
+            {
+                var restructuredTextWriter = new RestructuredTextWriter(streamWriter);
+
+                // campaign header
+                restructuredTextWriter.WriteHeading(campaign.Name.TrimStart('/').Replace("/", " / "), SectionHeader.Section);
+
+                // campaign description
+                restructuredTextWriter.WriteLine();
+
+                try
+                {
+                    string description;
+
+                    if (IOHelper.CheckLinkExists(vdsMetaFileId, campaign.Name))
+                    {
+                        campaign_groupId = H5G.open(vdsMetaFileId, campaign.Name);
+
+                        if (H5A.exists(campaign_groupId, "description") > 0)
+                            description = IOHelper.ReadAttribute<string>(campaign_groupId, "description").First();
+                        else
+                            description = "no description available";
+                    }
+                    else
+                    {
+                        description = "no description available";
+                    }
+
+                    restructuredTextWriter.WriteNote(description);
+                }
+                finally
+                {
+                    if (H5I.is_valid(campaign_groupId) > 0) { H5G.close(campaign_groupId); }
+                }
+
+                // groups
+                foreach (string groupName in groupNameSet)
+                {
+                    restructuredTextWriter.WriteLine();
+                    restructuredTextWriter.WriteHeading(groupName, SectionHeader.SubSection);
+                    restructuredTextWriter.WriteLine();
+
+                    var restructuredTextTable = new RestructuredTextTable(new List<string>() { "Name", "Unit", "Guid" });
+                    var groupedVariableInfoSet = campaign.VariableInfoSet.Where(variableInfo => variableInfo.VariableGroupSet.Last() == groupName).OrderBy(variableInfo => variableInfo.VariableNameSet.Last()).ToList();
+
+                    // variables
+                    groupedVariableInfoSet.ForEach(variableInfo =>
+                    {
+                        long variable_groupId = -1;
+
+                        List<hdf_transfer_function_t> transferFunctionSet = null;
+
+                        // name
+                        var name = variableInfo.VariableNameSet.Last();
+
+                        if (name.Count() > 43)
+                            name = $"{ name.Substring(0, 40) }...";
+
+                        // guid
+                        var guid = $"{ variableInfo.Name.Substring(0, 8) }...";
+
+                        // unit, transferFunctionSet
+                        var unit = string.Empty;
+
+                        try
+                        {
+                            var groupPath = variableInfo.GetPath();
+
+                            if (IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
+                            {
+                                variable_groupId = H5G.open(vdsMetaFileId, groupPath);
+
+                                if (H5A.exists(variable_groupId, "unit") > 0)
+                                    unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
+
+                                if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
+                                    transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
+                            }
+                        }
+                        finally
+                        {
+                            if (H5I.is_valid(variable_groupId) > 0) { H5G.close(variable_groupId); }
+                        }
+
+                        // 
+                        restructuredTextTable.AddRow(new List<string> { name, unit, guid });
+
+                        //if (transferFunctionSet != null)
+                        //    transferFunctionSet.ForEach(x => restructuredTextWriter.WriteLine($"{ x.date_time }, { x.type }, { x.option }, { x.argument } | "));
+                    });
+
+                    restructuredTextWriter.WriteTable(restructuredTextTable);
+                    restructuredTextWriter.WriteLine();
+                }
+            }
+
+            logger.LogInformation($"The file has been successfully written to '{filePath}'.");
         }
 
         #endregion
