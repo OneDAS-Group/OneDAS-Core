@@ -50,14 +50,8 @@ namespace OneDas.Hdf.Convert
 
                 var currentSourceDirectoryPath = Path.Combine(sourceDirectoryPath, dateTimeBegin.ToString("yyyy-MM"));
                 var currentTargetDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_IMPORT", dateTimeBegin.ToString("yyyy-MM"));
-                var currentTargetFileName = $"{campaignName.Replace('/', '_')}_V{version}_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
-                var currentTargetFilePath = Path.Combine(currentTargetDirectoryPath, currentTargetFileName);
 
-                if (File.Exists(currentTargetFilePath))
-                {
-                    _logger.LogInformation($"Target file '{currentTargetFilePath}' already exists.");
-                }
-                else if (!Directory.Exists(currentSourceDirectoryPath) || !Directory.EnumerateFileSystemEntries(currentSourceDirectoryPath).Any())
+                if (!Directory.Exists(currentSourceDirectoryPath) || !Directory.EnumerateFileSystemEntries(currentSourceDirectoryPath).Any())
                 {
                     _logger.LogInformation($"Source folder '{currentSourceDirectoryPath}' does not exist or is empty.");
                 }
