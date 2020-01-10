@@ -17,6 +17,13 @@ namespace OneDas.Hdf.Convert
 
         private OneDasConvertContext()
         {
+            //
+        }
+
+        private OneDasConvertContext(string filePath)
+        {
+            _filePath = filePath;
+
             this.ProcessedPeriods = new List<DateTime>();
         }
 
@@ -32,14 +39,14 @@ namespace OneDas.Hdf.Convert
 
         public static OneDasConvertContext OpenOrCreate(string importDirectoryPath)
         {
-            var _filePath = Path.Combine(importDirectoryPath, "metadata.json");
+            var filePath = Path.Combine(importDirectoryPath, "metadata.json");
 
             OneDasConvertContext convertContext;
 
-            if (File.Exists(_filePath))
-                convertContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(_filePath));
+            if (File.Exists(filePath))
+                convertContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(filePath));
             else
-                convertContext = new OneDasConvertContext();
+                convertContext = new OneDasConvertContext(filePath);
 
             return convertContext;
         }
