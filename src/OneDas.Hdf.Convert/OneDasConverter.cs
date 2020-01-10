@@ -76,15 +76,15 @@ namespace OneDas.Hdf.Convert
         {
             var firstFilePath = Directory.EnumerateFiles(sourceDirectoryPath).FirstOrDefault();
             var variableDescriptionSet = _dataReader.GetVariableDescriptions(firstFilePath);
-            var importContext = OneDasConvertContext.OpenOrCreate(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
+            var campaignContext = OneDasCampaignContext.Update(Path.Combine(sourceDirectoryPath, "..", ".."), campaignName, variableDescriptionSet);
 
             foreach (var variableDescription in variableDescriptionSet)
             {
-                variableDescription.Guid = importContext.VariableToGuidMap[variableDescription.VariableName];
+                variableDescription.Guid = campaignContext.VariableToGuidMap[variableDescription.VariableName];
             }
 
             var campaignNameParts = campaignName.Split('/');
-            var campaignDescription = new OneDasCampaignDescription(importContext.CampaignGuid, version, campaignNameParts[0], campaignNameParts[1], campaignNameParts[2]);
+            var campaignDescription = new OneDasCampaignDescription(campaignContext.CampaignGuid, version, campaignNameParts[0], campaignNameParts[1], campaignNameParts[2]);
             var customMetadataEntrySet = new List<CustomMetadataEntry>();
             var dataWriterContext = new DataWriterContext(systemName, targetDirectoryPath, campaignDescription, customMetadataEntrySet);
 
@@ -96,10 +96,15 @@ namespace OneDas.Hdf.Convert
 
             // convert data
             var currentOffset = TimeSpan.Zero;
+            var convertContext = OneDasConvertContext.OpenOrCreate(sourceDirectoryPath);
 
             while (currentOffset < TimeSpan.FromDays(1))
             {
                 var currentDateTimeBegin = dateTimeBegin + currentOffset;
+
+                if (convertContext.ProcessedPeriods.Contains(currentDateTimeBegin))
+                    continue;
+
                 var fileName = currentDateTimeBegin.ToString(fileNameFormat);
                 var sourceFilePath = Path.Combine(sourceDirectoryPath, fileName);
 
@@ -136,6 +141,8 @@ namespace OneDas.Hdf.Convert
                         dataStorage.Dispose();
                     }
 
+                    convertContext.ProcessedPeriods.Add(currentDateTimeBegin);
+
                     _logger.LogInformation($"{message}Done.");
                 }
                 catch (Exception ex)
@@ -143,6 +150,8 @@ namespace OneDas.Hdf.Convert
                     _logger.LogError($"{message}Failed. Reason: {ex.Message}");
                 }
             }
+
+            convertContext.Save();
         }
 
         #endregion

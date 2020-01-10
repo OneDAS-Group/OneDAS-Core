@@ -556,13 +556,9 @@ namespace OneDas.Hdf.IO
             finally
             {
                 if (gcHandle.IsAllocated)
-                {
                     gcHandle.Free();
-                }
                 else
-                {
                     Marshal.FreeHGlobal(valueSetPointer);
-                }
 
                 if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
             }
@@ -592,16 +588,12 @@ namespace OneDas.Hdf.IO
                     if (isReference)
                     {
                         if (valueSet_File.Count() == 0 || !Enumerable.SequenceEqual(valueSet_File, valueSet.Skip(Math.Max(0, valueSet.Count() - valueSet_File.Count()))))
-                        {
                             valueSet = valueSet.Concat(valueSet_File).ToArray();
-                        }
                     }
                     else
                     {
                         if (valueSet.Count() == 0 || !Enumerable.SequenceEqual(valueSet, valueSet_File.Skip(Math.Max(0, valueSet_File.Count() - valueSet.Count()))))
-                        {
                             valueSet = valueSet_File.Concat(valueSet).ToArray();
-                        }
                     }
                 }
             }

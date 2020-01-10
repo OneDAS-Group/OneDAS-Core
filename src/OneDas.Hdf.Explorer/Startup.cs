@@ -31,7 +31,7 @@ namespace OneDas.Hdf.Explorer
             {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.AddConsole();
-                loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "HdfExplorer-{Date}.txt"));
+                loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "HdfExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
                 loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
             });
 

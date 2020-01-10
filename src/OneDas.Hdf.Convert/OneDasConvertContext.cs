@@ -1,5 +1,4 @@
-﻿using OneDas.Extensibility;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -8,63 +7,52 @@ namespace OneDas.Hdf.Convert
 {
     public class OneDasConvertContext
     {
+        #region Fields
+
+        private string _filePath;
+
+        #endregion
+
         #region Constructors
 
         private OneDasConvertContext()
         {
-            //
-        }
-
-        private OneDasConvertContext(string campaignName)
-        {
-            this.CampaignName = campaignName;
-            this.CampaignGuid = Guid.NewGuid();
-            this.VariableToGuidMap = new Dictionary<string, Guid>();
+            this.ProcessedPeriods = new List<DateTime>();
         }
 
         #endregion
 
         #region Properties
 
-        public string CampaignName { get; set; }
-
-        public Guid CampaignGuid { get; set; }
-
-        public Dictionary<string, Guid> VariableToGuidMap { get; set; }
+        public List<DateTime> ProcessedPeriods { get; set; }
 
         #endregion
 
         #region Methods
 
-        public static OneDasConvertContext OpenOrCreate(string importDirectoryPath, string campaignName, List<VariableDescription> variableDescriptionSet)
+        public static OneDasConvertContext OpenOrCreate(string importDirectoryPath)
         {
-            var filePath = Path.Combine(importDirectoryPath, $"{campaignName.Replace('/', '_')}.json");
+            var filePath = Path.Combine(importDirectoryPath, "metadata.json");
 
-            OneDasConvertContext importContext;
+            OneDasConvertContext convertContext;
 
             if (File.Exists(filePath))
-                importContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(filePath));
+                convertContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(filePath));
             else
-                importContext = new OneDasConvertContext(campaignName);
+                convertContext = new OneDasConvertContext();
 
-            importContext.AddVariables(variableDescriptionSet);
+            return convertContext;
+        }
+
+        public void Save()
+        {
+            this.ProcessedPeriods.Sort();
 
             // save file
             var options = new JsonSerializerOptions { WriteIndented = true };
-            var writeJsonString = JsonSerializer.Serialize(importContext, options);
+            var writeJsonString = JsonSerializer.Serialize(this, options);
 
-            File.WriteAllText(filePath, writeJsonString);
-
-            return importContext;
-        }
-
-        private void AddVariables(List<VariableDescription> variableDescriptionSet)
-        {
-            foreach (var variableDescription in variableDescriptionSet)
-            {
-                if (!this.VariableToGuidMap.ContainsKey(variableDescription.VariableName))
-                    this.VariableToGuidMap[variableDescription.VariableName] = Guid.NewGuid();
-            }
+            File.WriteAllText(_filePath, writeJsonString);
         }
 
         #endregion

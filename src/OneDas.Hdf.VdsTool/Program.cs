@@ -37,6 +37,7 @@ namespace OneDas.Hdf.VdsTool
 
         private static async Task<int> Main(string[] args)
         {
+            Environment.CurrentDirectory = @"D:\DATABASE";
             OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory);
 
             try
@@ -55,7 +56,7 @@ namespace OneDas.Hdf.VdsTool
             var serviceProvider = new ServiceCollection().AddLogging(builder =>
             {
                 builder.AddConsole();
-                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"));
+                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
             }).BuildServiceProvider();
 
             _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
@@ -960,7 +961,7 @@ namespace OneDas.Hdf.VdsTool
             }
             catch (Exception ex)
             {
-                logger.LogError($"Execution of the 'aggregate' command failed. Error message: '{ex.Message}'.");
+                logger.LogError($"Execution of the 'aggregate' command failed. Error message: '{ex.ToString()}'.");
                 throw;
             }
         }
@@ -973,7 +974,7 @@ namespace OneDas.Hdf.VdsTool
             IList<string> filePathSet;
 
             if (Directory.Exists(sourceDirectoryPath))
-                filePathSet = Directory.GetFiles(sourceDirectoryPath);
+                filePathSet = Directory.GetFiles(sourceDirectoryPath, "*.h5", SearchOption.TopDirectoryOnly);
             else
                 filePathSet = new List<string>();
 
@@ -988,10 +989,10 @@ namespace OneDas.Hdf.VdsTool
 
                     // sourceFileId
                     sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-                    var campaign = GeneralHelper.GetCampaignInfo(sourceFileId, isLazyLoading: false, campaignName);
+                    var campaignInfo = GeneralHelper.GetCampaignInfo(sourceFileId, isLazyLoading: false, campaignName);
 
-                    if (campaign == null)
-                        throw new Exception($"The campaign named '{campaignName}' could not be found.");
+                    if (campaignInfo == null)
+                        continue;
 
                     // targetFileId
                     var targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
@@ -1015,7 +1016,7 @@ namespace OneDas.Hdf.VdsTool
                         }
 
                         // campaignInfo
-                        Program.AggregateCampaign(sourceFileId, targetFileId, campaign, method, argument, filters, logger);
+                        Program.AggregateCampaign(sourceFileId, targetFileId, campaignInfo, method, argument, filters, logger);
 
                         Console.CursorTop -= 1;
                     }
@@ -1043,7 +1044,7 @@ namespace OneDas.Hdf.VdsTool
                 if (isNew || !IOHelper.CheckLinkExists(targetFileId, datasetPath))
                     H5O.copy(sourceFileId, datasetPath, targetFileId, datasetPath);
 
-                var filteredVariableInfos = campaignInfo.VariableInfoSet.Where(variableInfo => Program.ApplyAggregationFilter(variableInfo, filters)).ToList();
+                var filteredVariableInfos = campaignInfo.VariableInfoSet.Where(variableInfo => Program.ApplyAggregationFilter(variableInfo, filters, logger)).ToList();
 
                 foreach (var filteredVariableInfo in filteredVariableInfos)
                 {
@@ -1373,30 +1374,79 @@ namespace OneDas.Hdf.VdsTool
             return result;
         }
 
-        private static bool ApplyAggregationFilter(VariableInfo variableInfo, Dictionary<string, string> filters)
+        private static bool ApplyAggregationFilter(VariableInfo variableInfo, Dictionary<string, string> filters, ILogger logger)
         {
             bool result = true;
 
             // channel
             if (filters.ContainsKey("--include-channel"))
-                result &= Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--include-channel"]);
+            {
+                if (variableInfo.VariableNameSet.Any())
+                    result &= Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--include-channel"]);
+                else
+                    result &= false;
+            }
 
             if (filters.ContainsKey("--exclude-channel"))
-                result &= !Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--exclude-channel"]);
+            {
+                if (variableInfo.VariableNameSet.Any())
+                    result &= !Regex.IsMatch(variableInfo.VariableNameSet.Last(), filters["--exclude-channel"]);
+                else
+                    result &= true;
+            }
 
             // group
             if (filters.ContainsKey("--include-group"))
-                result &= variableInfo.VariableGroupSet.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
+            {
+                if (variableInfo.VariableGroupSet.Any())
+                    result &= variableInfo.VariableGroupSet.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
+                else
+                    result &= false;
+            }
 
             if (filters.ContainsKey("--exclude-group"))
-                result &= !variableInfo.VariableGroupSet.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
+            {
+                if (variableInfo.VariableGroupSet.Any())
+                    result &= !variableInfo.VariableGroupSet.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
+                else
+                    result &= true;
+            }
 
             // unit
             if (filters.ContainsKey("--include-unit"))
-                result &= Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--include-unit"]);
+            {
+#warning Remove this special case check.
+                if (variableInfo.UnitSet.Last() == null)
+                {
+                    logger.LogWarning("Unit 'null' value detected.");
+                    result &= false;
+                }
+                else
+                {
+                    if (variableInfo.UnitSet.Any())
+                        result &= Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--include-unit"]);
+                    else
+                        result &= false;
+                }
+            }
 
             if (filters.ContainsKey("--exclude-unit"))
-                result &= !Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--exclude-unit"]);
+            {
+#warning Remove this special case check.
+                if (variableInfo.UnitSet.Last() == null)
+                {
+                    logger.LogWarning("Unit 'null' value detected.");
+                    result &= true;
+
+                }
+                else
+                {
+                    if (variableInfo.UnitSet.Any())
+                        result &= !Regex.IsMatch(variableInfo.UnitSet.Last(), filters["--exclude-unit"]);
+                    else
+                        result &= true;
+                }
+            }
 
             return result;
         }
