@@ -44,9 +44,14 @@ namespace OneDas.Hdf.Convert
             OneDasConvertContext convertContext;
 
             if (File.Exists(filePath))
+            {
                 convertContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(filePath));
+                convertContext._filePath = filePath;
+            }
             else
+            {
                 convertContext = new OneDasConvertContext(filePath);
+            }
 
             return convertContext;
         }
