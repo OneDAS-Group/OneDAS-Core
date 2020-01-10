@@ -32,12 +32,12 @@ namespace OneDas.Hdf.Convert
 
         public static OneDasConvertContext OpenOrCreate(string importDirectoryPath)
         {
-            var filePath = Path.Combine(importDirectoryPath, "metadata.json");
+            var _filePath = Path.Combine(importDirectoryPath, "metadata.json");
 
             OneDasConvertContext convertContext;
 
-            if (File.Exists(filePath))
-                convertContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(filePath));
+            if (File.Exists(_filePath))
+                convertContext = JsonSerializer.Deserialize<OneDasConvertContext>(File.ReadAllText(_filePath));
             else
                 convertContext = new OneDasConvertContext();
 
