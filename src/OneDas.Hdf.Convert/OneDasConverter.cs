@@ -26,7 +26,8 @@ namespace OneDas.Hdf.Convert
 
         public OneDasConverter(string databaseDirectoryPath, IDataReader dataReader, ILogger logger)
         {
-            OneDasUtilities.ValidateDatabaseFolderPath(databaseDirectoryPath);
+            if (!OneDasUtilities.ValidateDatabaseFolderPath(databaseDirectoryPath, out var message))
+                throw new Exception(message);
 
             _databaseDirectoryPath = databaseDirectoryPath;
             _dataReader = dataReader;

@@ -37,11 +37,15 @@ namespace OneDas.Hdf.VdsTool
 
         private static async Task<int> Main(string[] args)
         {
-            Environment.CurrentDirectory = @"D:\DATABASE";
-            OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory);
-
+            // try/catch is necessary to support command tab completion
             try
             {
+                if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+                {
+                    Console.WriteLine(message);
+                    return 1;
+                }
+
                 Console.CursorVisible = false;
                 Console.Title = "VdsTool";
             }
@@ -135,13 +139,16 @@ namespace OneDas.Hdf.VdsTool
 
             command.Handler = CommandHandler.Create((string scriptPath, string transactionId) =>
             {
+                var logger = _loggerFactory.CreateLogger($"PWSH ({transactionId})");
+
                 try
                 {
-                    Program.ExecutePwsh(scriptPath, transactionId);
+                    Program.ExecutePwsh(scriptPath, logger);
+                    logger.LogInformation($"Execution of script '{scriptPath}' finished successfully.");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Could not execute pwsh command. Aborting action.");
+                    logger.LogError($"Execution 'pwsh' command failed (path: '{scriptPath}'). Error message: '{ex.Message}'.");
                     return 1;
                 }
 
@@ -160,28 +167,27 @@ namespace OneDas.Hdf.VdsTool
 
             command.Handler = CommandHandler.Create(() =>
             {
+                var logger = _loggerFactory.CreateLogger("UPDATE");
+
                 try
                 {
                     DateTime epochStart;
-
                     var date = DateTime.UtcNow.Date;
 
-                    if (date.Day == 1)
-                    {
-                        epochStart = new DateTime(date.Year, date.Month, 1);
-                        epochStart = epochStart.AddMonths(-1);
-                        Program.CreateVirtualDatasetFile(epochStart);
-                    }
+                    epochStart = new DateTime(date.Year, date.Month, 1).AddMonths(-1);
+                    Program.CreateVirtualDatasetFile(epochStart, logger);
 
                     epochStart = new DateTime(date.Year, date.Month, 1);
-                    Program.CreateVirtualDatasetFile(epochStart);
+                    Program.CreateVirtualDatasetFile(epochStart, logger);
 
                     epochStart = DateTime.MinValue;
-                    Program.CreateVirtualDatasetFile(epochStart);
+                    Program.CreateVirtualDatasetFile(epochStart, logger);
+
+                    logger.LogInformation($"Execution of the 'update' command finished successfully.");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Could not update the database index. Aborting action.");
+                    logger.LogError($"Execution of the 'vds' command failed. Error message: '{ex.Message}'.");
                     return 1;
                 }
 
@@ -203,19 +209,22 @@ namespace OneDas.Hdf.VdsTool
                 new Option("--epoch-start", "The start date of the epoch")
                 {
                     Argument = new Argument<DateTime>(TryConvertArgument),
-                    Required = true
+                    Required = false
                 }
             };
 
             command.Handler = CommandHandler.Create((DateTime epochStart) =>
             {
+                var logger = _loggerFactory.CreateLogger("VDS");
+
                 try
                 {
-                    Program.CreateVirtualDatasetFile(epochStart);
+                    Program.CreateVirtualDatasetFile(epochStart, logger);
+                    logger.LogInformation($"Execution of the 'vds' command finished successfully.");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Could not update the database index. Aborting action.");
+                    logger.LogError($"Execution of the 'vds' command failed. Error message: '{ex.Message}'.");
                     return 1;
                 }
 
@@ -288,6 +297,7 @@ namespace OneDas.Hdf.VdsTool
 
             command.Handler = CommandHandler.Create((DateTime epochStart, string method, string argument, string campaignName, ParseResult parseResult) =>
             {
+                var logger = _loggerFactory.CreateLogger("AGGREGATE");
                 var filters = new Dictionary<string, string>();
                 var skip = 7;
                 var isOption = true;
@@ -307,11 +317,12 @@ namespace OneDas.Hdf.VdsTool
 
                 try
                 {
-                    Program.CreateAggregatedFiles(epochStart, method, argument, campaignName, filters);
+                    Program.CreateAggregatedFiles(epochStart, method, argument, campaignName, filters, logger);
+                    logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Could not calculate aggregations. Aborting action.");
+                    logger.LogError($"Execution of the 'aggregate' command failed. Error message: '{ex.ToString()}'.");
                     return 1;
                 }
 
@@ -339,13 +350,16 @@ namespace OneDas.Hdf.VdsTool
 
             command.Handler = CommandHandler.Create((string campaignName, string outputDir) =>
             {
+                var logger = _loggerFactory.CreateLogger("DOC");
+
                 try
                 {
-                    Program.WriteCampaignDocumentation(campaignName, outputDir);
+                    logger.LogInformation($"Execution of the 'doc' command finished successfully.");
+                    Program.WriteCampaignDocumentation(campaignName, outputDir, logger);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Could not write campaign documentation. Aborting action.");
+                    logger.LogError($"Execution of the 'doc' command failed. Error message: '{ex.Message}'.");
                     return 1;
                 }
 
@@ -359,12 +373,11 @@ namespace OneDas.Hdf.VdsTool
 
         #region VDS
 
-        public static void CreateVirtualDatasetFile(DateTime epochStart)
+        public static void CreateVirtualDatasetFile(DateTime epochStart, ILogger logger)
         {
             string vdsFilePath;
             DateTime epochEnd;
 
-            var logger = _loggerFactory.CreateLogger("VDS");
             var sourceDirectoryPathSet = new List<string>();
 
             if (epochStart > DateTime.MinValue)
@@ -390,16 +403,7 @@ namespace OneDas.Hdf.VdsTool
             logger.LogInformation($"Epoch end: {epochEnd.ToString("yyyy-MM-dd")}");
             Console.WriteLine();
 
-            try
-            {
-                Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd, logger);
-                logger.LogInformation($"Execution of the 'vds' command finished successfully.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Execution of the 'vds' command failed. Error message: '{ex.Message}'.");
-                throw;
-            }
+            Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd, logger);
         }
 
         private static unsafe void InternalCreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd, ILogger logger)
@@ -945,25 +949,15 @@ namespace OneDas.Hdf.VdsTool
 
         #region AGGREGATION
 
-        public static void CreateAggregatedFiles(DateTime epochStart, string method, string argument, string campaignName, Dictionary<string, string> filters)
+        public static void CreateAggregatedFiles(DateTime epochStart, string method, string argument, string campaignName, Dictionary<string, string> filters, ILogger logger)
         {
             var epochEnd = epochStart.AddMonths(1);
             var sourceDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
-            var logger = _loggerFactory.CreateLogger("AGGREGATE");
 
             logger.LogInformation($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}{Environment.NewLine}Epoch   end: {epochEnd.ToString("yyyy-MM-dd")}");
 
-            try
-            {
-                Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, method, argument, campaignName, filters, logger);
-                logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Execution of the 'aggregate' command failed. Error message: '{ex.ToString()}'.");
-                throw;
-            }
+            Program.InternalCreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, method, argument, campaignName, filters, logger);
         }
 
         private static void InternalCreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string method, string argument, string campaignName, Dictionary<string, string> filters, ILogger logger)
@@ -1455,31 +1449,21 @@ namespace OneDas.Hdf.VdsTool
 
         #region PWSH
 
-        private static void ExecutePwsh(string scriptFilePath, string transactionId)
+        private static void ExecutePwsh(string scriptFilePath, ILogger logger)
         {
             using (PowerShell ps = PowerShell.Create())
             {
                 // ensure FluentFTP lib is loaded
                 var dummy = FtpExists.NoCheck;
 
-                var logger = new VdsToolLogger(_loggerFactory.CreateLogger($"PWSH ({transactionId})"));
+                var vdsToolLogger = new VdsToolLogger(logger);
                 logger.LogInformation($"Executing script '{scriptFilePath}'.");
 
                 ps.Runspace.SessionStateProxy.SetVariable("dbRoot", Environment.CurrentDirectory);
-                ps.Runspace.SessionStateProxy.SetVariable("logger", logger);
+                ps.Runspace.SessionStateProxy.SetVariable("logger", vdsToolLogger);
 
-                try
-                {
-                    ps.AddScript(File.ReadAllText(scriptFilePath))
-                      .Invoke();
-
-                    logger.LogInformation($"Execution of script '{scriptFilePath}' finished successfully.");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Execution 'pwsh' command failed (path: '{scriptFilePath}'). Error message: '{ex.Message}'.");
-                    throw;
-                }
+                ps.AddScript(File.ReadAllText(scriptFilePath))
+                  .Invoke();
             }
         }
 
@@ -1487,12 +1471,10 @@ namespace OneDas.Hdf.VdsTool
 
         #region DOC
 
-        public static void WriteCampaignDocumentation(string campaignName, string targetDirectoryPath)
+        public static void WriteCampaignDocumentation(string campaignName, string targetDirectoryPath, ILogger logger)
         {
             long vdsFileId = -1;
             long vdsMetaFileId = -1;
-
-            var logger = _loggerFactory.CreateLogger("DOC");
 
             vdsFileId = H5F.open(Path.Combine(Environment.CurrentDirectory, "VDS.h5"), H5F.ACC_RDONLY);
             vdsMetaFileId = H5F.open(Path.Combine(Environment.CurrentDirectory, "VDS_META.h5"), H5F.ACC_RDONLY);
@@ -1505,12 +1487,6 @@ namespace OneDas.Hdf.VdsTool
                     throw new Exception($"The campaign named '{campaignName}' could not be found.");
 
                 Program.InternalWriteCampaignDocumentation(campaign, targetDirectoryPath, vdsMetaFileId, logger);
-                logger.LogInformation($"Execution of the 'doc' command finished successfully.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Execution of the 'doc' command failed. Error message: '{ex.Message}'.");
-                throw;
             }
             finally
             {

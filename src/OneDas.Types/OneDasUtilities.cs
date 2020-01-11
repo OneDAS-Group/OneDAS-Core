@@ -10,8 +10,10 @@ namespace OneDas
 {
     public static class OneDasUtilities
     {
-        public static void ValidateDatabaseFolderPath(string databaseFolderPath)
+        public static bool ValidateDatabaseFolderPath(string databaseFolderPath, out string message)
         {
+            var result = true;
+
             var exists = Directory.Exists(databaseFolderPath) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_AGGREGATION")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_IMPORT")) &&
@@ -19,8 +21,15 @@ namespace OneDas
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_ORIGIN")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "VDS"));
 
+            message = string.Empty;
+
             if (!exists)
-                throw new Exception("The provided path does not contain a OneDAS database.");
+            {
+                message = "The provided path does not contain a OneDAS database.";
+                result = false;
+            }
+
+            return result;
         }
 
         public static int SizeOf(OneDasDataType dataType)
