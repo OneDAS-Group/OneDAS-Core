@@ -22,7 +22,6 @@ namespace OneDas.Extensibility
         public ExtensionFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-
             _extensionSet = new HashSet<Type>();
         }
 
@@ -32,9 +31,7 @@ namespace OneDas.Extensibility
 
         public void ScanAssembly(Assembly assembly)
         {
-            List<Type> foundTypeSet;
-
-            foundTypeSet = assembly.ExportedTypes.Where(type => type.IsClass && !type.IsAbstract && (type.IsSubclassOf(typeof(ExtensionSettingsBase)) || type.IsSubclassOf(typeof(ExtensionLogicBase)))).ToList();
+            var foundTypeSet = assembly.ExportedTypes.Where(type => type.IsClass && !type.IsAbstract && (type.IsSubclassOf(typeof(ExtensionSettingsBase)) || type.IsSubclassOf(typeof(ExtensionLogicBase)))).ToList();
 
             this.AddRange(foundTypeSet);
         }
@@ -78,9 +75,7 @@ namespace OneDas.Extensibility
             {
                 // create IExtensionSupporter and call Initialize once
                 if (!_extensionSet.Contains(type))
-                {
                     this.TryBuildSupporter(type)?.Initialize();
-                }
 
                 _extensionSet.Add(type);
             });
@@ -97,74 +92,49 @@ namespace OneDas.Extensibility
 
         public IExtensionSupporter BuildSupporter(Type settingsType)
         {
-            Type supporterType;
-
             if (settingsType == null)
-            {
                 throw new ArgumentNullException();
-            }
 
             if (!settingsType.IsSubclassOf(typeof(ExtensionSettingsBase)))
-            {
                 throw new Exception(ErrorMessage.ExtensionFactory_TypeDoesNotInheritFromExtensionSettingsBase);
-            }
 
-            supporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
+            var supporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
 
             if (supporterType == null)
-            {
                 throw new Exception(ErrorMessage.ExtensionFactory_NoExtensionSupporterAttributeFound);
-            }
 
             if (!typeof(IExtensionSupporter).IsAssignableFrom(supporterType))
-            {
                 throw new Exception(ErrorMessage.ExtensionFactory_TypeDoesNotImplementIExtensionSupporter);
-            }
 
             return (IExtensionSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, supporterType);
         }
 
         public IExtensionSupporter TryBuildSupporter(Type settingsType)
         {
-            Type supporterType;
-
             if (settingsType == null)
-            {
                 throw new ArgumentNullException();
-            }
 
             if (!settingsType.IsSubclassOf(typeof(ExtensionSettingsBase)))
-            {
                 return null;
-            }
 
-            supporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
+            var supporterType = settingsType.GetFirstAttribute<ExtensionSupporterAttribute>()?.Type;
 
             if (supporterType == null)
-            {
                 return null;
-            }
 
             if (!typeof(IExtensionSupporter).IsAssignableFrom(supporterType))
-            {
                 return null;
-            }
 
             return (IExtensionSupporter)ActivatorUtilities.CreateInstance(_serviceProvider, supporterType);
         }
 
         public TExtensionLogic BuildLogic<TExtensionLogic>(ExtensionSettingsBase settings, params object[] args) where TExtensionLogic : ExtensionLogicBase
         {
-            Type logicType;
-            object[] argsExtended;
-
-            argsExtended = args.Concat(new object[] { settings }).ToArray();
-            logicType = settings.GetType().GetFirstAttribute<ExtensionContextAttribute>()?.LogicType;
+            var argsExtended = args.Concat(new object[] { settings }).ToArray();
+            var logicType = settings.GetType().GetFirstAttribute<ExtensionContextAttribute>()?.LogicType;
 
             if (logicType == null)
-            {
                 throw new Exception(ErrorMessage.ExtensionFactory_NoMatchingTExtensionLogicFound);
-            }
 
             return (TExtensionLogic)ActivatorUtilities.CreateInstance(_serviceProvider, logicType, argsExtended);
         }
@@ -175,19 +145,16 @@ namespace OneDas.Extensibility
 
         public ActionResponse HandleActionRequest(ActionRequest actionRequest)
         {
-            List<Type> typeSet;
-            Type settingsType;
             ActionResponse actionResponse;
-            IExtensionSupporter supporter;
 
-            typeSet = this.Get<ExtensionSettingsBase>().ToList();
+            var typeSet = this.Get<ExtensionSettingsBase>().ToList();
             actionRequest.Validate();
 
-            settingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == actionRequest.ExtensionId);
+            var settingsType = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == actionRequest.ExtensionId);
 
             if (settingsType != null)
             {
-                supporter = this.BuildSupporter(settingsType);
+                var supporter = this.BuildSupporter(settingsType);
                 actionResponse = supporter.HandleActionRequest(actionRequest);
             }
             else
@@ -200,13 +167,9 @@ namespace OneDas.Extensibility
 
         public string GetStringResource(string id, string resourceName)
         {
-            List<Type> typeSet;
-            Type type;
-            Assembly assembly;
-
-            typeSet = this.Get<ExtensionSettingsBase>().ToList();
-            type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == id);
-            assembly = type?.Assembly;
+            var typeSet = this.Get<ExtensionSettingsBase>().ToList();
+            var type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == id);
+            var assembly = type?.Assembly;
             resourceName = $"{ assembly.GetName().Name }.{ resourceName }"; // actually it should be the root namespace instead of assembly name
 
             if (assembly != null)

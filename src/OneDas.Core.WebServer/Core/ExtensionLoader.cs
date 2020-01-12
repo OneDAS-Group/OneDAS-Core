@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.ProjectModel;
 using OneDas.Extensibility;
 using OneDas.PackageManagement;
 using System;
@@ -62,11 +61,9 @@ namespace OneDas.WebServer.Core
 
         public void ReloadPackages()
         {
-            List<Assembly> assemblySet;
-
             _extensionFactory.Clear();
 
-            assemblySet = this.LoadPackages();
+            var assemblySet = this.LoadPackages();
 
             assemblySet.ToList().ForEach(assembly =>
             {
@@ -83,30 +80,21 @@ namespace OneDas.WebServer.Core
 
         private List<Assembly> LoadPackages()
         {
-            LockFile lockFile;
-            LockFileTarget lockFileTarget;
-            OneDasAssemblyLoadContext loadContext;
-            List<Assembly> assemblySet;
+            var assemblySet = new List<Assembly>();
+            var loadContext = new OneDasAssemblyLoadContext();
 
-            assemblySet = new List<Assembly>();
-            loadContext = new OneDasAssemblyLoadContext();
-
-            lockFile = _packageManager.GetLockFile();
-            lockFileTarget = lockFile?.GetTarget(new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 1, 0, 0)), Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier());
+            var lockFile = _packageManager.GetLockFile();
+            var lockFileTarget = lockFile?.GetTarget(new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 1, 0, 0)), Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier());
 
             if (lockFileTarget != null)
             {
                 lockFileTarget.Libraries.ToList().ForEach(targetLibrary =>
                 {
-                    bool skip;
-                    string basePath;
                     string absoluteFilePath;
 
-                    LockFileLibrary lockFileLibrary;
-
-                    lockFileLibrary = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
-                    basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
-                    skip = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name);
+                    var lockFileLibrary = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
+                    var basePath = Path.Combine(lockFile.PackageFolders.First().Path, lockFileLibrary.Path);
+                    var skip = DependencyContext.Default.RuntimeLibraries.Any(runtimeLibrary => runtimeLibrary.Name == targetLibrary.Name);
 
                     if (skip)
                     {
@@ -122,13 +110,9 @@ namespace OneDas.WebServer.Core
                     targetLibrary.RuntimeAssemblies.ToList().ForEach(runtimeAssembly =>
                     {
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
                             absoluteFilePath = PathUtility.GetPathWithBackSlashes(Path.Combine(basePath, runtimeAssembly.Path));
-                        }
                         else
-                        {
                             absoluteFilePath = PathUtility.GetPathWithForwardSlashes(Path.Combine(basePath, runtimeAssembly.Path));
-                        }
 
                         if (!runtimeAssembly.Path.EndsWith("/_._"))
                         {

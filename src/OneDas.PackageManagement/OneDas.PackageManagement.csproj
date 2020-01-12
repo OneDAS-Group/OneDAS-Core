@@ -14,21 +14,5 @@
   <ItemGroup>
     <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources\ErrorMessage.Designer.cs">
-      <DependentUpon>ErrorMessage.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\ErrorMessage.resx">
-      <CustomToolNamespace>OneDas.PackageManagement</CustomToolNamespace>
-      <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
-      <Generator>ResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
   
 </Project>

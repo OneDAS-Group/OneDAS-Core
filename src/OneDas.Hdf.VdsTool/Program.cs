@@ -1454,7 +1454,7 @@ namespace OneDas.Hdf.VdsTool
             using (PowerShell ps = PowerShell.Create())
             {
                 // ensure FluentFTP lib is loaded
-                var dummy = FtpExists.NoCheck;
+                _ = FtpExists.NoCheck;
 
                 var vdsToolLogger = new VdsToolLogger(logger);
                 logger.LogInformation($"Executing script '{scriptFilePath}'.");
