@@ -12,8 +12,15 @@ namespace OneDas.Extension.Csv
 
         public CsvSettings()
         {
-            //
+            this.DecimalPlacesCount = 2;
         }
+
+        #endregion
+
+        #region Properties
+
+        public CsvRowIndexFormat RowIndexFormat { get; set; }
+        public uint DecimalPlacesCount { get; set; }
 
         #endregion
 

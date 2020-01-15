@@ -56,6 +56,13 @@ namespace OneDas.Hdf.Explorer.Core
 
                     break;
 
+                case FileFormat.CSV2:
+
+                    settings = new CsvSettings() { FileGranularity = fileGranularity, RowIndexFormat = CsvRowIndexFormat.Unix };
+                    dataWriter = new CsvWriter((CsvSettings)settings, NullLogger.Instance);
+
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }

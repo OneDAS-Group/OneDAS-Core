@@ -16,8 +16,12 @@ namespace OneDas.Extension.Csv
         #region "Fields"
 
         private CsvSettings _settings;
-        private NumberFormatInfo _numberFormatInfo;
+        private NumberFormatInfo _numberFormatInfo_data;
+        private NumberFormatInfo _numberFormatInfo_index;
+        private NumberFormatInfo _numberFormatInfo_unix;
 
+        private double _unixStart;
+        private DateTime _unixEpoch;
         private DateTime _lastFileStartDateTime;
 
         #endregion
@@ -28,13 +32,27 @@ namespace OneDas.Extension.Csv
         {
             _settings = settings;
 
-            _numberFormatInfo = new NumberFormatInfo();
+            _unixEpoch = new DateTime(1970, 01, 01);
 
-            _numberFormatInfo.NumberDecimalSeparator = ".";
-            _numberFormatInfo.NumberDecimalDigits = 2;
-            _numberFormatInfo.NumberGroupSeparator = string.Empty;
+            _numberFormatInfo_data = new NumberFormatInfo()
+            {
+                NumberDecimalSeparator = ".",
+                NumberDecimalDigits = 2,
+                NumberGroupSeparator = string.Empty
+            };
+
+            _numberFormatInfo_index = new NumberFormatInfo()
+            {
+                NumberGroupSeparator = string.Empty
+            };
+
+            _numberFormatInfo_unix = new NumberFormatInfo()
+            {
+                NumberDecimalSeparator = ".",
+                NumberGroupSeparator = string.Empty
+            };
         }
-
+        
         #endregion
 
         #region "Methods"
@@ -44,6 +62,7 @@ namespace OneDas.Extension.Csv
             string dataFilePath;
 
             _lastFileStartDateTime = startDateTime;
+            _unixStart = (startDateTime - _unixEpoch).TotalSeconds;
 
             foreach (var contextGroup in variableContextGroupSet)
             {
@@ -75,7 +94,17 @@ namespace OneDas.Extension.Csv
                         }
 
                         // header
-                        streamWriter.Write("index;");
+                        switch (_settings.RowIndexFormat)
+                        {
+                            case CsvRowIndexFormat.Index:
+                                streamWriter.Write("index;");
+                                break;
+                            case CsvRowIndexFormat.Unix:
+                                streamWriter.Write("unix time;");
+                                break;
+                            default:
+                                throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
+                        }
 
                         foreach (VariableContext variableContext in contextGroup.VariableContextSet)
                         {
@@ -112,14 +141,24 @@ namespace OneDas.Extension.Csv
             {
                 for (ulong rowIndex = 0; rowIndex < length; rowIndex++)
                 {
-                    streamWriter.Write($"{ string.Format(_numberFormatInfo, "{0:N}", fileOffset + rowIndex) };");
+                    switch (_settings.RowIndexFormat)
+                    {
+                        case CsvRowIndexFormat.Index:
+                            streamWriter.Write($"{ string.Format(_numberFormatInfo_index, "{0:N0}", fileOffset + rowIndex) };");
+                            break;
+                        case CsvRowIndexFormat.Unix:
+                            streamWriter.Write($"{ string.Format(_numberFormatInfo_unix, "{0:N5}", _unixStart + (fileOffset + rowIndex) / (double)contextGroup.SampleRate.SamplesPerSecond) };");
+                            break;
+                        default:
+                            throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
+                    }
 
                     for (int i = 0; i < simpleDataStorageSet.Count; i++)
                     {
                         object value;
 
                         value = simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)];
-                        streamWriter.Write($"{ string.Format(_numberFormatInfo, "{0:N}", value) };");
+                        streamWriter.Write($"{ string.Format(_numberFormatInfo_data, $"{{0:N}}{_settings.DecimalPlacesCount}", value) };");
                     }
 
                     streamWriter.WriteLine();
