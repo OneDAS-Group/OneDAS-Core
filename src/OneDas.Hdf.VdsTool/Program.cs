@@ -248,7 +248,7 @@ namespace OneDas.Hdf.VdsTool
                     Argument = new Argument<DateTime>(TryConvertArgument),
                     Required = true
                 },
-                new Option("--method", "Possible arguments are 'mean', 'mean_polar', 'min', 'max', 'std', 'min_bitwise' and 'max_bitwise'")
+                new Option("--method", "Possible arguments are 'mean', 'mean_polar', 'min', 'max', 'std', 'rms', 'min_bitwise' and 'max_bitwise'")
                 {
                     Argument = new Argument<string>(),
                     Required = true
@@ -1280,6 +1280,20 @@ namespace OneDas.Hdf.VdsTool
                         Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
 
                         result[x] = ArrayStatistics.StandardDeviation(chunkValueSet);
+                    });
+
+                    break;
+
+                case "rms":
+
+                    Parallel.For(0, targetDatasetLength, x =>
+                    {
+                        var baseIndex = x * chunkSize;
+                        var chunkValueSet = new double[chunkSize];
+
+                        Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
+
+                        result[x] = ArrayStatistics.RootMeanSquare(chunkValueSet);
                     });
 
                     break;
