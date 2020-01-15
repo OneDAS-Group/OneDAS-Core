@@ -1,10 +1,8 @@
-﻿using HDF.PInvoke;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.Explorer.Web;
-using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -37,104 +35,21 @@ namespace OneDas.Hdf.Explorer.Core
 
         public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
         {
-            long fileId = -1;
-
-            ulong offset;
-            int[] aggregatedData;
-            DataAvailabilityGranularity granularity;
-
             return Task.Run(() =>
             {
+                IDatabase database = null;
+
                 _stateManager.CheckState(_connectionId);
 
-                // open file
-                fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
-
-                // epoch & hyperslab
-                var epochStart = new DateTime(2000, 01, 01);
-                var epochEnd = new DateTime(2030, 01, 01);
-
-                if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
-                    throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
-
-                var samplesPerDay = new SampleRateContainer("is_chunk_completed_set").SamplesPerDay;
-
-                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
-                var stride = 1UL;
-                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
-                var count = 1UL;
-
-                // get data
-                var totalDays = (dateTimeEnd - dateTimeBegin).TotalDays;
-                var data = IOHelper.ReadDataset<byte>(fileId, $"{ campaignName }/is_chunk_completed_set", start, stride, block, count).Select(value => (int)value).ToArray();
-
-                if (totalDays <= 7)
+                try
                 {
-                    granularity = DataAvailabilityGranularity.ChunkLevel;
-                    aggregatedData = data;
+                    database = new HdfDatabase(_options.DataBaseFolderPath);
+                    return database.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
                 }
-                else if (totalDays <= 365)
+                finally
                 {
-                    granularity = DataAvailabilityGranularity.DayLevel;
-                    offset = (ulong)dateTimeBegin.TimeOfDay.TotalMinutes;
-                    aggregatedData = new int[(int)Math.Ceiling(totalDays)];
-
-                    Parallel.For(0, (int)Math.Ceiling(totalDays), day =>
-                    {
-                        var startIndex = (ulong)day * samplesPerDay; // inclusive
-                        var endIndex = startIndex + samplesPerDay; // exclusive
-
-                        if ((int)startIndex - (int)offset < 0)
-                            startIndex = 0;
-                        else
-                            startIndex = startIndex - offset;
-
-                        if (endIndex - offset >= (ulong)data.Length)
-                            endIndex = (ulong)data.Length;
-                        else
-                            endIndex = endIndex - offset;
-
-                        aggregatedData[day] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
-                    });
+                    database?.Dispose();
                 }
-                else
-                {
-                    var totalMonths = (dateTimeEnd.Month - dateTimeBegin.Month) + 1 + 12 * (dateTimeEnd.Year - dateTimeBegin.Year);
-                    var totalDateTimeBegin = new DateTime(dateTimeBegin.Year, dateTimeBegin.Month, 1);
-
-                    granularity = DataAvailabilityGranularity.MonthLevel;
-                    offset = (ulong)(dateTimeBegin - totalDateTimeBegin).TotalMinutes;
-                    aggregatedData = new int[totalMonths];
-
-                    Parallel.For(0, totalMonths, month =>
-                    {
-                        ulong startIndex; // inclusive
-                        ulong endIndex; // exclusive
-
-                        DateTime currentDateTimeBegin;
-                        DateTime currentDateTimeEnd;
-
-                        currentDateTimeBegin = totalDateTimeBegin.AddMonths(month);
-                        currentDateTimeEnd = currentDateTimeBegin.AddMonths(1);
-
-                        if ((currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset < 0)
-                            startIndex = 0;
-                        else
-                            startIndex = (ulong)(currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset;
-
-                        if ((currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset >= data.Length)
-                            endIndex = (ulong)data.Length;
-                        else
-                            endIndex = (ulong)(currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset;
-
-                        aggregatedData[month] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
-                    });
-                }
-
-                // clean up
-                H5F.close(fileId);
-
-                return new DataAvailabilityStatistics(granularity, aggregatedData);
             });
         }
 
@@ -179,8 +94,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, SampleRateContainer sampleRate, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
-            long fileId = -1;
-            long datasetId = -1;
+            IDatabase database = null;
 
             // task 
             return Task.Run(() =>
@@ -204,14 +118,12 @@ namespace OneDas.Hdf.Explorer.Core
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
 
                 var start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond));
-                var stride = 1UL;
                 var block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond));
-                var count = 1UL;
 
                 try
                 {
-                    // open file
-                    fileId = H5F.open(_options.VdsFilePath, H5F.ACC_RDONLY);
+                    // open database
+                    database = new HdfDatabase(_options.DataBaseFolderPath);
 
                     // byte count
                     var bytesPerRow = 0UL;
@@ -222,15 +134,7 @@ namespace OneDas.Hdf.Explorer.Core
                         {
                             foreach (string datasetInfo in variableInfo.Value)
                             {
-                                try
-                                {
-                                    datasetId = H5D.open(fileId, $"{campaignInfo.Key}/{variableInfo.Key}/{datasetInfo}");
-                                    bytesPerRow += (ulong)OneDasUtilities.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
-                                }
-                                finally
-                                {
-                                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                                }
+                                bytesPerRow = database.GetElementSize(campaignInfo.Key, variableInfo.Key, datasetInfo);
                             }
                         }
                     }
@@ -256,7 +160,7 @@ namespace OneDas.Hdf.Explorer.Core
                             hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, fileId, samplesPerSecond, start, stride, block, count, segmentLength)))
+                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, database, samplesPerSecond, start, block, segmentLength)))
                                 return string.Empty;
                         }
                     }
@@ -269,8 +173,7 @@ namespace OneDas.Hdf.Explorer.Core
                 finally
                 {
                     _stateManager.SetState(_connectionId, HdfExplorerState.Idle);
-
-                    if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
+                    database?.Dispose();
                 }
 
                 var message = $"{remoteIpAddress} requested data: {dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss")} to {dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -282,18 +185,17 @@ namespace OneDas.Hdf.Explorer.Core
 
         public Task<string> GetCampaignDocumentation(string campaigInfoName)
         {
-            long vdsMetaFileId = -1;
-
-            var campaignInfo = Program.CampaignInfoSet.First(campaign => campaign.Name == campaigInfoName);
-
             return Task.Run(() =>
             {
+                IDatabase database = null;
+
+                var campaignInfo = Program.CampaignInfoSet.First(campaign => campaign.Name == campaigInfoName);
+
                 _stateManager.CheckState(_connectionId);
 
                 try
                 {
-                    if (File.Exists(_options.VdsMetaFilePath))
-                        vdsMetaFileId = H5F.open(_options.VdsMetaFilePath, H5F.ACC_RDONLY);
+                    database = new HdfDatabase(_options.DataBaseFolderPath);
 
                     var csvFileName = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }_{ Guid.NewGuid().ToString() }.csv");
                     var groupNameSet = campaignInfo.VariableInfoSet.SelectMany(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n')).Distinct().ToList();
@@ -319,32 +221,7 @@ namespace OneDas.Hdf.Explorer.Core
                             // variables
                             groupedVariableInfoSet.ForEach(variableInfo =>
                             {
-                                long variable_groupId = -1;
-
-                                var name = variableInfo.VariableNameSet.Last();
-                                var guid = variableInfo.Name;
-                                var unit = string.Empty;
-                                var transferFunctionSet = new List<hdf_transfer_function_t>();
-
-                                try
-                                {
-                                    var groupPath = GeneralHelper.CombinePath(campaignInfo.Name, variableInfo.Name);
-
-                                    if (H5I.is_valid(vdsMetaFileId) > 0 && IOHelper.CheckLinkExists(vdsMetaFileId, groupPath))
-                                    {
-                                        variable_groupId = H5G.open(vdsMetaFileId, groupPath);
-
-                                        if (H5A.exists(variable_groupId, "unit") > 0)
-                                            unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
-
-                                        if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
-                                            transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
-                                    }
-                                }
-                                finally
-                                {
-                                    if (H5I.is_valid(variable_groupId) > 0) { H5G.close(variable_groupId); }
-                                }
+                                (var name, var guid, var unit, var transferFunctionSet) = database.GetDocumentation(campaignInfo, variableInfo);
 
                                 // transfer function
                                 var transferFunction = string.Empty;
@@ -369,7 +246,7 @@ namespace OneDas.Hdf.Explorer.Core
                 }
                 finally
                 {
-                    if (H5I.is_valid(vdsMetaFileId) > 0) { H5F.close(vdsMetaFileId); }
+                    database?.Dispose();
                 }
             });
         }

@@ -1,16 +1,12 @@
-﻿using HDF.PInvoke;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Csv;
 using OneDas.Extension.Famos;
 using OneDas.Extension.Mat73;
-using OneDas.Hdf.Core;
-using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -32,44 +28,10 @@ namespace OneDas.Hdf.Explorer.Core
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
         {
             // build variable descriptions
-            var variableDescriptionSet = new List<VariableDescription>();
-
-            zipSettings.CampaignInfo.Value.ToList().ForEach(variableInfo =>
-            {
-                variableInfo.Value.ForEach(datasetName =>
-                {
-                    long groupId = -1;
-                    long typeId = -1;
-                    long datasetId = -1;
-
-                    try
-                    {
-                        groupId = H5G.open(zipSettings.SourceFileId, $"{ zipSettings.CampaignInfo.Key }/{ variableInfo.Key }");
-                        datasetId = H5D.open(groupId, datasetName);
-                        typeId = H5D.get_type(datasetId);
-
-                        var displayName = IOHelper.ReadAttribute<string>(groupId, "name_set").Last();
-                        var groupName = IOHelper.ReadAttribute<string>(groupId, "group_set").Last();
-                        var unit = IOHelper.ReadAttribute<string>(groupId, "unit_set").LastOrDefault();
-                        var hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
-                        var transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
-
-                        var oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                        var sampleRate = new SampleRateContainer(datasetName);
-
-                        variableDescriptionSet.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, sampleRate, unit, transferFunctionSet, DataStorageType.Simple));
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                        if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
-                        if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
-                    }
-                });
-            });
+            var variableDescriptionSet = zipSettings.Database.GetVariableDescriptions(zipSettings.CampaignInfo);
 
             DataWriterExtensionSettingsBase settings;
-            DataWriterExtensionLogicBase dataWriter = null;
+            DataWriterExtensionLogicBase dataWriter;
 
             switch (fileFormat)
             {
@@ -178,13 +140,15 @@ namespace OneDas.Hdf.Explorer.Core
                 {
                     variableInfo.Value.ForEach(datasetName =>
                     {
-                        dataStorageSet.Add(this.LoadDataset(zipSettings.SourceFileId, $"{ zipSettings.CampaignInfo.Key }/{ variableInfo.Key }/{ datasetName }", currentStart, 1, currentRowCount, 1));
-                        this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Loading dataset segment { currentSegment * datasetCount + currentDataset + 1 } / { segmentCount * datasetCount } ..."));
+                        var datasetPath = $"{zipSettings.CampaignInfo.Key}/{variableInfo.Key}/{datasetName}";
+
+                        dataStorageSet.Add(zipSettings.Database.LoadDataset(datasetPath, currentStart, currentRowCount));
+                        this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Loading dataset segment {currentSegment * datasetCount + currentDataset + 1} / {segmentCount * datasetCount} ..."));
                         currentDataset++;
                     });
                 }
 
-                this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Writing data of segment { currentSegment + 1 } / { segmentCount } ..."));
+                this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Writing data of segment {currentSegment + 1} / {segmentCount} ..."));
 
                 var dateTime = zipSettings.DateTimeBegin.AddSeconds((currentStart - zipSettings.Start) / zipSettings.SampleRate);
                 var dataStoragePeriod = TimeSpan.FromSeconds(currentRowCount / zipSettings.SampleRate);
@@ -202,45 +166,6 @@ namespace OneDas.Hdf.Explorer.Core
             }
 
             return true;
-        }
-
-        private ISimpleDataStorage LoadDataset(long sourceFileId, string datasetPath, ulong start, ulong stride, ulong block, ulong count)
-        {
-            long datasetId = -1;
-            long typeId = -1;
-
-            var dataset = IOHelper.ReadDataset(sourceFileId, datasetPath, start, stride, block, count);
-
-            // apply status (only if native dataset)
-            if (H5L.exists(sourceFileId, datasetPath + "_status") > 0)
-            {
-                try
-                {
-                    datasetId = H5D.open(sourceFileId, datasetPath);
-                    typeId = H5D.get_type(datasetId);
-
-                    var dataset_status = IOHelper.ReadDataset(sourceFileId, datasetPath + "_status", start, stride, block, count).Cast<byte>().ToArray();
-
-                    var genericType = typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                    var extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(genericType, dataset, dataset_status);
-
-                    dataset_status = null;
-
-                    var simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
-                    extendedDataStorage.Dispose();
-
-                    return simpleDataStorage;
-                }
-                finally
-                {
-                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                    if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
-                }
-            }
-            else
-            {
-                return new SimpleDataStorage(dataset.Cast<double>().ToArray());
-            }
         }
 
         private void CleanUp(string directoryPath)
