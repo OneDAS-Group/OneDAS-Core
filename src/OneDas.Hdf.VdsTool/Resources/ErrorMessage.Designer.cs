@@ -19,7 +19,7 @@ namespace OneDas.Hdf.VdsTool {
     // -Klasse über ein Tool wie ResGen oder Visual Studio automatisch generiert.
     // Um einen Member hinzuzufügen oder zu entfernen, bearbeiten Sie die .ResX-Datei und führen dann ResGen
     // mit der /str-Option erneut aus, oder Sie erstellen Ihr VS-Projekt neu.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ErrorMessage {
@@ -63,9 +63,9 @@ namespace OneDas.Hdf.VdsTool {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open file. ähnelt.
         /// </summary>
-        internal static string Program_CouldNotOpenFile {
+        internal static string VdsCommand_CouldNotOpenFile {
             get {
-                return ResourceManager.GetString("Program_CouldNotOpenFile", resourceCulture);
+                return ResourceManager.GetString("VdsCommand_CouldNotOpenFile", resourceCulture);
             }
         }
     }

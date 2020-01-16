@@ -34,10 +34,6 @@ namespace OneDas.Hdf.Explorer
         public string AspBaseUrl { get; set; }
 
         // preset, immutable
-        public string VdsFilePath { get => Path.Combine(this.DataBaseFolderPath, "VDS.h5"); }
-
-        public string VdsMetaFilePath { get => Path.Combine(this.DataBaseFolderPath, "VDS_META.h5"); }
-
         public string SupportDirectoryPath { get => Path.Combine(this.DataBaseFolderPath, "SUPPORT"); }
 
         public void Save(string directoryPath)

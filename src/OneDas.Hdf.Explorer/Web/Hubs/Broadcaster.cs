@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OneDas.Hdf.Core;
+using OneDas.Database;
 using OneDas.Hdf.Explorer.Core;
 using OneDas.Infrastructure;
 using System;
@@ -31,7 +31,7 @@ namespace OneDas.Hdf.Explorer.Web
             _stateManager = stateManager;
             _serviceProvider = serviceProvider;
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger("HDF Explorer");
+            _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
 
         #endregion
@@ -60,8 +60,7 @@ namespace OneDas.Hdf.Explorer.Web
             {
                 return new AppModel(
                     hdfExplorerState: _stateManager.GetState(this.Context.ConnectionId),
-                    campaignInfoSet: Program.CampaignInfoSet,
-                    campaignDescriptionSet: Program.CampaignDescriptionSet
+                    campaignInfoSet: Program.CampaignInfos
                 );
             });
         }
@@ -81,19 +80,11 @@ namespace OneDas.Hdf.Explorer.Web
                 _stateManager.CheckState(this.Context.ConnectionId);
                 _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Updating);
 
-                Program.UpdateCampaignInfoSet();
+                Program.UpdateCampaignInfos();
 
                 _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Idle);
 
-                return Program.CampaignInfoSet;
-            });
-        }
-
-        public Task<Dictionary<string, string>> GetCampaignDescriptionSet()
-        {
-            return Task.Run(() =>
-            {
-                return Program.CampaignDescriptionSet;
+                return Program.CampaignInfos;
             });
         }
 

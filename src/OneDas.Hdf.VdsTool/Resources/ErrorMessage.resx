@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Program_CouldNotOpenFile" xml:space="preserve">
+  <data name="VdsCommand_CouldNotOpenFile" xml:space="preserve">
     <value>Could not open file.</value>
   </data>
 </root>

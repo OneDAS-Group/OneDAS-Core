@@ -4,7 +4,6 @@ class AppViewModel
 {
     public IsMainViewRequested: KnockoutObservable<boolean>
     public CampaignInfoSet: KnockoutObservableArray<CampaignInfoViewModel>
-    public CampaignDescriptionSet: KnockoutObservable<Map<string, string>>
     public SelectedDatasetInfoSet: KnockoutObservableArray<DatasetInfoViewModel>
     public SampleRateSet: KnockoutObservableArray<string>
     public SelectedSampleRate: KnockoutObservable<string>
@@ -33,7 +32,6 @@ class AppViewModel
         let campaignInfoModelSet: any = appModel.CampaignInfoSet;
 
         this.CampaignInfoSet = ko.observableArray<CampaignInfoViewModel>();
-        this.CampaignDescriptionSet = ko.observable<Map<string, string>>(appModel.CampaignDescriptionSet);
         this.SampleRateSet = ko.observableArray<string>()
         this.IsMainViewRequested = ko.observable<boolean>(true)
         this.SelectedDatasetInfoSet = ko.observableArray<DatasetInfoViewModel>()
@@ -481,13 +479,9 @@ class AppViewModel
     public UpdateCampaignInfoSet = async () =>
     {
         let campaignInfoModelSet: any
-        let campaignDescriptionSet: any
 
         campaignInfoModelSet = await _broadcaster.invoke("UpdateCampaignInfoSet")
         this.CampaignInfoSet(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)))
-
-        campaignDescriptionSet = await _broadcaster.invoke("GetCampaignDescriptionSet")
-        this.CampaignDescriptionSet(campaignDescriptionSet)
     }
 
     public ShowDataAvailability = (campaignInfo: CampaignInfoViewModel) =>

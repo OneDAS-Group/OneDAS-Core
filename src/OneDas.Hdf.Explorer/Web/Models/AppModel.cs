@@ -1,18 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using OneDas.Hdf.Core;
+﻿using OneDas.Database;
 using OneDas.Hdf.Explorer.Core;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace OneDas.Hdf.Explorer.Web
 {
     [DataContract]
     public class AppModel
     {
-        public AppModel(HdfExplorerState hdfExplorerState, List<CampaignInfo> campaignInfoSet, Dictionary<string, string> campaignDescriptionSet)
+        public AppModel(HdfExplorerState hdfExplorerState, List<CampaignInfo> campaignInfoSet)
         {
             this.HdfExplorerState = hdfExplorerState;
             this.CampaignInfoSet = campaignInfoSet;
-            this.CampaignDescriptionSet = campaignDescriptionSet;
         }
 
         [DataMember]
@@ -20,8 +19,5 @@ namespace OneDas.Hdf.Explorer.Web
 
         [DataMember]
         public readonly List<CampaignInfo> CampaignInfoSet;
-
-        [DataMember]
-        public readonly Dictionary<string, string> CampaignDescriptionSet;
     }
 }

@@ -3,11 +3,12 @@ using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OneDas.Database;
 using OneDas.DataStorage;
 using OneDas.Hdf.Core;
 using OneDas.Hdf.IO;
+using OneDas.Hdf.VdsTool.Commands;
 using OneDas.Hdf.VdsTool.Documentation;
-using OneDas.Hdf.VdsTool.Navigation;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,6 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,34 +65,16 @@ namespace OneDas.Hdf.VdsTool
 
             _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            // if CLI mode
-            if (args.Any())
-            {
-                // configure CLI
-                var rootCommand = new RootCommand("Virtual dataset tool");
+            // configure CLI
+            var rootCommand = new RootCommand("Virtual dataset tool");
 
-                rootCommand.AddCommand(Program.PreparePwshCommand());
-                rootCommand.AddCommand(Program.PrepareUpdateCommand());
-                rootCommand.AddCommand(Program.PrepareVdsCommand());
-                rootCommand.AddCommand(Program.PrepareAggregateCommand());
-                rootCommand.AddCommand(Program.PrepareDocCommand());
+            rootCommand.AddCommand(Program.PreparePwshCommand());
+            rootCommand.AddCommand(Program.PrepareUpdateCommand());
+            rootCommand.AddCommand(Program.PrepareVdsCommand());
+            rootCommand.AddCommand(Program.PrepareAggregateCommand());
+            rootCommand.AddCommand(Program.PrepareDocCommand());
 
-                return await rootCommand.InvokeAsync(args);
-            }
-
-            uint isLibraryThreadSafe = 0;
-            H5.is_library_threadsafe(ref isLibraryThreadSafe);
-
-            if (isLibraryThreadSafe <= 0)
-                Console.WriteLine("Warning: libary is not thread safe!");
-
-            while (true)
-            {
-                new MainMenuNavigator();
-
-                if (Program.HandleEscape())
-                    return 0;
-            }
+            return await rootCommand.InvokeAsync(args);
         }
 
         private static bool HandleEscape()
@@ -175,13 +157,13 @@ namespace OneDas.Hdf.VdsTool
                     var date = DateTime.UtcNow.Date;
 
                     epochStart = new DateTime(date.Year, date.Month, 1).AddMonths(-1);
-                    Program.CreateVirtualDatasetFile(epochStart, logger);
+                    new VdsCommand(epochStart, logger).Run();
 
                     epochStart = new DateTime(date.Year, date.Month, 1);
-                    Program.CreateVirtualDatasetFile(epochStart, logger);
+                    new VdsCommand(epochStart, logger).Run();
 
                     epochStart = DateTime.MinValue;
-                    Program.CreateVirtualDatasetFile(epochStart, logger);
+                    new VdsCommand(epochStart, logger).Run();
 
                     logger.LogInformation($"Execution of the 'update' command finished successfully.");
                 }
@@ -219,7 +201,7 @@ namespace OneDas.Hdf.VdsTool
 
                 try
                 {
-                    Program.CreateVirtualDatasetFile(epochStart, logger);
+                    new VdsCommand(epochStart, logger).Run();
                     logger.LogInformation($"Execution of the 'vds' command finished successfully.");
                 }
                 catch (Exception ex)
@@ -371,582 +353,6 @@ namespace OneDas.Hdf.VdsTool
 
         #endregion
 
-        #region VDS
-
-        public static void CreateVirtualDatasetFile(DateTime epochStart, ILogger logger)
-        {
-            string vdsFilePath;
-            DateTime epochEnd;
-
-            var sourceDirectoryPathSet = new List<string>();
-
-            if (epochStart > DateTime.MinValue)
-            {
-                epochEnd = epochStart.AddMonths(1);
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_IMPORT", epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", epochStart.ToString("yyyy-MM")));
-                vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS", $"{ epochStart.ToString("yyyy-MM") }.h5");
-            }
-            else
-            {
-                epochStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "VDS"));
-                vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS.h5");
-            }
-
-            if (Console.CursorTop > 0 || Console.CursorLeft > 0)
-                Console.WriteLine();
-
-            logger.LogInformation($"Epoch start: {epochStart.ToString("yyyy-MM-dd")}");
-            logger.LogInformation($"Epoch end: {epochEnd.ToString("yyyy-MM-dd")}");
-            Console.WriteLine();
-
-            Program.InternalCreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, epochStart, epochEnd, logger);
-        }
-
-        private static unsafe void InternalCreateVirtualDatasetFile(List<string> sourceDirectoryPathSet, string vdsFilePath, DateTime epochStart, DateTime epochEnd, ILogger logger)
-        {
-            long vdsFileId = -1;
-
-            var actualDimenionSet = new ulong[1];
-            var maximumDimensionSet = new ulong[1];
-
-            var lastVariablePath = String.Empty;
-            var tempFilePath = Path.GetTempFileName();
-
-            var campaignInfoSet = new List<CampaignInfo>();
-            var sourceFilePathSet = new List<string>();
-            var isChunkCompletedMap = new Dictionary<string, List<byte>>();
-
-            // fill sourceFilePathSet
-            sourceDirectoryPathSet.ToList().ForEach(x =>
-            {
-                if (Directory.Exists(x))
-                    sourceFilePathSet.AddRange(Directory.GetFiles(x, "*.h5", SearchOption.TopDirectoryOnly).ToList());
-            });
-
-            try
-            {
-                // open VDS file
-                vdsFileId = H5F.create(tempFilePath, H5F.ACC_TRUNC);
-
-                // write attribute
-                IOHelper.PrepareAttribute(vdsFileId, "date_time", new string[] { $"{ epochStart.ToString("yyyy-MM-ddTHH-mm-ss") }Z" }, new ulong[] { 1 }, true);
-
-                // create an index of all campaigns, variables and datasets
-                foreach (string sourceFilePath in sourceFilePathSet)
-                {
-                    Program.VdsSourceFile(sourceFilePath, campaignInfoSet, isChunkCompletedMap, logger);
-                }
-
-                //foreach (var variableInfo in variableInfoSet)
-                //{
-                //    Console.WriteLine(variableInfo.Key);
-                //    Console.WriteLine($"\tVariableNameSet:{ variableInfo.Value.VariableNameSet.Count }");
-                //    Console.WriteLine($"\tDatasetInfoSet: { variableInfo.Value.DatasetInfoSet.Count }");
-
-                //    foreach (var datasetInfo in variableInfo.Value.DatasetInfoSet)
-                //    {
-                //        Console.WriteLine($"\t\t{ datasetInfo.Key }");
-                //        Console.WriteLine($"\t\t\tLength: { datasetInfo.Value.Length }");
-                //        Console.WriteLine($"\t\t\tSourceFileInfoSet: { datasetInfo.Value.SourceFileInfoSet.Count }");
-                //    }
-                //}
-
-                // write the result into the temporary vds file
-                foreach (var campaignInfo in campaignInfoSet)
-                {
-                    Program.VdsCampaign(vdsFileId, campaignInfo, epochStart, epochEnd, isChunkCompletedMap);
-                }
-            }
-            finally
-            {
-                if (H5I.is_valid(vdsFileId) > 0) { H5F.close(vdsFileId); }
-            }
-
-            // copy temporary file into target location 
-            try
-            {
-                if (File.Exists(vdsFilePath))
-                    File.Delete(vdsFilePath);
-
-                File.Copy(tempFilePath, vdsFilePath);
-            }
-            finally
-            {
-                try
-                {
-                    File.Delete(tempFilePath);
-                }
-                catch
-                {
-                    //
-                }
-            }
-        }
-
-        private static void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaignInfoSet, Dictionary<string, List<byte>> isChunkCompletedMap, ILogger logger)
-        {
-            long sourceFileId = -1;
-
-            var message = $"Processing file { Path.GetFileName(sourceFilePath) } ... ";
-            logger.LogInformation(message);
-
-            sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-
-            try
-            {
-                if (sourceFileId < 0)
-                    throw new Exception(ErrorMessage.Program_CouldNotOpenFile);
-
-                GeneralHelper.UpdateCampaignInfoSet(sourceFileId, campaignInfoSet);
-
-                // load is_chunk_completed_set
-                campaignInfoSet.ForEach(campaignInfo =>
-                {
-                    string key;
-                    byte[] isChunkCompletedSet;
-
-                    if (campaignInfo.ChunkDatasetInfo.SourceFileInfoSet.Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
-                    {
-                        key = $"{ sourceFilePath }+{ campaignInfo.GetPath() }";
-
-                        if (!isChunkCompletedMap.ContainsKey(key))
-                        {
-                            isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{ campaignInfo.GetPath() }/is_chunk_completed_set");
-                            isChunkCompletedMap[key] = isChunkCompletedSet.ToList();
-                        }
-                    }
-                });
-
-                logger.LogInformation($"{message}Done.");
-            }
-            finally
-            {
-                if (H5I.is_valid(sourceFileId) > 0) { H5F.close(sourceFileId); }
-            }
-        }
-
-        private static void VdsCampaign(long vdsFileId, CampaignInfo campaignInfo, DateTime epochStart, DateTime epochEnd, Dictionary<string, List<byte>> isChunkCompletedMap)
-        {
-            long campaignGroupId = -1;
-
-            Console.WriteLine($"\n{ campaignInfo.Name }");
-
-            campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaignInfo.GetPath()).GroupId;
-
-            try
-            {
-                // variable
-                foreach (var variableInfo in campaignInfo.VariableInfoSet)
-                {
-                    Program.VdsVariable(vdsFileId, campaignGroupId, variableInfo, epochStart, epochEnd, isChunkCompletedMap, campaignInfo.GetPath());
-                }
-
-                // don't forget is_chunk_completed_set
-                Program.VdsDataset(campaignGroupId, epochStart, epochEnd, campaignInfo.ChunkDatasetInfo, campaignInfo.GetPath(), isChunkCompletedMap, false);
-            }
-            finally
-            {
-                if (H5I.is_valid(campaignGroupId) > 0) { H5G.close(campaignGroupId); }
-            }
-        }
-
-        private static void VdsVariable(long vdsFileId, long vdsCampaignGroupId, VariableInfo variableInfo, DateTime epochStart, DateTime epochEnd, Dictionary<string, List<byte>> isChunkCompletedMap, string campaignPath)
-        {
-            long variableGroupId = -1;
-
-            Console.WriteLine($"\t{ variableInfo.Name }");
-
-            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variableInfo.Name).GroupId;
-
-            try
-            {
-                //// make hard links for each display name
-                ////foreach (string variableName in variableInfo.Value.VariableNameSet)
-                ////{
-                ////    H5L.copy(vdsGroupIdSet[vdsGroupIdSet.Count() - 1], variableInfo.Key, vdsGroupIdSet[vdsGroupIdSet.Count() - 2], variableName);
-                ////}
-
-                IOHelper.PrepareAttribute(variableGroupId, "name_set", variableInfo.VariableNameSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "group_set", variableInfo.VariableGroupSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "unit_set", variableInfo.UnitSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "transfer_function_set", variableInfo.TransferFunctionSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-
-                // dataset
-                foreach (var datasetInfo in variableInfo.DatasetInfoSet)
-                {
-                    Console.WriteLine($"\t\t{ datasetInfo.Name }");
-                    Program.VdsDataset(variableGroupId, epochStart, epochEnd, datasetInfo, campaignPath, isChunkCompletedMap, true);
-                }
-
-                // flush data - necessary to avoid AccessViolationException at H5F.close()
-                H5F.flush(vdsFileId, H5F.scope_t.LOCAL);
-            }
-            finally
-            {
-                if (H5I.is_valid(variableGroupId) > 0) { H5G.close(variableGroupId); }
-            }
-        }
-
-        private static void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath, Dictionary<string, List<byte>> isChunkCompletedMap, bool closeType)
-        {
-            long datasetId = -1;
-            long spaceId = -1;
-            long propertyId = -1;
-
-            var createDataset = false;
-
-            try
-            {
-                var datasetName = datasetInfo.Name;
-                var sampleRate = new SampleRateContainer(datasetName);
-                var vdsLength = (ulong)(epochEnd - epochStart).Days * sampleRate.SamplesPerDay;
-
-                spaceId = H5S.create_simple(1, new ulong[] { vdsLength }, new ulong[] { H5S.UNLIMITED });
-                propertyId = H5P.create(H5P.DATASET_CREATE);
-
-                foreach (SourceFileInfo sourceFileInfo in datasetInfo.SourceFileInfoSet)
-                {
-                    long sourceSpaceId = -1;
-
-                    var relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Environment.CurrentDirectory.TrimEnd('\\').TrimEnd('/').Length)}";
-
-                    sourceSpaceId = H5S.create_simple(1, new ulong[] { sourceFileInfo.Length }, new ulong[] { sourceFileInfo.Length });
-
-                    var key = $"{ sourceFileInfo.FilePath }+{ campaignPath }";
-                    var chunkCount = isChunkCompletedMap[key].Count;
-                    var firstIndex = isChunkCompletedMap[key].FindIndex(value => value > 0);
-                    var lastIndex = isChunkCompletedMap[key].FindLastIndex(value => value > 0);
-
-                    var offset = (ulong)((sourceFileInfo.StartDateTime - epochStart).TotalDays * sampleRate.SamplesPerDay);
-                    var start = (ulong)((double)sourceFileInfo.Length * firstIndex / chunkCount);
-                    var stride = 1UL;
-                    var count = 1UL;
-                    var block = (ulong)((double)sourceFileInfo.Length * (lastIndex - firstIndex + 1) / chunkCount);
-
-                    if (firstIndex >= 0)
-                    {
-                        createDataset = true;
-
-                        try
-                        {
-                            if (offset + start + block > vdsLength)
-                                throw new Exception($"start + block = { offset + start + block } > { vdsLength }");
-
-                            H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { offset + start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
-                            H5S.select_hyperslab(sourceSpaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
-                            H5P.set_virtual(propertyId, spaceId, relativeFilePath, datasetInfo.GetPath(), sourceSpaceId);
-                        }
-                        finally
-                        {
-                            if (H5I.is_valid(sourceSpaceId) > 0) { H5S.close(sourceSpaceId); }
-                        }
-                    }
-                }
-
-                H5S.select_all(spaceId);
-
-                if (TypeConversionHelper.GetTypeFromHdfTypeId(datasetInfo.TypeId) == typeof(double))
-                {
-                    var gcHandle = GCHandle.Alloc(Double.NaN, GCHandleType.Pinned);
-                    H5P.set_fill_value(propertyId, datasetInfo.TypeId, gcHandle.AddrOfPinnedObject());
-                    gcHandle.Free();
-                }
-
-                if (createDataset) // otherwise there will be an error, if set_virtual has never been called.
-                    datasetId = H5D.create(groupId, datasetName, datasetInfo.TypeId, spaceId, H5P.DEFAULT, propertyId);
-            }
-            finally
-            {
-                if (H5I.is_valid(propertyId) > 0) { H5P.close(propertyId); }
-                if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                if (H5I.is_valid(spaceId) > 0) { H5S.close(spaceId); }
-
-                if (closeType && H5I.is_valid(datasetInfo.TypeId) > 0)
-                    H5T.close(datasetInfo.TypeId);
-            }
-        }
-
-        #endregion
-
-        #region VDS_META
-
-        public static hdf_transfer_function_t PromptTransferFunctionData(hdf_transfer_function_t hdf_transfer_function)
-        {
-            DateTime dateTime;
-            Console.CursorVisible = true;
-
-            // date / time
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for date/time ({ hdf_transfer_function.date_time }): ");
-
-                var optionSet = new HashSet<string>() { "0001-01-01" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.date_time))
-                {
-                    optionSet.Add(hdf_transfer_function.date_time);
-                }
-
-                (var dateTime_tmp, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
-                {
-                    hdf_transfer_function.date_time = dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ");
-                    break;
-                }
-                else if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
-                {
-                    hdf_transfer_function.date_time = dateTime.ToString("yyyy-MM-ddT00-00-00Z");
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_transfer_function.date_time))
-                {
-                    break;
-                }
-            }
-
-            // type
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for type ({ hdf_transfer_function.type }): ");
-
-                var optionSet = new HashSet<string>() { "polynomial", "function" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.type))
-                {
-                    optionSet.Add(hdf_transfer_function.type);
-                }
-
-                (var type, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(type))
-                {
-                    hdf_transfer_function.type = type;
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_transfer_function.type))
-                {
-                    break;
-                }
-            }
-
-            // option
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for option ({ hdf_transfer_function.option }): ");
-
-                var optionSet = new HashSet<string>() { "permanent" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.option))
-                {
-                    optionSet.Add(hdf_transfer_function.option);
-                }
-
-                (var option, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(option))
-                {
-                    hdf_transfer_function.option = option;
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_transfer_function.option))
-                {
-                    break;
-                }
-            }
-
-            // argument
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for argument ({ hdf_transfer_function.argument }): ");
-
-                var optionSet = new HashSet<string>() { };
-
-                if (!string.IsNullOrWhiteSpace(hdf_transfer_function.argument))
-                {
-                    optionSet.Add(hdf_transfer_function.argument);
-                }
-
-                (var argument, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(argument))
-                {
-                    hdf_transfer_function.argument = argument;
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_transfer_function.argument))
-                {
-                    break;
-                }
-            }
-
-            //
-            Console.CursorVisible = false;
-
-            return hdf_transfer_function;
-        }
-
-        public static hdf_tag_t PromptTagData(hdf_tag_t hdf_tag)
-        {
-            DateTime dateTime;
-
-            var tmp = string.Empty;
-
-            Console.CursorVisible = true;
-
-            // date / time
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for date/time ({ hdf_tag.date_time }): ");
-
-                var optionSet = new HashSet<string>() { "0001-01-01" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_tag.date_time))
-                    optionSet.Add(hdf_tag.date_time);
-
-                (var dateTime_tmp, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
-                {
-                    hdf_tag.date_time = dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ");
-                    break;
-                }
-                else if (DateTime.TryParseExact(dateTime_tmp, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime))
-                {
-                    hdf_tag.date_time = dateTime.ToString("yyyy-MM-ddT00-00-00Z");
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_tag.date_time))
-                {
-                    break;
-                }
-            }
-
-            // name
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for name ({ hdf_tag.name }): ");
-
-                var optionSet = new HashSet<string>() { };
-
-                if (!string.IsNullOrWhiteSpace(hdf_tag.name))
-                    optionSet.Add(hdf_tag.name);
-
-                (var name, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(name) && OneDasUtilities.CheckNamingConvention(name, out tmp))
-                {
-                    hdf_tag.name = name;
-                    break;
-                }
-                else if (string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(hdf_tag.name))
-                {
-                    break;
-                }
-            }
-
-            // mode
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for mode ({ hdf_tag.mode }): ");
-
-                var optionSet = new HashSet<string>() { "none", "start", "end" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_tag.mode))
-                    optionSet.Add(hdf_tag.mode);
-
-                (var comment, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (!string.IsNullOrWhiteSpace(comment))
-                {
-                    hdf_tag.mode = comment;
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_tag.mode))
-                {
-                    break;
-                }
-            }
-
-            // comment
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for comment ({ hdf_tag.comment }): ");
-
-                var optionSet = new HashSet<string>() { "none" };
-
-                if (!string.IsNullOrWhiteSpace(hdf_tag.comment))
-                    optionSet.Add(hdf_tag.comment);
-
-                (var mode, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (mode.Any())
-                {
-                    hdf_tag.comment = mode;
-                    break;
-                }
-                else if (!string.IsNullOrWhiteSpace(hdf_tag.comment))
-                {
-                    break;
-                }
-            }
-
-            //
-            Console.CursorVisible = false;
-
-            return hdf_tag;
-        }
-
-        public static string PromptDirectoryPath(string directoryPath)
-        {
-            Console.CursorVisible = true;
-
-            // name
-            while (true)
-            {
-                Console.Clear();
-                Console.Write($"Enter value for output directory ({ directoryPath }): ");
-
-                var optionSet = new HashSet<string>() { };
-
-                if (!string.IsNullOrWhiteSpace(directoryPath))
-                {
-                    optionSet.Add(directoryPath);
-                }
-
-                (var value, var isEscaped) = Utilities.ReadLine(optionSet.ToList());
-
-                if (Directory.Exists(value))
-                {
-                    directoryPath = value;
-                    break;
-                }
-                else if (string.IsNullOrWhiteSpace(value))
-                {
-                    break;
-                }
-            }
-
-            //
-            Console.CursorVisible = false;
-
-            return directoryPath;
-        }
-
-        #endregion
-
         #region AGGREGATION
 
         public static void CreateAggregatedFiles(DateTime epochStart, string method, string argument, string campaignName, Dictionary<string, string> filters, ILogger logger)
@@ -983,7 +389,7 @@ namespace OneDas.Hdf.VdsTool
 
                     // sourceFileId
                     sourceFileId = H5F.open(sourceFilePath, H5F.ACC_RDONLY);
-                    var campaignInfo = GeneralHelper.GetCampaignInfo(sourceFileId, isLazyLoading: false, campaignName);
+                    var campaignInfo = GeneralHelper.GetCampaignInfo(sourceFileId, campaignName);
 
                     if (campaignInfo == null)
                         continue;
@@ -1495,7 +901,7 @@ namespace OneDas.Hdf.VdsTool
 
             try
             {
-                var campaign = GeneralHelper.GetCampaignInfo(vdsFileId, isLazyLoading: false, campaignName);
+                var campaign = GeneralHelper.GetCampaignInfo(vdsFileId, campaignName);
 
                 if (campaign == null)
                     throw new Exception($"The campaign named '{campaignName}' could not be found.");

@@ -154,7 +154,7 @@ namespace OneDas.Hdf.Explorer.Core
 
             if (_isActive)
             {
-                Program.UpdateCampaignInfoSet();
+                Program.UpdateCampaignInfos();
 
                 _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Idle));
             }

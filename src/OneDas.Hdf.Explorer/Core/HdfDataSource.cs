@@ -1,4 +1,5 @@
 ﻿using HDF.PInvoke;
+using OneDas.Database;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Hdf.Core;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.Hdf.Explorer.Core
 {
-    public class HdfDatabase : IDatabase
+    public class HdfDataSource : IDataSource
     {
         #region Fields
 
@@ -24,7 +25,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         #region Constructors
 
-        public HdfDatabase(string databasePath)
+        public HdfDataSource(string databasePath)
         {
             var filePath = Path.Combine(databasePath, "VDS.h5");
             var metaFilePath = Path.Combine(databasePath, "VDS_META.h5");
@@ -134,14 +135,14 @@ namespace OneDas.Hdf.Explorer.Core
             }
         }
 
-        public (string name, string guid, string unit, List<hdf_transfer_function_t>) GetDocumentation(CampaignInfo campaignInfo, VariableInfo variableInfo)
+        public (string name, string guid, string unit, List<TransferFunction>) GetDocumentation(CampaignInfo campaignInfo, VariableInfo variableInfo)
         {
             long variable_groupId = -1;
 
             var name = variableInfo.VariableNameSet.Last();
             var guid = variableInfo.Name;
             var unit = string.Empty;
-            var transferFunctionSet = new List<hdf_transfer_function_t>();
+            var transferFunctionSet = new List<TransferFunction>();
 
             try
             {
@@ -155,7 +156,8 @@ namespace OneDas.Hdf.Explorer.Core
                         unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
 
                     if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
-                        transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set").ToList();
+                        transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set")
+                            .Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
                 }
             }
             finally
@@ -249,6 +251,11 @@ namespace OneDas.Hdf.Explorer.Core
             }
 
             return new DataAvailabilityStatistics(granularity, aggregatedData);
+        }
+
+        public List<CampaignInfo> GetCampaignInfos()
+        {
+            return GeneralHelper.GetCampaignInfos(_vdsFileId);
         }
 
         public void Dispose()

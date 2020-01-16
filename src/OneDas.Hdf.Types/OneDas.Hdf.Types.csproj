@@ -11,6 +11,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

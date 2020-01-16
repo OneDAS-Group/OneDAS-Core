@@ -1,4 +1,5 @@
 ﻿using HDF.PInvoke;
+using OneDas.Database;
 using OneDas.Hdf.IO;
 using System;
 using System.Collections.Generic;
@@ -12,24 +13,19 @@ namespace OneDas.Hdf.Core
 {
     public static class GeneralHelper
     {
-        public static List<string> GetVariableGuids(this CampaignInfo campaignInfo, string variableName)
+        public static void UpdateCampaignInfos(long fileId, List<CampaignInfo> campaignInfoSet, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
-            return campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableNameSet.Contains(variableName)).Select(variableInfo => variableInfo.Name).ToList();
+            GeneralHelper.InternalUpdateCampaignInfos(fileId, campaignInfoSet, null);
         }
 
-        public static void UpdateCampaignInfoSet(long fileId, List<CampaignInfo> campaignInfoSet)
+        public static CampaignInfo GetCampaignInfo(long fileId, string campaignGroupPath)
         {
-            GeneralHelper.InternalUpdateCampaignInfoSet(fileId, false, campaignInfoSet, null);
+            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, campaignGroupPath).FirstOrDefault();
         }
 
-        public static CampaignInfo GetCampaignInfo(long fileId, bool isLazyLoading, string campaignGroupPath)
+        public static List<CampaignInfo> GetCampaignInfos(long fileId)
         {
-            return GeneralHelper.InternalUpdateCampaignInfoSet(fileId, isLazyLoading, null, campaignGroupPath).FirstOrDefault();
-        }
-
-        public static List<CampaignInfo> GetCampaignInfoSet(long fileId, bool isLazyLoading)
-        {
-            return GeneralHelper.InternalUpdateCampaignInfoSet(fileId, isLazyLoading, null, null);
+            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, null);
         }
 
         public static void SuppressErrors(Action action)
@@ -46,7 +42,10 @@ namespace OneDas.Hdf.Core
             H5E.set_auto(H5E.DEFAULT, func, clientData);
         }
 
-        public static List<CampaignInfo> InternalUpdateCampaignInfoSet(long fileId, bool isLazyLoading, List<CampaignInfo> campaignInfoSet = null, string campaignGroupPath = "")
+        public static List<CampaignInfo> InternalUpdateCampaignInfos(long fileId,
+                                                                     List<CampaignInfo> campaignInfoSet = null,
+                                                                     string campaignGroupPath = "",
+                                                                     UpdateSourceFileMapDelegate updateSourceFileMap = null)
         {
             var idx = 0UL;
 
@@ -119,13 +118,13 @@ namespace OneDas.Hdf.Core
 
                             if (currentCampaignInfo == null)
                             {
-                                currentCampaignInfo = new CampaignInfo(fullName, null, isLazyLoading);
+                                currentCampaignInfo = new CampaignInfo(fullName, null);
                                 campaignInfoSet.Add(currentCampaignInfo);
                             }
 
-                            currentCampaignInfo.Update(new FileContext(fileId, formatVersion, dateTime, filePath.ToString()));
+                            currentCampaignInfo.Update(groupId, new FileContext(formatVersion, dateTime, filePath.ToString()), updateSourceFileMap);
                         }
-
+                        
                         break;
                 }
 
