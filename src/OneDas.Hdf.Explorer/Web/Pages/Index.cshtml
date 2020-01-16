@@ -127,12 +127,12 @@
                     Selected datasets
                 </div>
                 <div class="card-body">
-                    <!-- ko if: SelectedDatasetInfoSet().length === 0 -->
+                    <!-- ko if: SelectedDatasetInfos().length === 0 -->
                     <h5 class="d-block text-center"><small class="text-muted">- no datasets selected -</small></h5>
                     <!-- /ko -->
-                    <!-- ko if: SelectedDatasetInfoSet().length > 0 -->
+                    <!-- ko if: SelectedDatasetInfos().length > 0 -->
                     <table class="table table-hover">
-                        <tbody data-bind="foreach: SelectedDatasetInfoSet">
+                        <tbody data-bind="foreach: SelectedDatasetInfos">
                             <tr data-bind="click: ToggleIsSelected" class="noselect">
                                 <th data-bind="text: $index"></th>
                                 <td>
@@ -172,12 +172,6 @@
                                 <span class="fa fa-caret-right"></span><span data-placement="right" data-bind="text: GetDisplayName()"></span>
                             </a>
 
-                            <span class="fa fa-arrow-circle-o-down mr-2 url fa-fix"
-                                  data-toggle="tooltip"
-                                  data-bind="click: $parent.DownloadCampaignDocumentation"
-                                  title="Download campaign information in CSV format.">
-                            </span>
-
                             <span class="fa fa-bar-chart url fa-fix"
                                   data-toggle="tooltip"
                                   data-bind="click: $parent.ShowDataAvailability"
@@ -185,7 +179,7 @@
                             </span>
 
                         </div>
-                        <div class="collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfoSet">
+                        <div class="collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfos">
                             <a class="list-group-item list-group-item-action noselect"
                                role="button"
                                data-toggle="collapse"
@@ -196,10 +190,10 @@
                                 <a class="list-group-item list-group-item-action noselect"
                                    role="button"
                                    data-toggle="collapse"
-                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, style: { color: DatasetInfoSet.some(datasetInfo => datasetInfo.IsVisible()) ? 'black' : 'darkgrey' }">
+                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, style: { color: DatasetInfos.some(datasetInfo => datasetInfo.IsVisible()) ? 'black' : 'darkgrey' }">
                                     <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
                                 </a>
-                                <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible())">
+                                <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfos.filter(datasetInfo => datasetInfo.IsVisible())">
                                     <a class="list-group-item list-group-item-action noselect"
                                        role="button"
                                        data-bind="text: GetDisplayName(),

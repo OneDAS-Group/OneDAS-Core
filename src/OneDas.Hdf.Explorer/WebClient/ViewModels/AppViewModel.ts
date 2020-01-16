@@ -4,7 +4,7 @@ class AppViewModel
 {
     public IsMainViewRequested: KnockoutObservable<boolean>
     public CampaignInfoSet: KnockoutObservableArray<CampaignInfoViewModel>
-    public SelectedDatasetInfoSet: KnockoutObservableArray<DatasetInfoViewModel>
+    public SelectedDatasetInfos: KnockoutObservableArray<DatasetInfoViewModel>
     public SampleRateSet: KnockoutObservableArray<string>
     public SelectedSampleRate: KnockoutObservable<string>
     public SelectedFileFormat: KnockoutObservable<FileFormatEnum>
@@ -23,8 +23,8 @@ class AppViewModel
 
     public CanLoadData: KnockoutComputed<boolean>
 
-    private _variableInfoSet: VariableInfoViewModel[]
-    private _datasetInfoSet: DatasetInfoViewModel[]
+    private _variableInfos: VariableInfoViewModel[]
+    private _datasetInfos: DatasetInfoViewModel[]
     private _chart: Chart
 
     constructor(appModel: any)
@@ -34,7 +34,7 @@ class AppViewModel
         this.CampaignInfoSet = ko.observableArray<CampaignInfoViewModel>();
         this.SampleRateSet = ko.observableArray<string>()
         this.IsMainViewRequested = ko.observable<boolean>(true)
-        this.SelectedDatasetInfoSet = ko.observableArray<DatasetInfoViewModel>()
+        this.SelectedDatasetInfos = ko.observableArray<DatasetInfoViewModel>()
         this.SelectedSampleRate = ko.observable<string>()
         this.SelectedFileFormat = ko.observable<FileFormatEnum>(FileFormatEnum.CSV)
         this.SelectedFileGranularity = ko.observable<FileGranularityEnum>(FileGranularityEnum.Hour)
@@ -52,7 +52,7 @@ class AppViewModel
 
         this.CanLoadData = ko.computed<boolean>(() =>
             (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
-            this.SelectedDatasetInfoSet().length > 0 &&
+            this.SelectedDatasetInfos().length > 0 &&
             this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate()) &&
             this.HdfExplorerState() === HdfExplorerStateEnum.Idle &&
             this.IsConnected()
@@ -91,13 +91,13 @@ class AppViewModel
         // campaign info
         this.CampaignInfoSet.subscribe(newValue =>
         {
-            this._variableInfoSet = MapMany(this.CampaignInfoSet(), campaignInfo => campaignInfo.VariableInfoSet)
-            this._datasetInfoSet = MapMany(this._variableInfoSet, variableInfo => variableInfo.DatasetInfoSet)
+            this._variableInfos = MapMany(this.CampaignInfoSet(), campaignInfo => campaignInfo.VariableInfos)
+            this._datasetInfos = MapMany(this._variableInfos, variableInfo => variableInfo.DatasetInfos)
 
-            this.SelectedDatasetInfoSet().forEach(datasetInfo => {
+            this.SelectedDatasetInfos().forEach(datasetInfo => {
                 let newDataSetInfo: DatasetInfoViewModel
 
-                newDataSetInfo = this._datasetInfoSet.find(current => current.Parent.Name === datasetInfo.Parent.Name && current.Name === datasetInfo.Name)
+                newDataSetInfo = this._datasetInfos.find(current => current.Parent.Name === datasetInfo.Parent.Name && current.Name === datasetInfo.Name)
 
                 if (newDataSetInfo) {
                     newDataSetInfo.IsSelected(true)
@@ -106,10 +106,10 @@ class AppViewModel
             })
 
             this.CampaignInfoSet().forEach(campaignInfo => {
-                campaignInfo.VariableInfoSet.forEach(variableInfo => {
-                    variableInfo.DatasetInfoSet.forEach(datasetInfo => {
+                campaignInfo.VariableInfos.forEach(variableInfo => {
+                    variableInfo.DatasetInfos.forEach(datasetInfo => {
                         datasetInfo.OnIsSelectedChanged.subscribe((sender, isSelected) => {
-                            this.UpdateSelectedDatasetInfoSet()
+                            this.UpdateSelectedDatasetInfos()
                         })
                     })
                 })
@@ -118,7 +118,7 @@ class AppViewModel
             this.SelectedSampleRate(null)
 
             //                                                         temporarily disable 10 min averages due to incompatibility with 60s chunks
-            this.SampleRateSet([...new Set(this._datasetInfoSet.filter(datasetInfo => !datasetInfo.Name.includes("600 s")).map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) => {
+            this.SampleRateSet([...new Set(this._datasetInfos.filter(datasetInfo => !datasetInfo.Name.includes("600 s")).map(datasetInfo => datasetInfo.Name.split("_")[0]))].sort((a, b) => {
                 switch (true) {
                     case a.includes('Hz') && !b.includes('Hz'):
                         return -1;
@@ -168,13 +168,13 @@ class AppViewModel
       
         // sample rate
         this.SelectedSampleRate.subscribe(newValue => {
-            this._variableInfoSet.forEach(variableInfo => {
-                variableInfo.DatasetInfoSet.forEach(datasetInfo => {
+            this._variableInfos.forEach(variableInfo => {
+                variableInfo.DatasetInfos.forEach(datasetInfo => {
                     datasetInfo.IsVisible(datasetInfo.Name.split("_")[0] === this.SelectedSampleRate() && !datasetInfo.Name.endsWith("status"))
                 })
             })
 
-            this.UpdateSelectedDatasetInfoSet()
+            this.UpdateSelectedDatasetInfos()
         })
 
         // chart
@@ -431,9 +431,9 @@ class AppViewModel
             })
     }
 
-    private UpdateSelectedDatasetInfoSet = (() =>
+    private UpdateSelectedDatasetInfos = (() =>
     {
-        this.SelectedDatasetInfoSet(this._datasetInfoSet.filter(datasetInfo => datasetInfo.IsVisible() && datasetInfo.IsSelected()))
+        this.SelectedDatasetInfos(this._datasetInfos.filter(datasetInfo => datasetInfo.IsVisible() && datasetInfo.IsSelected()))
     })
 
     // commands
@@ -504,35 +504,35 @@ class AppViewModel
     public LoadData = async () =>
     {
         let campaignInfoSet: Map<string, Map<string, string[]>>
-        let variableInfoSet: Map<string, string[]>
-        let datasetInfoSet: string[]
+        let variableInfos: Map<string, string[]>
+        let datasetInfos: string[]
         let downloadLink: string
 
         campaignInfoSet = new Map<string, Map<string, string[]>>()
 
-        this.SelectedDatasetInfoSet().forEach(datasetInfo =>
+        this.SelectedDatasetInfos().forEach(datasetInfo =>
         {
             if (campaignInfoSet.has(datasetInfo.Parent.Parent.Name))
             {
-                variableInfoSet = campaignInfoSet.get(datasetInfo.Parent.Parent.Name)
+                variableInfos = campaignInfoSet.get(datasetInfo.Parent.Parent.Name)
             }
             else
             {
-                variableInfoSet = new Map<string, string[]>();
-                campaignInfoSet.set(datasetInfo.Parent.Parent.Name, variableInfoSet)
+                variableInfos = new Map<string, string[]>();
+                campaignInfoSet.set(datasetInfo.Parent.Parent.Name, variableInfos)
             }
 
-            if (variableInfoSet.has(datasetInfo.Parent.Name))
+            if (variableInfos.has(datasetInfo.Parent.Name))
             {
-                datasetInfoSet = variableInfoSet.get(datasetInfo.Parent.Name)
+                datasetInfos = variableInfos.get(datasetInfo.Parent.Name)
             }
             else
             {
-                datasetInfoSet = [];
-                variableInfoSet.set(datasetInfo.Parent.Name, datasetInfoSet)
+                datasetInfos = [];
+                variableInfos.set(datasetInfo.Parent.Name, datasetInfos)
             }
 
-            datasetInfoSet.push(datasetInfo.Name)
+            datasetInfos.push(datasetInfo.Name)
         })
 
         try
@@ -549,24 +549,6 @@ class AppViewModel
                 this.SelectedFileGranularity(),
                 campaignInfoSet
             )
-
-            if (downloadLink !== "")
-            {
-                window.open(downloadLink);
-            }
-        } catch (e)
-        {
-            alert(e.message)
-        }
-    }
-
-    public DownloadCampaignDocumentation = async (campaignInfo: CampaignInfoViewModel) =>
-    {
-        let downloadLink: string
-
-        try
-        {
-            downloadLink = await _broadcaster.invoke("GetCampaignDocumentation", campaignInfo.Name)
 
             if (downloadLink !== "")
             {

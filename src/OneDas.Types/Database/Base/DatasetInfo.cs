@@ -22,7 +22,7 @@ namespace OneDas.Database
             return $"{ this.Parent.GetPath() }/{ this.Name }";
         }
 
-        public override IEnumerable<InfoBase> GetChildSet()
+        public override IEnumerable<InfoBase> GetChilds()
         {
             return new List<DatasetInfo> { };
         }

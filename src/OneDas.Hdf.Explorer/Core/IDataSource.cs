@@ -18,7 +18,5 @@ namespace OneDas.Hdf.Explorer.Core
         ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block);
 
         DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd);
-
-        (string name, string guid, string unit, List<TransferFunction>) GetDocumentation(CampaignInfo campaignInfo, VariableInfo variableInfo);
     }
 }

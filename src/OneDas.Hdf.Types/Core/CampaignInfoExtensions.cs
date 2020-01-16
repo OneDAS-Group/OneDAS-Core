@@ -1,7 +1,9 @@
 ﻿using HDF.PInvoke;
 using OneDas.Database;
 using OneDas.Hdf.IO;
+using OneDas.Infrastructure;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -48,12 +50,12 @@ namespace OneDas.Hdf.Core
 
                     if (groupId > -1)
                     {
-                        currentVariableInfo = campaignInfo.VariableInfoSet.FirstOrDefault(variableInfo => variableInfo.Name == name);
+                        currentVariableInfo = campaignInfo.VariableInfos.FirstOrDefault(variableInfo => variableInfo.Name == name);
 
                         if (currentVariableInfo == null)
                         {
                             currentVariableInfo = new VariableInfo(name, campaignInfo);
-                            campaignInfo.VariableInfoSet.Add(currentVariableInfo);
+                            campaignInfo.VariableInfos.Add(currentVariableInfo);
                         }
 
                         currentVariableInfo.Update(groupId, fileContext, updateSourceFileMap);
@@ -72,12 +74,25 @@ namespace OneDas.Hdf.Core
         {
             var idx = 0UL;
 
-            variableInfo.VariableGroupSet = IOHelper.UpdateAttributeList(variableGroupId, "group_set", variableInfo.VariableGroupSet.ToArray()).ToList();
+            variableInfo.VariableGroups = IOHelper.UpdateAttributeList(variableGroupId, "group_set", variableInfo.VariableGroups.ToArray()).ToList();
 
             if (fileContext.FormatVersion != 1)
             {
-                variableInfo.UnitSet = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", variableInfo.UnitSet.ToArray()).ToList();
-                variableInfo.TransferFunctionSet = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", _transferFunctionSet.ToArray()).ToList();
+                variableInfo.Units = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", variableInfo.Units.ToArray()).ToList();
+
+                // TransferFunction to hdf_transfer_function_t
+                var transferFunctionSet = variableInfo.TransferFunctions.Select(tf => new hdf_transfer_function_t() 
+                { 
+                    date_time = tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), 
+                    type = tf.Type,
+                    option = tf.Option,
+                    argument = tf.Argument
+                });
+
+                // hdf_transfer_function_t to TransferFunction
+                variableInfo.TransferFunctions = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", transferFunctionSet.ToArray())
+                    .Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument))
+                    .ToList();
             }
 
             H5L.iterate(variableGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero);
@@ -85,7 +100,7 @@ namespace OneDas.Hdf.Core
             int Callback(long variableGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
             {
                 long datasetId = -1;
-                long typeId_do_not_close = -1;
+
                 string name;
 
                 DatasetInfo currentDatasetInfo;
@@ -98,20 +113,18 @@ namespace OneDas.Hdf.Core
                     {
                         datasetId = H5D.open(variableGroupId2, name);
 
-                        currentDatasetInfo = variableInfo.DatasetInfoSet.FirstOrDefault(datasetInfo => datasetInfo.Name == name);
+                        currentDatasetInfo = variableInfo.DatasetInfos.FirstOrDefault(datasetInfo => datasetInfo.Name == name);
 
                         if (currentDatasetInfo == null)
                         {
-                            typeId_do_not_close = H5D.get_type(datasetId);
-                            currentDatasetInfo = new DatasetInfo(name, typeId_do_not_close, variableInfo);
-
-                            variableInfo.DatasetInfoSet.Add(currentDatasetInfo);
+                            currentDatasetInfo = new DatasetInfo(name, variableInfo);
+                            variableInfo.DatasetInfos.Add(currentDatasetInfo);
                         }
 
                         var dimensionSize = currentDatasetInfo.Update(datasetId);
                         var sourceFileInfo = new SourceFileInfo(fileContext.FilePath, dimensionSize, fileContext.DateTime);
 
-                        updateSourceFileMap?.Invoke(currentDatasetInfo, sourceFileInfo);
+                        updateSourceFileMap?.Invoke(datasetId, currentDatasetInfo, sourceFileInfo);
                     }
                 }
                 finally

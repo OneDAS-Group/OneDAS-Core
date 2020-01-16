@@ -2,5 +2,5 @@
 
 namespace OneDas.Hdf.Core
 {
-    public delegate void UpdateSourceFileMapDelegate(DatasetInfo datasetInfo, SourceFileInfo sourceFile);
+    public delegate void UpdateSourceFileMapDelegate(long datasetId, DatasetInfo datasetInfo, SourceFileInfo sourceFile);
 }

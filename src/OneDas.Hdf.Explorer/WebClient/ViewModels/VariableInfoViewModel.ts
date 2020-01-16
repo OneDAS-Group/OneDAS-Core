@@ -1,21 +1,21 @@
 ﻿class VariableInfoViewModel extends HdfElementViewModelBase
 {
-    public DatasetInfoSet: DatasetInfoViewModel[]
-    public VariableNameSet: string[]
-    public VariableGroupSet: string[]
+    public DatasetInfos: DatasetInfoViewModel[]
+    public VariableNames: string[]
+    public variableGroups: string[]
 
-    constructor(variableInfoModel: any, parent: HdfElementViewModelBase)
+    constructor(variableModel: any, parent: HdfElementViewModelBase)
     {
-        super(variableInfoModel.Name, parent)
+        super(variableModel.Name, parent)
 
-        this.DatasetInfoSet = variableInfoModel.DatasetInfoSet.map(datasetInfoModel => new DatasetInfoViewModel(datasetInfoModel, this))
-        this.VariableNameSet = variableInfoModel.VariableNameSet
-        this.VariableGroupSet = variableInfoModel.VariableGroupSet
+        this.DatasetInfos = variableModel.DatasetInfos.map(datasetInfoModel => new DatasetInfoViewModel(datasetInfoModel, this))
+        this.VariableNames = variableModel.VariableNames
+        this.variableGroups = variableModel.variableGroups
     }  
 
     // methods
     public GetDisplayName(): string
     {
-        return this.VariableNameSet[this.VariableNameSet.length - 1]
+        return this.VariableNames[this.VariableNames.length - 1]
     }
 }

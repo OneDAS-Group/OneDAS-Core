@@ -10,8 +10,8 @@ namespace OneDas.Database
 
         public CampaignInfo(string name, InfoBase parent) : base(name, parent)
         {
-            ChunkDatasetInfo = new DatasetInfo("is_chunk_completed_set", this);
-            VariableInfoSet = new List<VariableInfo>();
+            this.ChunkDatasetInfo = new DatasetInfo("is_chunk_completed_set", this);
+            this.VariableInfos = new List<VariableInfo>();
         }
 
         #endregion
@@ -19,10 +19,10 @@ namespace OneDas.Database
         #region "Properties"
 
         [DataMember]
-        public DatasetInfo ChunkDatasetInfo { get; }
+        public DatasetInfo ChunkDatasetInfo { get; set; }
 
         [DataMember]
-        public List<VariableInfo> VariableInfoSet { get; }
+        public List<VariableInfo> VariableInfos { get; set; }
 
         #endregion
 
@@ -33,9 +33,9 @@ namespace OneDas.Database
             return this.Name;
         }
 
-        public override IEnumerable<InfoBase> GetChildSet()
+        public override IEnumerable<InfoBase> GetChilds()
         {
-            return this.VariableInfoSet;
+            return this.VariableInfos;
         }
 
         #endregion

@@ -11,12 +11,12 @@ namespace OneDas.Database
 
         public VariableInfo(string name, InfoBase parent) : base(name, parent)
         {
-            this.VariableNameSet = new List<string>();
-            this.VariableGroupSet = new List<string>();
-            this.UnitSet = new List<string>();
-            this.TransferFunctionSet = new List<TransferFunction>();
+            this.VariableNames = new List<string>();
+            this.VariableGroups = new List<string>();
+            this.Units = new List<string>();
+            this.TransferFunctions = new List<TransferFunction>();
 
-            this.DatasetInfoSet = new List<DatasetInfo>();
+            this.DatasetInfos = new List<DatasetInfo>();
         }
 
         #endregion
@@ -24,19 +24,19 @@ namespace OneDas.Database
         #region "Properties"
 
         [DataMember]
-        public List<string> VariableNameSet { get; set; }
+        public List<string> VariableNames { get; set; }
 
         [DataMember]
-        public List<string> VariableGroupSet { get; set; }
+        public List<string> VariableGroups { get; set; }
 
         [DataMember]
-        public List<string> UnitSet { get; set; }
+        public List<string> Units { get; set; }
 
         [DataMember]
-        public List<TransferFunction> TransferFunctionSet { get; set; }
+        public List<TransferFunction> TransferFunctions { get; set; }
 
         [DataMember]
-        public List<DatasetInfo> DatasetInfoSet { get; }
+        public List<DatasetInfo> DatasetInfos { get; }
 
         #endregion
 
@@ -47,9 +47,9 @@ namespace OneDas.Database
             return $"{this.Parent.GetPath()}/{this.Name}";
         }
 
-        public override IEnumerable<InfoBase> GetChildSet()
+        public override IEnumerable<InfoBase> GetChilds()
         {
-            return this.DatasetInfoSet;
+            return this.DatasetInfos;
         }
 
         #endregion

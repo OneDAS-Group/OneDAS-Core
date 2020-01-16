@@ -60,7 +60,7 @@ namespace OneDas.Hdf.Explorer.Web
             {
                 return new AppModel(
                     hdfExplorerState: _stateManager.GetState(this.Context.ConnectionId),
-                    campaignInfoSet: Program.CampaignInfos
+                    campaignInfoSet: Program.GetCampaigns()
                 );
             });
         }
@@ -84,20 +84,20 @@ namespace OneDas.Hdf.Explorer.Web
 
                 _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Idle);
 
-                return Program.CampaignInfos;
+                return Program.GetCampaigns();
             });
         }
 
         // TODO: Unify Download and GetData
         // TODO: do not use stream but simple task instead
-        public ChannelReader<string> Download(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNameSet)
+        public ChannelReader<string> Download(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateDescription, string campaignPath, List<string> variableNames)
         {
             Channel<string> channel;
             DownloadService downloadService;
 
             channel = Channel.CreateUnbounded<string>();
             downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
-            _ = downloadService.Download(channel.Writer, this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, sampleRateDescription, campaignPath, variableNameSet);
+            _ = downloadService.Download(channel.Writer, this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, sampleRateDescription, campaignPath, variableNames);
 
             return channel;
         }
@@ -108,14 +108,6 @@ namespace OneDas.Hdf.Explorer.Web
             var sampleRate = new SampleRateContainer(sampleRateWithUnit);
 
             return await downloadService.GetData(this.Context.GetHttpContext().Connection.RemoteIpAddress, dateTimeBegin, dateTimeEnd, sampleRate, fileFormat, fileGranularity, campaignInfoSet);
-        }
-
-        public Task<string> GetCampaignDocumentation(string campaigInfoName)
-        {
-            DownloadService downloadService;
-
-            downloadService = ActivatorUtilities.CreateInstance<DownloadService>(_serviceProvider, this.Context.ConnectionId);
-            return downloadService.GetCampaignDocumentation(campaigInfoName);
         }
 
         public Task<string> GetInactivityMessage()

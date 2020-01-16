@@ -19,7 +19,6 @@ namespace OneDas.Hdf.Explorer.Core
         #region Fields
 
         private long _vdsFileId = -1;
-        private long _vdsMetaFileId = -1;
 
         #endregion
 
@@ -28,12 +27,7 @@ namespace OneDas.Hdf.Explorer.Core
         public HdfDataSource(string databasePath)
         {
             var filePath = Path.Combine(databasePath, "VDS.h5");
-            var metaFilePath = Path.Combine(databasePath, "VDS_META.h5");
-
             _vdsFileId = H5F.open(filePath, H5F.ACC_RDONLY);
-
-            if (File.Exists(metaFilePath))
-                _vdsMetaFileId = H5F.open(metaFilePath, H5F.ACC_RDONLY);
         }
 
         #endregion
@@ -135,39 +129,6 @@ namespace OneDas.Hdf.Explorer.Core
             }
         }
 
-        public (string name, string guid, string unit, List<TransferFunction>) GetDocumentation(CampaignInfo campaignInfo, VariableInfo variableInfo)
-        {
-            long variable_groupId = -1;
-
-            var name = variableInfo.VariableNameSet.Last();
-            var guid = variableInfo.Name;
-            var unit = string.Empty;
-            var transferFunctionSet = new List<TransferFunction>();
-
-            try
-            {
-                var groupPath = GeneralHelper.CombinePath(campaignInfo.Name, variableInfo.Name);
-
-                if (H5I.is_valid(_vdsMetaFileId) > 0 && IOHelper.CheckLinkExists(_vdsMetaFileId, groupPath))
-                {
-                    variable_groupId = H5G.open(_vdsMetaFileId, groupPath);
-
-                    if (H5A.exists(variable_groupId, "unit") > 0)
-                        unit = IOHelper.ReadAttribute<string>(variable_groupId, "unit").FirstOrDefault();
-
-                    if (H5A.exists(variable_groupId, "transfer_function_set") > 0)
-                        transferFunctionSet = IOHelper.ReadAttribute<hdf_transfer_function_t>(variable_groupId, "transfer_function_set")
-                            .Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
-                }
-            }
-            finally
-            {
-                if (H5I.is_valid(variable_groupId) > 0) { H5G.close(variable_groupId); }
-            }
-
-            return (name, guid, unit, transferFunctionSet);
-        }
-
         public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
         {
             ulong offset;
@@ -261,7 +222,6 @@ namespace OneDas.Hdf.Explorer.Core
         public void Dispose()
         {
             if (H5I.is_valid(_vdsFileId) > 0) { H5F.close(_vdsFileId); }
-            if (H5I.is_valid(_vdsMetaFileId) > 0) { H5F.close(_vdsMetaFileId); }
         }
 
         #endregion

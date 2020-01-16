@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 
 namespace OneDas.PackageManagement
@@ -16,12 +18,14 @@ namespace OneDas.PackageManagement
 
         #region "Constructors"
 
-        public OneDasNuGetProjectContext(ILogger logger)
+        public OneDasNuGetProjectContext(ISettings settings, ILogger logger)
         {
             _logger = logger;
 
             this.LoggerAdapter = new LoggerAdapter(this);
-            this.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, this.LoggerAdapter, null, null);
+
+            var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, this.LoggerAdapter);
+            this.PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, clientPolicyContext, this.LoggerAdapter);
         }
 
         #endregion

@@ -81,7 +81,7 @@ namespace OneDas.Hdf.Interface
                         settings.FileGranularity,
                         settings.SampleRateDescription,
                         settings.CampaignPath,
-                        settings.VariableNameSet);
+                        settings.VariableNames);
 
                 while (await reader.WaitToReadAsync())
                 {

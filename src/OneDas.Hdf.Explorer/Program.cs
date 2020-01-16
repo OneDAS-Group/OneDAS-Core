@@ -9,16 +9,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace OneDas.Hdf.Explorer
 {
     public class Program
     {
+        #region Fields
+
         private static object _lock;
-        private static List<CampaignInfo> _campaignInfoSet;
         private static HdfExplorerOptions _options;
         private static IConfiguration _configuration;
-        private static List<IDataSource> _dataSources;
+        private static Dictionary<IDataSource, IReadOnlyList<CampaignInfo>> _dataSourceToCampaignMap;
+        private static Dictionary<CampaignInfo, CampaignMetaInfo> _campaignToCampaignMetaMap;
+
+        #endregion
+
+        #region Methods
 
         public static void Main(string[] args)
         {
@@ -53,12 +60,6 @@ namespace OneDas.Hdf.Explorer
 
             _options.Save(configurationDirectoryPath);
 
-            // databases
-            _dataSources = new List<IDataSource>()
-            {
-                new HdfDataSource(_options.DataBaseFolderPath)
-            };
-
             // campaign info
             Program.UpdateCampaignInfos();
 
@@ -75,18 +76,63 @@ namespace OneDas.Hdf.Explorer
                 Program.CreateWebHost(currentDirectory).RunAsService();
         }
 
-        public static List<CampaignInfo> CampaignInfos
+        public static void UpdateCampaignInfos()
         {
-            get
+            lock (_lock)
             {
-                lock (_lock)
+                _dataSourceToCampaignMap = new Dictionary<IDataSource, IReadOnlyList<CampaignInfo>>();
+                _campaignToCampaignMetaMap = new Dictionary<CampaignInfo, CampaignMetaInfo>();
+
+                var dataSources = new List<IDataSource>()
                 {
-                    return _campaignInfoSet;
+                    new HdfDataSource(_options.DataBaseFolderPath)
+                };
+
+                foreach (var dataSource in dataSources)
+                {
+                    var campaignInfos = dataSource.GetCampaignInfos();
+
+                    foreach (var campaignInfo in campaignInfos)
+                    {
+                        _campaignToCampaignMetaMap[campaignInfo] = Program.LoadCampaignMeta(campaignInfo);
+                    }
+
+                    _dataSourceToCampaignMap[dataSource] = campaignInfos;
                 }
             }
-            private set
+        }
+
+        public static void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
+        {
+            var filePath = Path.Combine(Environment.CurrentDirectory, "DB_META", $"{campaignMeta.Name}.json");
+
+            if (!Program.GetCampaigns().Any(campaign => campaign.Name == campaignMeta.Name))
+                throw new InvalidOperationException($"The campaign '{campaignMeta.Name}' does not exist within the database.");
+
+            campaignMeta.Purge();
+
+            var jsonString = JsonSerializer.Serialize(campaignMeta);
+            File.WriteAllText(filePath, jsonString);
+        }
+
+        public static List<CampaignInfo> GetCampaigns()
+        {
+            lock (_lock)
             {
-                _campaignInfoSet = value;
+                return _dataSourceToCampaignMap.SelectMany(x => x.Value).ToList();
+            }
+        }
+
+        public static IDataSource GetDataSource(string campaignName)
+        {
+            lock (_lock)
+            {
+                var dataSource = _dataSourceToCampaignMap.Where(x => x.Value.Any(campaign => campaign.Name == campaignName)).Select(x => x.Key).FirstOrDefault();
+
+                if (dataSource == null)
+                    throw new KeyNotFoundException("The requested campaign could not be found.");
+
+                return dataSource;
             }
         }
 
@@ -107,12 +153,23 @@ namespace OneDas.Hdf.Explorer
             return webHost;
         }
 
-        public static void UpdateCampaignInfos()
+        private static CampaignMetaInfo LoadCampaignMeta(CampaignInfo campaign)
         {
-            lock (_lock)
+            CampaignMetaInfo campaignMeta;
+
+            var filePath = Path.Combine(Environment.CurrentDirectory, "DB_META", $"{campaign.Name}.json");
+
+            if (!File.Exists(filePath))
+                campaignMeta = new CampaignMetaInfo(campaign.Name);
+            else
             {
-                Program.CampaignInfos = _dataSources.SelectMany(source => source.GetCampaignInfos()).ToList();
+                var jsonString = File.ReadAllText(filePath);
+                campaignMeta = JsonSerializer.Deserialize<CampaignMetaInfo>(jsonString);
             }
+
+            return campaignMeta;
         }
+
+        #endregion
     }
 }

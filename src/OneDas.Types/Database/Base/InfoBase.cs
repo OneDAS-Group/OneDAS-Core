@@ -28,7 +28,7 @@ namespace OneDas.Database
         #region "Methods"
 
         public abstract string GetPath();
-        public abstract IEnumerable<InfoBase> GetChildSet();
+        public abstract IEnumerable<InfoBase> GetChilds();
 
         #endregion
     }

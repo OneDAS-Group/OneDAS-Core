@@ -56,9 +56,9 @@ namespace OneDas.PackageManagement
             else
             {
                 _settings = new Settings(_options.NugetDirectoryPath);
-                _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json", false) });
-                _settings.SetValues(ConfigurationConstants.PackageSources, new List<SettingValue>() { new SettingValue("local", "local", false) });
-                _settings.SetValues(ConfigurationConstants.Config, new List<SettingValue>() { new SettingValue("globalPackagesFolder", "cache", false) });
+                _settings.AddOrUpdate(ConfigurationConstants.PackageSources, new AddItem("MyGet (CI)", "https://www.myget.org/F/onedas/api/v3/index.json"));
+                _settings.AddOrUpdate(ConfigurationConstants.PackageSources, new AddItem("local", "local"));
+                _settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", "cache"));
             }
 
             if (!File.Exists(_options.NugetProjectFilePath))
@@ -75,7 +75,7 @@ namespace OneDas.PackageManagement
             }
 
             _project = new OneDasNugetProject(_options.NugetProjectFilePath);
-            _projectContext = new OneDasNuGetProjectContext(loggerFactory.CreateLogger("Nuget"));
+            _projectContext = new OneDasNuGetProjectContext(_settings, loggerFactory.CreateLogger("Nuget"));
             _sourceRepositoryProvider = this.CreateSourceRepositoryProvider();
             _packageManager = this.CreateNuGetPackageManager(_sourceRepositoryProvider);
 

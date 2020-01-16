@@ -75,24 +75,16 @@ namespace OneDas.Hdf.Core
             {
                 type = typeof(string);
             }
-            else if (H5T.equal(typeId, typeId_reference = TypeConversionHelper.GetHdfTypeIdFromType(typeof(hdf_tag_t))) > 0)
-            {
-                type = typeof(hdf_tag_t);
-            }
             else if (H5T.equal(typeId, typeId_reference = TypeConversionHelper.GetHdfTypeIdFromType(typeof(hdf_transfer_function_t))) > 0)
             {
                 type = typeof(hdf_transfer_function_t);
             }
 
             if (H5I.is_valid(typeId_reference) > 0)
-            {
                 H5T.close(typeId_reference);
-            }
 
             if (type == null)
-            {
                 throw new NotSupportedException();
-            }
 
             return type;
         }

@@ -43,7 +43,7 @@ namespace OneDas.Hdf.Explorer.Core
 
                 try
                 {
-                    dataSource = new HdfDataSource(_options.DataBaseFolderPath);
+                    dataSource = Program.GetDataSource(campaignName);
                     return dataSource.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
                 }
                 finally
@@ -53,11 +53,11 @@ namespace OneDas.Hdf.Explorer.Core
             });
         }
 
-        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateWithUnit, string campaignPath, List<string> variableNameSet)
+        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateWithUnit, string campaignPath, List<string> variableNames)
         {
             try
             {
-                var campaignInfo = Program.CampaignInfos.FirstOrDefault(current => current.Name == campaignPath);
+                var campaignInfo = Program.GetCampaigns().FirstOrDefault(current => current.Name == campaignPath);
 
                 if (campaignInfo == null)
                     throw new Exception($"Could not find campaign with path '{campaignPath}'.");
@@ -65,17 +65,17 @@ namespace OneDas.Hdf.Explorer.Core
                 var campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
                 campaignInfoSet[campaignInfo.Name] = new Dictionary<string, List<string>>();
 
-                foreach (var variableName in variableNameSet)
+                foreach (var variableName in variableNames)
                 {
                     VariableInfo variableInfo;
 
-                    variableInfo = campaignInfo.VariableInfoSet.FirstOrDefault(current => current.VariableNameSet.Contains(variableName));
+                    variableInfo = campaignInfo.VariableInfos.FirstOrDefault(current => current.VariableNames.Contains(variableName));
 
                     if (campaignInfo == null)
                         throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaignInfo.Name}'.");
 
-                    if (!variableInfo.DatasetInfoSet.Any(current => current.Name == sampleRateWithUnit))
-                        throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNameSet.First()}) in campaign '{campaignInfo.Name}'.");
+                    if (!variableInfo.DatasetInfos.Any(current => current.Name == sampleRateWithUnit))
+                        throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNames.First()}) in campaign '{campaignInfo.Name}'.");
 
                     campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateWithUnit };
                 }
@@ -94,9 +94,6 @@ namespace OneDas.Hdf.Explorer.Core
 
         public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, SampleRateContainer sampleRate, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
         {
-            IDataSource dataSource = null;
-
-            // task 
             return Task.Run(() =>
             {
                 _stateManager.CheckState(_connectionId);
@@ -122,14 +119,13 @@ namespace OneDas.Hdf.Explorer.Core
 
                 try
                 {
-                    // open data source
-                    dataSource = new HdfDataSource(_options.DataBaseFolderPath);
-
                     // byte count
                     var bytesPerRow = 0UL;
 
                     foreach (var campaignInfo in campaignInfoSet)
                     {
+                        var dataSource = Program.GetDataSource(campaignInfo.Key);
+
                         foreach (var variableInfo in campaignInfo.Value)
                         {
                             foreach (string datasetInfo in variableInfo.Value)
@@ -155,9 +151,9 @@ namespace OneDas.Hdf.Explorer.Core
                     {
                         foreach (var campaignInfo in campaignInfoSet)
                         {
-                            HdfDataLoader hdfDataLoader;
+                            var dataSource = Program.GetDataSource(campaignInfo.Key);
+                            var hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
 
-                            hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
                             if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, dataSource, samplesPerSecond, start, block, segmentLength)))
@@ -173,7 +169,6 @@ namespace OneDas.Hdf.Explorer.Core
                 finally
                 {
                     _stateManager.SetState(_connectionId, HdfExplorerState.Idle);
-                    dataSource?.Dispose();
                 }
 
                 var message = $"{remoteIpAddress} requested data: {dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss")} to {dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -181,69 +176,6 @@ namespace OneDas.Hdf.Explorer.Core
 
                 return $"download/{Path.GetFileName(zipFilePath)}";
             }, _stateManager.GetToken(_connectionId));
-        }
-
-        public Task<string> GetCampaignDocumentation(string campaigInfoName)
-        {
-            return Task.Run(() =>
-            {
-                IDataSource database = null;
-
-                var campaignInfo = Program.CampaignInfos.First(campaign => campaign.Name == campaigInfoName);
-
-                _stateManager.CheckState(_connectionId);
-
-                try
-                {
-                    database = new HdfDataSource(_options.DataBaseFolderPath);
-
-                    var csvFileName = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{ campaignInfo.Name.ToLower().Replace("/", "_").TrimStart('_') }_{ Guid.NewGuid().ToString() }.csv");
-                    var groupNameSet = campaignInfo.VariableInfoSet.SelectMany(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n')).Distinct().ToList();
-
-                    using (var streamWriter = new StreamWriter(new FileStream(csvFileName, FileMode.Create, FileAccess.Write, FileShare.Read), Encoding.UTF8))
-                    {
-                        // campaign header
-                        streamWriter.WriteLine($"# { campaignInfo.Name.TrimStart('/').Replace("/", " / ") }");
-
-                        // header
-                        streamWriter.WriteLine("Group;Name;Unit;Transfer function;Guid");
-
-                        // groups
-                        foreach (string groupName in groupNameSet)
-                        {
-                            var groupedVariableInfoSet = campaignInfo.VariableInfoSet.Where(variableInfo => variableInfo.VariableGroupSet.Last().Split('\n').Contains(groupName)).OrderBy(variableInfo => variableInfo.VariableNameSet.Last()).ToList();
-
-                            // variables
-                            groupedVariableInfoSet.ForEach(variableInfo =>
-                            {
-                                (var name, var guid, var unit, var transferFunctions) = database.GetDocumentation(campaignInfo, variableInfo);
-
-                                // transfer function
-                                var transferFunction = string.Empty;
-
-                                transferFunctions.ForEach(tf =>
-                                {
-                                    if (!string.IsNullOrWhiteSpace(transferFunction))
-                                        transferFunction += " | ";
-
-                                    transferFunction += $"{tf.DateTime}, {tf.Type}, {tf.Option}, {tf.Argument}";
-                                });
-
-                                transferFunction = $"\"{transferFunction}\"";
-
-                                // write row
-                                streamWriter.WriteLine($"{groupName};{name};{unit};{transferFunction};{guid}");
-                            });
-                        }
-                    }
-
-                    return $"download/{Path.GetFileName(csvFileName)}";
-                }
-                finally
-                {
-                    database?.Dispose();
-                }
-            });
         }
 
         private void OnProgressUpdated(object sender, ProgressUpdatedEventArgs e)
