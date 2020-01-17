@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using OneDas.Infrastructure;
+using System;
+using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace OneDas.Hdf.IO
 {
@@ -39,6 +42,22 @@ namespace OneDas.Hdf.IO
         }
 
         #endregion
+
+        public TransferFunction ToTransferFunction()
+        {
+            return new TransferFunction(DateTime.ParseExact(this.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), this.type, this.option, this.argument);
+        }
+
+        public static hdf_transfer_function_t FromTransferFunction(TransferFunction transferFunction)
+        {
+            return new hdf_transfer_function_t()
+            {
+                date_time = transferFunction.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"),
+                type = transferFunction.Type,
+                option = transferFunction.Option,
+                argument = transferFunction.Argument,
+            };
+        }
 
         /// <summary>
         /// Compares two copies of <see cref="hdf_transfer_function_t"/>.

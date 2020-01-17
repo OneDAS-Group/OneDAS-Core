@@ -211,18 +211,8 @@ namespace OneDas.Hdf.VdsTool
 
         private static Command PrepareAggregateCommand()
         {
-            bool TryConvertArgument(SymbolResult result, out DateTime value)
-            {
-                return DateTime.TryParseExact(result.Token.Value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
-            }
-
             var command = new Command("aggregate", "Aggregates data of channels that match the filter conditions.")
             {
-                new Option("--epoch-start", "The start date of the epoch")
-                {
-                    Argument = new Argument<DateTime>(TryConvertArgument),
-                    Required = true
-                },
                 new Option("--method", "Possible arguments are 'mean', 'mean_polar', 'min', 'max', 'std', 'rms', 'min_bitwise' and 'max_bitwise'")
                 {
                     Argument = new Argument<string>(),
@@ -236,6 +226,11 @@ namespace OneDas.Hdf.VdsTool
                 new Option("--campaign-name", "The campaign name, e.g /A/B/C.")
                 {
                     Argument = new Argument<string>(),
+                    Required = true
+                },
+                new Option("--days", "The number of days in the past to look for files to calculate aggregations for.")
+                {
+                    Argument = new Argument<uint>(),
                     Required = true
                 },
                 new Option("--include-channel", "A regex based filter to include channels with certain names.")
@@ -270,7 +265,7 @@ namespace OneDas.Hdf.VdsTool
                 }
             };
 
-            command.Handler = CommandHandler.Create((DateTime epochStart, string method, string argument, string campaignName, ParseResult parseResult) =>
+            command.Handler = CommandHandler.Create((string method, string argument, string campaignName, uint days, ParseResult parseResult) =>
             {
                 var logger = _loggerFactory.CreateLogger("AGGREGATE");
                 var filters = new Dictionary<string, string>();
@@ -292,7 +287,7 @@ namespace OneDas.Hdf.VdsTool
 
                 try
                 {
-                    new AggregateCommand(epochStart, method, argument, campaignName, filters, logger).Run();
+                    new AggregateCommand(method, argument, campaignName, days, filters, logger).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)

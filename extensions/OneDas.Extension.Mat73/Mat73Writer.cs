@@ -121,11 +121,6 @@ namespace OneDas.Extension.Mat73
             }
         }
 
-        private ulong TimeSpanToIndex(TimeSpan chunkPeriod, object sampleRate)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override void FreeUnmanagedResources()
         {
             base.FreeUnmanagedResources();

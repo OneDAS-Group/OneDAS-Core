@@ -15,17 +15,17 @@ namespace OneDas.Hdf.Core
     {
         public static void UpdateCampaignInfos(long fileId, List<CampaignInfo> campaignInfoSet, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
-            GeneralHelper.InternalUpdateCampaignInfos(fileId, campaignInfoSet, null);
+            GeneralHelper.InternalUpdateCampaignInfos(fileId, campaignInfoSet, null, updateSourceFileMap);
         }
 
         public static CampaignInfo GetCampaignInfo(long fileId, string campaignGroupPath)
         {
-            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, campaignGroupPath).FirstOrDefault();
+            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, campaignGroupPath, null).FirstOrDefault();
         }
 
         public static List<CampaignInfo> GetCampaignInfos(long fileId)
         {
-            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, null);
+            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, null, null);
         }
 
         public static void SuppressErrors(Action action)

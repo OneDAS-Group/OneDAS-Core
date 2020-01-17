@@ -173,16 +173,13 @@ namespace OneDas.Hdf.VdsTool.Commands
                 // load is_chunk_completed_set
                 campaignInfos.ForEach(campaignInfo =>
                 {
-                    string key;
-                    byte[] isChunkCompletedSet;
-
                     if (_datasetToSourceFilesMap[campaignInfo.ChunkDatasetInfo].Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
                     {
-                        key = $"{sourceFilePath}+{campaignInfo.GetPath()}";
+                        var key = $"{sourceFilePath}+{campaignInfo.GetPath()}";
 
                         if (!_isChunkCompletedMap.ContainsKey(key))
                         {
-                            isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{campaignInfo.GetPath()}/is_chunk_completed_set");
+                            var isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{campaignInfo.GetPath()}/is_chunk_completed_set");
                             _isChunkCompletedMap[key] = isChunkCompletedSet.ToList();
                         }
                     }
@@ -240,7 +237,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 IOHelper.PrepareAttribute(variableGroupId, "name_set", variableInfo.VariableNames.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(variableGroupId, "group_set", variableInfo.VariableGroups.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(variableGroupId, "unit_set", variableInfo.Units.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "transfer_function_set", variableInfo.TransferFunctions.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "transfer_function_set", variableInfo.TransferFunctions.Select(tf => hdf_transfer_function_t.FromTransferFunction(tf)).ToArray(), new ulong[] { H5S.UNLIMITED }, true);
 
                 // dataset
                 foreach (var datasetInfo in variableInfo.DatasetInfos)

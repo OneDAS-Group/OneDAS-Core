@@ -1,9 +1,10 @@
 ﻿using OneDas.Infrastructure;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Diagnostics;
 
 namespace OneDas.Database
 {
+    [DebuggerDisplay("{Name,nq}")]
     public class VariableMetaInfo
     {
         #region "Constructors"

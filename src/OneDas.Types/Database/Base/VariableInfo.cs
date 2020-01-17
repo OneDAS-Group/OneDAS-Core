@@ -1,9 +1,12 @@
 ﻿using OneDas.Infrastructure;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace OneDas.Database
 {
+    [DebuggerDisplay("{GetDisplayName(),nq}")]
     [DataContract]
     public class VariableInfo : InfoBase
     {
@@ -41,6 +44,11 @@ namespace OneDas.Database
         #endregion
 
         #region "Methods"
+
+        public string GetDisplayName()
+        {
+            return this.VariableNames.Last();
+        }
 
         public override string GetPath()
         {

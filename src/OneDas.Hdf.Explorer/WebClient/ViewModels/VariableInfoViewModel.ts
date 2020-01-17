@@ -2,7 +2,7 @@
 {
     public DatasetInfos: DatasetInfoViewModel[]
     public VariableNames: string[]
-    public variableGroups: string[]
+    public VariableGroups: string[]
 
     constructor(variableModel: any, parent: HdfElementViewModelBase)
     {
@@ -10,7 +10,7 @@
 
         this.DatasetInfos = variableModel.DatasetInfos.map(datasetInfoModel => new DatasetInfoViewModel(datasetInfoModel, this))
         this.VariableNames = variableModel.VariableNames
-        this.variableGroups = variableModel.variableGroups
+        this.VariableGroups = variableModel.VariableGroups
     }  
 
     // methods

@@ -71,7 +71,7 @@ namespace OneDas.Hdf.Explorer.Core
                         var groupName = IOHelper.ReadAttribute<string>(groupId, "group_set").Last();
                         var unit = IOHelper.ReadAttribute<string>(groupId, "unit_set").LastOrDefault();
                         var hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
-                        var transferFunctionSet = hdf_transfer_function_t_set.Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument)).ToList();
+                        var transferFunctionSet = hdf_transfer_function_t_set.Select(tf => tf.ToTransferFunction()).ToList();
 
                         var oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
                         var sampleRate = new SampleRateContainer(datasetName);

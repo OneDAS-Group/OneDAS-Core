@@ -22,7 +22,7 @@ namespace OneDas.Hdf.Core
 
             try
             {
-                campaignInfo.ChunkDatasetInfo.Update(datasetId);
+                campaignInfo.ChunkDatasetInfo.Update(datasetId, fileContext, updateSourceFileMap);
             }
             finally
             {
@@ -74,6 +74,7 @@ namespace OneDas.Hdf.Core
         {
             var idx = 0UL;
 
+            variableInfo.VariableNames = IOHelper.UpdateAttributeList(variableGroupId, "name_set", variableInfo.VariableNames.ToArray()).ToList();
             variableInfo.VariableGroups = IOHelper.UpdateAttributeList(variableGroupId, "group_set", variableInfo.VariableGroups.ToArray()).ToList();
 
             if (fileContext.FormatVersion != 1)
@@ -81,17 +82,11 @@ namespace OneDas.Hdf.Core
                 variableInfo.Units = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", variableInfo.Units.ToArray()).ToList();
 
                 // TransferFunction to hdf_transfer_function_t
-                var transferFunctionSet = variableInfo.TransferFunctions.Select(tf => new hdf_transfer_function_t() 
-                { 
-                    date_time = tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), 
-                    type = tf.Type,
-                    option = tf.Option,
-                    argument = tf.Argument
-                });
+                var transferFunctionSet = variableInfo.TransferFunctions.Select(tf => hdf_transfer_function_t.FromTransferFunction(tf));
 
                 // hdf_transfer_function_t to TransferFunction
                 variableInfo.TransferFunctions = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", transferFunctionSet.ToArray())
-                    .Select(tf => new TransferFunction(DateTime.ParseExact(tf.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), tf.type, tf.option, tf.argument))
+                    .Select(tf => tf.ToTransferFunction())
                     .ToList();
             }
 
@@ -121,10 +116,7 @@ namespace OneDas.Hdf.Core
                             variableInfo.DatasetInfos.Add(currentDatasetInfo);
                         }
 
-                        var dimensionSize = currentDatasetInfo.Update(datasetId);
-                        var sourceFileInfo = new SourceFileInfo(fileContext.FilePath, dimensionSize, fileContext.DateTime);
-
-                        updateSourceFileMap?.Invoke(datasetId, currentDatasetInfo, sourceFileInfo);
+                        currentDatasetInfo.Update(datasetId, fileContext, updateSourceFileMap);
                     }
                 }
                 finally
@@ -136,7 +128,7 @@ namespace OneDas.Hdf.Core
             }
         }
 
-        public static ulong Update(this DatasetInfo datasetInfo, long datasetId)
+        public static void Update(this DatasetInfo datasetInfo, long datasetId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             long dataspaceId = -1;
 
@@ -153,7 +145,8 @@ namespace OneDas.Hdf.Core
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
             }
 
-            return actualDimenionSet.First();
+            var sourceFileInfo = new SourceFileInfo(fileContext.FilePath, actualDimenionSet.First(), fileContext.DateTime);
+            updateSourceFileMap?.Invoke(datasetId, datasetInfo, sourceFileInfo);
         }
     }
 }

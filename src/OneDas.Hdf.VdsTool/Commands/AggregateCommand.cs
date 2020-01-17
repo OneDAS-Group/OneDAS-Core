@@ -20,10 +20,10 @@ namespace OneDas.Hdf.VdsTool.Commands
     {
         #region Fields
 
-        private DateTime _epochStart;
         private string _method;
         private string _argument;
         private string _campaignName;
+        private uint _days;
         private Dictionary<string, string> _filters;
         private ILogger _logger;
 
@@ -31,12 +31,12 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Constructors
 
-        public AggregateCommand(DateTime epochStart, string method, string argument, string campaignName, Dictionary<string, string> filters, ILogger logger)
+        public AggregateCommand(string method, string argument, string campaignName, uint days, Dictionary<string, string> filters, ILogger logger)
         {
-            _epochStart = epochStart;
             _method = method;
             _argument = argument;
             _campaignName = campaignName;
+            _days = days;
             _logger = logger;
             _filters = filters;
         }
@@ -47,31 +47,43 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         public void Run()
         {
-            var epochEnd = _epochStart.AddMonths(1);
-            var sourceDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", _epochStart.ToString("yyyy-MM"));
-            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", _epochStart.ToString("yyyy-MM"));
+            var epochEnd = DateTime.UtcNow.Date;
+            var epochStart = epochEnd.AddDays(-_days);
 
-            _logger.LogInformation($"Epoch start: {_epochStart.ToString("yyyy-MM-dd")}{Environment.NewLine}Epoch   end: {epochEnd.ToString("yyyy-MM-dd")}");
+            var sourceDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", epochStart.ToString("yyyy-MM"));
+            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", epochStart.ToString("yyyy-MM"));
 
-            this.CreateAggregatedFiles(sourceDirectoryPath, targetDirectoryPath, _method, _argument, _campaignName);
+            for (int i = 0; i <= _days; i++)
+            {
+                this.CreateAggregatedFiles(epochStart.AddDays(i), _campaignName);
+            }
         }
 
-        private void CreateAggregatedFiles(string sourceDirectoryPath, string targetDirectoryPath, string method, string argument, string campaignName)
+        private void CreateAggregatedFiles(DateTime dateTimeBegin, string campaignName)
         {
             long sourceFileId = -1;
             long targetFileId = -1;
 
-            IList<string> filePathSet;
+            var folderName = dateTimeBegin.ToString("yyyy-MM");
+            var sourceDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", folderName);
+            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", folderName);
 
-            if (Directory.Exists(sourceDirectoryPath))
-                filePathSet = Directory.GetFiles(sourceDirectoryPath, "*.h5", SearchOption.TopDirectoryOnly);
-            else
-                filePathSet = new List<string>();
+            // get files
+            if (!Directory.Exists(sourceDirectoryPath))
+                return;
 
+            var campaignFileName = campaignName.TrimStart('/').Replace("/", "_");
+            var dateTimeFileName = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
+            var fileName = $"{campaignFileName}_V*_{dateTimeFileName}.h5";
+            var filePathSet = Directory.GetFiles(sourceDirectoryPath, fileName, SearchOption.TopDirectoryOnly);
+
+            // process files
             try
             {
                 foreach (string sourceFilePath in filePathSet)
                 {
+                    _logger.LogInformation($"Calulate aggregations for data of file '{sourceFilePath}'.");
+
                     targetFileId = -1;
 
                     _logger.LogInformation($"file: {sourceFilePath}");
@@ -82,7 +94,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     var campaignInfo = GeneralHelper.GetCampaignInfo(sourceFileId, campaignName);
 
                     if (campaignInfo == null)
-                        continue;
+                        throw new Exception($"The campaign '{campaignName}' was not found in file '{sourceFilePath}'.");
 
                     // targetFileId
                     var targetFilePath = Path.Combine(targetDirectoryPath, Path.GetFileName(sourceFilePath));
@@ -106,7 +118,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                         }
 
                         // campaignInfo
-                        this.AggregateCampaign(sourceFileId, targetFileId, campaignInfo, method, argument);
+                        this.AggregateCampaign(sourceFileId, targetFileId, campaignInfo, _method, _argument);
 
                         Console.CursorTop -= 1;
                     }
@@ -117,9 +129,9 @@ namespace OneDas.Hdf.VdsTool.Commands
                     }
                 }
             }
-            finally
+            catch (Exception ex)
             {
-                //
+                _logger.LogError(ex.ToString());
             }
         }
 
@@ -188,8 +200,8 @@ namespace OneDas.Hdf.VdsTool.Commands
                 typeId = H5D.get_type(sourceDatasetId);
 
                 // invoke this.AggregateDataset
-                GeneralHelper.InvokeGenericMethod(typeof(Program), null, nameof(this.AggregateDataset),
-                                              BindingFlags.NonPublic | BindingFlags.Static,
+                GeneralHelper.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.AggregateDataset),
+                                              BindingFlags.Instance | BindingFlags.NonPublic,
                                               TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
                                               new object[] { groupPath, sourceDatasetId, sourceDatasetId_status, targetFileId, sampleRate, method, argument });
 

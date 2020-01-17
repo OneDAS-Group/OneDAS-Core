@@ -14,7 +14,7 @@ class CampaignInfoViewModel extends HdfElementViewModelBase
         this.GroupedVariableInfos = ObservableGroupBy(
             this.VariableInfos,
             variableInfo => variableInfo.VariableNames[variableInfo.VariableNames.length - 1],
-            variableInfo => variableInfo.variableGroups[variableInfo.variableGroups.length - 1],
+            variableInfo => variableInfo.VariableGroups[variableInfo.VariableGroups.length - 1],
             ""
         )
     }  

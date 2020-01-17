@@ -29,24 +29,16 @@ namespace OneDas.Hdf.Explorer
 
         public static void Main(string[] args)
         {
-            bool isUserInteractive;
-
-            string currentDirectory;
-            string configurationDirectoryPath;
-            string configurationFileName;
-
-            IConfigurationBuilder configurationBuilder;
-
-            isUserInteractive = !args.Contains("--non-interactive");
+            var isUserInteractive = !args.Contains("--non-interactive");
             _lock = new object();
 
             // configuration
-            configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "HDF Explorer");
-            configurationFileName = "settings.json";
+            var configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "HDF Explorer");
+            var configurationFileName = "settings.json";
 
             Directory.CreateDirectory(configurationDirectoryPath);
 
-            configurationBuilder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
 
             _configuration = configurationBuilder.Build();
@@ -60,14 +52,21 @@ namespace OneDas.Hdf.Explorer
 
             _options.Save(configurationDirectoryPath);
 
-            // campaign info
-            Program.UpdateCampaignInfos();
-
             // change current directory to database location
-            currentDirectory = Environment.CurrentDirectory;
+            var currentDirectory = Environment.CurrentDirectory;
 
             if (Directory.Exists(_options.DataBaseFolderPath))
                 Environment.CurrentDirectory = _options.DataBaseFolderPath;
+
+            // check if database exists
+            if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+            {
+                Console.WriteLine(message);
+                return;
+            }
+
+            // campaign info
+            Program.UpdateCampaignInfos();
 
             // service vs. interactive
             if (isUserInteractive)
@@ -94,7 +93,8 @@ namespace OneDas.Hdf.Explorer
 
                     foreach (var campaignInfo in campaignInfos)
                     {
-                        _campaignToCampaignMetaMap[campaignInfo] = Program.LoadCampaignMeta(campaignInfo);
+                        var folderPath = Path.Combine(Environment.CurrentDirectory, "DB_META");
+                        _campaignToCampaignMetaMap[campaignInfo] = Program.LoadCampaignMeta(folderPath);
                     }
 
                     _dataSourceToCampaignMap[dataSource] = campaignInfos;
@@ -153,14 +153,14 @@ namespace OneDas.Hdf.Explorer
             return webHost;
         }
 
-        private static CampaignMetaInfo LoadCampaignMeta(CampaignInfo campaign)
+        private static CampaignMetaInfo LoadCampaignMeta(string campaignName)
         {
             CampaignMetaInfo campaignMeta;
 
-            var filePath = Path.Combine(Environment.CurrentDirectory, "DB_META", $"{campaign.Name}.json");
+            var filePath = Path.Combine(Environment.CurrentDirectory, "DB_META", $"{campaignName}.json");
 
             if (!File.Exists(filePath))
-                campaignMeta = new CampaignMetaInfo(campaign.Name);
+                campaignMeta = new CampaignMetaInfo(campaignName);
             else
             {
                 var jsonString = File.ReadAllText(filePath);

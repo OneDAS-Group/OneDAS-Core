@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace OneDas.Database
 {
+    [DebuggerDisplay("{Name,nq}")]
     [DataContract]
     public class CampaignInfo : InfoBase
     {

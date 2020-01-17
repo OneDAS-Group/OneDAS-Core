@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace OneDas.Database
 {
+    [DebuggerDisplay("{Name,nq}")]
     public class CampaignMetaInfo
     {
         #region Constructors

@@ -67,26 +67,10 @@ namespace OneDas.Hdf.Explorer
             H5.is_library_threadsafe(ref isLibraryThreadSafe);
 
             if (isLibraryThreadSafe <= 0)
-            {
                 logger.LogError("The libary 'hdf5.dll' is not thread safe.");
-            }
 
             // asp base URL
             logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
-
-            // check if database directory is configured and existing
-            if (string.IsNullOrWhiteSpace(options.Value.DataBaseFolderPath))
-            {
-                logger.LogError($"No database directory path has been configured.");
-            }
-            else if (!Directory.Exists(options.Value.DataBaseFolderPath))
-            {
-                logger.LogWarning($"Configured database directory path { options.Value.DataBaseFolderPath } does not exist.");
-            }
-            else
-            {
-                logger.LogInformation($"Database directory found at path: { options.Value.DataBaseFolderPath }");
-            }
         }
     }
 }
