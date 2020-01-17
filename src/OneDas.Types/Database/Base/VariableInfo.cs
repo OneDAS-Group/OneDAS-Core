@@ -39,7 +39,7 @@ namespace OneDas.Database
         public List<TransferFunction> TransferFunctions { get; set; }
 
         [DataMember]
-        public List<DatasetInfo> DatasetInfos { get; }
+        public List<DatasetInfo> DatasetInfos { get; set; }
 
         #endregion
 

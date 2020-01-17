@@ -82,8 +82,6 @@ namespace OneDas.Hdf.VdsTool.Commands
             {
                 foreach (string sourceFilePath in filePathSet)
                 {
-                    _logger.LogInformation($"Calulate aggregations for data of file '{sourceFilePath}'.");
-
                     targetFileId = -1;
 
                     _logger.LogInformation($"file: {sourceFilePath}");

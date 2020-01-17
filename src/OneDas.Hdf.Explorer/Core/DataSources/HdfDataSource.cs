@@ -7,7 +7,6 @@ using OneDas.Hdf.IO;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +17,7 @@ namespace OneDas.Hdf.Explorer.Core
     {
         #region Fields
 
+        private string _filePath;
         private long _vdsFileId = -1;
 
         #endregion
@@ -26,8 +26,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         public HdfDataSource(string databasePath)
         {
-            var filePath = Path.Combine(databasePath, "VDS.h5");
-            _vdsFileId = H5F.open(filePath, H5F.ACC_RDONLY);
+            _filePath = Path.Combine(databasePath, "VDS.h5");
         }
 
         #endregion
@@ -36,6 +35,8 @@ namespace OneDas.Hdf.Explorer.Core
 
         public ulong GetElementSize(string campaignName, string variableName, string datasetName)
         {
+            this.EnsureOpened();
+
             long datasetId = -1;
 
             try
@@ -51,6 +52,8 @@ namespace OneDas.Hdf.Explorer.Core
 
         public List<VariableDescription> GetVariableDescriptions(KeyValuePair<string, Dictionary<string, List<string>>> campaignInfo)
         {
+            this.EnsureOpened();
+
             var variableDescriptions = new List<VariableDescription>();
 
             campaignInfo.Value.ToList().ForEach(variableInfo =>
@@ -92,6 +95,8 @@ namespace OneDas.Hdf.Explorer.Core
 
         public ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block)
         {
+            this.EnsureOpened();
+
             long datasetId = -1;
             long typeId = -1;
 
@@ -131,6 +136,8 @@ namespace OneDas.Hdf.Explorer.Core
 
         public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
         {
+            this.EnsureOpened();
+
             ulong offset;
             int[] aggregatedData;
             DataAvailabilityGranularity granularity;
@@ -216,12 +223,32 @@ namespace OneDas.Hdf.Explorer.Core
 
         public List<CampaignInfo> GetCampaignInfos()
         {
+            this.EnsureOpened();
+
             return GeneralHelper.GetCampaignInfos(_vdsFileId);
+        }
+
+        public void Open()
+        {
+            this.EnsureOpened();
+        }
+
+        public void Close()
+        {
+            if (H5I.is_valid(_vdsFileId) > 0) { H5F.close(_vdsFileId); }
         }
 
         public void Dispose()
         {
             if (H5I.is_valid(_vdsFileId) > 0) { H5F.close(_vdsFileId); }
+        }
+
+        private void EnsureOpened()
+        {
+            if (!(H5I.is_valid(_vdsFileId) > 0))
+            {
+                _vdsFileId = H5F.open(_filePath, H5F.ACC_RDONLY);
+            }
         }
 
         #endregion

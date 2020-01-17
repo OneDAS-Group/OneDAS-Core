@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace OneDas.Hdf.Explorer.Core
 {
+#warning IDisposable is required to avoid that VDS.h5 file is always in use, i.e. it cannot be update over night
     public interface IDataSource : IDisposable
     {
         List<CampaignInfo> GetCampaignInfos();
@@ -17,5 +18,9 @@ namespace OneDas.Hdf.Explorer.Core
         ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block);
 
         DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd);
+
+        void Open();
+
+        void Close();
     }
 }

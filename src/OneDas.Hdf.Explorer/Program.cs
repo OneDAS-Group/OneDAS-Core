@@ -85,19 +85,27 @@ namespace OneDas.Hdf.Explorer
                 var dataSources = new List<IDataSource>()
                 {
                     new HdfDataSource(_options.DataBaseFolderPath)
+                    //new TestDataSource()
                 };
 
                 foreach (var dataSource in dataSources)
                 {
-                    var campaignInfos = dataSource.GetCampaignInfos();
-
-                    foreach (var campaignInfo in campaignInfos)
+                    try
                     {
-                        var folderPath = Path.Combine(Environment.CurrentDirectory, "DB_META");
-                        _campaignToCampaignMetaMap[campaignInfo] = Program.LoadCampaignMeta(folderPath);
-                    }
+                        var campaignInfos = dataSource.GetCampaignInfos();
 
-                    _dataSourceToCampaignMap[dataSource] = campaignInfos;
+                        foreach (var campaignInfo in campaignInfos)
+                        {
+                            var folderPath = Path.Combine(Environment.CurrentDirectory, "DB_META");
+                            _campaignToCampaignMetaMap[campaignInfo] = Program.LoadCampaignMeta(folderPath);
+                        }
+
+                        _dataSourceToCampaignMap[dataSource] = campaignInfos;
+                    }
+                    finally
+                    {
+                        dataSource.Dispose();
+                    }
                 }
             }
         }

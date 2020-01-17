@@ -36,19 +36,10 @@ namespace OneDas.Hdf.Explorer.Core
         {
             return Task.Run(() =>
             {
-                IDataSource dataSource = null;
-
                 _stateManager.CheckState(_connectionId);
 
-                try
-                {
-                    dataSource = Program.GetDataSource(campaignName);
-                    return dataSource.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
-                }
-                finally
-                {
-                    dataSource?.Dispose();
-                }
+                using var dataSource = Program.GetDataSource(campaignName);
+                return dataSource.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
             });
         }
 
@@ -123,7 +114,7 @@ namespace OneDas.Hdf.Explorer.Core
 
                     foreach (var campaignInfo in campaignInfoSet)
                     {
-                        var dataSource = Program.GetDataSource(campaignInfo.Key);
+                        using var dataSource = Program.GetDataSource(campaignInfo.Key);
 
                         foreach (var variableInfo in campaignInfo.Value)
                         {
@@ -150,7 +141,7 @@ namespace OneDas.Hdf.Explorer.Core
                     {
                         foreach (var campaignInfo in campaignInfoSet)
                         {
-                            var dataSource = Program.GetDataSource(campaignInfo.Key);
+                            using var dataSource = Program.GetDataSource(campaignInfo.Key);
                             var hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
 
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
