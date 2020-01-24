@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using OneDas.Infrastructure;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
@@ -14,6 +15,12 @@ namespace OneDas.Database
         {
             //
         }
+
+        #endregion
+
+        #region Properties
+
+        public OneDasDataType DataType { get; set; }
 
         #endregion
 

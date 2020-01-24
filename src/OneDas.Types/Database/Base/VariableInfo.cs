@@ -10,6 +10,7 @@ namespace OneDas.Database
     [DataContract]
     public class VariableInfo : InfoBase
     {
+#warning Ensure the properties are never zero (right now they may be set from outside)
         #region "Constructors"
 
         public VariableInfo(string name, InfoBase parent) : base(name, parent)

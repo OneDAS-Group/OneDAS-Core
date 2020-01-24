@@ -38,8 +38,8 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 _stateManager.CheckState(_connectionId);
 
-                using var dataSource = Program.GetDataSource(campaignName);
-                return dataSource.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
+                using var dataLake = Program.GetDataLake(campaignName);
+                return dataLake.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
             });
         }
 
@@ -114,13 +114,13 @@ namespace OneDas.Hdf.Explorer.Core
 
                     foreach (var campaignInfo in campaignInfoSet)
                     {
-                        using var dataSource = Program.GetDataSource(campaignInfo.Key);
+                        using var dataLake = Program.GetDataLake(campaignInfo.Key);
 
                         foreach (var variableInfo in campaignInfo.Value)
                         {
                             foreach (string datasetInfo in variableInfo.Value)
                             {
-                                bytesPerRow = dataSource.GetElementSize(campaignInfo.Key, variableInfo.Key, datasetInfo);
+                                bytesPerRow = dataLake.GetElementSize(campaignInfo.Key, variableInfo.Key, datasetInfo);
                             }
                         }
                     }
@@ -141,12 +141,12 @@ namespace OneDas.Hdf.Explorer.Core
                     {
                         foreach (var campaignInfo in campaignInfoSet)
                         {
-                            using var dataSource = Program.GetDataSource(campaignInfo.Key);
+                            using var dataLake = Program.GetDataLake(campaignInfo.Key);
                             var hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
 
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, dataSource, samplesPerSecond, start, block, segmentLength)))
+                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, dataLake, samplesPerSecond, start, block, segmentLength)))
                                 return string.Empty;
                         }
                     }

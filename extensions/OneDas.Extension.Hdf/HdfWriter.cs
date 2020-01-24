@@ -1,9 +1,8 @@
 ﻿using HDF.PInvoke;
 using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Hdf;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
-using OneDas.Hdf.Core;
-using OneDas.Hdf.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;

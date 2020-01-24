@@ -7,8 +7,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.Types\OneDas.Types.csproj" />
-    <ProjectReference Include="..\..\src\OneDas.Hdf.Types\OneDas.Hdf.Types.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.DataManagement.Types\OneDas.DataManagement.Types.csproj" />
   </ItemGroup>
 
   <ItemGroup>
