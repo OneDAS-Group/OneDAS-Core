@@ -451,7 +451,7 @@ namespace OneDas.Hdf.Explorer
 
                 try
                 {
-                    new AggregateCommand(method, argument, campaignName, days, filters, logger).Run();
+                    new AggregateCommand(_options, method, argument, campaignName, days, filters, logger).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)

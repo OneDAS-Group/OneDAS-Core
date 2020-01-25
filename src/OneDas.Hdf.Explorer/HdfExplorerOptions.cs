@@ -17,6 +17,7 @@ namespace OneDas.Hdf.Explorer
 
             // preset, mutable
             this.AspBaseUrl = "http://0.0.0.0:32769";
+            this.AggregationChunkSizeMb = 200;
         }
 
         // unset, mutable
@@ -32,6 +33,9 @@ namespace OneDas.Hdf.Explorer
         // preset, mutable
         [DataMember]
         public string AspBaseUrl { get; set; }
+
+        [DataMember]
+        public ulong AggregationChunkSizeMb { get; set; }
 
         // preset, immutable
         public string SupportDirectoryPath { get => Path.Combine(this.DataBaseFolderPath, "SUPPORT"); }

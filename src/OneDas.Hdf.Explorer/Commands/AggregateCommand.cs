@@ -8,10 +8,13 @@ using OneDas.DataStorage;
 using OneDas.Hdf.Explorer.Core;
 using OneDas.Infrastructure;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -21,6 +24,7 @@ namespace OneDas.Hdf.Explorer.Commands
     {
         #region Fields
 
+        private HdfExplorerOptions _options;
         private AggregationMethod _method;
         private string _argument;
         private string _campaignName;
@@ -32,8 +36,9 @@ namespace OneDas.Hdf.Explorer.Commands
 
         #region Constructors
 
-        public AggregateCommand(AggregationMethod method, string argument, string campaignName, uint days, Dictionary<string, string> filters, ILogger logger)
+        public AggregateCommand(HdfExplorerOptions options, AggregationMethod method, string argument, string campaignName, uint days, Dictionary<string, string> filters, ILogger logger)
         {
+            _options = options;
             _method = method;
             _argument = argument;
             _campaignName = campaignName;
@@ -103,9 +108,7 @@ namespace OneDas.Hdf.Explorer.Commands
                         }
 
                         // campaignInfo
-                        this.AggregateCampaign(dataReader, targetFileId, campaignInfo);
-
-                        Console.CursorTop -= 1;
+                        this.AggregateCampaign(dataReader, campaignInfo, targetFileId);
                     }
                     finally
                     {
@@ -119,11 +122,10 @@ namespace OneDas.Hdf.Explorer.Commands
             }
         }
 
-        private void AggregateCampaign(IDataReader dataReader, long targetFileId, CampaignInfo campaignInfo)
+        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, long targetFileId)
         {
-            var index = 0;
-            var datasetPath = $"{campaignInfo.GetPath()}/is_chunk_completed_set";
-            (var groupId, var isNew) = IOHelper.OpenOrCreateGroup(targetFileId, campaignInfo.GetPath());
+            var datasetPath = $"{campaign.GetPath()}/is_chunk_completed_set";
+            (var groupId, var isNew) = IOHelper.OpenOrCreateGroup(targetFileId, campaign.GetPath());
 
             try
             {
@@ -135,16 +137,16 @@ namespace OneDas.Hdf.Explorer.Commands
                     IOHelper.WriteDataset(datasetId, "is_chunk_completed_set", this.GetCompletedChunks(start, end));
                 }
 
-                var filteredVariableInfos = campaignInfo.VariableInfos.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
+                var filteredVariables = campaign.VariableInfos.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
 
-                foreach (var filteredVariableInfo in filteredVariableInfos)
+                foreach (var filteredVariable in filteredVariables)
                 {
-                    index++;
+                    var dataset = filteredVariable.DatasetInfos.First();
 
-                    Console.WriteLine($"{filteredVariableInfo.VariableNames.Last()} ({index}/{filteredVariableInfos.Count()})");
-                    this.AggregateVariable(dataReader, targetFileId, filteredVariableInfo);
-                    Console.CursorTop -= 1;
-                    this.ClearCurrentLine();
+                    GeneralHelper.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
+                                                      BindingFlags.Instance | BindingFlags.NonPublic,
+                                                      OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                      new object[] { dataReader, dataset, targetFileId });
                 }
             }
             finally
@@ -153,96 +155,126 @@ namespace OneDas.Hdf.Explorer.Commands
             }
         }
 
-        private void AggregateVariable(IDataReader dataReader, long targetFileId, VariableInfo variableInfo)
+        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, long targetFileId) where T : unmanaged
         {
-            var groupPath = variableInfo.GetPath();
-            var dataset = variableInfo.DatasetInfos.First();
+            // value size
+            var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
 
-            // invoke this.AggregateDataset
-            GeneralHelper.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.AggregateDataset),
-                                          BindingFlags.Instance | BindingFlags.NonPublic,
-                                          OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                          new object[] { dataReader, targetFileId, groupPath });
+            // check source sample rate
+            var sampleRateContainer = new SampleRateContainer(dataset.Name);
+
+            if (!sampleRateContainer.IsPositiveNonZeroIntegerHz)
+                throw new NotSupportedException($"Only positive non-zero integer frequencies are supported, but '{dataset.Name}' data were provided.");
+
+            // prepare period data
+            var groupPath = dataset.Parent.GetPath();
+            var periodToDataMap = new Dictionary<Period, PeriodData>();
+            var actualPeriods = new List<Period>();
+
+            try
+            {
+                foreach (Period period in Enum.GetValues(typeof(Period)))
+                {
+                    var targetDatasetPath = $"{groupPath}/{(int)period}s_{_method}";
+
+                    if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                    {
+                        var periodData = new PeriodData(period, sampleRateContainer, valueSize);
+                        var bufferSize = (ulong)periodData.Buffer.Length;
+                        var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
+
+                        if (!(H5I.is_valid(datasetId) > 0))
+                            throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
+
+                        periodData.DatasetId = datasetId;
+                        periodToDataMap[period] = periodData;
+                        actualPeriods.Add(period);
+                    }
+                    else
+                    {
+                        // skip period
+                    }
+                }
+                    
+                // read data
+                dataReader.ReadFullDay<T>(dataset, TimeSpan.FromMinutes(10), (data, statusSet) =>
+                {
+                    // get aggregation data
+                    var periodToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, periodToDataMap);
+
+                    // copy aggregation data into buffer
+                    foreach (Period period in actualPeriods)
+                    {
+                        var partialBuffer = periodToPartialBufferMap[period];
+                        var periodData = periodToDataMap[period];
+
+                        Array.Copy(partialBuffer, 0, periodData.Buffer, periodData.BufferPosition, partialBuffer.Length);
+
+                        periodData.BufferPosition += partialBuffer.Length;
+                    }
+                });
+
+                // write data to file
+                foreach (Period period in actualPeriods)
+                {
+                    var periodData = periodToDataMap[period];
+
+                    IOHelper.Write(periodData.DatasetId, periodData.Buffer, DataContainerType.Dataset);
+                    H5F.flush(periodData.DatasetId, H5F.scope_t.LOCAL);
+                }
+            }
+            finally
+            {
+                foreach (Period period in actualPeriods)
+                {
+                    var datasetId = periodToDataMap[period].DatasetId;
+                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                }
+            }
         }
 
-        private void AggregateDataset<T>(IDataReader dataReader, long targetFileId, string groupPath)
+        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<Period, PeriodData> periodToDataMap)
         {
-            long targetDatasetId = -1;
-            double[] targetValueSet;
-            double[] sourceValueSet_double = null;
-            byte[] sourceValueSet_status = null;
-            T[] sourceValueSet = null;
+            var dataset_double = default(double[]);
+            var periodToPartialBufferMap = new Dictionary<Period, double[]>();
 
-            Console.WriteLine($"\t{_method}");
-
-            // for each period
-            foreach (Period period in Enum.GetValues(typeof(Period)))
+            foreach (var item in periodToDataMap)
             {
-                var targetDatasetPath = $"{groupPath}/{(int)period} s_{_method}";
+                var period = item.Key;
+                var periodData = item.Value;
 
-                // if target dataset does not yet exist
-                if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                switch (_method)
                 {
-                    Console.WriteLine($"\t\t{ (int)period } s");
+                    case AggregationMethod.Mean:
+                    case AggregationMethod.MeanPolar:
+                    case AggregationMethod.Min:
+                    case AggregationMethod.Max:
+                    case AggregationMethod.Std:
+                    case AggregationMethod.Rms:
 
-                    if (sourceValueSet == null)
-                    {
-                        sourceValueSet = IOHelper.Read<T>(sourceDatasetId, DataContainerType.Dataset);
-                        sourceValueSet_status = IOHelper.Read<byte>(sourceDatasetId_status, DataContainerType.Dataset);
-                    }
+                        if (dataset_double == null)
+                            dataset_double = ExtendedDataStorageBase.ApplyDatasetStatus(data, statusSet);
 
-                    var chunkCount = sourceValueSet.Count() / (int)period / 100 * (int)sampleRate; // Improve: remove magic number
+                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, chunkCount, dataset_double, _logger);
 
-                    switch (_method)
-                    {
-                        case AggregationMethod.Mean:
-                        case AggregationMethod.MeanPolar:
-                        case AggregationMethod.Min:
-                        case AggregationMethod.Max:
-                        case AggregationMethod.Std:
-                        case AggregationMethod.Rms:
+                        break;
 
-                            if (sourceValueSet_double == null)
-                                sourceValueSet_double = ExtendedDataStorageBase.ApplyDatasetStatus(sourceValueSet, sourceValueSet_status);
+                    case AggregationMethod.MinBitwise:
+                    case AggregationMethod.MaxBitwise:
 
-                            targetValueSet = this.ApplyAggregationFunction(_method, _argument, chunkCount, sourceValueSet_double, _logger);
+                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, chunkCount, data, statusSet, _logger);
 
-                            break;
+                        break;
 
-                        case AggregationMethod.MinBitwise:
-                        case AggregationMethod.MaxBitwise:
+                    default:
 
-                            targetValueSet = this.ApplyAggregationFunction(_method, _argument, chunkCount, sourceValueSet, sourceValueSet_status, _logger);
+                        _logger.LogWarning($"The aggregation method '{_method}' is not known. Skipping period {period}.");
 
-                            break;
-
-                        default:
-
-                            _logger.LogWarning($"The aggregation method '{_method}' is not known. Skipping period {period}.");
-
-                            continue;
-                    }
-
-                    targetDatasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, (ulong)chunkCount, 1).DatasetId;
-
-                    try
-                    {
-                        IOHelper.Write(targetDatasetId, targetValueSet.ToArray(), DataContainerType.Dataset);
-
-                        Console.CursorTop -= 1;
-                        this.ClearCurrentLine();
-
-                        H5F.flush(targetDatasetId, H5F.scope_t.LOCAL);
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(targetDatasetId) > 0) { H5D.close(targetDatasetId); }
-                    }
+                        continue;
                 }
             }
 
-            Console.CursorTop -= 1;
-            this.ClearCurrentLine();
+            return periodToPartialBufferMap;
         }
 
         private double[] ApplyAggregationFunction(AggregationMethod method, string argument, int targetDatasetLength, double[] valueSet, ILogger logger)
@@ -512,11 +544,6 @@ namespace OneDas.Hdf.Explorer.Commands
             }
 
             return result;
-        }
-
-        private void ClearCurrentLine()
-        {
-            Console.Write($"\r{ new string(' ', Console.WindowWidth - 1) }\r");
         }
 
         private byte[] GetCompletedChunks(int start, int end)

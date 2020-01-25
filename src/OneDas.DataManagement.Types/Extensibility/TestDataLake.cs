@@ -94,7 +94,7 @@ namespace OneDas.DataManagement.Extensibility
             throw new NotImplementedException();
         }
 
-        public IDataReader GetDataReader(string campaignName, DateTime dateTime)
+        public DataReaderExtensionBase GetDataReader(string campaignName, DateTime dateTime)
         {
             throw new NotImplementedException();
         }

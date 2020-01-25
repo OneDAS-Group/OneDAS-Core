@@ -21,7 +21,7 @@ namespace OneDas.DataManagement.Extensibility
 
         DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd);
 
-        IDataReader GetDataReader(string campaignName, DateTime dateTime);
+        DataReaderExtensionBase GetDataReader(string campaignName, DateTime dateTime);
 
         void Open();
 

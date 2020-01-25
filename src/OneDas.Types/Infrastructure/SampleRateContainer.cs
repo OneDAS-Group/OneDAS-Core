@@ -67,7 +67,7 @@ namespace OneDas.Infrastructure
             private set
             {
                 if (value == 0)
-                    throw new Exception();
+                    throw new Exception("A sample rate of '0' is not allowed.");
 
                 _samplesPerDay = value;
             }
@@ -76,6 +76,15 @@ namespace OneDas.Infrastructure
         public ulong SamplesPerSecond => _samplesPerDay / 86400;
 
         public ulong NativeSampleRateFactor => 100 / this.SamplesPerSecond;
+
+        public bool IsPositiveNonZeroIntegerHz
+        {
+            get
+            {
+                var value = _samplesPerDay / (double)86400;
+                return (value % 1 == 0) && (value >= 1);
+            }
+        }
 
         #endregion
 
