@@ -1,5 +1,8 @@
 ﻿using HDF.PInvoke;
+using OneDas.Database;
+using OneDas.DataManagement;
 using OneDas.DataManagement.Extensibility;
+using OneDas.DataManagement.Hdf;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
@@ -9,9 +12,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OneDas.Hdf.Explorer.DataLake
+namespace OneDas.Hdf.Explorer.Database
 {
-    public class HdfDataLake : IDataLake
+    public class HdfDatabase : IDatabase
     {
         #region Fields
 
@@ -22,7 +25,7 @@ namespace OneDas.Hdf.Explorer.DataLake
 
         #region Constructors
 
-        public HdfDataLake(string databasePath)
+        public HdfDatabase(string databasePath)
         {
             _filePath = Path.Combine(databasePath, "VDS.h5");
         }
@@ -226,7 +229,7 @@ namespace OneDas.Hdf.Explorer.DataLake
             return GeneralHelper.GetCampaignInfos(_vdsFileId);
         }
 
-        public IDataProvider GetDataProvider(string campaignName, DateTime dateTime)
+        public IDataReader GetDataReader(string campaignName, DateTime dateTime)
         {
             throw new NotImplementedException();
         }

@@ -16,10 +16,8 @@ namespace OneDas
 
             var exists = Directory.Exists(databaseFolderPath) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_AGGREGATION")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_IMPORT")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_DATA")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_META")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_NATIVE")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_ORIGIN")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_VDS"));
 
             message = string.Empty;

@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Extensibility
 {
-    public class TestDataLake : IDataLake
+    public class TestDatabase : IDatabase
     {
         #region Constructors
 
-        public TestDataLake()
+        public TestDatabase()
         {
             //
         }
@@ -94,7 +94,7 @@ namespace OneDas.DataManagement.Extensibility
             throw new NotImplementedException();
         }
 
-        public IDataProvider GetDataProvider(string campaignName, DateTime dateTime)
+        public IDataReader GetDataReader(string campaignName, DateTime dateTime)
         {
             throw new NotImplementedException();
         }

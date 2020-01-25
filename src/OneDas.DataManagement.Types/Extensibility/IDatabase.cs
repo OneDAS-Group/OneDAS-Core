@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace OneDas.DataManagement.Extensibility
 {
 #warning IDisposable is required to avoid that VDS.h5 file is always in use, i.e. it cannot be update over night
-    public interface IDataLake : IDisposable
+    public interface IDatabase : IDisposable
     {
         #region Methods
 
@@ -21,7 +21,7 @@ namespace OneDas.DataManagement.Extensibility
 
         DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd);
 
-        IDataProvider GetDataProvider(string campaignName, DateTime dateTime);
+        IDataReader GetDataReader(string campaignName, DateTime dateTime);
 
         void Open();
 

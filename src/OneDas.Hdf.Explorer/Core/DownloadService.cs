@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Database;
+using OneDas.DataManagement;
 using OneDas.Hdf.Explorer.Web;
 using OneDas.Infrastructure;
 using System;
@@ -38,8 +39,8 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 _stateManager.CheckState(_connectionId);
 
-                using var dataLake = Program.GetDataLake(campaignName);
-                return dataLake.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
+                using var database = Program.GetDatabase(campaignName);
+                return database.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
             });
         }
 
@@ -114,13 +115,13 @@ namespace OneDas.Hdf.Explorer.Core
 
                     foreach (var campaignInfo in campaignInfoSet)
                     {
-                        using var dataLake = Program.GetDataLake(campaignInfo.Key);
+                        using var database = Program.GetDatabase(campaignInfo.Key);
 
                         foreach (var variableInfo in campaignInfo.Value)
                         {
                             foreach (string datasetInfo in variableInfo.Value)
                             {
-                                bytesPerRow = dataLake.GetElementSize(campaignInfo.Key, variableInfo.Key, datasetInfo);
+                                bytesPerRow = database.GetElementSize(campaignInfo.Key, variableInfo.Key, datasetInfo);
                             }
                         }
                     }
@@ -141,12 +142,12 @@ namespace OneDas.Hdf.Explorer.Core
                     {
                         foreach (var campaignInfo in campaignInfoSet)
                         {
-                            using var dataLake = Program.GetDataLake(campaignInfo.Key);
+                            using var database = Program.GetDatabase(campaignInfo.Key);
                             var hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
 
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, dataLake, samplesPerSecond, start, block, segmentLength)))
+                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, database, samplesPerSecond, start, block, segmentLength)))
                                 return string.Empty;
                         }
                     }

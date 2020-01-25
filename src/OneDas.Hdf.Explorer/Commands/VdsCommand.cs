@@ -52,7 +52,7 @@ namespace OneDas.Hdf.Explorer.Commands
                 epochEnd = _epochStart.AddMonths(1);
                 sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", _epochStart.ToString("yyyy-MM")));
                 sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_IMPORT", _epochStart.ToString("yyyy-MM")));
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_NATIVE", _epochStart.ToString("yyyy-MM")));
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_DATA", _epochStart.ToString("yyyy-MM")));
                 vdsFilePath = Path.Combine(Environment.CurrentDirectory, "DB_VDS", $"{ _epochStart.ToString("yyyy-MM") }.h5");
             }
             else

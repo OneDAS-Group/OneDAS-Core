@@ -15,10 +15,8 @@ namespace OneDas.Hdf.Explorer.Commands
         public void Run()
         {
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION"));
-            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_IMPORT"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_DATA"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_META"));
-            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_NATIVE"));
-            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_ORIGIN"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_VDS"));
         }
 

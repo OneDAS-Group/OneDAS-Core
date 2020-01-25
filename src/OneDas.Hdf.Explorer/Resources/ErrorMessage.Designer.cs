@@ -61,6 +61,15 @@ namespace OneDas.Hdf.Explorer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The first chunk must be &gt;= 0 and &lt;= last chunk. The last chunk must be &lt; 1440. ähnelt.
+        /// </summary>
+        internal static string AggregateCommand_InvalidChunkBounds {
+            get {
+                return ResourceManager.GetString("AggregateCommand_InvalidChunkBounds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Could not open file. ähnelt.
         /// </summary>
         internal static string VdsCommand_CouldNotOpenFile {
