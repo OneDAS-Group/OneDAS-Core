@@ -22,7 +22,7 @@ namespace OneDas.DataManagement.Hdf
             return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, campaignGroupPath, null).FirstOrDefault();
         }
 
-        public static List<CampaignInfo> GetCampaignInfos(long fileId)
+        public static List<CampaignInfo> GetCampaigns(long fileId)
         {
             return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, null, null);
         }
@@ -117,7 +117,7 @@ namespace OneDas.DataManagement.Hdf
 
                             if (currentCampaignInfo == null)
                             {
-                                currentCampaignInfo = new CampaignInfo(fullName, null);
+                                currentCampaignInfo = new CampaignInfo(fullName);
                                 campaignInfoSet.Add(currentCampaignInfo);
                             }
 

@@ -8,7 +8,7 @@ using OneDas.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Hdf.Explorer.Commands;
 using OneDas.Hdf.Explorer.Core;
-using OneDas.Hdf.Explorer.Database;
+using OneDas.Hdf.Explorer.DataReader;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -29,7 +29,7 @@ namespace OneDas.Hdf.Explorer
         private static object _lock;
         private static HdfExplorerOptions _options;
         private static IConfiguration _configuration;
-        private static Dictionary<IDatabase, IReadOnlyList<CampaignInfo>> _databaseToCampaignMap;
+        private static Dictionary<DataReaderExtensionBase, IReadOnlyList<CampaignInfo>> _dataReaderToCampaignMap;
         private static Dictionary<CampaignInfo, CampaignMetaInfo> _campaignToCampaignMetaMap;
         private static ILoggerFactory _loggerFactory;
 
@@ -116,20 +116,20 @@ namespace OneDas.Hdf.Explorer
         {
             lock (_lock)
             {
-                _databaseToCampaignMap = new Dictionary<IDatabase, IReadOnlyList<CampaignInfo>>();
+                _dataReaderToCampaignMap = new Dictionary<DataReaderExtensionBase, IReadOnlyList<CampaignInfo>>();
                 _campaignToCampaignMetaMap = new Dictionary<CampaignInfo, CampaignMetaInfo>();
 
-                var databases = new List<IDatabase>()
+                var databases = new List<DataReaderExtensionBase>()
                 {
-                    new HdfDatabase(_options.DataBaseFolderPath)
-                    //new TestDatabase()
+                    new HdfDataReader(_options.DataBaseFolderPath)
+                    //new TestDataReader()
                 };
 
                 foreach (var database in databases)
                 {
                     try
                     {
-                        var campaignInfos = database.GetCampaignInfos();
+                        var campaignInfos = database.GetCampaigns();
 
                         foreach (var campaignInfo in campaignInfos)
                         {
@@ -137,7 +137,7 @@ namespace OneDas.Hdf.Explorer
                             _campaignToCampaignMetaMap[campaignInfo] = Program.LoadCampaignMeta(folderPath);
                         }
 
-                        _databaseToCampaignMap[database] = campaignInfos;
+                        _dataReaderToCampaignMap[database] = campaignInfos;
                     }
                     finally
                     {
@@ -164,20 +164,20 @@ namespace OneDas.Hdf.Explorer
         {
             lock (_lock)
             {
-                return _databaseToCampaignMap.SelectMany(x => x.Value).ToList();
+                return _dataReaderToCampaignMap.SelectMany(x => x.Value).ToList();
             }
         }
 
-        public static IDatabase GetDatabase(string campaignName)
+        public static DataReaderExtensionBase GetDataReader(string campaignName)
         {
             lock (_lock)
             {
-                var database = _databaseToCampaignMap.Where(x => x.Value.Any(campaign => campaign.Name == campaignName)).Select(x => x.Key).FirstOrDefault();
+                var dataReader = _dataReaderToCampaignMap.Where(x => x.Value.Any(campaign => campaign.Name == campaignName)).Select(x => x.Key).FirstOrDefault();
 
-                if (database == null)
+                if (dataReader == null)
                     throw new KeyNotFoundException("The requested campaign could not be found.");
 
-                return database;
+                return dataReader;
             }
         }
 

@@ -20,7 +20,7 @@ namespace OneDas.Database
             this.Units = new List<string>();
             this.TransferFunctions = new List<TransferFunction>();
 
-            this.DatasetInfos = new List<DatasetInfo>();
+            this.Datasets = new List<DatasetInfo>();
         }
 
         #endregion
@@ -40,7 +40,7 @@ namespace OneDas.Database
         public List<TransferFunction> TransferFunctions { get; set; }
 
         [DataMember]
-        public List<DatasetInfo> DatasetInfos { get; set; }
+        public List<DatasetInfo> Datasets { get; set; }
 
         #endregion
 
@@ -58,7 +58,7 @@ namespace OneDas.Database
 
         public override IEnumerable<InfoBase> GetChilds()
         {
-            return this.DatasetInfos;
+            return this.Datasets;
         }
 
         #endregion

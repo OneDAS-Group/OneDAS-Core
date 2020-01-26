@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Database;
+using OneDas.DataManagement;
 using OneDas.Hdf.Explorer.Core;
 using OneDas.Infrastructure;
 using System;
@@ -19,14 +20,14 @@ namespace OneDas.Hdf.Explorer.Web
 
         private ILogger _logger;
         private IServiceProvider _serviceProvider;
-        private HdfExplorerStateManager _stateManager;
+        private OneDasExplorerStateManager _stateManager;
         private HdfExplorerOptions _options;
 
         #endregion
 
         #region "Constructors"
 
-        public Broadcaster(HdfExplorerStateManager stateManager, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public Broadcaster(OneDasExplorerStateManager stateManager, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
             _stateManager = stateManager;
             _serviceProvider = serviceProvider;
@@ -65,7 +66,7 @@ namespace OneDas.Hdf.Explorer.Web
             });
         }
 
-        public Task<HdfExplorerState> GetHdfExplorerState()
+        public Task<OneDasExplorerState> GetHdfExplorerState()
         {
             return Task.Run(() =>
             {
@@ -78,11 +79,11 @@ namespace OneDas.Hdf.Explorer.Web
             return Task.Run(() =>
             {
                 _stateManager.CheckState(this.Context.ConnectionId);
-                _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Updating);
+                _stateManager.SetState(this.Context.ConnectionId, OneDasExplorerState.Updating);
 
                 Program.UpdateCampaignInfos();
 
-                _stateManager.SetState(this.Context.ConnectionId, HdfExplorerState.Idle);
+                _stateManager.SetState(this.Context.ConnectionId, OneDasExplorerState.Idle);
 
                 return Program.GetCampaigns();
             });
@@ -120,7 +121,7 @@ namespace OneDas.Hdf.Explorer.Web
                 startTime = DateTime.UtcNow.Date.Add(_options.InactiveOn);
                 stopTime = startTime.Add(_options.InactivityPeriod);
 
-                return $"The database is offline for scheduled maintenance from { startTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) } to { stopTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture) } UTC.";
+                return $"The database is offline for scheduled maintenance from {startTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture)} to {stopTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture)} UTC.";
             });
         }
 

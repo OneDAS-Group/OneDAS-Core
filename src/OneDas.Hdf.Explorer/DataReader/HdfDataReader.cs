@@ -4,7 +4,6 @@ using OneDas.DataManagement;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.DataStorage;
-using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -12,20 +11,20 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OneDas.Hdf.Explorer.Database
+namespace OneDas.Hdf.Explorer.DataReader
 {
-    public class HdfDatabase : IDatabase
+    public class HdfDataReader : DataReaderExtensionBase
     {
         #region Fields
 
         private string _filePath;
-        private long _vdsFileId = -1;
+        private long _fileId = -1;
 
         #endregion
 
         #region Constructors
 
-        public HdfDatabase(string databasePath)
+        public HdfDataReader(string databasePath)
         {
             _filePath = Path.Combine(databasePath, "VDS.h5");
         }
@@ -34,84 +33,36 @@ namespace OneDas.Hdf.Explorer.Database
 
         #region Methods
 
-        public ulong GetElementSize(string campaignName, string variableName, string datasetName)
+        public override List<CampaignInfo> GetCampaigns()
         {
             this.EnsureOpened();
 
-            long datasetId = -1;
-
-            try
-            {
-                datasetId = H5D.open(_vdsFileId, $"{campaignName}/{variableName}/{datasetName}");
-                return (ulong)OneDasUtilities.SizeOf(TypeConversionHelper.GetTypeFromHdfTypeId(H5D.get_type(datasetId)));
-            }
-            finally
-            {
-                if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-            }
+            return GeneralHelper.GetCampaigns(_fileId);
         }
 
-        public List<VariableDescription> GetVariableDescriptions(KeyValuePair<string, Dictionary<string, List<string>>> campaignInfo)
+        public override bool IsDataOfDayAvailable(DateTime dateTime)
         {
-            this.EnsureOpened();
-
-            var variableDescriptions = new List<VariableDescription>();
-
-            campaignInfo.Value.ToList().ForEach(variableInfo =>
-            {
-                variableInfo.Value.ForEach(datasetName =>
-                {
-                    long groupId = -1;
-                    long typeId = -1;
-                    long datasetId = -1;
-
-                    try
-                    {
-                        groupId = H5G.open(_vdsFileId, $"{campaignInfo.Key}/{variableInfo.Key}");
-                        datasetId = H5D.open(groupId, datasetName);
-                        typeId = H5D.get_type(datasetId);
-
-                        var displayName = IOHelper.ReadAttribute<string>(groupId, "name_set").Last();
-                        var groupName = IOHelper.ReadAttribute<string>(groupId, "group_set").Last();
-                        var unit = IOHelper.ReadAttribute<string>(groupId, "unit_set").LastOrDefault();
-                        var hdf_transfer_function_t_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(groupId, "transfer_function_set");
-                        var transferFunctionSet = hdf_transfer_function_t_set.Select(tf => tf.ToTransferFunction()).ToList();
-
-                        var oneDasDataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                        var sampleRate = new SampleRateContainer(datasetName);
-
-                        variableDescriptions.Add(new VariableDescription(new Guid(variableInfo.Key), displayName, datasetName, groupName, oneDasDataType, sampleRate, unit, transferFunctionSet, DataStorageType.Simple));
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                        if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
-                        if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
-                    }
-                });
-            });
-
-            return variableDescriptions;
+            throw new NotImplementedException();
         }
 
-        public ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block)
+        public override ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block)
         {
             this.EnsureOpened();
 
             long datasetId = -1;
             long typeId = -1;
 
-            var dataset = IOHelper.ReadDataset(_vdsFileId, datasetPath, start, 1, block, 1);
+            var dataset = IOHelper.ReadDataset(_fileId, datasetPath, start, 1, block, 1);
 
             // apply status (only if native dataset)
-            if (H5L.exists(_vdsFileId, datasetPath + "_status") > 0)
+            if (H5L.exists(_fileId, datasetPath + "_status") > 0)
             {
                 try
                 {
-                    datasetId = H5D.open(_vdsFileId, datasetPath);
+                    datasetId = H5D.open(_fileId, datasetPath);
                     typeId = H5D.get_type(datasetId);
 
-                    var dataset_status = IOHelper.ReadDataset(_vdsFileId, datasetPath + "_status", start, 1, block, 1).Cast<byte>().ToArray();
+                    var dataset_status = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, block, 1).Cast<byte>().ToArray();
 
                     var genericType = typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
                     var extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(genericType, dataset, dataset_status);
@@ -135,7 +86,7 @@ namespace OneDas.Hdf.Explorer.Database
             }
         }
 
-        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
+        public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
         {
             this.EnsureOpened();
 
@@ -157,7 +108,7 @@ namespace OneDas.Hdf.Explorer.Database
 
             // get data
             var totalDays = (dateTimeEnd - dateTimeBegin).TotalDays;
-            var data = IOHelper.ReadDataset<byte>(_vdsFileId, $"{ campaignName }/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
+            var data = IOHelper.ReadDataset<byte>(_fileId, $"{ campaignName }/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
 
             if (totalDays <= 7)
             {
@@ -222,39 +173,30 @@ namespace OneDas.Hdf.Explorer.Database
             return new DataAvailabilityStatistics(granularity, aggregatedData);
         }
 
-        public List<CampaignInfo> GetCampaignInfos()
-        {
-            this.EnsureOpened();
-
-            return GeneralHelper.GetCampaignInfos(_vdsFileId);
-        }
-
-        public IDataReader GetDataReader(string campaignName, DateTime dateTime)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Open()
+        public override void Open()
         {
             this.EnsureOpened();
         }
 
-        public void Close()
+        public override void Close()
         {
-            if (H5I.is_valid(_vdsFileId) > 0) { H5F.close(_vdsFileId); }
+            this.Dispose();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            if (H5I.is_valid(_vdsFileId) > 0) { H5F.close(_vdsFileId); }
+            if (H5I.is_valid(_fileId) > 0) { H5F.close(_fileId); }
         }
 
         private void EnsureOpened()
         {
-            if (!(H5I.is_valid(_vdsFileId) > 0))
-            {
-                _vdsFileId = H5F.open(_filePath, H5F.ACC_RDONLY);
-            }
+            if (!(H5I.is_valid(_fileId) > 0))
+                _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
+        }
+
+        protected override (T[] dataset, byte[] statusSet) ReadPartial<T>(DatasetInfo dataset, ulong start, ulong length)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

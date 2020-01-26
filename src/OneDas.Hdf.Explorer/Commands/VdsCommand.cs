@@ -153,7 +153,7 @@ namespace OneDas.Hdf.Explorer.Commands
             }
         }
 
-        private void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaignInfos, ILogger logger)
+        private void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaigns, ILogger logger)
         {
             long sourceFileId = -1;
 
@@ -167,12 +167,12 @@ namespace OneDas.Hdf.Explorer.Commands
                 if (sourceFileId < 0)
                     throw new Exception(ErrorMessage.VdsCommand_CouldNotOpenFile);
 
-                GeneralHelper.UpdateCampaignInfos(sourceFileId, campaignInfos, this.UpdateSourceFileMap);
+                GeneralHelper.UpdateCampaignInfos(sourceFileId, campaigns, this.UpdateSourceFileMap);
 
                 // load is_chunk_completed_set
-                campaignInfos.ForEach(campaignInfo =>
+                campaigns.ForEach(campaignInfo =>
                 {
-                    if (_datasetToSourceFilesMap[campaignInfo.ChunkDatasetInfo].Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
+                    if (_datasetToSourceFilesMap[campaignInfo.ChunkDataset].Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
                     {
                         var key = $"{sourceFilePath}+{campaignInfo.GetPath()}";
 
@@ -192,24 +192,24 @@ namespace OneDas.Hdf.Explorer.Commands
             }
         }
 
-        private void VdsCampaign(long vdsFileId, CampaignInfo campaignInfo, DateTime epochStart, DateTime epochEnd)
+        private void VdsCampaign(long vdsFileId, CampaignInfo campaign, DateTime epochStart, DateTime epochEnd)
         {
             long campaignGroupId = -1;
 
-            Console.WriteLine($"\n{campaignInfo.Name}");
+            Console.WriteLine($"\n{campaign.Name}");
 
-            campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaignInfo.GetPath()).GroupId;
+            campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaign.GetPath()).GroupId;
 
             try
             {
                 // variable
-                foreach (var variableInfo in campaignInfo.VariableInfos)
+                foreach (var variable in campaign.Variables)
                 {
-                    this.VdsVariable(vdsFileId, campaignGroupId, variableInfo, epochStart, epochEnd, campaignInfo.GetPath());
+                    this.VdsVariable(vdsFileId, campaignGroupId, variable, epochStart, epochEnd, campaign.GetPath());
                 }
 
                 // don't forget is_chunk_completed_set
-                this.VdsDataset(campaignGroupId, epochStart, epochEnd, campaignInfo.ChunkDatasetInfo, campaignInfo.GetPath());
+                this.VdsDataset(campaignGroupId, epochStart, epochEnd, campaign.ChunkDataset, campaign.GetPath());
             }
             finally
             {
@@ -217,13 +217,13 @@ namespace OneDas.Hdf.Explorer.Commands
             }
         }
 
-        private void VdsVariable(long vdsFileId, long vdsCampaignGroupId, VariableInfo variableInfo, DateTime epochStart, DateTime epochEnd, string campaignPath)
+        private void VdsVariable(long vdsFileId, long vdsCampaignGroupId, VariableInfo variable, DateTime epochStart, DateTime epochEnd, string campaignPath)
         {
             long variableGroupId = -1;
 
-            Console.WriteLine($"\t{variableInfo.Name}");
+            Console.WriteLine($"\t{variable.Name}");
 
-            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variableInfo.Name).GroupId;
+            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variable.Name).GroupId;
 
             try
             {
@@ -233,16 +233,16 @@ namespace OneDas.Hdf.Explorer.Commands
                 ////    H5L.copy(vdsGroupIdSet[vdsGroupIdSet.Count() - 1], variableInfo.Key, vdsGroupIdSet[vdsGroupIdSet.Count() - 2], variableName);
                 ////}
 
-                IOHelper.PrepareAttribute(variableGroupId, "name_set", variableInfo.VariableNames.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "group_set", variableInfo.VariableGroups.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "unit_set", variableInfo.Units.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(variableGroupId, "transfer_function_set", variableInfo.TransferFunctions.Select(tf => hdf_transfer_function_t.FromTransferFunction(tf)).ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "name_set", variable.VariableNames.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "group_set", variable.VariableGroups.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "unit_set", variable.Units.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(variableGroupId, "transfer_function_set", variable.TransferFunctions.Select(tf => hdf_transfer_function_t.FromTransferFunction(tf)).ToArray(), new ulong[] { H5S.UNLIMITED }, true);
 
                 // dataset
-                foreach (var datasetInfo in variableInfo.DatasetInfos)
+                foreach (var dataset in variable.Datasets)
                 {
-                    Console.WriteLine($"\t\t{ datasetInfo.Name }");
-                    this.VdsDataset(variableGroupId, epochStart, epochEnd, datasetInfo, campaignPath);
+                    Console.WriteLine($"\t\t{ dataset.Name }");
+                    this.VdsDataset(variableGroupId, epochStart, epochEnd, dataset, campaignPath);
                 }
 
                 // flush data - necessary to avoid AccessViolationException at H5F.close()
@@ -332,17 +332,17 @@ namespace OneDas.Hdf.Explorer.Commands
             }
         }
 
-        private void UpdateSourceFileMap(long datasetId, DatasetInfo datasetInfo, SourceFileInfo sourceFileInfo)
+        private void UpdateSourceFileMap(long datasetId, DatasetInfo dataset, SourceFileInfo sourceFileInfo)
         {
-            if (!_datasetToSourceFilesMap.ContainsKey(datasetInfo))
+            if (!_datasetToSourceFilesMap.ContainsKey(dataset))
             {
-                _datasetToSourceFilesMap[datasetInfo] = new List<SourceFileInfo>();
+                _datasetToSourceFilesMap[dataset] = new List<SourceFileInfo>();
 
                 var typeId_do_not_close = H5D.get_type(datasetId);
-                _datasetToTypeIdMap[datasetInfo] = typeId_do_not_close;
+                _datasetToTypeIdMap[dataset] = typeId_do_not_close;
             }
 
-            _datasetToSourceFilesMap[datasetInfo].Add(sourceFileInfo);
+            _datasetToSourceFilesMap[dataset].Add(sourceFileInfo);
         }
 
         #endregion

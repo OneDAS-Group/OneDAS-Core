@@ -14,21 +14,20 @@ using System.Threading;
 
 namespace OneDas.Hdf.Explorer.Core
 {
-    public class HdfDataLoader
+    public class DataLoader
     {
         public event EventHandler<ProgressUpdatedEventArgs> ProgressUpdated;
 
         private CancellationToken _cancellationToken;
 
-        public HdfDataLoader(CancellationToken cancellationToken)
+        public DataLoader(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
         }
 
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
         {
-            // build variable descriptions
-            var variableDescriptionSet = zipSettings.Database.GetVariableDescriptions(zipSettings.CampaignInfo);
+            var variableDescriptionSet = zipSettings.Campaign.ToVariableDescriptions();
 
             DataWriterExtensionSettingsBase settings;
             DataWriterExtensionLogicBase dataWriter;
@@ -76,7 +75,7 @@ namespace OneDas.Hdf.Explorer.Core
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "HDF Explorer", CustomMetadataEntryLevel.File));
 
             // initialize data writer
-            var campaignName_splitted = zipSettings.CampaignInfo.Key.Split('/');
+            var campaignName_splitted = zipSettings.Campaign.Name.Split('/');
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 
@@ -125,7 +124,7 @@ namespace OneDas.Hdf.Explorer.Core
         private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, ZipSettings zipSettings)
         {
             // START progress
-            var datasetCount = (ulong)zipSettings.CampaignInfo.Value.SelectMany(variableInfo => variableInfo.Value).Count();
+            var datasetCount = (ulong)zipSettings.Campaign.Variables.SelectMany(variable => variable.Datasets).Count();
             var currentSegment = 0UL;
             var segmentCount = (ulong)Math.Ceiling(zipSettings.Block / (double)zipSettings.SegmentLength);
             // END progress
@@ -143,13 +142,13 @@ namespace OneDas.Hdf.Explorer.Core
                     currentRowCount = zipSettings.Start + zipSettings.Block - currentStart;
 
                 // load data
-                foreach (var variableInfo in zipSettings.CampaignInfo.Value)
+                foreach (var variable in zipSettings.Campaign.Variables)
                 {
-                    variableInfo.Value.ForEach(datasetName =>
+                    variable.Datasets.ForEach(dataset =>
                     {
-                        var datasetPath = $"{zipSettings.CampaignInfo.Key}/{variableInfo.Key}/{datasetName}";
+                        var datasetPath = $"{zipSettings.Campaign.Name}/{variable.Name}/{dataset.Name}";
 
-                        dataStorageSet.Add(zipSettings.Database.LoadDataset(datasetPath, currentStart, currentRowCount));
+                        dataStorageSet.Add(zipSettings.DataReader.LoadDataset(datasetPath, currentStart, currentRowCount));
                         this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Loading dataset segment {currentSegment * datasetCount + currentDataset + 1} / {segmentCount * datasetCount} ..."));
                         currentDataset++;
                     });

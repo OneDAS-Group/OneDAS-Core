@@ -8,14 +8,14 @@ using System.Threading;
 
 namespace OneDas.Hdf.Explorer.Core
 {
-    public class HdfExplorerStateManager
+    public class OneDasExplorerStateManager
     {
         #region "Fields"
 
         private bool _isActive;
         private System.Timers.Timer _activityTimer;
         private HdfExplorerOptions _options;
-        private ConcurrentDictionary<string, HdfExplorerState> _stateSet;
+        private ConcurrentDictionary<string, OneDasExplorerState> _stateSet;
         private ConcurrentDictionary<string, CancellationTokenSource> _ctsSet;
         private IHubContext<Broadcaster> _hubContext;
 
@@ -23,12 +23,12 @@ namespace OneDas.Hdf.Explorer.Core
 
         #region "Constructors"
 
-        public HdfExplorerStateManager(IHubContext<Broadcaster> hubContext, IOptions<HdfExplorerOptions> options)
+        public OneDasExplorerStateManager(IHubContext<Broadcaster> hubContext, IOptions<HdfExplorerOptions> options)
         {
             _hubContext = hubContext;
             _options = options.Value;
 
-            _stateSet = new ConcurrentDictionary<string, HdfExplorerState>();
+            _stateSet = new ConcurrentDictionary<string, OneDasExplorerState>();
             _ctsSet = new ConcurrentDictionary<string, CancellationTokenSource>();
 
             this.HandleInactivity();
@@ -46,7 +46,7 @@ namespace OneDas.Hdf.Explorer.Core
 
         public void Register(string connectionId)
         {
-            _stateSet[connectionId] = _isActive ? HdfExplorerState.Idle : HdfExplorerState.Inactive;
+            _stateSet[connectionId] = _isActive ? OneDasExplorerState.Idle : OneDasExplorerState.Inactive;
             _ctsSet[connectionId] = new CancellationTokenSource();
 
             this.UserCount += 1;
@@ -62,13 +62,13 @@ namespace OneDas.Hdf.Explorer.Core
             this.UserCount -= 1;
         }
 
-        public void SetState(string connectionId, HdfExplorerState state)
+        public void SetState(string connectionId, OneDasExplorerState state)
         {
             _stateSet[connectionId] = state;
             this.GetClient(connectionId).SendAsync("SendState", state);
         }
 
-        public HdfExplorerState GetState(string connectionId)
+        public OneDasExplorerState GetState(string connectionId)
         {
             return _stateSet[connectionId];
         }
@@ -92,13 +92,13 @@ namespace OneDas.Hdf.Explorer.Core
         {
             switch (this.GetState(connectionId))
             {
-                case HdfExplorerState.Inactive:
+                case OneDasExplorerState.Inactive:
                     throw new Exception("HDF Explorer is in scheduled inactivity mode.");
 
-                case HdfExplorerState.Updating:
+                case OneDasExplorerState.Updating:
                     throw new Exception("The database is currently being updated.");
 
-                case HdfExplorerState.Loading:
+                case OneDasExplorerState.Loading:
                     throw new Exception("Data request is already in progress.");
 
                 default:
@@ -156,11 +156,11 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 Program.UpdateCampaignInfos();
 
-                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Idle));
+                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, OneDasExplorerState.Idle));
             }
             else
             {
-                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, HdfExplorerState.Inactive));
+                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, OneDasExplorerState.Inactive));
             }
         }
 

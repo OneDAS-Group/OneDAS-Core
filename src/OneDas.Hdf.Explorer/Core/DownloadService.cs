@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OneDas.Database;
 using OneDas.DataManagement;
 using OneDas.Hdf.Explorer.Web;
 using OneDas.Infrastructure;
@@ -19,12 +18,12 @@ namespace OneDas.Hdf.Explorer.Core
     public class DownloadService
     {
         private ILogger _logger;
-        private HdfExplorerStateManager _stateManager;
+        private OneDasExplorerStateManager _stateManager;
         private IHubContext<Broadcaster> _context;
         private HdfExplorerOptions _options;
         private string _connectionId;
 
-        public DownloadService(HdfExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options, string connectionId)
+        public DownloadService(OneDasExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options, string connectionId)
         {
             _stateManager = stateManager;
             _context = context;
@@ -39,39 +38,37 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 _stateManager.CheckState(_connectionId);
 
-                using var database = Program.GetDatabase(campaignName);
+                using var database = Program.GetDataReader(campaignName);
                 return database.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
             });
         }
 
-        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateWithUnit, string campaignPath, List<string> variableNames)
+        public async Task Download(ChannelWriter<string> writer, IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateWithUnit, string campaignName, List<string> variableNames)
         {
             try
             {
-                var campaignInfo = Program.GetCampaigns().FirstOrDefault(current => current.Name == campaignPath);
+                var campaign = Program.GetCampaigns().FirstOrDefault(current => current.Name == campaignName);
 
-                if (campaignInfo == null)
-                    throw new Exception($"Could not find campaign with path '{campaignPath}'.");
+                if (campaign == null)
+                    throw new Exception($"Could not find campaign '{campaignName}'.");
 
-                var campaignInfoSet = new Dictionary<string, Dictionary<string, List<string>>>();
-                campaignInfoSet[campaignInfo.Name] = new Dictionary<string, List<string>>();
+                var campaigns = new Dictionary<string, Dictionary<string, List<string>>>();
+                campaigns[campaign.Name] = new Dictionary<string, List<string>>();
 
                 foreach (var variableName in variableNames)
                 {
-                    VariableInfo variableInfo;
+                    var variable = campaign.Variables.FirstOrDefault(current => current.VariableNames.Contains(variableName));
 
-                    variableInfo = campaignInfo.VariableInfos.FirstOrDefault(current => current.VariableNames.Contains(variableName));
+                    if (variable == null)
+                        throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaign.Name}'.");
 
-                    if (campaignInfo == null)
-                        throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaignInfo.Name}'.");
+                    if (!variable.Datasets.Any(current => current.Name == sampleRateWithUnit))
+                        throw new Exception($"Could not find dataset in variable with ID '{variable.Name}' ({variable.VariableNames.First()}) in campaign '{campaign.Name}'.");
 
-                    if (!variableInfo.DatasetInfos.Any(current => current.Name == sampleRateWithUnit))
-                        throw new Exception($"Could not find dataset in variable with ID '{variableInfo.Name}' ({variableInfo.VariableNames.First()}) in campaign '{campaignInfo.Name}'.");
-
-                    campaignInfoSet[campaignInfo.Name][variableInfo.Name] = new List<string>() { sampleRateWithUnit };
+                    campaigns[campaign.Name][variable.Name] = new List<string>() { sampleRateWithUnit };
                 }
 
-                var url = await this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, new SampleRateContainer(sampleRateWithUnit), fileFormat, fileGranularity, campaignInfoSet);
+                var url = await this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, new SampleRateContainer(sampleRateWithUnit), fileFormat, fileGranularity, campaigns);
                 await writer.WriteAsync(url);
             }
             catch (Exception ex)
@@ -83,20 +80,20 @@ namespace OneDas.Hdf.Explorer.Core
             writer.TryComplete();
         }
 
-        public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, SampleRateContainer sampleRate, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignInfoSet)
+        public Task<string> GetData(IPAddress remoteIpAddress, DateTime dateTimeBegin, DateTime dateTimeEnd, SampleRateContainer sampleRateContainer, FileFormat fileFormat, FileGranularity fileGranularity, Dictionary<string, Dictionary<string, List<string>>> campaignMap)
         {
             return Task.Run(() =>
             {
                 _stateManager.CheckState(_connectionId);
 
-                if (!campaignInfoSet.Any() || dateTimeBegin == dateTimeEnd)
+                if (!campaignMap.Any() || dateTimeBegin == dateTimeEnd)
                     return string.Empty;
 
                 // zip file
-                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
+                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-                var samplesPerSecond = sampleRate.SamplesPerSecond;
+                var samplesPerSecond = sampleRateContainer.SamplesPerSecond;
 
                 // epoch & hyperslab
                 var epochStart = new DateTime(2000, 01, 01);
@@ -105,23 +102,33 @@ namespace OneDas.Hdf.Explorer.Core
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
 
-                var start = (ulong)(Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond));
-                var block = (ulong)(Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond));
+                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond);
+                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond);
 
                 try
                 {
+                    // convert lightweight campaign map to real campaign structure
+                    var campaigns = campaignMap.Select(campaignEntry =>
+                    {
+                        var campaignName = campaignEntry.Key;
+                        var fullCampaign = Program.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignEntry.Key);
+
+                        if (fullCampaign is null)
+                            throw new KeyNotFoundException($"The requested campaign '{campaignName}' is unknown.");
+
+                        return fullCampaign.ToSparseCampaign(campaignEntry.Value);
+                    }).ToList();
+
                     // byte count
                     var bytesPerRow = 0UL;
 
-                    foreach (var campaignInfo in campaignInfoSet)
+                    foreach (var campaign in campaigns)
                     {
-                        using var database = Program.GetDatabase(campaignInfo.Key);
-
-                        foreach (var variableInfo in campaignInfo.Value)
+                        foreach (var variable in campaign.Variables)
                         {
-                            foreach (string datasetInfo in variableInfo.Value)
+                            foreach (var dataset in variable.Datasets)
                             {
-                                bytesPerRow = database.GetElementSize(campaignInfo.Key, variableInfo.Key, datasetInfo);
+                                bytesPerRow += (ulong)OneDasUtilities.SizeOf(dataset.DataType);
                             }
                         }
                     }
@@ -136,18 +143,18 @@ namespace OneDas.Hdf.Explorer.Core
                         segmentLength = (ulong)((ulong)(segmentLength / samplesPerSecond / 60) * 60 * samplesPerSecond);
 
                     // start
-                    _stateManager.SetState(_connectionId, HdfExplorerState.Loading);
+                    _stateManager.SetState(_connectionId, OneDasExplorerState.Loading);
 
                     using (ZipArchive zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
                     {
-                        foreach (var campaignInfo in campaignInfoSet)
+                        foreach (var campaign in campaigns)
                         {
-                            using var database = Program.GetDatabase(campaignInfo.Key);
-                            var hdfDataLoader = new HdfDataLoader(_stateManager.GetToken(_connectionId));
+                            using var database = Program.GetDataReader(campaign.Name);
+                            var hdfDataLoader = new DataLoader(_stateManager.GetToken(_connectionId));
 
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaignInfo, database, samplesPerSecond, start, block, segmentLength)))
+                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaign, database, samplesPerSecond, start, block, segmentLength)))
                                 return string.Empty;
                         }
                     }
@@ -159,7 +166,7 @@ namespace OneDas.Hdf.Explorer.Core
                 }
                 finally
                 {
-                    _stateManager.SetState(_connectionId, HdfExplorerState.Idle);
+                    _stateManager.SetState(_connectionId, OneDasExplorerState.Idle);
                 }
 
                 var message = $"{remoteIpAddress} requested data: {dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss")} to {dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss")}";

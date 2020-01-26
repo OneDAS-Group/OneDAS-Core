@@ -5,7 +5,7 @@ namespace OneDas.Hdf.Explorer.Web
 {
     public interface IBroadcaster
     {
-        Task SendState(HdfExplorerState hdfExplorerState);
+        Task SendState(OneDasExplorerState hdfExplorerState);
         Task SendProgress(double percent, string message);
         Task SendByteCount(ulong byteCount);
     }

@@ -1,6 +1,6 @@
 ﻿namespace OneDas.Hdf.Explorer.Core
 {
-    public enum HdfExplorerState
+    public enum OneDasExplorerState
     {
         Inactive = 1,
         Idle = 2,

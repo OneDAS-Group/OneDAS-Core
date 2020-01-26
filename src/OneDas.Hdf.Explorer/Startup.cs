@@ -35,7 +35,7 @@ namespace OneDas.Hdf.Explorer
                 loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
             });
 
-            services.AddSingleton<HdfExplorerStateManager>();
+            services.AddSingleton<OneDasExplorerStateManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)

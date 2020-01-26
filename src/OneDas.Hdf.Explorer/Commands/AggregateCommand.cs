@@ -8,13 +8,10 @@ using OneDas.DataStorage;
 using OneDas.Hdf.Explorer.Core;
 using OneDas.Infrastructure;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -67,53 +64,53 @@ namespace OneDas.Hdf.Explorer.Commands
             var subfolderName = dateTimeBegin.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_AGGREGATION", subfolderName);
 
-            using var dataReader = Program.GetDatabase(campaignName).GetDataReader(campaignName, dateTimeBegin);
+            using var dataReader = Program.GetDataReader(campaignName);
 
             // get files
-            if (!dataReader.IsDataAvailable)
+            if (!dataReader.IsDataOfDayAvailable(dateTimeBegin))
                 return;
 
             // process data
             try
             {
-                foreach (var version in dataReader.GetVersions())
+                var targetFileId = -1L;
+
+                // campaignInfo
+                var campaignInfo = dataReader.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignName);
+
+                if (campaignInfo is null)
+                    throw new Exception($"The requested campaign '{campaignName}' could not be found.");
+
+                // targetFileId
+                var campaignFileName = campaignName.TrimStart('/').Replace("/", "_");
+                var dateTimeFileName = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
+                var targetFileName = $"{campaignFileName}_{dateTimeFileName}.h5";
+                var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
+
+                if (!Directory.Exists(targetDirectoryPath))
+                    Directory.CreateDirectory(targetDirectoryPath);
+
+                if (File.Exists(targetFilePath))
+                    targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
+
+                if (targetFileId == -1)
+                    targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
+
+                try
                 {
-                    var targetFileId = -1L;
+                    // create attribute if necessary
+                    if (H5A.exists(targetFileId, "date_time") == 0)
+                    {
+                        var dateTimeString = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
+                        IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
+                    }
 
                     // campaignInfo
-                    var campaignInfo = dataReader.GetCampaignInfo();
-
-                    // targetFileId
-                    var campaignFileName = campaignName.TrimStart('/').Replace("/", "_");
-                    var dateTimeFileName = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
-                    var targetFileName = $"{campaignFileName}_V{version}_{dateTimeFileName}.h5";
-                    var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
-
-                    if (!Directory.Exists(targetDirectoryPath))
-                        Directory.CreateDirectory(targetDirectoryPath);
-
-                    if (File.Exists(targetFilePath))
-                        targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
-
-                    if (targetFileId == -1)
-                        targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
-
-                    try
-                    {
-                        // create attribute if necessary
-                        if (H5A.exists(targetFileId, "date_time") == 0)
-                        {
-                            var dateTimeString = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
-                            IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
-                        }
-
-                        // campaignInfo
-                        this.AggregateCampaign(dataReader, campaignInfo, targetFileId);
-                    }
-                    finally
-                    {
-                        if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
-                    }
+                    this.AggregateCampaign(dataReader, campaignInfo, targetFileId);
+                }
+                finally
+                {
+                    if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
                 }
             }
             catch (Exception ex)
@@ -124,34 +121,16 @@ namespace OneDas.Hdf.Explorer.Commands
 
         private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, long targetFileId)
         {
-            var datasetPath = $"{campaign.GetPath()}/is_chunk_completed_set";
-            (var groupId, var isNew) = IOHelper.OpenOrCreateGroup(targetFileId, campaign.GetPath());
+            var filteredVariables = campaign.Variables.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
 
-            try
+            foreach (var filteredVariable in filteredVariables)
             {
-                if (isNew || !IOHelper.CheckLinkExists(targetFileId, datasetPath))
-                {
-                    var datasetId = IOHelper.OpenOrCreateDataset(groupId, datasetPath, TypeConversionHelper.GetHdfTypeIdFromType(typeof(byte)), 1440, 1).DatasetId;
-                    (var start, var end) = dataReader.GetCompletedChunkBounds();
+                var dataset = filteredVariable.Datasets.First();
 
-                    IOHelper.WriteDataset(datasetId, "is_chunk_completed_set", this.GetCompletedChunks(start, end));
-                }
-
-                var filteredVariables = campaign.VariableInfos.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
-
-                foreach (var filteredVariable in filteredVariables)
-                {
-                    var dataset = filteredVariable.DatasetInfos.First();
-
-                    GeneralHelper.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
-                                                      BindingFlags.Instance | BindingFlags.NonPublic,
-                                                      OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                      new object[] { dataReader, dataset, targetFileId });
-                }
-            }
-            finally
-            {
-                if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
+                GeneralHelper.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
+                                                  BindingFlags.Instance | BindingFlags.NonPublic,
+                                                  OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                  new object[] { dataReader, dataset, targetFileId });
             }
         }
 
@@ -555,21 +534,6 @@ namespace OneDas.Hdf.Explorer.Commands
             }
 
             return result;
-        }
-
-        private byte[] GetCompletedChunks(int start, int end)
-        {
-            if (!(0 <= start && start <= end && end < 1440))
-                throw new ArgumentException(ErrorMessage.AggregateCommand_InvalidChunkBounds);
-
-            var completedChunks = new byte[1440];
-
-            for (int i = start; i < end + 1; i++)
-            {
-                completedChunks[i] = 1;
-            }
-
-            return completedChunks;
         }
 
         #endregion

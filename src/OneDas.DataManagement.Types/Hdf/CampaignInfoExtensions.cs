@@ -8,18 +8,18 @@ namespace OneDas.DataManagement.Hdf
 {
     public static class CampaignInfoExtensions
     {
-        public static void Update(this CampaignInfo campaignInfo, long campaignGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void Update(this CampaignInfo campaign, long campaignGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             long datasetId = -1;
 
             var idx = 0UL;
 
             // read chunk dataset info
-            datasetId = H5D.open(campaignGroupId, campaignInfo.ChunkDatasetInfo.Name);
+            datasetId = H5D.open(campaignGroupId, campaign.ChunkDataset.Name);
 
             try
             {
-                campaignInfo.ChunkDatasetInfo.Update(datasetId, fileContext, updateSourceFileMap);
+                campaign.ChunkDataset.Update(datasetId, fileContext, updateSourceFileMap);
             }
             finally
             {
@@ -34,7 +34,7 @@ namespace OneDas.DataManagement.Hdf
                 long groupId = -1;
                 string name;
 
-                VariableInfo currentVariableInfo;
+                VariableInfo currentVariable;
 
                 try
                 {
@@ -47,15 +47,15 @@ namespace OneDas.DataManagement.Hdf
 
                     if (groupId > -1)
                     {
-                        currentVariableInfo = campaignInfo.VariableInfos.FirstOrDefault(variableInfo => variableInfo.Name == name);
+                        currentVariable = campaign.Variables.FirstOrDefault(variable => variable.Name == name);
 
-                        if (currentVariableInfo == null)
+                        if (currentVariable == null)
                         {
-                            currentVariableInfo = new VariableInfo(name, campaignInfo);
-                            campaignInfo.VariableInfos.Add(currentVariableInfo);
+                            currentVariable = new VariableInfo(name, campaign);
+                            campaign.Variables.Add(currentVariable);
                         }
 
-                        currentVariableInfo.Update(groupId, fileContext, updateSourceFileMap);
+                        currentVariable.Update(groupId, fileContext, updateSourceFileMap);
                     }
                 }
                 finally
@@ -67,22 +67,22 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        public static void Update(this VariableInfo variableInfo, long variableGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void Update(this VariableInfo variable, long variableGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             var idx = 0UL;
 
-            variableInfo.VariableNames = IOHelper.UpdateAttributeList(variableGroupId, "name_set", variableInfo.VariableNames.ToArray()).ToList();
-            variableInfo.VariableGroups = IOHelper.UpdateAttributeList(variableGroupId, "group_set", variableInfo.VariableGroups.ToArray()).ToList();
+            variable.VariableNames = IOHelper.UpdateAttributeList(variableGroupId, "name_set", variable.VariableNames.ToArray()).ToList();
+            variable.VariableGroups = IOHelper.UpdateAttributeList(variableGroupId, "group_set", variable.VariableGroups.ToArray()).ToList();
 
             if (fileContext.FormatVersion != 1)
             {
-                variableInfo.Units = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", variableInfo.Units.ToArray()).ToList();
+                variable.Units = IOHelper.UpdateAttributeList(variableGroupId, "unit_set", variable.Units.ToArray()).ToList();
 
                 // TransferFunction to hdf_transfer_function_t
-                var transferFunctionSet = variableInfo.TransferFunctions.Select(tf => hdf_transfer_function_t.FromTransferFunction(tf));
+                var transferFunctionSet = variable.TransferFunctions.Select(tf => hdf_transfer_function_t.FromTransferFunction(tf));
 
                 // hdf_transfer_function_t to TransferFunction
-                variableInfo.TransferFunctions = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", transferFunctionSet.ToArray())
+                variable.TransferFunctions = IOHelper.UpdateAttributeList(variableGroupId, "transfer_function_set", transferFunctionSet.ToArray())
                     .Select(tf => tf.ToTransferFunction())
                     .ToList();
             }
@@ -95,7 +95,7 @@ namespace OneDas.DataManagement.Hdf
 
                 string name;
 
-                DatasetInfo currentDatasetInfo;
+                DatasetInfo currentDataset;
 
                 try
                 {
@@ -105,15 +105,15 @@ namespace OneDas.DataManagement.Hdf
                     {
                         datasetId = H5D.open(variableGroupId2, name);
 
-                        currentDatasetInfo = variableInfo.DatasetInfos.FirstOrDefault(datasetInfo => datasetInfo.Name == name);
+                        currentDataset = variable.Datasets.FirstOrDefault(dataset => dataset.Name == name);
 
-                        if (currentDatasetInfo == null)
+                        if (currentDataset == null)
                         {
-                            currentDatasetInfo = new DatasetInfo(name, variableInfo);
-                            variableInfo.DatasetInfos.Add(currentDatasetInfo);
+                            currentDataset = new DatasetInfo(name, variable);
+                            variable.Datasets.Add(currentDataset);
                         }
 
-                        currentDatasetInfo.Update(datasetId, fileContext, updateSourceFileMap);
+                        currentDataset.Update(datasetId, fileContext, updateSourceFileMap);
                     }
                 }
                 finally
@@ -125,7 +125,7 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        public static void Update(this DatasetInfo datasetInfo, long datasetId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void Update(this DatasetInfo dataset, long datasetId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             long dataspaceId = -1;
             long typeId = -1;
@@ -139,7 +139,7 @@ namespace OneDas.DataManagement.Hdf
                 H5S.get_simple_extent_dims(dataspaceId, actualDimenionSet, maximumDimensionSet);
 
                 typeId = H5D.get_type(datasetId);
-                datasetInfo.DataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
+                dataset.DataType = OneDasUtilities.GetOneDasDataTypeFromType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
             }
             finally
             {
@@ -148,7 +148,7 @@ namespace OneDas.DataManagement.Hdf
             }
 
             var sourceFileInfo = new SourceFileInfo(fileContext.FilePath, actualDimenionSet.First(), fileContext.DateTime);
-            updateSourceFileMap?.Invoke(datasetId, datasetInfo, sourceFileInfo);
+            updateSourceFileMap?.Invoke(datasetId, dataset, sourceFileInfo);
         }
     }
 }
