@@ -127,10 +127,10 @@ namespace OneDas.Hdf.Explorer.Commands
             {
                 var dataset = filteredVariable.Datasets.First();
 
-                GeneralHelper.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
-                                                  BindingFlags.Instance | BindingFlags.NonPublic,
-                                                  OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                  new object[] { dataReader, dataset, targetFileId });
+                OneDasUtilities.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
+                                                    BindingFlags.Instance | BindingFlags.NonPublic,
+                                                    OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                    new object[] { dataReader, dataset, targetFileId });
             }
         }
 

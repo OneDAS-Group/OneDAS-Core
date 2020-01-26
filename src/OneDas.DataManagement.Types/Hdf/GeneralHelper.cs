@@ -215,15 +215,7 @@ namespace OneDas.DataManagement.Hdf
 
         public static string CombinePath(string path1, string path2)
         {
-            return $"{ path1 }/{ path2 }".Replace("///", "/").Replace("//", "/");
-        }
-
-        public static object InvokeGenericMethod(Type methodParent, object instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)
-        {
-            var methodInfo = methodParent.GetMethod(methodName, bindingFlags);
-            var genericMethodInfo = methodInfo.MakeGenericMethod(genericType);
-
-            return genericMethodInfo.Invoke(instance, parameters);
+            return $"{path1}/{path2}".Replace("///", "/").Replace("//", "/");
         }
     }
 }

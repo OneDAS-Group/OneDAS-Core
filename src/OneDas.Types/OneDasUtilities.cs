@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
@@ -124,6 +125,14 @@ namespace OneDas
                 value = "X_" + value;
 
             return value;
+        }
+
+        public static object InvokeGenericMethod(Type methodParent, object instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)
+        {
+            var methodInfo = methodParent.GetMethod(methodName, bindingFlags);
+            var genericMethodInfo = methodInfo.MakeGenericMethod(genericType);
+
+            return genericMethodInfo.Invoke(instance, parameters);
         }
     }
 }

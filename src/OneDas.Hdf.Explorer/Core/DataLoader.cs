@@ -1,15 +1,18 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
+using OneDas.DataManagement.Extensibility;
 using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Csv;
 using OneDas.Extension.Famos;
 using OneDas.Extension.Mat73;
+using OneDas.Hdf.Explorer.Commands;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace OneDas.Hdf.Explorer.Core
@@ -146,9 +149,12 @@ namespace OneDas.Hdf.Explorer.Core
                 {
                     variable.Datasets.ForEach(dataset =>
                     {
-                        var datasetPath = $"{zipSettings.Campaign.Name}/{variable.Name}/{dataset.Name}";
+                        var dataStorage = (IDataStorage)OneDasUtilities.InvokeGenericMethod(typeof(DataReaderExtensionBase), this, nameof(DataReaderExtensionBase.LoadDataset),
+                                                                                            BindingFlags.Instance | BindingFlags.NonPublic,
+                                                                                            OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                                                            new object[] { dataset, currentStart, currentRowCount });
 
-                        dataStorageSet.Add(zipSettings.DataReader.LoadDataset(datasetPath, currentStart, currentRowCount));
+                        dataStorageSet.Add(dataStorage);
                         this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount) * 100, $"Loading dataset segment {currentSegment * datasetCount + currentDataset + 1} / {segmentCount * datasetCount} ..."));
                         currentDataset++;
                     });

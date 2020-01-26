@@ -45,47 +45,6 @@ namespace OneDas.Hdf.Explorer.DataReader
             throw new NotImplementedException();
         }
 
-        public override ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block)
-        {
-            this.EnsureOpened();
-
-            long datasetId = -1;
-            long typeId = -1;
-
-            var dataset = IOHelper.ReadDataset(_fileId, datasetPath, start, 1, block, 1);
-
-            // apply status (only if native dataset)
-            if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-            {
-                try
-                {
-                    datasetId = H5D.open(_fileId, datasetPath);
-                    typeId = H5D.get_type(datasetId);
-
-                    var dataset_status = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, block, 1).Cast<byte>().ToArray();
-
-                    var genericType = typeof(ExtendedDataStorage<>).MakeGenericType(TypeConversionHelper.GetTypeFromHdfTypeId(typeId));
-                    var extendedDataStorage = (ExtendedDataStorageBase)Activator.CreateInstance(genericType, dataset, dataset_status);
-
-                    dataset_status = null;
-
-                    var simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
-                    extendedDataStorage.Dispose();
-
-                    return simpleDataStorage;
-                }
-                finally
-                {
-                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                    if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
-                }
-            }
-            else
-            {
-                return new SimpleDataStorage(dataset.Cast<double>().ToArray());
-            }
-        }
-
         public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
         {
             this.EnsureOpened();
@@ -194,9 +153,20 @@ namespace OneDas.Hdf.Explorer.DataReader
                 _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
-        protected override (T[] dataset, byte[] statusSet) ReadPartial<T>(DatasetInfo dataset, ulong start, ulong length)
+        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
         {
-            throw new NotImplementedException();
+            byte[] statusSet = null;
+
+            var datasetPath = dataset.GetPath();
+            var data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, 1, length, 1);
+
+            // apply status (only if native dataset)
+            if (H5L.exists(_fileId, datasetPath + "_status") > 0)
+            {
+                statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, length, 1).Cast<byte>().ToArray();
+            }
+
+            return (data, statusSet);
         }
 
         #endregion

@@ -2,6 +2,7 @@
 using OneDas.DataStorage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OneDas.DataManagement.Extensibility
 {
@@ -40,10 +41,30 @@ namespace OneDas.DataManagement.Extensibility
                 var length = currentFpCount * samplesPerFundamentalPeriod;
                 var offset = (totalFpCount - remainingFpCount) * samplesPerFundamentalPeriod;
 
-                (T[] data, byte[] status) = this.ReadPartial<T>(dataset, offset, length);
+                (T[] data, byte[] status) = this.Read<T>(dataset, offset, length);
                 processData?.Invoke(data, status);
 
                 timeOffset += fundamentalPeriod * currentFpCount;
+            }
+        }
+
+        public ISimpleDataStorage LoadDataset<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged
+        {
+            this.Open();
+
+            (var data, var statusSet) = this.Read<T>(dataset, start, length);
+
+            // apply status (only if native dataset)
+            if (statusSet != null)
+            {
+                using var extendedDataStorage = new ExtendedDataStorage<T>(data, statusSet);
+                var simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
+
+                return simpleDataStorage;
+            }
+            else
+            {
+                return new SimpleDataStorage(data.Cast<double>().ToArray());
             }
         }
 
@@ -51,7 +72,6 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract bool IsDataOfDayAvailable(DateTime dateTime);
 
-        public abstract ISimpleDataStorage LoadDataset(string datasetPath, ulong start, ulong block);
 
         public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd);
 
@@ -61,7 +81,7 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract void Dispose();
 
-        protected abstract (T[] dataset, byte[] statusSet) ReadPartial<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged;
+        protected abstract (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged;
 
         #endregion
     }
