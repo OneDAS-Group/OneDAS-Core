@@ -55,13 +55,9 @@ namespace OneDas.DataManagement.Hdf
                     ulong[] oldValueSetCount;
 
                     if (!isNew && callerMemberName != nameof(IOHelper.PrepareAttribute))
-                    {
                         oldValueSetCount = IOHelper.PrepareAttributeValueSet(attributeId, ref valueSet, false);
-                    }
                     else
-                    {
                         oldValueSetCount = new ulong[1] { (ulong)valueSet.Count() };
-                    }
 
                     if (valueSet.Count() == (int)oldValueSetCount[0])
                     {
@@ -102,9 +98,7 @@ namespace OneDas.DataManagement.Hdf
                 attributeId = H5A.open(locationId, attributeName);
 
                 if (H5I.is_valid(attributeId) <= 0)
-                {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
-                }
 
                 result = IOHelper.Read<T>(attributeId, DataContainerType.Attribute);
             }
@@ -128,17 +122,14 @@ namespace OneDas.DataManagement.Hdf
                 attributeId = H5A.open(locationId, attributeName);
 
                 if (H5I.is_valid(attributeId) <= 0)
-                {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
-                }
 
                 typeId = H5A.get_type(attributeId);
 
-                // invoke HdfHelper.Read
-                result = GeneralHelper.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
-                                                       BindingFlags.Public | BindingFlags.Static,
-                                                       TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                       new object[] { attributeId, DataContainerType.Attribute, Type.Missing });
+                result = OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
+                                                            BindingFlags.Public | BindingFlags.Static,
+                                                            TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
+                                                            new object[] { attributeId, DataContainerType.Attribute, Type.Missing });
             }
             finally
             {
@@ -161,9 +152,7 @@ namespace OneDas.DataManagement.Hdf
                 datasetId = H5D.open(locationId, datasetPath);
 
                 if (H5I.is_valid(datasetId) <= 0)
-                {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
-                }
 
                 if (start == 0 && stride == 0 && block == 0 && count == 0)
                 {
@@ -174,9 +163,7 @@ namespace OneDas.DataManagement.Hdf
                     dataspaceId = H5D.get_space(datasetId);
 
                     if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { block }, new ulong[] { count }) < 0)
-                    {
                         throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
-                    }
 
                     result = IOHelper.Read<T>(datasetId, DataContainerType.Dataset, dataspaceId);
                 }
@@ -203,34 +190,28 @@ namespace OneDas.DataManagement.Hdf
                 datasetId = H5D.open(locationId, datasetPath);
 
                 if (H5I.is_valid(datasetId) <= 0)
-                {
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
-                }
 
                 typeId = H5D.get_type(datasetId);
 
                 if (start == 0 && stride == 0 && block == 0 && count == 0)
                 {
-                    // invoke HdfHelper.Read
-                    result = (Array)GeneralHelper.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
-                                                                  BindingFlags.Public | BindingFlags.Static,
-                                                                  TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                                  new object[] { datasetId, DataContainerType.Dataset, Type.Missing });
+                    result = (Array)OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
+                                                                       BindingFlags.Public | BindingFlags.Static,
+                                                                       TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
+                                                                       new object[] { datasetId, DataContainerType.Dataset, Type.Missing });
                 }
                 else
                 {
                     dataspaceId = H5D.get_space(datasetId);
 
                     if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block }) < 0)
-                    {
                         throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
-                    }
 
-                    // invoke HdfHelper.Read
-                    result = (Array)GeneralHelper.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
-                                                                  BindingFlags.Public | BindingFlags.Static,
-                                                                  TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                                  new object[] { datasetId, DataContainerType.Dataset, dataspaceId });
+                    result = (Array)OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
+                                                                       BindingFlags.Public | BindingFlags.Static,
+                                                                       TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
+                                                                       new object[] { datasetId, DataContainerType.Dataset, dataspaceId });
                 }
             }
             finally
@@ -267,27 +248,21 @@ namespace OneDas.DataManagement.Hdf
             try
             {
                 if (dataspaceId > -1)
-                {
                     dataspaceId = H5S.copy(dataspaceId);
-                }
 
                 switch (dataContainerType)
                 {
                     case DataContainerType.Attribute:
 
                         if (dataspaceId == -1)
-                        {
                             dataspaceId = H5A.get_space(dataPortId);
-                        }
 
                         break;
 
                     case DataContainerType.Dataset:
 
                         if (dataspaceId == -1)
-                        {
                             dataspaceId = H5D.get_space(dataPortId);
-                        }
 
                         dataspaceId_file = dataspaceId;
 
@@ -298,17 +273,11 @@ namespace OneDas.DataManagement.Hdf
                 }
 
                 if (elementType == typeof(string))
-                {
                     elementTypeSize = Marshal.SizeOf<IntPtr>();
-                }
                 else if (elementType == typeof(bool))
-                {
                     elementTypeSize = Marshal.SizeOf<byte>();
-                }
                 else
-                {
                     elementTypeSize = Marshal.SizeOf(elementType);
-                }
 
                 elementCount = H5S.get_select_npoints(dataspaceId);
                 byteLength = (int)elementCount * elementTypeSize;
@@ -320,9 +289,7 @@ namespace OneDas.DataManagement.Hdf
                     case DataContainerType.Attribute:
 
                         if (H5A.read(dataPortId, typeId, bufferPtr) < 0)
-                        {
                             throw new Exception(ErrorMessage.IOHelper_CouldNotReadAttribute);
-                        }
 
                         break;
 
@@ -331,10 +298,8 @@ namespace OneDas.DataManagement.Hdf
                         dataspaceId_memory = H5S.create_simple(1, new ulong[] { (ulong)elementCount }, new ulong[] { (ulong)elementCount });
 
                         if (H5D.read(dataPortId, typeId, dataspaceId_memory, dataspaceId_file, H5P.DEFAULT, bufferPtr) < 0)
-                        {
                             throw new Exception(ErrorMessage.IOHelper_CouldNotReadDataset);
-                        }
-
+ 
                         break;
 
                     default:
@@ -472,17 +437,11 @@ namespace OneDas.DataManagement.Hdf
                 typeId = TypeConversionHelper.GetHdfTypeIdFromType(elementType);
 
                 if (elementType == typeof(string))
-                {
                     elementTypeSize = Marshal.SizeOf<IntPtr>();
-                }
                 else if (elementType == typeof(bool))
-                {
                     elementTypeSize = Marshal.SizeOf<byte>();
-                }
                 else
-                {
                     elementTypeSize = Marshal.SizeOf(elementType);
-                }
 
                 byteLength = elementTypeSize * valueSet.Count();
 
@@ -533,18 +492,14 @@ namespace OneDas.DataManagement.Hdf
                     case DataContainerType.Attribute:
 
                         if (H5A.write(dataTargetId, typeId, valueSetPointer) < 0)
-                        {
                             throw new Exception(ErrorMessage.IOHelper_CouldNotWriteAttribute);
-                        }
 
                         break;
 
                     case DataContainerType.Dataset:
 
                         if (H5D.write(dataTargetId, typeId, H5S.ALL, H5S.ALL, H5P.DEFAULT, valueSetPointer) < 0)
-                        {
                             throw new Exception(ErrorMessage.IOHelper_CouldNotWriteDataset);
-                        }
 
                         break;
 
