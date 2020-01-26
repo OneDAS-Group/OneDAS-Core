@@ -168,7 +168,8 @@ namespace OneDas.Hdf.Explorer.Commands
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
-            var periodToDataMap = new Dictionary<Period, PeriodData>();
+            var periodToDataMap = new Dictionary<Period, AggregationPeriodData>();
+            var periodToBufferDataMap = new Dictionary<Period, AggregationBufferData>();
             var actualPeriods = new List<Period>();
 
             try
@@ -179,15 +180,21 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
                     {
-                        var periodData = new PeriodData(period, sampleRateContainer, valueSize);
-                        var bufferSize = (ulong)periodData.Buffer.Length;
+                        // buffer data
+                        var bufferData = new AggregationBufferData(period);
+                        var bufferSize = (ulong)bufferData.Buffer.Length;
                         var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
 
                         if (!(H5I.is_valid(datasetId) > 0))
                             throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
 
-                        periodData.DatasetId = datasetId;
+                        bufferData.DatasetId = datasetId;
+                        periodToBufferDataMap[period] = bufferData;
+
+                        // period data
+                        var periodData = new AggregationPeriodData(period, sampleRateContainer, valueSize);
                         periodToDataMap[period] = periodData;
+
                         actualPeriods.Add(period);
                     }
                     else
@@ -195,45 +202,49 @@ namespace OneDas.Hdf.Explorer.Commands
                         // skip period
                     }
                 }
-                    
+
+                var fundamentalPeriod = TimeSpan.FromMinutes(10);
+                var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecond * (ulong)fundamentalPeriod.TotalSeconds;
+                var maxSamplesPerReadOperation = _options.AggregationChunkSizeMb * 1024 * 1024;
+
                 // read data
-                dataReader.ReadFullDay<T>(dataset, TimeSpan.FromMinutes(10), (data, statusSet) =>
+                dataReader.ReadFullDay<T>(dataset, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
                 {
                     // get aggregation data
                     var periodToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, periodToDataMap);
 
                     // copy aggregation data into buffer
-                    foreach (Period period in actualPeriods)
+                    foreach (var period in actualPeriods)
                     {
                         var partialBuffer = periodToPartialBufferMap[period];
-                        var periodData = periodToDataMap[period];
+                        var bufferData = periodToBufferDataMap[period];
 
-                        Array.Copy(partialBuffer, 0, periodData.Buffer, periodData.BufferPosition, partialBuffer.Length);
+                        Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
 
-                        periodData.BufferPosition += partialBuffer.Length;
+                        bufferData.BufferPosition += partialBuffer.Length;
                     }
                 });
 
                 // write data to file
                 foreach (Period period in actualPeriods)
                 {
-                    var periodData = periodToDataMap[period];
+                    var bufferData = periodToBufferDataMap[period];
 
-                    IOHelper.Write(periodData.DatasetId, periodData.Buffer, DataContainerType.Dataset);
-                    H5F.flush(periodData.DatasetId, H5F.scope_t.LOCAL);
+                    IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
+                    H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
                 }
             }
             finally
             {
                 foreach (Period period in actualPeriods)
                 {
-                    var datasetId = periodToDataMap[period].DatasetId;
+                    var datasetId = periodToBufferDataMap[period].DatasetId;
                     if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 }
             }
         }
 
-        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<Period, PeriodData> periodToDataMap)
+        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<Period, AggregationPeriodData> periodToDataMap)
         {
             var dataset_double = default(double[]);
             var periodToPartialBufferMap = new Dictionary<Period, double[]>();
@@ -255,14 +266,14 @@ namespace OneDas.Hdf.Explorer.Commands
                         if (dataset_double == null)
                             dataset_double = ExtendedDataStorageBase.ApplyDatasetStatus(data, statusSet);
 
-                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, chunkCount, dataset_double, _logger);
+                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, (int)periodData.SampleCount, dataset_double, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, chunkCount, data, statusSet, _logger);
+                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, (int)periodData.SampleCount, data, statusSet, _logger);
 
                         break;
 
@@ -277,9 +288,9 @@ namespace OneDas.Hdf.Explorer.Commands
             return periodToPartialBufferMap;
         }
 
-        private double[] ApplyAggregationFunction(AggregationMethod method, string argument, int targetDatasetLength, double[] valueSet, ILogger logger)
+        private double[] ApplyAggregationFunction(AggregationMethod method, string argument, int kernelSize, double[] data, ILogger logger)
         {
-            var chunkSize = valueSet.Count() / targetDatasetLength;
+            var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
 
             switch (method)
@@ -288,12 +299,12 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
-                        var chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * kernelSize;
+                        var chunkData = new double[kernelSize];
 
-                        Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
+                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
 
-                        result[x] = ArrayStatistics.Mean(chunkValueSet);
+                        result[x] = ArrayStatistics.Mean(chunkData);
                     });
 
                     break;
@@ -313,12 +324,12 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
+                        var baseIndex = x * kernelSize;
 
-                        for (int i = 0; i < chunkSize; i++)
+                        for (int i = 0; i < kernelSize; i++)
                         {
-                            sin[x] += Math.Sin(valueSet[baseIndex + i] * factor);
-                            cos[x] += Math.Cos(valueSet[baseIndex + i] * factor);
+                            sin[x] += Math.Sin(data[baseIndex + i] * factor);
+                            cos[x] += Math.Cos(data[baseIndex + i] * factor);
                         }
 
                         result[x] = Math.Atan2(sin[x], cos[x]) / factor;
@@ -333,12 +344,12 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
-                        var chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * kernelSize;
+                        var chunkData = new double[kernelSize];
 
-                        Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
+                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
 
-                        result[x] = ArrayStatistics.Minimum(chunkValueSet);
+                        result[x] = ArrayStatistics.Minimum(chunkData);
                     });
 
                     break;
@@ -347,12 +358,12 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
-                        var chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * kernelSize;
+                        var chunkData = new double[kernelSize];
 
-                        Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
+                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
 
-                        result[x] = ArrayStatistics.Maximum(chunkValueSet);
+                        result[x] = ArrayStatistics.Maximum(chunkData);
                     });
 
                     break;
@@ -361,12 +372,12 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
-                        var chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * kernelSize;
+                        var chunkData = new double[kernelSize];
 
-                        Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
+                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
 
-                        result[x] = ArrayStatistics.StandardDeviation(chunkValueSet);
+                        result[x] = ArrayStatistics.StandardDeviation(chunkData);
                     });
 
                     break;
@@ -375,12 +386,12 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
-                        var chunkValueSet = new double[chunkSize];
+                        var baseIndex = x * kernelSize;
+                        var chunkData = new double[kernelSize];
 
-                        Array.Copy(valueSet, baseIndex, chunkValueSet, 0, chunkSize);
+                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
 
-                        result[x] = ArrayStatistics.RootMeanSquare(chunkValueSet);
+                        result[x] = ArrayStatistics.RootMeanSquare(chunkData);
                     });
 
                     break;
@@ -396,9 +407,9 @@ namespace OneDas.Hdf.Explorer.Commands
             return result;
         }
 
-        private double[] ApplyAggregationFunction<T>(AggregationMethod method, string argument, int targetDatasetLength, T[] valueSet, byte[] valueSet_status, ILogger logger)
+        private double[] ApplyAggregationFunction<T>(AggregationMethod method, string argument, int kernelSize, T[] data, byte[] statusSet, ILogger logger)
         {
-            var chunkSize = valueSet.Count() / targetDatasetLength;
+            var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
 
             switch (method)
@@ -409,11 +420,11 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
+                        var baseIndex = x * kernelSize;
 
-                        for (int i = 0; i < chunkSize; i++)
+                        for (int i = 0; i < kernelSize; i++)
                         {
-                            if (valueSet_status[baseIndex + i] != 1)
+                            if (statusSet[baseIndex + i] != 1)
                             {
                                 result[x] = Double.NaN;
                                 return;
@@ -421,9 +432,9 @@ namespace OneDas.Hdf.Explorer.Commands
                             else
                             {
                                 if (i == 0)
-                                    bitField_and[x] = GenericBitOr<T>.BitOr(bitField_and[x], valueSet[baseIndex + i]);
+                                    bitField_and[x] = GenericBitOr<T>.BitOr(bitField_and[x], data[baseIndex + i]);
                                 else
-                                    bitField_and[x] = GenericBitAnd<T>.BitAnd(bitField_and[x], valueSet[baseIndex + i]);
+                                    bitField_and[x] = GenericBitAnd<T>.BitAnd(bitField_and[x], data[baseIndex + i]);
                             }
                         }
 
@@ -439,18 +450,18 @@ namespace OneDas.Hdf.Explorer.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * chunkSize;
+                        var baseIndex = x * kernelSize;
 
-                        for (int i = 0; i < chunkSize; i++)
+                        for (int i = 0; i < kernelSize; i++)
                         {
-                            if (valueSet_status[baseIndex + i] != 1)
+                            if (statusSet[baseIndex + i] != 1)
                             {
                                 result[x] = Double.NaN;
                                 return;
                             }
                             else
                             {
-                                bitField_or[x] = GenericBitOr<T>.BitOr(bitField_or[x], valueSet[baseIndex + i]);
+                                bitField_or[x] = GenericBitOr<T>.BitOr(bitField_or[x], data[baseIndex + i]);
                             }
                         }
 
