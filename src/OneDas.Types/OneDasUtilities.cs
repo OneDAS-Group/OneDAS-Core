@@ -16,7 +16,6 @@ namespace OneDas
             var result = true;
 
             var exists = Directory.Exists(databaseFolderPath) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DB_AGGREGATION")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_DATA")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_META")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DB_VDS"));
@@ -25,7 +24,7 @@ namespace OneDas
 
             if (!exists)
             {
-                message = "The provided path does not contain a OneDAS database.";
+                message = "The provided path does not contain a OneDAS Explorer database.";
                 result = false;
             }
 

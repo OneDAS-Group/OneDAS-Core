@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EngineSample", "samples\Eng
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtensionSample", "samples\ExtensionSample\ExtensionSample.csproj", "{4FE5CC6A-4BFC-4D4B-8D9A-1F1F55357852}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.Hdf.Deployment", "src\OneDas.Hdf.Deployment\OneDas.Hdf.Deployment.wixproj", "{6F96C4C6-F442-4240-9D83-BAFE70D63ED3}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "OneDas.DataManagement.Deployment", "src\OneDas.DataManagement.Deployment\OneDas.DataManagement.Deployment.wixproj", "{6F96C4C6-F442-4240-9D83-BAFE70D63ED3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{BA787241-6B04-4D3C-A792-7D1DA9682385}"
 EndProject
@@ -52,7 +52,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core", "src\OneDas.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core.WebServer", "src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj", "{042CF4D0-1CF9-45F1-BE0B-4942C5917E6F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.Explorer", "src\OneDas.Hdf.Explorer\OneDas.Hdf.Explorer.csproj", "{EDC879ED-6D2C-4C1C-8A49-2E7F6618CDF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Explorer", "src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj", "{EDC879ED-6D2C-4C1C-8A49-2E7F6618CDF1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core.WebClient", "src\OneDas.Core.WebClient\OneDas.Core.WebClient.csproj", "{6E250434-C1AE-4215-B3B9-39C5DA4065F1}"
 EndProject
@@ -94,6 +94,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Extension.Can", "extensions\OneDas.Extension.Can\OneDas.Extension.Can.csproj", "{0F9D4D5C-FF5C-4005-B6BC-46D930CBEB4B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Types", "src\OneDas.DataManagement.Types\OneDas.DataManagement.Types.csproj", "{7F63F0AA-5146-4A61-BB22-AAB76FAB1D4B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "src\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj", "{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -409,6 +411,18 @@ Global
 		{7F63F0AA-5146-4A61-BB22-AAB76FAB1D4B}.Release|x64.Build.0 = Release|Any CPU
 		{7F63F0AA-5146-4A61-BB22-AAB76FAB1D4B}.Release|x86.ActiveCfg = Release|Any CPU
 		{7F63F0AA-5146-4A61-BB22-AAB76FAB1D4B}.Release|x86.Build.0 = Release|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Debug|x64.Build.0 = Debug|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Debug|x86.Build.0 = Debug|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Release|x64.ActiveCfg = Release|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Release|x64.Build.0 = Release|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Release|x86.ActiveCfg = Release|Any CPU
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -444,6 +458,7 @@ Global
 		{919CEDF6-1B26-4980-9265-3DC904D26656} = {41AE8F8D-B51B-494B-8573-E7E9EF642BB0}
 		{0F9D4D5C-FF5C-4005-B6BC-46D930CBEB4B} = {41AE8F8D-B51B-494B-8573-E7E9EF642BB0}
 		{7F63F0AA-5146-4A61-BB22-AAB76FAB1D4B} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
+		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010} = {28552ECD-9437-4D06-9B4C-96A7FDB069E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F998BD6D-3E2B-4AA0-A7A4-FD84100C45A4}

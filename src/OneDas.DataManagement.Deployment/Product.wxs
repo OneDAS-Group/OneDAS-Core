@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <!-- VARIABLES -->
+  <?define CompanyName = "OneDAS Group" ?>
+  <?define CompanyDisplayName = "OneDAS Group" ?>
+
+  <?define ProductName = "OneDas" ?>
+  <?define ProductDisplayName = "OneDAS" ?>
+
+  <?define ComponentName = "Explorer" ?>
+  <?define ComponentDisplayName = "Explorer" ?>
+
+  <?define EventLogName = "$(var.ProductDisplayName)" ?>
+  <?define EventLogSourceName = "$(var.ProductDisplayName) $(var.ComponentDisplayName)" ?>
+
+  <?define ServiceName = "$(var.ProductName).$(var.ComponentName)" ?>
+  <?define ServiceDisplayName = "$(var.ProductDisplayName) $(var.ComponentDisplayName)" ?>
+
+  <!-- PRODUCT -->
+  <Product Id="*"
+           Name="$(var.ProductDisplayName) $(var.ComponentDisplayName)"
+           Language="1033"
+           Version="$(var.WixFileVersion)"
+           Manufacturer="$(var.CompanyDisplayName)"
+           UpgradeCode="214eae03-158e-4055-85d1-4ccaa856dd68">
+
+    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
+    <MediaTemplate EmbedCab="yes"/>
+
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir" />
+
+    <Icon Id="ICON" SourceFile="$(var.WixHarvestPath)\$(var.WixApplicationName).exe"/>
+    <Property Id="ARPPRODUCTICON" Value="ICON" />
+
+    <FeatureRef Id="AllComponentsFeature" />
+
+  </Product>
+
+  <!-- DIRECTORIES -->
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="DesktopFolder" Name="Desktop" />
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="ProductFolder" Name="$(var.ProductDisplayName)">
+          <Directory Id="INSTALLFOLDER" Name="$(var.ComponentDisplayName)" />
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <!-- FEATURES -->
+  <Fragment>
+    <Feature Id="AllComponentsFeature" Title="Main feature" Level="1">
+      <ComponentGroupRef Id="HeatComponentGroup" />
+      <ComponentRef Id="EventLog" />
+      <ComponentRef Id="ApplicationShortcutDesktopComponent" />
+      <ComponentGroupRef Id="EventSourceComponentGroup" />
+      <ComponentRef Id="ServiceComponent" />
+    </Feature>
+  </Fragment>
+
+  <!-- COMPONENTS -->
+  <Fragment>
+    <!-- <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/> -->
+    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>
+
+    <Component Id="ApplicationShortcutDesktopComponent" Guid="*" Directory="DesktopFolder">
+
+      <Shortcut Id="ApplicationShortcutDesktop"
+          Name="$(var.ProductDisplayName) $(var.ComponentDisplayName)"
+          Description="Free, open and extensible measurement data acquisition software."
+          Target="[INSTALLFOLDER]$(var.WixApplicationName).exe"
+          WorkingDirectory="INSTALLFOLDER"/>
+
+      <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+
+      <RegistryValue
+          Root="HKCU"
+          Key="Software/$(var.ProductDisplayName)"
+          Name="installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes"/>
+    </Component>
+    <Component Id="EventLog" Guid="*" Directory="INSTALLFOLDER">
+      <RegistryKey Root="HKLM"
+                   Key="SYSTEM\CurrentControlSet\services\eventlog\$(var.EventLogName)">
+        <RegistryValue Name="File"
+                       Value="%SystemRoot%\system32\winevt\Logs\$(var.EventLogName).evtx"
+                       Type="expandable"
+                       KeyPath="yes"/>
+      </RegistryKey>
+    </Component>
+    <ComponentGroup Id="EventSourceComponentGroup" Directory="INSTALLFOLDER">
+      <!-- <Component Id="EventSourceComponentNetFull32" Guid="e1e11ccc-786d-40a2-aacc-833328fd3146" >
+        <Condition>
+          <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR]]>
+        </Condition>
+        <util:EventSource Log="$(var.EventLogName)"
+                          Name="$(var.EventLogSourceName)"
+                          EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR]EventLogMessages.dll"
+                          KeyPath="yes" />
+      </Component>
+      <Component Id="EventSourceComponentNetClient32" Guid="4cd7acb0-c0ea-4830-9fef-03ec290a6400">
+        <Condition>
+          <![CDATA[NETFRAMEWORK40CLIENTINSTALLROOTDIR]]>
+        </Condition>
+        <util:EventSource Log="$(var.EventLogName)"
+                          Name="$(var.EventLogSourceName)"
+                          EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR]EventLogMessages.dll"
+                          KeyPath="yes" />
+      </Component> -->
+      <Component Id="EventSourceComponentNetFull64" Guid="06fe2dcf-3cd5-4012-ac57-bf6a03caf0bd">
+        <Condition>
+          <![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64]]>
+        </Condition>
+        <util:EventSource Log="$(var.EventLogName)"
+                          Name="$(var.EventLogSourceName)"
+                          EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR64]EventLogMessages.dll"
+                          KeyPath="yes" />
+      </Component>
+      <Component Id="EventSourceComponentNetClient64" Guid="3edd2a45-05a6-4714-9a5c-0c29bffde2c4">
+        <Condition>
+          <![CDATA[NETFRAMEWORK40CLIENTINSTALLROOTDIR64 AND VersionNT64]]>
+        </Condition>
+        <util:EventSource Log="$(var.EventLogName)"
+                          Name="$(var.EventLogSourceName)"
+                          EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR64]EventLogMessages.dll"
+                          KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    <Component Id="ServiceComponent" Guid="*" Directory="INSTALLFOLDER">
+
+      <File Id="ServiceComponentMain"
+            Source="$(var.WixHarvestPath)\$(var.WixApplicationName).exe"
+            KeyPath="yes"
+            Vital="yes" />
+
+      <ServiceInstall Arguments="--non-interactive"
+                      Description="Download and convert data from a OneDAS database"
+                      DisplayName="$(var.ServiceDisplayName)"
+                      ErrorControl="ignore"
+                      Name="$(var.ServiceName)"
+                      Start="auto"
+                      Type="ownProcess"
+                      Vital="yes">
+
+        <ServiceConfig DelayedAutoStart="no"
+                       OnInstall="yes"
+                       OnReinstall ="yes" />
+
+        <util:ServiceConfig FirstFailureActionType="restart"
+                            SecondFailureActionType="restart"
+                            ThirdFailureActionType="restart"
+                            RestartServiceDelayInSeconds="60"
+                            ResetPeriodInDays="1" />
+      </ServiceInstall>
+
+      <ServiceControl Id="StartService"
+                      Start="install"
+                      Stop="both"
+                      Remove="uninstall"
+                      Name="$(var.ProductName).$(var.ComponentName)"
+                      Wait="yes" />
+
+    </Component>
+  </Fragment>
+
+</Wix>

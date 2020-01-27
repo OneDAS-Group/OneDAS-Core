@@ -1,4 +1,4 @@
-﻿using OneDas.Database;
+﻿using OneDas.Data;
 using OneDas.DataStorage;
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,24 @@ namespace OneDas.DataManagement.Extensibility
 {
     public abstract class DataReaderExtensionBase : IDisposable
     {
+        #region Constructors
+
+        public DataReaderExtensionBase(string rootPath)
+        {
+            if (rootPath == ":root:")
+                rootPath = Environment.CurrentDirectory;
+
+            this.RootPath = rootPath;
+        }
+
+        #endregion
+
+        #region Properties
+
+        public string RootPath { get; }
+
+        #endregion
+
         #region Methods
 
         public void ReadFullDay<T>(DatasetInfo dataset, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
@@ -68,12 +86,13 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public abstract List<CampaignInfo> GetCampaigns();
+        public abstract List<string> GetCampaignNames();
 
-        public abstract bool IsDataOfDayAvailable(DateTime dateTime);
+        public abstract CampaignInfo GetCampaign(string campaignName, DateTime begin);
 
+        public abstract bool IsDataOfDayAvailable(string campaignName, DateTime day);
 
-        public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd);
+        public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end);
 
         public abstract void Open();
 

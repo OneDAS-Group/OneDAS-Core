@@ -1,10 +1,9 @@
 ﻿using HDF.PInvoke;
-using OneDas.Database;
+using OneDas.Data;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -12,19 +11,19 @@ namespace OneDas.DataManagement.Hdf
 {
     public static class GeneralHelper
     {
-        public static void UpdateCampaignInfos(long fileId, List<CampaignInfo> campaignInfoSet, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void UpdateCampaigns(long fileId, List<CampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
-            GeneralHelper.InternalUpdateCampaignInfos(fileId, campaignInfoSet, null, updateSourceFileMap);
+            GeneralHelper.InternalUpdateCampaigns(fileId, campaigns, null, updateSourceFileMap);
         }
 
-        public static CampaignInfo GetCampaignInfo(long fileId, string campaignGroupPath)
+        public static CampaignInfo GetCampaign(long fileId, string campaignGroupPath)
         {
-            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, campaignGroupPath, null).FirstOrDefault();
+            return GeneralHelper.InternalUpdateCampaigns(fileId, null, campaignGroupPath, null).FirstOrDefault();
         }
 
         public static List<CampaignInfo> GetCampaigns(long fileId)
         {
-            return GeneralHelper.InternalUpdateCampaignInfos(fileId, null, null, null);
+            return GeneralHelper.InternalUpdateCampaigns(fileId, null, null, null);
         }
 
         public static void SuppressErrors(Action action)
@@ -41,19 +40,19 @@ namespace OneDas.DataManagement.Hdf
             H5E.set_auto(H5E.DEFAULT, func, clientData);
         }
 
-        public static List<CampaignInfo> InternalUpdateCampaignInfos(long fileId,
-                                                                     List<CampaignInfo> campaignInfoSet = null,
+        public static List<CampaignInfo> InternalUpdateCampaigns(long fileId,
+                                                                     List<CampaignInfo> campaigns = null,
                                                                      string campaignGroupPath = "",
                                                                      UpdateSourceFileMapDelegate updateSourceFileMap = null)
         {
             var idx = 0UL;
 
-            if (campaignInfoSet == null)
-                campaignInfoSet = new List<CampaignInfo>();
+            if (campaigns == null)
+                campaigns = new List<CampaignInfo>();
 
             GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
 
-            return campaignInfoSet;
+            return campaigns;
 
             int Callback(long campaignGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
             {
@@ -113,15 +112,15 @@ namespace OneDas.DataManagement.Hdf
                             if (!string.IsNullOrWhiteSpace(campaignGroupPath) && fullName != campaignGroupPath)
                                 return 0;
 
-                            var currentCampaignInfo = campaignInfoSet.FirstOrDefault(campaignInfo => campaignInfo.Name == fullName);
+                            var currentCampaign = campaigns.FirstOrDefault(campaignInfo => campaignInfo.Name == fullName);
 
-                            if (currentCampaignInfo == null)
+                            if (currentCampaign == null)
                             {
-                                currentCampaignInfo = new CampaignInfo(fullName);
-                                campaignInfoSet.Add(currentCampaignInfo);
+                                currentCampaign = new CampaignInfo(fullName);
+                                campaigns.Add(currentCampaign);
                             }
 
-                            currentCampaignInfo.Update(groupId, new FileContext(formatVersion, dateTime, filePath.ToString()), updateSourceFileMap);
+                            currentCampaign.Update(groupId, new FileContext(formatVersion, dateTime, filePath.ToString()), updateSourceFileMap);
                         }
                         
                         break;
