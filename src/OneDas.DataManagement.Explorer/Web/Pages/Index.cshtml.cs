@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace OneDas.Hdf.Explorer.Web.Pages
+namespace OneDas.DataManagement.Explorer.Web.Pages
 {
     public class IndexModel : PageModel
     {

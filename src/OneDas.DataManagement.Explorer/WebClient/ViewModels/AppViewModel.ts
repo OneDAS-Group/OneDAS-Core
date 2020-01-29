@@ -3,14 +3,14 @@
 class AppViewModel
 {
     public IsMainViewRequested: KnockoutObservable<boolean>
-    public CampaignInfoSet: KnockoutObservableArray<CampaignInfoViewModel>
-    public SelectedDatasetInfos: KnockoutObservableArray<DatasetInfoViewModel>
+    public Campaigns: KnockoutObservableArray<CampaignInfoViewModel>
+    public SelectedDatasets: KnockoutObservableArray<DatasetViewModel>
     public SampleRateSet: KnockoutObservableArray<string>
     public SelectedSampleRate: KnockoutObservable<string>
     public SelectedFileFormat: KnockoutObservable<FileFormatEnum>
     public SelectedFileGranularity: KnockoutObservable<FileGranularityEnum>
     public IsConnected: KnockoutObservable<boolean>
-    public HdfExplorerState: KnockoutObservable<HdfExplorerStateEnum>
+    public ExplorerState: KnockoutObservable<OneDasExplorerStateEnum>
     public InactivityMessage: KnockoutObservable<string>
     public ByteCount: KnockoutObservable<number>
     public Progress: KnockoutObservable<number>
@@ -23,23 +23,23 @@ class AppViewModel
 
     public CanLoadData: KnockoutComputed<boolean>
 
-    private _variableInfos: VariableInfoViewModel[]
-    private _datasetInfos: DatasetInfoViewModel[]
+    private _variableInfos: VariableViewModel[]
+    private _datasetInfos: DatasetViewModel[]
     private _chart: Chart
 
     constructor(appModel: any)
     {
-        let campaignInfoModelSet: any = appModel.CampaignInfoSet;
+        let campaignModels: any = appModel.Campaigns;
 
-        this.CampaignInfoSet = ko.observableArray<CampaignInfoViewModel>();
+        this.Campaigns = ko.observableArray<CampaignInfoViewModel>();
         this.SampleRateSet = ko.observableArray<string>()
         this.IsMainViewRequested = ko.observable<boolean>(true)
-        this.SelectedDatasetInfos = ko.observableArray<DatasetInfoViewModel>()
+        this.SelectedDatasets = ko.observableArray<DatasetViewModel>()
         this.SelectedSampleRate = ko.observable<string>()
         this.SelectedFileFormat = ko.observable<FileFormatEnum>(FileFormatEnum.CSV)
         this.SelectedFileGranularity = ko.observable<FileGranularityEnum>(FileGranularityEnum.Hour)
         this.IsConnected = ko.observable<boolean>(true)
-        this.HdfExplorerState = ko.observable<HdfExplorerStateEnum>()
+        this.ExplorerState = ko.observable<OneDasExplorerStateEnum>()
         this.InactivityMessage = ko.observable<string>("")
         this.ByteCount = ko.observable<number>(0)
         this.Progress = ko.observable<number>(0)
@@ -52,9 +52,9 @@ class AppViewModel
 
         this.CanLoadData = ko.computed<boolean>(() =>
             (this.StartDate().valueOf() < this.EndDate().valueOf()) &&
-            this.SelectedDatasetInfos().length > 0 &&
+            this.SelectedDatasets().length > 0 &&
             this.SelectedFileGranularity() >= 86400 / this.GetSamplesPerDayFromString(this.SelectedSampleRate()) &&
-            this.HdfExplorerState() === HdfExplorerStateEnum.Idle &&
+            this.ExplorerState() === OneDasExplorerStateEnum.Idle &&
             this.IsConnected()
         )
 
@@ -70,11 +70,11 @@ class AppViewModel
         EnumerationHelper.Description["FileGranularityEnum_Day"] = "1 file per day"
 
         // state
-        this.HdfExplorerState.subscribe(async (newValue) =>
+        this.ExplorerState.subscribe(async (newValue) =>
         {
             let inactivityMessage: string
 
-            if (newValue === HdfExplorerStateEnum.Inactive)
+            if (newValue === OneDasExplorerStateEnum.Inactive)
             {
                 inactivityMessage = await _broadcaster.invoke("GetInactivityMessage")
 
@@ -86,16 +86,16 @@ class AppViewModel
             }
         })
 
-        this.HdfExplorerState(appModel.HdfExplorerState)
+        this.ExplorerState(appModel.ExplorerState)
 
         // campaign info
-        this.CampaignInfoSet.subscribe(newValue =>
+        this.Campaigns.subscribe(newValue =>
         {
-            this._variableInfos = MapMany(this.CampaignInfoSet(), campaignInfo => campaignInfo.VariableInfos)
-            this._datasetInfos = MapMany(this._variableInfos, variableInfo => variableInfo.DatasetInfos)
+            this._variableInfos = MapMany(this.Campaigns(), campaignInfo => campaignInfo.Variables)
+            this._datasetInfos = MapMany(this._variableInfos, variableInfo => variableInfo.Datasets)
 
-            this.SelectedDatasetInfos().forEach(datasetInfo => {
-                let newDataSetInfo: DatasetInfoViewModel
+            this.SelectedDatasets().forEach(datasetInfo => {
+                let newDataSetInfo: DatasetViewModel
 
                 newDataSetInfo = this._datasetInfos.find(current => current.Parent.Name === datasetInfo.Parent.Name && current.Name === datasetInfo.Name)
 
@@ -105,11 +105,11 @@ class AppViewModel
                 }
             })
 
-            this.CampaignInfoSet().forEach(campaignInfo => {
-                campaignInfo.VariableInfos.forEach(variableInfo => {
-                    variableInfo.DatasetInfos.forEach(datasetInfo => {
+            this.Campaigns().forEach(campaignInfo => {
+                campaignInfo.Variables.forEach(variableInfo => {
+                    variableInfo.Datasets.forEach(datasetInfo => {
                         datasetInfo.OnIsSelectedChanged.subscribe((sender, isSelected) => {
-                            this.UpdateSelectedDatasetInfos()
+                            this.UpdateSelectedDatasets()
                         })
                     })
                 })
@@ -150,7 +150,7 @@ class AppViewModel
             }))
         })
 
-        this.CampaignInfoSet(campaignInfoModelSet.map(campaignInfoModel => new CampaignInfoViewModel(campaignInfoModel)));
+        this.Campaigns(campaignModels.map(campaignModel => new CampaignInfoViewModel(campaignModel)));
 
         // start / end date
         let startDate: Date
@@ -169,12 +169,12 @@ class AppViewModel
         // sample rate
         this.SelectedSampleRate.subscribe(newValue => {
             this._variableInfos.forEach(variableInfo => {
-                variableInfo.DatasetInfos.forEach(datasetInfo => {
+                variableInfo.Datasets.forEach(datasetInfo => {
                     datasetInfo.IsVisible(datasetInfo.Name.split("_")[0] === this.SelectedSampleRate() && !datasetInfo.Name.endsWith("status"))
                 })
             })
 
-            this.UpdateSelectedDatasetInfos()
+            this.UpdateSelectedDatasets()
         })
 
         // chart
@@ -219,9 +219,9 @@ class AppViewModel
         })
 
         // callback
-        _broadcaster.on("SendState", (hdfExplorerState: HdfExplorerStateEnum) =>
+        _broadcaster.on("SendState", (explorerState: OneDasExplorerStateEnum) =>
         {
-            this.HdfExplorerState(hdfExplorerState)
+            this.ExplorerState(explorerState)
         })
 
         _broadcaster.on("SendProgress", (progress: number, message: string) =>
@@ -431,9 +431,9 @@ class AppViewModel
             })
     }
 
-    private UpdateSelectedDatasetInfos = (() =>
+    private UpdateSelectedDatasets = (() =>
     {
-        this.SelectedDatasetInfos(this._datasetInfos.filter(datasetInfo => datasetInfo.IsVisible() && datasetInfo.IsSelected()))
+        this.SelectedDatasets(this._datasetInfos.filter(datasetInfo => datasetInfo.IsVisible() && datasetInfo.IsSelected()))
     })
 
     // commands
@@ -502,7 +502,7 @@ class AppViewModel
 
         campaignInfoSet = new Map<string, Map<string, string[]>>()
 
-        this.SelectedDatasetInfos().forEach(datasetInfo =>
+        this.SelectedDatasets().forEach(datasetInfo =>
         {
             if (campaignInfoSet.has(datasetInfo.Parent.Parent.Name))
             {

@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "OneDas.Hdf.Explorer": {
+    "OneDas.DataManagement.Explorer": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

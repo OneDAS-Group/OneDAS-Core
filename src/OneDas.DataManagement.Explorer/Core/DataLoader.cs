@@ -14,7 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
-namespace OneDas.Hdf.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class DataLoader
     {
@@ -69,7 +69,7 @@ namespace OneDas.Hdf.Explorer.Core
             }
 
             // create temp directory
-            var directoryPath = Path.Combine(Path.GetTempPath(), "OneDas.Hdf.Explorer", Guid.NewGuid().ToString());
+            var directoryPath = Path.Combine(Path.GetTempPath(), "OneDas.DataManagement.Explorer", Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryPath);
 
             // create custom meta data

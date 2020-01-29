@@ -1,6 +1,6 @@
 ﻿using HDF.PInvoke;
 using Microsoft.Extensions.Logging;
-using OneDas.Data;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Hdf;
 using OneDas.Infrastructure;
 using System;
@@ -19,8 +19,8 @@ namespace OneDas.Hdf.VdsTool.Commands
         private ILogger _logger;
 
         private Dictionary<string, List<byte>> _isChunkCompletedMap;
-        private Dictionary<DatasetInfo, List<SourceFileInfo>> _datasetToSourceFilesMap;
-        private Dictionary<DatasetInfo, long> _datasetToTypeIdMap;
+        private Dictionary<Dataset, List<SourceFileInfo>> _datasetToSourceFilesMap;
+        private Dictionary<Dataset, long> _datasetToTypeIdMap;
 
         #endregion
 
@@ -42,31 +42,27 @@ namespace OneDas.Hdf.VdsTool.Commands
             DateTime epochEnd;
 
             _isChunkCompletedMap = new Dictionary<string, List<byte>>();
-            _datasetToSourceFilesMap = new Dictionary<DatasetInfo, List<SourceFileInfo>>();
-            _datasetToTypeIdMap = new Dictionary<DatasetInfo, long>();
+            _datasetToSourceFilesMap = new Dictionary<Dataset, List<SourceFileInfo>>();
+            _datasetToTypeIdMap = new Dictionary<Dataset, long>();
 
             var sourceDirectoryPathSet = new List<string>();
 
             if (_epochStart > DateTime.MinValue)
             {
                 epochEnd = _epochStart.AddMonths(1);
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_DATA", _epochStart.ToString("yyyy-MM")));
-                vdsFilePath = Path.Combine(Environment.CurrentDirectory, "DB_VDS", $"{ _epochStart.ToString("yyyy-MM") }.h5");
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DATA", _epochStart.ToString("yyyy-MM")));
+                vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS", $"{ _epochStart.ToString("yyyy-MM") }.h5");
             }
             else
             {
                 _epochStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
                 epochEnd = new DateTime(2030, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "DB_VDS"));
+                sourceDirectoryPathSet.Add(Path.Combine(Environment.CurrentDirectory, "VDS"));
                 vdsFilePath = Path.Combine(Environment.CurrentDirectory, "VDS.h5");
             }
 
-            if (Console.CursorTop > 0 || Console.CursorLeft > 0)
-                Console.WriteLine();
-
             _logger.LogInformation($"Epoch start: {_epochStart.ToString("yyyy-MM-dd")}");
             _logger.LogInformation($"Epoch end: {epochEnd.ToString("yyyy-MM-dd")}");
-            Console.WriteLine();
 
             this.CreateVirtualDatasetFile(sourceDirectoryPathSet, vdsFilePath, _epochStart, epochEnd, _logger);
         }
@@ -81,7 +77,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             var lastVariablePath = String.Empty;
             var tempFilePath = Path.GetTempFileName();
 
-            var campaignInfos = new List<CampaignInfo>();
+            var campaigns = new List<CampaignInfo>();
             var sourceFilePathSet = new List<string>();
 
             // fill sourceFilePathSet
@@ -102,16 +98,16 @@ namespace OneDas.Hdf.VdsTool.Commands
                 // create an index of all campaigns, variables and datasets
                 foreach (string sourceFilePath in sourceFilePathSet)
                 {
-                    this.VdsSourceFile(sourceFilePath, campaignInfos, logger);
+                    this.VdsSourceFile(sourceFilePath, campaigns, logger);
                 }
 
                 //foreach (var variableInfo in variableInfos)
                 //{
                 //    Console.WriteLine(variableInfo.Key);
                 //    Console.WriteLine($"\tVariableNames:{ variableInfo.Value.VariableNames.Count }");
-                //    Console.WriteLine($"\tDatasetInfos: { variableInfo.Value.DatasetInfos.Count }");
+                //    Console.WriteLine($"\tDatasets: { variableInfo.Value.Datasets.Count }");
 
-                //    foreach (var datasetInfo in variableInfo.Value.DatasetInfos)
+                //    foreach (var datasetInfo in variableInfo.Value.Datasets)
                 //    {
                 //        Console.WriteLine($"\t\t{ datasetInfo.Key }");
                 //        Console.WriteLine($"\t\t\tLength: { datasetInfo.Value.Length }");
@@ -120,9 +116,9 @@ namespace OneDas.Hdf.VdsTool.Commands
                 //}
 
                 // write the result into the temporary vds file
-                foreach (var campaignInfo in campaignInfos)
+                foreach (var campaign in campaigns)
                 {
-                    this.VdsCampaign(vdsFileId, campaignInfo, epochStart, epochEnd);
+                    this.VdsCampaign(vdsFileId, campaign, epochStart, epochEnd);
                 }
             }
             finally
@@ -215,7 +211,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsVariable(long vdsFileId, long vdsCampaignGroupId, VariableInfo variable, DateTime epochStart, DateTime epochEnd, string campaignPath)
+        private void VdsVariable(long vdsFileId, long vdsCampaignGroupId, Variable variable, DateTime epochStart, DateTime epochEnd, string campaignPath)
         {
             long variableGroupId = -1;
 
@@ -252,7 +248,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath)
+        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, Dataset datasetInfo, string campaignPath)
         {
             long datasetId = -1;
             long spaceId = -1;
@@ -278,7 +274,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     sourceSpaceId = H5S.create_simple(1, new ulong[] { sourceFileInfo.Length }, new ulong[] { sourceFileInfo.Length });
 
-                    var key = $"{ sourceFileInfo.FilePath }+{ campaignPath }";
+                    var key = $"{sourceFileInfo.FilePath}+{campaignPath}";
                     var chunkCount = _isChunkCompletedMap[key].Count;
                     var firstIndex = _isChunkCompletedMap[key].FindIndex(value => value > 0);
                     var lastIndex = _isChunkCompletedMap[key].FindLastIndex(value => value > 0);
@@ -296,7 +292,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                         try
                         {
                             if (offset + start + block > vdsLength)
-                                throw new Exception($"start + block = { offset + start + block } > { vdsLength }");
+                                throw new Exception($"start + block = {offset + start + block} > {vdsLength}");
 
                             H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { offset + start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
                             H5S.select_hyperslab(sourceSpaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
@@ -330,7 +326,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void UpdateSourceFileMap(long datasetId, DatasetInfo dataset, SourceFileInfo sourceFileInfo)
+        private void UpdateSourceFileMap(long datasetId, Dataset dataset, SourceFileInfo sourceFileInfo)
         {
             if (!_datasetToSourceFilesMap.ContainsKey(dataset))
             {

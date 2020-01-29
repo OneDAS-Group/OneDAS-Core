@@ -6,7 +6,7 @@ using System.IO;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 
-namespace OneDas.Hdf.Explorer.Web.Pages
+namespace OneDas.DataManagement.Explorer.Web.Pages
 {
     public class FileModel : PageModel
     {

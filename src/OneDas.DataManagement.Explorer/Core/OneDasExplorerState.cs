@@ -1,4 +1,4 @@
-﻿namespace OneDas.Hdf.Explorer.Core
+﻿namespace OneDas.DataManagement.Explorer.Core
 {
     public enum OneDasExplorerState
     {

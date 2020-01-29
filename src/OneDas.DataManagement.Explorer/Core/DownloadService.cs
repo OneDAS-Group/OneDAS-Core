@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OneDas.DataManagement;
-using OneDas.Hdf.Explorer.Web;
+using OneDas.DataManagement.Explorer.Web;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ using System.Net;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace OneDas.Hdf.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class DownloadService
     {
@@ -38,7 +37,7 @@ namespace OneDas.Hdf.Explorer.Core
             {
                 _stateManager.CheckState(_connectionId);
 
-                using var dataReader = Program.GetDataReader(campaignName);
+                using var dataReader = Program.DatabaseManager.GetDataReader(campaignName);
                 return dataReader.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
             });
         }
@@ -47,7 +46,7 @@ namespace OneDas.Hdf.Explorer.Core
         {
             try
             {
-                var campaign = Program.GetCampaigns().FirstOrDefault(current => current.Name == campaignName);
+                var campaign = Program.DatabaseManager.GetCampaigns().FirstOrDefault(current => current.Name == campaignName);
 
                 if (campaign == null)
                     throw new Exception($"Could not find campaign '{campaignName}'.");
@@ -111,7 +110,7 @@ namespace OneDas.Hdf.Explorer.Core
                     var campaigns = campaignMap.Select(campaignEntry =>
                     {
                         var campaignName = campaignEntry.Key;
-                        var fullCampaign = Program.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignEntry.Key);
+                        var fullCampaign = Program.DatabaseManager.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignEntry.Key);
 
                         if (fullCampaign is null)
                             throw new KeyNotFoundException($"The requested campaign '{campaignName}' is unknown.");
@@ -149,7 +148,7 @@ namespace OneDas.Hdf.Explorer.Core
                     {
                         foreach (var campaign in campaigns)
                         {
-                            using var database = Program.GetDataReader(campaign.Name);
+                            using var database = Program.DatabaseManager.GetDataReader(campaign.Name);
                             var hdfDataLoader = new DataLoader(_stateManager.GetToken(_connectionId));
 
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;

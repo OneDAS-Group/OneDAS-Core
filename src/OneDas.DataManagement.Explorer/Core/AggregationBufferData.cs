@@ -1,6 +1,6 @@
 ﻿using OneDas.Infrastructure;
 
-namespace OneDas.Hdf.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class AggregationBufferData
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
     public class CampaignContainer
@@ -13,7 +13,7 @@ namespace OneDas.Data
             this.Name = campaignName;
             this.RootPath = rootPath;
             this.Campaign = new CampaignInfo(campaignName);
-            this.CampaignMeta = new CampaignMetaInfo();
+            this.CampaignMeta = new CampaignMetaInfo(campaignName);
         }
 
         private CampaignContainer()
@@ -34,6 +34,15 @@ namespace OneDas.Data
         public CampaignInfo Campaign { get; set; }
 
         public CampaignMetaInfo CampaignMeta { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        public void Initialize()
+        {
+            this.Campaign.Initialize();
+        }
 
         #endregion
     }

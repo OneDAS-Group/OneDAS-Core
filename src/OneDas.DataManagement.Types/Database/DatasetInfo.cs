@@ -2,17 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Serialization;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
-    [DataContract]
-    public class DatasetInfo : InfoBase
+    public class Dataset : InfoBase
     {
         #region "Constructors"
 
-        public DatasetInfo(string name, InfoBase parent) : base(name, parent)
+        public Dataset(string name, InfoBase parent) : base(name, parent)
+        {
+            //
+        }
+
+        private Dataset()
         {
             //
         }
@@ -34,10 +37,10 @@ namespace OneDas.Data
 
         public override IEnumerable<InfoBase> GetChilds()
         {
-            return new List<DatasetInfo> { };
+            return new List<Dataset> { };
         }
 
-        public void Merge(DatasetInfo dataset)
+        public void Merge(Dataset dataset)
         {
             if (this.Parent.Name != dataset.Parent.Name)
                 throw new Exception("The dataset to be merged has a different parent.");

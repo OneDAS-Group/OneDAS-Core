@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     public class OneDasDatabase
     {
@@ -24,9 +23,12 @@ namespace OneDas.Data
 
         #region Methods
 
-        public List<CampaignInfo> GetCampaigns()
+        public void Initialize()
         {
-            return this.CampaignContainers.Select(container => container.Campaign).ToList();
+            foreach (var container in this.CampaignContainers)
+            {
+                container.Initialize();
+            }
         }
 
         #endregion

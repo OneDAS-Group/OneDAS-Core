@@ -1,23 +1,24 @@
-﻿using OneDas.Data;
-using OneDas.Hdf.Explorer.Core;
+﻿using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Core;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
-namespace OneDas.Hdf.Explorer.Web
+namespace OneDas.DataManagement.Explorer.Web
 {
-    [DataContract]
     public class AppModel
     {
-        public AppModel(OneDasExplorerState hdfExplorerState, List<CampaignInfo> campaignInfoSet)
+        public AppModel(OneDasExplorerState explorerState, List<CampaignInfo> campaignInfoSet)
         {
-            this.HdfExplorerState = hdfExplorerState;
-            this.CampaignInfoSet = campaignInfoSet;
+            this.ExplorerState = explorerState;
+            this.Campaigns = campaignInfoSet;
         }
 
-        [DataMember]
-        public OneDasExplorerState HdfExplorerState;
+        private AppModel()
+        {
+            //
+        }
 
-        [DataMember]
-        public readonly List<CampaignInfo> CampaignInfoSet;
+        public OneDasExplorerState ExplorerState { get; set; }
+
+        public List<CampaignInfo> Campaigns { get; set; }
     }
 }

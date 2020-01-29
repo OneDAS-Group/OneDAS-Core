@@ -47,7 +47,7 @@ foreach ($filePath in $filePathSet)
 }
 
 # HDF.Explorer
-$targetDirectory = $baseDirectory + "\src\OneDas.Hdf.Explorer\wwwroot\lib"
+$targetDirectory = $baseDirectory + "\src\OneDas.DataManagement.Explorer\wwwroot\lib"
 Remove-Item $targetDirectory -Recurse -ErrorAction Ignore
 
 $directorySet = @(

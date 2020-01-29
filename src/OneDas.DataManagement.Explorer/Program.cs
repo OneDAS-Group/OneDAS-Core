@@ -4,34 +4,29 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using OneDas.Data;
-using OneDas.DataManagement;
-using OneDas.DataManagement.Extensibility;
+using OneDas.DataManagement.Database;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.Hdf.Explorer
+namespace OneDas.DataManagement.Explorer
 {
     public class Program
     {
         #region Fields
 
-        private static OneDasDatabase _database;
         private static HdfExplorerOptions _options;
         private static IConfiguration _configuration;
         private static ILoggerFactory _loggerFactory;
-        private static Dictionary<string, DataReaderExtensionBase> _idToDataReaderMap;
 
         #endregion
 
         #region Properties
 
-        public static OneDasDatabase Database { get; private set; }
+        public static OneDasDatabaseManager DatabaseManager { get; private set; }
 
         #endregion
 
@@ -54,7 +49,7 @@ namespace OneDas.Hdf.Explorer
             _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             // load configuration
-            var configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "HDF Explorer");
+            var configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");
             var configurationFileName = "settings.json";
 
             Directory.CreateDirectory(configurationDirectoryPath);
@@ -84,8 +79,9 @@ namespace OneDas.Hdf.Explorer
                 return 1;
             }
 
-            // load database
-            Program.LoadDatabase();
+            // load and update database
+            Program.DatabaseManager = new OneDasDatabaseManager();
+            Program.DatabaseManager.Update();
 
             // service vs. interactive
             if (isUserInteractive)
@@ -94,27 +90,6 @@ namespace OneDas.Hdf.Explorer
                 Program.CreateWebHost(currentDirectory).RunAsService();
 
             return 0;
-        }
-
-        public static void LoadDatabase()
-        {
-            (Program.Database, _idToDataReaderMap) = DatabaseUtilities.Load();
-        }
-
-        public static DataReaderExtensionBase GetDataReader(string campaignName)
-        {
-            var container = _database.CampaignContainers.FirstOrDefault(container => container.Name == campaignName);
-
-            if (container == null)
-                throw new KeyNotFoundException("The requested campaign could not be found.");
-
-            if (!_database.RootPathToDataReaderIdMap.TryGetValue(container.RootPath, out var id))
-                throw new KeyNotFoundException("The requested root path could not be found.");
-
-            if (!_idToDataReaderMap.TryGetValue(id, out var dataReader))
-                throw new KeyNotFoundException("The requested data reader could not be found.");
-
-            return dataReader;
         }
 
         private static IWebHost CreateWebHost(string currentDirectory)

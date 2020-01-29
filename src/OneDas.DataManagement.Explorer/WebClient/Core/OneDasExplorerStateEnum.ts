@@ -1,4 +1,4 @@
-﻿enum HdfExplorerStateEnum
+﻿enum OneDasExplorerStateEnum
 {
     Inactive = 1,
     Idle = 2,

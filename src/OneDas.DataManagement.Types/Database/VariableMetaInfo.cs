@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
     public class VariableMetaInfo
@@ -15,6 +15,11 @@ namespace OneDas.Data
             this.Description = string.Empty;
             this.Unit = string.Empty;
             this.TransferFunctions = new List<TransferFunction>();
+        }
+
+        private VariableMetaInfo()
+        {
+            //
         }
 
         #endregion

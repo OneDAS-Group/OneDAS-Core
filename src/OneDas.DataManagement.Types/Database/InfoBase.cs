@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
-    [DataContract]
     public abstract class InfoBase
     {
         #region "Constructors"
@@ -14,13 +13,18 @@ namespace OneDas.Data
             this.Parent = parent;
         }
 
+        private protected InfoBase()
+        {
+            //
+        }
+
         #endregion
 
         #region "Properties"
 
-        [DataMember]
         public string Name { get; set; }
 
+        [JsonIgnore]
         public InfoBase Parent { get; set; }
 
         #endregion
@@ -28,7 +32,13 @@ namespace OneDas.Data
         #region "Methods"
 
         public abstract string GetPath();
+
         public abstract IEnumerable<InfoBase> GetChilds();
+
+        public virtual void Initialize()
+        {
+            //
+        }
 
         #endregion
     }

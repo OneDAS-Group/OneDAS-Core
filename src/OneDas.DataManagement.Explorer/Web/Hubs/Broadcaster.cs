@@ -2,8 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OneDas.DataManagement;
-using OneDas.Hdf.Explorer.Core;
+using OneDas.DataManagement.Explorer.Core;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Globalization;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace OneDas.Hdf.Explorer.Web
+namespace OneDas.DataManagement.Explorer.Web
 {
     public class Broadcaster : Hub<IBroadcaster>
     {
@@ -59,13 +58,13 @@ namespace OneDas.Hdf.Explorer.Web
             return Task.Run(() =>
             {
                 return new AppModel(
-                    hdfExplorerState: _stateManager.GetState(this.Context.ConnectionId),
-                    campaignInfoSet: Program.GetCampaigns()
+                    explorerState: _stateManager.GetState(this.Context.ConnectionId),
+                    campaignInfoSet: Program.DatabaseManager.GetCampaigns()
                 );
             });
         }
 
-        public Task<OneDasExplorerState> GetHdfExplorerState()
+        public Task<OneDasExplorerState> GetState()
         {
             return Task.Run(() =>
             {

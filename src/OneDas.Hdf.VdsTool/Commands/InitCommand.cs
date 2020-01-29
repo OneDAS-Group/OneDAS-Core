@@ -14,9 +14,9 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         public void Run()
         {
-            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_DATA"));
-            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_META"));
-            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DB_VDS"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DATA"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "EXTENSION"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "VDS"));
         }
 
         private bool IsDirectoryEmpty(string path)

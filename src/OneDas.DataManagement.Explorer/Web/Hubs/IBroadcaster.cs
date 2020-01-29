@@ -1,11 +1,11 @@
-﻿using OneDas.Hdf.Explorer.Core;
+﻿using OneDas.DataManagement.Explorer.Core;
 using System.Threading.Tasks;
 
-namespace OneDas.Hdf.Explorer.Web
+namespace OneDas.DataManagement.Explorer.Web
 {
     public interface IBroadcaster
     {
-        Task SendState(OneDasExplorerState hdfExplorerState);
+        Task SendState(OneDasExplorerState explorerState);
         Task SendProgress(double percent, string message);
         Task SendByteCount(ulong byteCount);
     }

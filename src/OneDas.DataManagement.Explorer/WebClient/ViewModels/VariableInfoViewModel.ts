@@ -1,6 +1,6 @@
-﻿class VariableInfoViewModel extends HdfElementViewModelBase
+﻿class VariableViewModel extends HdfElementViewModelBase
 {
-    public DatasetInfos: DatasetInfoViewModel[]
+    public Datasets: DatasetViewModel[]
     public VariableNames: string[]
     public VariableGroups: string[]
 
@@ -8,7 +8,7 @@
     {
         super(variableModel.Name, parent)
 
-        this.DatasetInfos = variableModel.DatasetInfos.map(datasetInfoModel => new DatasetInfoViewModel(datasetInfoModel, this))
+        this.Datasets = variableModel.Datasets.map(datasetInfoModel => new DatasetViewModel(datasetInfoModel, this))
         this.VariableNames = variableModel.VariableNames
         this.VariableGroups = variableModel.VariableGroups
     }  

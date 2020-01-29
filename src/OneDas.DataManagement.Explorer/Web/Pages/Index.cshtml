@@ -10,7 +10,7 @@
     Connection to server lost. Trying to reconnect...
 </div>
 
-<!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Inactive -->
+<!-- ko if: ExplorerState() === OneDasExplorerStateEnum.Inactive -->
 <div class="center-vertically plus-center-horizontally">
     <!-- ko if: InactivityMessage().length === 0 -->
     <h1 class="display-4 text-center mb-5 noselect">The database is offline for scheduled maintenance.</h1>
@@ -20,7 +20,7 @@
     <!-- /ko -->
 </div>
 <!-- /ko -->
-<!-- ko if: HdfExplorerState() >= HdfExplorerStateEnum.Idle && HdfExplorerState() <= HdfExplorerStateEnum.Updating -->
+<!-- ko if: ExplorerState() >= OneDasExplorerStateEnum.Idle && ExplorerState() <= OneDasExplorerStateEnum.Updating -->
 <div data-bind="callFunction: InitializeDatePicker">
     <div class="row my-4">
         <div class="col">
@@ -127,12 +127,12 @@
                     Selected datasets
                 </div>
                 <div class="card-body">
-                    <!-- ko if: SelectedDatasetInfos().length === 0 -->
+                    <!-- ko if: SelectedDatasets().length === 0 -->
                     <h5 class="d-block text-center"><small class="text-muted">- no datasets selected -</small></h5>
                     <!-- /ko -->
-                    <!-- ko if: SelectedDatasetInfos().length > 0 -->
+                    <!-- ko if: SelectedDatasets().length > 0 -->
                     <table class="table table-hover">
-                        <tbody data-bind="foreach: SelectedDatasetInfos">
+                        <tbody data-bind="foreach: SelectedDatasets">
                             <tr data-bind="click: ToggleIsSelected" class="noselect">
                                 <th data-bind="text: $index"></th>
                                 <td>
@@ -154,12 +154,12 @@
                     <span>Available campaigns</span>
                 </div>
                 <div class="card-body">
-                    <!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Idle -->
-                    <!-- ko if: CampaignInfoSet().length === 0 -->
+                    <!-- ko if: ExplorerState() === OneDasExplorerStateEnum.Idle -->
+                    <!-- ko if: Campaigns().length === 0 -->
                     <h5 class="d-block text-center"><small class="text-muted">- no campaigns available -</small></h5>
                     <!-- /ko -->
-                    <!-- ko if: CampaignInfoSet().length > 0 -->
-                    <div class="list-group list-group-root" data-bind="foreach: CampaignInfoSet">
+                    <!-- ko if: Campaigns().length > 0 -->
+                    <div class="list-group list-group-root" data-bind="foreach: Campaigns">
                         <div class="d-flex">
                             <a class="list-group-item list-group-item-action noselect"
                                data-toggle="collapse"
@@ -174,7 +174,7 @@
                             </span>
 
                         </div>
-                        <div class="collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariableInfos">
+                        <div class="collapse" data-bind="attr: { id: 'item_' + $index() }, foreach: GroupedVariables">
                             <a class="list-group-item list-group-item-action noselect"
                                role="button"
                                data-toggle="collapse"
@@ -185,10 +185,10 @@
                                 <a class="list-group-item list-group-item-action noselect"
                                    role="button"
                                    data-toggle="collapse"
-                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, style: { color: DatasetInfos.some(datasetInfo => datasetInfo.IsVisible()) ? 'black' : 'darkgrey' }">
+                                   data-bind="toggleArrow: {}, attr: { 'data-target': '#item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, style: { color: Datasets.some(datasetInfo => datasetInfo.IsVisible()) ? 'black' : 'darkgrey' }">
                                     <span class="fa fa-caret-right"></span><span data-bind="text: GetDisplayName()"></span>
                                 </a>
-                                <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: DatasetInfos.filter(datasetInfo => datasetInfo.IsVisible())">
+                                <div class="collapse" data-bind="attr: { id: 'item_' + $parentContext.$parentContext.$index() + '_' + $parentContext.$index() + '_' + $index() }, foreach: Datasets.filter(datasetInfo => datasetInfo.IsVisible())">
                                     <a class="list-group-item list-group-item-action noselect"
                                        role="button"
                                        data-bind="text: GetDisplayName(),
@@ -201,7 +201,7 @@
                     </div>
                     <!-- /ko -->
                     <!-- /ko -->
-                    <!-- ko ifnot: HdfExplorerState() === HdfExplorerStateEnum.Idle -->
+                    <!-- ko ifnot: ExplorerState() === OneDasExplorerStateEnum.Idle -->
                     <div class="text-center">
                         <img class="mx-auto" src="/images/loading.gif" />
                     </div>
@@ -227,7 +227,7 @@
     <!-- /ko -->
 </div>
 <!-- /ko -->
-<!-- ko if: HdfExplorerState() === HdfExplorerStateEnum.Loading -->
+<!-- ko if: ExplorerState() === OneDasExplorerStateEnum.Loading -->
 <div class="center-vertically plus-center-horizontally">
     <h1 class="display-4 text-center mb-5 noselect" data-bind="text: 'Preparing download (' + Math.round(ByteCount() / 1024 / 1024) + ' MB) ...'"></h1>
     <strong class="align-self-start" data-bind="text: Message"></strong>

@@ -5,31 +5,32 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
-    [DataContract]
     public class CampaignInfo : InfoBase
     {
         #region "Constructors"
 
         public CampaignInfo(string name) : base(name, null)
         {
-            this.ChunkDataset = new DatasetInfo("is_chunk_completed_set", this);
-            this.Variables = new List<VariableInfo>();
+            this.ChunkDataset = new Dataset("is_chunk_completed_set", this);
+            this.Variables = new List<Variable>();
+        }
+
+        private CampaignInfo()
+        {
+            //
         }
 
         #endregion
 
         #region "Properties"
 
-        [DataMember]
-        public DatasetInfo ChunkDataset { get; set; }
+        public Dataset ChunkDataset { get; set; }
 
-        [DataMember]
-        public List<VariableInfo> Variables { get; set; }
+        public List<Variable> Variables { get; set; }
 
         #endregion
 
@@ -66,7 +67,7 @@ namespace OneDas.Data
                 if (referenceVariable is null)
                     throw new KeyNotFoundException($"The requested variable '{referenceVariable.Name}' is unknown.");
 
-                var variable = new VariableInfo(referenceVariable.Name, campaign)
+                var variable = new Variable(referenceVariable.Name, campaign)
                 {
                     TransferFunctions = referenceVariable.TransferFunctions,
                     Units = referenceVariable.Units,
@@ -81,7 +82,7 @@ namespace OneDas.Data
                     if (referenceDataset is null)
                         throw new KeyNotFoundException($"The requested dataset '{referenceDataset.Name}' is unknown.");
 
-                    return new DatasetInfo(referenceDataset.Name, variable) { DataType = referenceDataset.DataType };
+                    return new Dataset(referenceDataset.Name, variable) { DataType = referenceDataset.DataType };
                 }).ToList();
 
                 return variable;
@@ -96,7 +97,7 @@ namespace OneDas.Data
                 throw new Exception("The campaign to be merged has a different name.");
 
             // merge variables
-            List<VariableInfo> newVariables = new List<VariableInfo>();
+            List<Variable> newVariables = new List<Variable>();
 
             foreach (var variable in campaign.Variables)
             {
@@ -119,6 +120,19 @@ namespace OneDas.Data
         public override IEnumerable<InfoBase> GetChilds()
         {
             return this.Variables;
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            this.ChunkDataset.Parent = this;
+
+            foreach (var variable in this.Variables)
+            {
+                variable.Parent = this;
+                variable.Initialize();
+            }
         }
 
         #endregion

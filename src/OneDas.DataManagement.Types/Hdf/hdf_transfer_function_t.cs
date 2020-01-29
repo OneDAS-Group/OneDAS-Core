@@ -45,7 +45,9 @@ namespace OneDas.DataManagement.Hdf
 
         public TransferFunction ToTransferFunction()
         {
-            return new TransferFunction(DateTime.ParseExact(this.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture), this.type, this.option, this.argument);
+            var dateTime = DateTime.ParseExact(this.date_time, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime();
+
+            return new TransferFunction(dateTime, this.type, this.option, this.argument);
         }
 
         public static hdf_transfer_function_t FromTransferFunction(TransferFunction transferFunction)

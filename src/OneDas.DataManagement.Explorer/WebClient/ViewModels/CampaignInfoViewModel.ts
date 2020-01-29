@@ -2,17 +2,17 @@
 
 class CampaignInfoViewModel extends HdfElementViewModelBase
 {
-    public readonly VariableInfos: VariableInfoViewModel[]
-    public readonly GroupedVariableInfos: ObservableGroup<VariableInfoViewModel>[]
+    public readonly Variables: VariableViewModel[]
+    public readonly GroupedVariables: ObservableGroup<VariableViewModel>[]
 
-    constructor(campaignInfoModel: any)
+    constructor(campaignModel: any)
     {
-        super(campaignInfoModel.Name, null)
+        super(campaignModel.Name, null)
 
-        this.VariableInfos = campaignInfoModel.VariableInfos.map(variableModel => new VariableInfoViewModel(variableModel, this)).sort((a, b) => a.GetDisplayName().localeCompare(b.GetDisplayName()))
+        this.Variables = campaignModel.Variables.map(variableModel => new VariableViewModel(variableModel, this)).sort((a, b) => a.GetDisplayName().localeCompare(b.GetDisplayName()))
         
-        this.GroupedVariableInfos = ObservableGroupBy(
-            this.VariableInfos,
+        this.GroupedVariables = ObservableGroupBy(
+            this.Variables,
             variableInfo => variableInfo.VariableNames[variableInfo.VariableNames.length - 1],
             variableInfo => variableInfo.VariableGroups[variableInfo.VariableGroups.length - 1],
             ""

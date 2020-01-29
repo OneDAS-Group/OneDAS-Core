@@ -1,4 +1,4 @@
-﻿using OneDas.Data;
+﻿using OneDas.DataManagement.Database;
 using OneDas.DataStorage;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace OneDas.DataManagement.Extensibility
 
         #region Methods
 
-        public void ReadFullDay<T>(DatasetInfo dataset, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
+        public void ReadFullDay<T>(Dataset dataset, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
         {
             // max period
             var maxPeriod = TimeSpan.FromDays(1);
@@ -66,7 +66,7 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public ISimpleDataStorage LoadDataset<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged
+        public ISimpleDataStorage LoadDataset<T>(Dataset dataset, ulong start, ulong length) where T : unmanaged
         {
             this.Open();
 
@@ -100,7 +100,7 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract void Dispose();
 
-        protected abstract (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged;
+        protected abstract (T[] dataset, byte[] statusSet) Read<T>(Dataset dataset, ulong start, ulong length) where T : unmanaged;
 
         #endregion
     }

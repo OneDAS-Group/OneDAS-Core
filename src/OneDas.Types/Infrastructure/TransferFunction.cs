@@ -10,10 +10,18 @@ namespace OneDas.Infrastructure
 
         public TransferFunction(DateTime dateTime, string type, string option, string argument)
         {
+            if (dateTime.Kind != DateTimeKind.Utc)
+                throw new Exception("DateTime instances must be in the UTC+0 format.");
+
             this.DateTime = dateTime;
             this.Type = type;
             this.Option = option;
             this.Argument = argument;
+        }
+
+        public TransferFunction()
+        {
+            //
         }
 
         #endregion
@@ -21,16 +29,16 @@ namespace OneDas.Infrastructure
         #region "Properties"
 
         [DataMember]
-        public DateTime DateTime { get; private set; }
+        public DateTime DateTime { get; set; }
 
         [DataMember]
-        public string Type { get; private set; }
+        public string Type { get; set; }
 
         [DataMember]
-        public string Option { get; private set; }
+        public string Option { get; set; }
 
         [DataMember]
-        public string Argument { get; private set; }
+        public string Argument { get; set; }
 
         #endregion
 

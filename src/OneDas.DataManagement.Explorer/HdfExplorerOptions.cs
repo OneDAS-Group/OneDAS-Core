@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 
-namespace OneDas.Hdf.Explorer
+namespace OneDas.DataManagement.Explorer
 {
     [DataContract]
     public class HdfExplorerOptions

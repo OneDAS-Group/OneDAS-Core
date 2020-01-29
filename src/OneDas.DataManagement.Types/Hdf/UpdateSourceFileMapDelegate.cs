@@ -1,6 +1,6 @@
-﻿using OneDas.Data;
+﻿using OneDas.DataManagement.Database;
 
 namespace OneDas.DataManagement.Hdf
 {
-    public delegate void UpdateSourceFileMapDelegate(long datasetId, DatasetInfo datasetInfo, SourceFileInfo sourceFile);
+    public delegate void UpdateSourceFileMapDelegate(long datasetId, Dataset datasetInfo, SourceFileInfo sourceFile);
 }

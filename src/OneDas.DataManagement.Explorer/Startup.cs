@@ -5,12 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OneDas.Hdf.Explorer.Core;
-using OneDas.Hdf.Explorer.Web;
+using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Web;
 using System;
 using System.IO;
+using System.Text.Json;
 
-namespace OneDas.Hdf.Explorer
+namespace OneDas.DataManagement.Explorer
 {
     public class Startup
     {
@@ -25,7 +26,7 @@ namespace OneDas.Hdf.Explorer
 
             services
                 .AddSignalR(options => options.EnableDetailedErrors = true)
-                .AddNewtonsoftJsonProtocol(options => options.PayloadSerializerSettings = new JsonSerializerSettings());
+                .AddJsonProtocol(options => options.PayloadSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = null });
 
             services.AddLogging(loggingBuilder =>
             {
@@ -40,9 +41,7 @@ namespace OneDas.Hdf.Explorer
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
-            ILogger logger;
-
-            logger = loggerFactory.CreateLogger("HDF Explorer");
+            var logger = loggerFactory.CreateLogger("HDF Explorer");
 
             this.Validate(logger, options);
 
@@ -59,10 +58,8 @@ namespace OneDas.Hdf.Explorer
 
         private void Validate(ILogger logger, IOptions<HdfExplorerOptions> options)
         {
-            uint isLibraryThreadSafe;
-
             // check thread safety of HDF library
-            isLibraryThreadSafe = 0;
+            var isLibraryThreadSafe = 0U;
 
             H5.is_library_threadsafe(ref isLibraryThreadSafe);
 

@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using OneDas.Hdf.Explorer.Web;
+using OneDas.DataManagement.Explorer.Web;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 
-namespace OneDas.Hdf.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class OneDasExplorerStateManager
     {
@@ -154,7 +154,7 @@ namespace OneDas.Hdf.Explorer.Core
 
             if (_isActive)
             {
-                Program.LoadDatabase();
+                Program.DatabaseManager.Update();
 
                 _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, OneDasExplorerState.Idle));
             }

@@ -1,8 +1,8 @@
-﻿using OneDas.Data;
+﻿using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using System;
 
-namespace OneDas.Hdf.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class ZipSettings
     {

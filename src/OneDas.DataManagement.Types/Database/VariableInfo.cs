@@ -3,62 +3,59 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{GetDisplayName(),nq}")]
-    [DataContract]
-    public class VariableInfo : InfoBase
+    public class Variable : InfoBase
     {
 #warning Ensure the properties are never zero (right now they may be set from outside)
         #region "Constructors"
 
-        public VariableInfo(string name, InfoBase parent) : base(name, parent)
+        public Variable(string name, InfoBase parent) : base(name, parent)
         {
             this.VariableNames = new List<string>();
             this.VariableGroups = new List<string>();
             this.Units = new List<string>();
             this.TransferFunctions = new List<TransferFunction>();
 
-            this.Datasets = new List<DatasetInfo>();
+            this.Datasets = new List<Dataset>();
+        }
+
+        private Variable()
+        {
+            //
         }
 
         #endregion
 
         #region "Properties"
 
-        [DataMember]
         public List<string> VariableNames { get; set; }
 
-        [DataMember]
         public List<string> VariableGroups { get; set; }
 
-        [DataMember]
         public List<string> Units { get; set; }
 
-        [DataMember]
         public List<TransferFunction> TransferFunctions { get; set; }
 
-        [DataMember]
-        public List<DatasetInfo> Datasets { get; set; }
-        public object Variables { get; private set; }
+        public List<Dataset> Datasets { get; set; }
 
         #endregion
 
         #region "Methods"
 
-        public void Merge(VariableInfo variable)
+        public void Merge(Variable variable)
         {
             if (this.Parent.Name != variable.Parent.Name)
                 throw new Exception("The variable to be merged has a different parent.");
 
             // merge datasets
-            List<DatasetInfo> newDatasets = new List<DatasetInfo>();
+            List<Dataset> newDatasets = new List<Dataset>();
 
             foreach (var dataset in variable.Datasets)
             {
-                var referenceDataset = this.Datasets.FirstOrDefault(current => current.Name == variable.Name);
+                var referenceDataset = this.Datasets.FirstOrDefault(current => current.Name == dataset.Name);
 
                 if (referenceDataset != null)
                     referenceDataset.Merge(dataset);
@@ -88,6 +85,17 @@ namespace OneDas.Data
         public override IEnumerable<InfoBase> GetChilds()
         {
             return this.Datasets;
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            foreach (var dataset in this.Datasets)
+            {
+                dataset.Parent = this;
+                dataset.Initialize();
+            }
         }
 
         private List<T> MergeLists<T>(List<T> a, List<T> b)

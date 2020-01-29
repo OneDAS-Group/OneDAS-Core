@@ -1,11 +1,11 @@
 ﻿/// <reference path="HdfElementViewModelBase.ts"/>
 
-class DatasetInfoViewModel extends HdfElementViewModelBase
+class DatasetViewModel extends HdfElementViewModelBase
 {
     public IsSelected: KnockoutObservable<boolean>
     public IsVisible: KnockoutObservable<boolean>
 
-    private _onIsSelectedChanged: EventDispatcher<DatasetInfoViewModel, boolean>
+    private _onIsSelectedChanged: EventDispatcher<DatasetViewModel, boolean>
 
     constructor(datasetInfoModel: any, parent: HdfElementViewModelBase)
     {
@@ -14,11 +14,11 @@ class DatasetInfoViewModel extends HdfElementViewModelBase
         this.IsSelected = ko.observable<boolean>(false)
         this.IsVisible = ko.observable<boolean>()
 
-        this._onIsSelectedChanged = new EventDispatcher<DatasetInfoViewModel, boolean>();
+        this._onIsSelectedChanged = new EventDispatcher<DatasetViewModel, boolean>();
     }  
 
     //
-    get OnIsSelectedChanged(): IEvent<DatasetInfoViewModel, boolean>
+    get OnIsSelectedChanged(): IEvent<DatasetViewModel, boolean>
     {
         return this._onIsSelectedChanged;
     }

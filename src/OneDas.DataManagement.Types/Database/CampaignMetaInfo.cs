@@ -1,22 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace OneDas.Data
+namespace OneDas.DataManagement.Database
 {
     public class CampaignMetaInfo
     {
         #region Constructors
 
-        public CampaignMetaInfo()
+        public CampaignMetaInfo(string name)
         {
+            this.Name = name;
             this.ShortDescription = string.Empty;
             this.LongDescription = string.Empty;
             this.Variables = new List<VariableMetaInfo>();
         }
 
+        private CampaignMetaInfo()
+        {
+            //
+        }
+
         #endregion
 
         #region Properties
+
+        public string Name { get; set; }
 
         public string ShortDescription { get; set; }
 

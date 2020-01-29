@@ -1,8 +1,7 @@
 ﻿using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
 using Microsoft.Extensions.Logging;
-using OneDas.Data;
-using OneDas.DataManagement;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.DataStorage;
@@ -29,8 +28,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         private Dictionary<string, string> _filters;
         private ILogger _logger;
 
-        private OneDasDatabase _database;
-        private Dictionary<string, DataReaderExtensionBase> _idToDataReaderMap;
+        private OneDasDatabaseManager _databaseManager;
 
         #endregion
 
@@ -53,7 +51,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         public void Run()
         {
-            (_database, _idToDataReaderMap) = DatabaseUtilities.Load();
+            _databaseManager = new OneDasDatabaseManager();
 
             var epochEnd = DateTime.UtcNow.Date;
             var epochStart = epochEnd.AddDays(-_days);
@@ -67,9 +65,9 @@ namespace OneDas.Hdf.VdsTool.Commands
         private void CreateAggregatedFiles(DateTime dateTimeBegin, string campaignName)
         {
             var subfolderName = dateTimeBegin.ToString("yyyy-MM");
-            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DB_DATA", subfolderName);
+            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DATA", subfolderName);
 
-            using var dataReader = Program.GetDataReader(campaignName);
+            using var dataReader = _databaseManager.GetDataReader(campaignName);
 
             // get files
             if (!dataReader.IsDataOfDayAvailable(campaignName, dateTimeBegin))
@@ -81,7 +79,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 var targetFileId = -1L;
 
                 // campaign
-                var campaign = _database.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignName);
+                var campaign = _databaseManager.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignName);
 
                 if (campaign is null)
                     throw new Exception($"The requested campaign '{campaignName}' could not be found.");
@@ -139,7 +137,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, long targetFileId) where T : unmanaged
+        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, Dataset dataset, long targetFileId) where T : unmanaged
         {
             // value size
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
@@ -228,7 +226,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<Period, AggregationPeriodData> periodToDataMap)
+        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(Dataset dataset, T[] data, byte[] statusSet, Dictionary<Period, AggregationPeriodData> periodToDataMap)
         {
             var dataset_double = default(double[]);
             var periodToPartialBufferMap = new Dictionary<Period, double[]>();
@@ -464,7 +462,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             return result;
         }
 
-        private bool ApplyAggregationFilter(VariableInfo variableInfo)
+        private bool ApplyAggregationFilter(Variable variableInfo)
         {
             bool result = true;
 

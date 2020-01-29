@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OneDas.Hdf.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class ProgressUpdatedEventArgs : EventArgs
     {

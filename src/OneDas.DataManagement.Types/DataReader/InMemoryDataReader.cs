@@ -1,4 +1,4 @@
-﻿//namespace OneDas.DataManagement.Extensibility
+﻿//namespace OneDas.DataManagement.DataReader
 //{
 //    public class InMemoryDataReader : DataReaderExtensionBase
 //    {
@@ -53,7 +53,7 @@
 //        //    };
 //        //}
 
-       
+
 //        #endregion
 //    }
 //}

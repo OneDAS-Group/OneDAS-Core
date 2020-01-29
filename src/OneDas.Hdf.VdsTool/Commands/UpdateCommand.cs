@@ -1,4 +1,4 @@
-﻿using OneDas.DataManagement;
+﻿using OneDas.DataManagement.Database;
 
 namespace OneDas.Hdf.VdsTool.Commands
 {
@@ -11,7 +11,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             
         public void Run()
         {
-            DatabaseUtilities.UpdateDatabase();
+            new OneDasDatabaseManager().Update();
         }
     }
 }

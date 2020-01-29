@@ -47,20 +47,20 @@ ko.bindingHandlers.toggleArrow = {
 async function Connect()
 {
     let appModel: any
-    let connection: any
 
     try
     {
         await _broadcaster.start()
 
-        console.log("HDF Explorer: signalr connected")
+        console.log("OneDAS Explorer: signalr connected")
 
         try
         {
+            console.log("OneDAS Explorer: before app model")
             appModel = await _broadcaster.invoke("GetAppModel")
             _appViewModel(new AppViewModel(appModel))
 
-            console.log("HDF Explorer: app model received")
+            console.log("OneDAS Explorer: app model received")
 
             ko.applyBindings(_appViewModel)
         }
@@ -71,15 +71,15 @@ async function Connect()
     }
     catch (e)
     {
-        console.log("HDF Explorer: signalr connection failed")
+        console.log("OneDAS Explorer: signalr connection failed")
     }
 }
 
 async function Reconnect()
 {
-    let state: HdfExplorerStateEnum
+    let state: OneDasExplorerStateEnum
 
-    console.log("HDF Explorer: signalr connection failed")
+    console.log("OneDAS Explorer: signalr connection failed")
 
     if (_appViewModel())
     {
@@ -92,16 +92,16 @@ async function Reconnect()
         {
             await _broadcaster.start()
 
-            console.log("HDF Explorer: signalr reconnected")
+            console.log("OneDAS Explorer: signalr reconnected")
 
-            state = await _broadcaster.invoke("GetHdfExplorerState")
+            state = await _broadcaster.invoke("GetState")
 
-            _appViewModel().HdfExplorerState(state)
+            _appViewModel().ExplorerState(state)
             _appViewModel().IsConnected(true)
         }
         catch
         {
-            console.log("HDF Explorer: trying to reconnect ...")
+            console.log("OneDAS Explorer: trying to reconnect ...")
         }
 
         await delay(5000)

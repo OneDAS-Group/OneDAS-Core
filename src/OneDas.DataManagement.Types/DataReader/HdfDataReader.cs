@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.Explorer.DataReader
+namespace OneDas.DataManagement.DataReader
 {
     public class HdfDataReader : DataReaderExtensionBase
     {
