@@ -11,7 +11,7 @@ namespace OneDas.Core.Tests
     public class DummyTests
     {
         [Fact]
-        public async void OneDasPackageManagerCreatesAssetsFile()
+        public void OneDasPackageManagerCreatesAssetsFile()
         {
             var optionsMock = new Mock<IOptions<OneDasOptions>>();
             optionsMock.SetupGet(x => x.Value).Returns(new OneDasOptions());

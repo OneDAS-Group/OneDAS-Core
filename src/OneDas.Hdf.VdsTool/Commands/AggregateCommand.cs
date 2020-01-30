@@ -137,7 +137,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, Dataset dataset, long targetFileId) where T : unmanaged
+        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, long targetFileId) where T : unmanaged
         {
             // value size
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
@@ -223,7 +223,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(Dataset dataset, T[] data, byte[] statusSet, Dictionary<Period, AggregationPeriodData> periodToDataMap)
+        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<Period, AggregationPeriodData> periodToDataMap)
         {
             var dataset_double = default(double[]);
             var periodToPartialBufferMap = new Dictionary<Period, double[]>();
@@ -459,7 +459,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             return result;
         }
 
-        private bool ApplyAggregationFilter(Variable variableInfo)
+        private bool ApplyAggregationFilter(VariableInfo variableInfo)
         {
             bool result = true;
 

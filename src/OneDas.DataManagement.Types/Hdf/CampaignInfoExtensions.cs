@@ -1,5 +1,6 @@
 ﻿using HDF.PInvoke;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Hdf;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -34,7 +35,7 @@ namespace OneDas.DataManagement.Hdf
                 long groupId = -1;
                 string name;
 
-                Variable currentVariable;
+                VariableInfo currentVariable;
 
                 try
                 {
@@ -51,7 +52,7 @@ namespace OneDas.DataManagement.Hdf
 
                         if (currentVariable == null)
                         {
-                            currentVariable = new Variable(name, campaign);
+                            currentVariable = new VariableInfo(name, campaign);
                             campaign.Variables.Add(currentVariable);
                         }
 
@@ -67,7 +68,7 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        public static void Update(this Variable variable, long variableGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void Update(this VariableInfo variable, long variableGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             var idx = 0UL;
 
@@ -95,7 +96,7 @@ namespace OneDas.DataManagement.Hdf
 
                 string name;
 
-                Dataset currentDataset;
+                DatasetInfo currentDataset;
 
                 try
                 {
@@ -109,7 +110,7 @@ namespace OneDas.DataManagement.Hdf
 
                         if (currentDataset == null)
                         {
-                            currentDataset = new Dataset(name, variable);
+                            currentDataset = new DatasetInfo(name, variable);
                             variable.Datasets.Add(currentDataset);
                         }
 
@@ -125,7 +126,7 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        public static void Update(this Dataset dataset, long datasetId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void Update(this DatasetInfo dataset, long datasetId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             long dataspaceId = -1;
             long typeId = -1;

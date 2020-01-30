@@ -18,14 +18,28 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public class DataLoader
     {
+        #region Events
+
         public event EventHandler<ProgressUpdatedEventArgs> ProgressUpdated;
 
+        #endregion
+
+        #region Fields
+
         private CancellationToken _cancellationToken;
+
+        #endregion
+
+        #region Constructors
 
         public DataLoader(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
         }
+
+        #endregion
+
+        #region Methods
 
         public bool WriteZipFileCampaignEntry(ZipArchive zipArchive, FileGranularity fileGranularity, FileFormat fileFormat, ZipSettings zipSettings)
         {
@@ -197,5 +211,7 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             this.ProgressUpdated?.Invoke(this, e);
         }
+
+        #endregion
     }
 }

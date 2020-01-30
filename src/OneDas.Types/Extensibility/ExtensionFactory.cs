@@ -55,9 +55,7 @@ namespace OneDas.Extensibility
         {
             return this.Get<TExtensionSettings>().Select(settingsType =>
             {
-                ExtensionIdentificationAttribute attribute;
-
-                attribute = settingsType.GetFirstAttribute<ExtensionIdentificationAttribute>();
+                var attribute = settingsType.GetFirstAttribute<ExtensionIdentificationAttribute>();
                 attribute.ProductVersion = FileVersionInfo.GetVersionInfo(settingsType.Assembly.Location).ProductVersion;
 
                 return attribute;

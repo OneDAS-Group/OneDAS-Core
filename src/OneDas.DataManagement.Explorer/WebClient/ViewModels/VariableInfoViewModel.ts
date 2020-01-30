@@ -1,10 +1,10 @@
-﻿class VariableViewModel extends HdfElementViewModelBase
+﻿class VariableViewModel extends InfoViewModelBase
 {
     public Datasets: DatasetViewModel[]
     public VariableNames: string[]
     public VariableGroups: string[]
 
-    constructor(variableModel: any, parent: HdfElementViewModelBase)
+    constructor(variableModel: any, parent: InfoViewModelBase)
     {
         super(variableModel.Name, parent)
 

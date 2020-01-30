@@ -1,6 +1,4 @@
-﻿using OneDas.DataManagement.Database;
-
-namespace OneDas.Hdf.VdsTool.Commands
+﻿namespace OneDas.Hdf.VdsTool.Commands
 {
     public class UpdateCommand
     {

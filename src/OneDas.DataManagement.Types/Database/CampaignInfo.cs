@@ -15,8 +15,8 @@ namespace OneDas.DataManagement.Database
 
         public CampaignInfo(string name) : base(name, null)
         {
-            this.ChunkDataset = new Dataset("is_chunk_completed_set", this);
-            this.Variables = new List<Variable>();
+            this.ChunkDataset = new DatasetInfo("is_chunk_completed_set", this);
+            this.Variables = new List<VariableInfo>();
         }
 
         private CampaignInfo()
@@ -28,9 +28,9 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
-        public Dataset ChunkDataset { get; set; }
+        public DatasetInfo ChunkDataset { get; set; }
 
-        public List<Variable> Variables { get; set; }
+        public List<VariableInfo> Variables { get; set; }
 
         #endregion
 
@@ -67,7 +67,7 @@ namespace OneDas.DataManagement.Database
                 if (referenceVariable is null)
                     throw new KeyNotFoundException($"The requested variable '{referenceVariable.Name}' is unknown.");
 
-                var variable = new Variable(referenceVariable.Name, campaign)
+                var variable = new VariableInfo(referenceVariable.Name, campaign)
                 {
                     TransferFunctions = referenceVariable.TransferFunctions,
                     Units = referenceVariable.Units,
@@ -82,7 +82,7 @@ namespace OneDas.DataManagement.Database
                     if (referenceDataset is null)
                         throw new KeyNotFoundException($"The requested dataset '{referenceDataset.Name}' is unknown.");
 
-                    return new Dataset(referenceDataset.Name, variable) { DataType = referenceDataset.DataType };
+                    return new DatasetInfo(referenceDataset.Name, variable) { DataType = referenceDataset.DataType };
                 }).ToList();
 
                 return variable;
@@ -97,7 +97,7 @@ namespace OneDas.DataManagement.Database
                 throw new Exception("The campaign to be merged has a different name.");
 
             // merge variables
-            List<Variable> newVariables = new List<Variable>();
+            List<VariableInfo> newVariables = new List<VariableInfo>();
 
             foreach (var variable in campaign.Variables)
             {

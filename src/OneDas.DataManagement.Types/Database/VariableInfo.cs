@@ -7,22 +7,22 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{GetDisplayName(),nq}")]
-    public class Variable : InfoBase
+    public class VariableInfo : InfoBase
     {
 #warning Ensure the properties are never zero (right now they may be set from outside)
         #region "Constructors"
 
-        public Variable(string name, InfoBase parent) : base(name, parent)
+        public VariableInfo(string name, InfoBase parent) : base(name, parent)
         {
             this.VariableNames = new List<string>();
             this.VariableGroups = new List<string>();
             this.Units = new List<string>();
             this.TransferFunctions = new List<TransferFunction>();
 
-            this.Datasets = new List<Dataset>();
+            this.Datasets = new List<DatasetInfo>();
         }
 
-        private Variable()
+        private VariableInfo()
         {
             //
         }
@@ -39,19 +39,19 @@ namespace OneDas.DataManagement.Database
 
         public List<TransferFunction> TransferFunctions { get; set; }
 
-        public List<Dataset> Datasets { get; set; }
+        public List<DatasetInfo> Datasets { get; set; }
 
         #endregion
 
         #region "Methods"
 
-        public void Merge(Variable variable)
+        public void Merge(VariableInfo variable)
         {
             if (this.Parent.Name != variable.Parent.Name)
                 throw new Exception("The variable to be merged has a different parent.");
 
             // merge datasets
-            List<Dataset> newDatasets = new List<Dataset>();
+            List<DatasetInfo> newDatasets = new List<DatasetInfo>();
 
             foreach (var dataset in variable.Datasets)
             {

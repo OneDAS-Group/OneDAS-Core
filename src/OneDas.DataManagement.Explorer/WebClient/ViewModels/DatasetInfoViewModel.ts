@@ -1,13 +1,13 @@
-﻿/// <reference path="HdfElementViewModelBase.ts"/>
+﻿/// <reference path="InfoViewModelBase.ts"/>
 
-class DatasetViewModel extends HdfElementViewModelBase
+class DatasetViewModel extends InfoViewModelBase
 {
     public IsSelected: KnockoutObservable<boolean>
     public IsVisible: KnockoutObservable<boolean>
 
     private _onIsSelectedChanged: EventDispatcher<DatasetViewModel, boolean>
 
-    constructor(datasetInfoModel: any, parent: HdfElementViewModelBase)
+    constructor(datasetInfoModel: any, parent: InfoViewModelBase)
     {
         super(datasetInfoModel.Name, parent)
 

@@ -6,16 +6,16 @@ using System.Diagnostics;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
-    public class Dataset : InfoBase
+    public class DatasetInfo : InfoBase
     {
         #region "Constructors"
 
-        public Dataset(string name, InfoBase parent) : base(name, parent)
+        public DatasetInfo(string name, InfoBase parent) : base(name, parent)
         {
             //
         }
 
-        private Dataset()
+        private DatasetInfo()
         {
             //
         }
@@ -39,10 +39,10 @@ namespace OneDas.DataManagement.Database
 
         public override IEnumerable<InfoBase> GetChilds()
         {
-            return new List<Dataset> { };
+            return new List<DatasetInfo> { };
         }
 
-        public void Merge(Dataset dataset)
+        public void Merge(DatasetInfo dataset)
         {
             if (this.Parent.Name != dataset.Parent.Name
                 || this.DataType != dataset.DataType

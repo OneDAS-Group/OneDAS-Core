@@ -149,7 +149,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         foreach (var campaign in campaigns)
                         {
                             using var nativeDataReader = Program.DatabaseManager.GetNativeDataReader(campaign.Name);
-                            using var aggregationDataReader = Program.DatabaseManager.GetAggregationDataReader();
+                            using var aggregationDataReader = Program.DatabaseManager.AggregationDataReader;
 
                             var hdfDataLoader = new DataLoader(_stateManager.GetToken(_connectionId));
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;

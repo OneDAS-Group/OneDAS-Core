@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OneDas.DataManagement.Types\OneDas.DataManagement.Types.csproj" />
+    <ProjectReference Include="..\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿using HDF.PInvoke;
 using OneDas.DataManagement.Database;
-using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
+using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -9,8 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.DataReader
+namespace OneDas.DataManagement.Extensibility
 {
+    [ExtensionIdentification("OneDas.HDF", "OneDAS HDF", "Provides access to databases with OneDAS HDF files.", "", "")]
     public class HdfDataReader : DataReaderExtensionBase
     {
         #region Fields
@@ -161,7 +162,7 @@ namespace OneDas.DataManagement.DataReader
                 _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
-        protected override (T[] dataset, byte[] statusSet) Read<T>(Dataset dataset, ulong start, ulong length)
+        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
         {
             byte[] statusSet = null;
 

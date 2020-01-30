@@ -161,7 +161,7 @@ namespace OneDas.DataManagement.Explorer.DataReader
                 _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
-        protected override (T[] dataset, byte[] statusSet) Read<T>(Dataset dataset, ulong start, ulong length)
+        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
         {
             byte[] statusSet = null;
 
