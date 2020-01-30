@@ -1,5 +1,6 @@
 ﻿using HDF.PInvoke;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
@@ -9,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.Extensibility
+namespace OneDas.DataManagement.Extensions
 {
     [ExtensionIdentification("OneDas.HDF", "OneDAS HDF", "Provides access to databases with OneDAS HDF files.", "", "")]
     public class HdfDataReader : DataReaderExtensionBase
@@ -139,16 +140,6 @@ namespace OneDas.DataManagement.Extensibility
             }
 
             return new DataAvailabilityStatistics(granularity, aggregatedData);
-        }
-
-        public override void Open()
-        {
-            this.EnsureOpened();
-        }
-
-        public override void Close()
-        {
-            this.Dispose();
         }
 
         public override void Dispose()

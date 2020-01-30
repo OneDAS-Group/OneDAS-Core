@@ -92,10 +92,6 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end);
 
-        public abstract void Open();
-
-        public abstract void Close();
-
         public abstract void Dispose();
 
         protected abstract (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged;

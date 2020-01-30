@@ -1,9 +1,10 @@
 ﻿using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
 
-namespace OneDas.DataManagement.Extensibility
+namespace OneDas.DataManagement.Extensions
 {
     [ExtensionIdentification("OneDas.InMemory", "OneDAS in-memory", "Provides an in-memory database.", "", "")]
     public class InMemoryDataReader : DataReaderExtensionBase
@@ -69,16 +70,6 @@ namespace OneDas.DataManagement.Extensibility
         public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
         {
             throw new NotImplementedException();
-        }
-
-        public override void Open()
-        {
-            //
-        }
-
-        public override void Close()
-        {
-            //
         }
 
         public override void Dispose()
