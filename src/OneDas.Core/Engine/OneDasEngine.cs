@@ -625,7 +625,7 @@ namespace OneDas.Core.Engine
 
         private List<IExtendedDataStorage> CreateDataStorages(SampleRateContainer sampleRate, OneDasDataType dataType, int count)
         {
-            var length = Convert.ToInt32(sampleRate.SamplesPerSecond * OneDasConstants.ChunkPeriod);
+            var length = Convert.ToInt32(sampleRate.SamplesPerSecondAsUInt64 * OneDasConstants.ChunkPeriod);
             var type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(dataType) });
 
             return Enumerable.Range(0, count).Select(x => (IExtendedDataStorage)Activator.CreateInstance(type, length)).ToList();

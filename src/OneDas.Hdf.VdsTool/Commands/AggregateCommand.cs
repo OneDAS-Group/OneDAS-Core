@@ -67,7 +67,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             var subfolderName = dateTimeBegin.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DATA", subfolderName);
 
-            using var dataReader = _databaseManager.GetDataReader(campaignName);
+            using var dataReader = _databaseManager.GetNativeDataReader(campaignName);
 
             // get files
             if (!dataReader.IsDataOfDayAvailable(campaignName, dateTimeBegin))
@@ -143,10 +143,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
 
             // check source sample rate
-            var sampleRateContainer = new SampleRateContainer(dataset.Name);
-
-            if (!sampleRateContainer.IsPositiveNonZeroIntegerHz)
-                throw new NotSupportedException($"Only positive non-zero integer frequencies are supported, but '{dataset.Name}' data were provided.");
+            var sampleRateContainer = new SampleRateContainer(dataset.Name, ensureNonZeroIntegerHz: true);
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
@@ -186,7 +183,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
 
                 var fundamentalPeriod = TimeSpan.FromMinutes(10);
-                var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecond * (ulong)fundamentalPeriod.TotalSeconds;
+                var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
                 var maxSamplesPerReadOperation = _aggregationChunkSizeMb * 1024 * 1024;
 
                 // read data

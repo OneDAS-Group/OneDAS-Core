@@ -123,7 +123,7 @@ namespace OneDas.DataManagement.Convert
                     for (int i = 0; i < variableDescriptionSet.Count(); i++)
                     {
                         var elementCount = dataStorageSet[i].DataBuffer.Length / dataStorageSet[i].ElementSize;
-                        var period = (double)elementCount / (variableDescriptionSet[i].SampleRate.SamplesPerSecond);
+                        var period = (double)(elementCount * variableDescriptionSet[i].SampleRate.Period);
 
                         if (TimeSpan.FromSeconds(period) != periodPerFile)
                             throw new Exception("The file is not complete.");

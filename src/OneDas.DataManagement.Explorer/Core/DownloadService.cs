@@ -37,7 +37,7 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 _stateManager.CheckState(_connectionId);
 
-                using var dataReader = Program.DatabaseManager.GetDataReader(campaignName);
+                using var dataReader = Program.DatabaseManager.GetNativeDataReader(campaignName);
                 return dataReader.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
             });
         }
@@ -62,7 +62,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaign.Name}'.");
 
                     if (!variable.Datasets.Any(current => current.Name == sampleRateWithUnit))
-                        throw new Exception($"Could not find dataset in variable with ID '{variable.Name}' ({variable.VariableNames.First()}) in campaign '{campaign.Name}'.");
+                        throw new Exception($"Could not find dataset in variable with ID '{variable.Name}' ({variable.VariableNames.Last()}) in campaign '{campaign.Name}'.");
 
                     campaigns[campaign.Name][variable.Name] = new List<string>() { sampleRateWithUnit };
                 }
@@ -92,7 +92,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-                var samplesPerSecond = sampleRateContainer.SamplesPerSecond;
+                var samplesPerDay = sampleRateContainer.SamplesPerDay;
 
                 // epoch & hyperslab
                 var epochStart = new DateTime(2000, 01, 01);
@@ -101,8 +101,8 @@ namespace OneDas.DataManagement.Explorer.Core
                 if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
 
-                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond);
-                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond);
+                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
+                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
 
                 try
                 {
@@ -138,8 +138,8 @@ namespace OneDas.DataManagement.Explorer.Core
                     var segmentLength = segmentSize / bytesPerRow;
 
                     // ensure that dataset length is multiple of 1 minute
-                    if ((segmentLength / samplesPerSecond) % 60 != 0)
-                        segmentLength = (ulong)((ulong)(segmentLength / samplesPerSecond / 60) * 60 * samplesPerSecond);
+                    if ((segmentLength / samplesPerDay) % 60 != 0)
+                        segmentLength = (ulong)((ulong)(segmentLength / samplesPerDay / 60) * 60 * samplesPerDay);
 
                     // start
                     _stateManager.SetState(_connectionId, OneDasExplorerState.Loading);
@@ -148,12 +148,13 @@ namespace OneDas.DataManagement.Explorer.Core
                     {
                         foreach (var campaign in campaigns)
                         {
-                            using var database = Program.DatabaseManager.GetDataReader(campaign.Name);
-                            var hdfDataLoader = new DataLoader(_stateManager.GetToken(_connectionId));
+                            using var nativeDataReader = Program.DatabaseManager.GetNativeDataReader(campaign.Name);
+                            using var aggregationDataReader = Program.DatabaseManager.GetAggregationDataReader();
 
+                            var hdfDataLoader = new DataLoader(_stateManager.GetToken(_connectionId));
                             hdfDataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaign, database, samplesPerSecond, start, block, segmentLength)))
+                            if (!hdfDataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaign, nativeDataReader, aggregationDataReader, samplesPerDay, start, block, segmentLength)))
                                 return string.Empty;
                         }
                     }

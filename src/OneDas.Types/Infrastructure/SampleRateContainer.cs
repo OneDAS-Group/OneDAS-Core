@@ -13,22 +13,28 @@ namespace OneDas.Infrastructure
 
         #region Constructors
 
-        public SampleRateContainer(ulong samplesPerDay)
+        public SampleRateContainer(ulong samplesPerDay, bool ensureNonZeroIntegerHz = false)
         {
             this.SamplesPerDay = samplesPerDay;
+
+            if (ensureNonZeroIntegerHz)
+                this.CheckNonZeroIntegerHz();
         }
 
         public SampleRateContainer(SampleRate sampleRate)
         {
             this.SamplesPerDay = 86400UL * (100 / (ulong)sampleRate);
+            this.IsNonZeroIntegerHz = true;
         }
 
-        public SampleRateContainer(string sampleRateWithUnit)
+        public SampleRateContainer(string sampleRateWithUnit, bool ensureNonZeroIntegerHz = false)
         {
             // is_chunk_completed_set
             if (sampleRateWithUnit.StartsWith("is_chunk_completed_set"))
             {
                 this.SamplesPerDay = 86400UL / 60;
+                this.IsNonZeroIntegerHz = true;
+
                 return;
             }
 
@@ -38,6 +44,10 @@ namespace OneDas.Infrastructure
             if (matchHz.Success)
             {
                 this.SamplesPerDay = 86400UL * ulong.Parse(matchHz.Groups[1].Value);
+
+                if (ensureNonZeroIntegerHz)
+                    this.CheckNonZeroIntegerHz();
+
                 return;
             }
 
@@ -47,6 +57,10 @@ namespace OneDas.Infrastructure
             if (matchT.Success)
             {
                 this.SamplesPerDay = 86400UL / ulong.Parse(matchT.Groups[1].Value);
+
+                if (ensureNonZeroIntegerHz)
+                    this.CheckNonZeroIntegerHz();
+
                 return;
             }
 
@@ -73,22 +87,39 @@ namespace OneDas.Infrastructure
             }
         }
 
-        public ulong SamplesPerSecond => _samplesPerDay / 86400;
+        public decimal SamplesPerSecond => _samplesPerDay / 86400m;
 
-        public ulong NativeSampleRateFactor => 100 / this.SamplesPerSecond;
-
-        public bool IsPositiveNonZeroIntegerHz
+        public ulong SamplesPerSecondAsUInt64
         {
             get
             {
-                var value = _samplesPerDay / (double)86400;
-                return (value % 1 == 0) && (value >= 1);
+                if (!this.IsNonZeroIntegerHz)
+                    throw new Exception($"Only positive non-zero integer frequencies are supported, but the actual frequeny is '{this.SamplesPerSecond}' samples per second.");
+                else
+                    return _samplesPerDay / 86400;
             }
         }
+
+        public decimal Period => 86400m / _samplesPerDay;
+
+        public ulong NativeSampleRateFactor => 100 / (ulong)this.SamplesPerSecond;
+
+        public bool IsNonZeroIntegerHz { get; private set; }
 
         #endregion
 
         #region Methods
+
+        private void CheckNonZeroIntegerHz()
+        {
+            var value = _samplesPerDay / (double)86400;
+            this.IsNonZeroIntegerHz = (value % 1 == 0) && (value >= 1);
+
+            if (!this.IsNonZeroIntegerHz)
+            {
+
+            }
+        }
 
         public override bool Equals(object obj)
         {

@@ -68,8 +68,6 @@ namespace OneDas.DataManagement.Extensibility
 
         public ISimpleDataStorage LoadDataset<T>(Dataset dataset, ulong start, ulong length) where T : unmanaged
         {
-            this.Open();
-
             (var data, var statusSet) = this.Read<T>(dataset, start, length);
 
             // apply status (only if native dataset)

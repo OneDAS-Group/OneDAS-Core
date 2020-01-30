@@ -154,7 +154,7 @@ namespace OneDas.Extensibility
 #warning This method is required since downloading 600 s average data causes an index value < 1, which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds when sample time mechanisms were revised.
         protected double TimeSpanToIndexDouble(TimeSpan timeSpan, SampleRateContainer samplesRate)
         {
-            return timeSpan.TotalSeconds * samplesRate.SamplesPerSecond;
+            return timeSpan.TotalSeconds * (double)samplesRate.SamplesPerSecond;
         }
 
         protected ulong ToChunkIndex(ulong offset, SampleRateContainer sampleRate)

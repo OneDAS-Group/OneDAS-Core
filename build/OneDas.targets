@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="CreateOneDasMetaData" BeforeTargets="BeforeBuild">
+  <Target Name="CreateMetaData" BeforeTargets="BeforeBuild">
 
     <!-- validation -->
     <Error Condition="$(Major) == ''" Text="The Major property must be set." />

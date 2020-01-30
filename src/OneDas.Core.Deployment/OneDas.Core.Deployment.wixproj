@@ -49,7 +49,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
 
-  <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateOneDasMetaData">
+  <Target Name="DefineProperties" BeforeTargets="EnsureWixToolsetInstalled" DependsOnTargets="CreateMetaData">
 
     <PropertyGroup>
       <WixApplicationName>OneDas.Core.WebServer</WixApplicationName>

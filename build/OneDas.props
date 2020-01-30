@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);CreateOneDasMetaData</GetPackageVersionDependsOn>
+    <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);CreateMetaData</GetPackageVersionDependsOn>
   </PropertyGroup>
   
 </Project>

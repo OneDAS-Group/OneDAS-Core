@@ -26,6 +26,8 @@ namespace OneDas.DataManagement.Database
 
         public OneDasDataType DataType { get; set; }
 
+        public bool IsNative { get; set; } = true;
+
         #endregion
 
         #region "Methods"
@@ -42,11 +44,10 @@ namespace OneDas.DataManagement.Database
 
         public void Merge(Dataset dataset)
         {
-            if (this.Parent.Name != dataset.Parent.Name)
-                throw new Exception("The dataset to be merged has a different parent.");
-
-            if (this.DataType != dataset.DataType)
-                throw new Exception("The dataset to be merged has a different data type.");
+            if (this.Parent.Name != dataset.Parent.Name
+                || this.DataType != dataset.DataType
+                || this.IsNative != dataset.IsNative)
+                throw new Exception("The datasets to be merged are not equal.");
         }
 
         #endregion

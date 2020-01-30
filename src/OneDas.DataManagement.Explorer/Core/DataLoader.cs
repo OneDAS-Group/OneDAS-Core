@@ -148,7 +148,9 @@ namespace OneDas.DataManagement.Explorer.Core
                 {
                     variable.Datasets.ForEach(dataset =>
                     {
-                        var dataStorage = (IDataStorage)OneDasUtilities.InvokeGenericMethod(typeof(DataReaderExtensionBase), this, nameof(DataReaderExtensionBase.LoadDataset),
+                        var dataReader = dataset.IsNative ? zipSettings.NativeDataReader : zipSettings.AggregationDataReader;
+
+                        var dataStorage = (IDataStorage)OneDasUtilities.InvokeGenericMethod(typeof(DataReaderExtensionBase), dataReader, nameof(DataReaderExtensionBase.LoadDataset),
                                                                                             BindingFlags.Instance | BindingFlags.NonPublic,
                                                                                             OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
                                                                                             new object[] { dataset, currentStart, currentRowCount });

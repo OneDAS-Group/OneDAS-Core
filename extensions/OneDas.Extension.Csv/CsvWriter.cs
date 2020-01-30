@@ -147,7 +147,7 @@ namespace OneDas.Extension.Csv
                             streamWriter.Write($"{ string.Format(_numberFormatInfo_index, "{0:N0}", fileOffset + rowIndex) };");
                             break;
                         case CsvRowIndexFormat.Unix:
-                            streamWriter.Write($"{ string.Format(_numberFormatInfo_unix, "{0:N5}", _unixStart + (fileOffset + rowIndex) / (double)contextGroup.SampleRate.SamplesPerSecond) };");
+                            streamWriter.Write($"{ string.Format(_numberFormatInfo_unix, "{0:N5}", _unixStart + (double)((fileOffset + rowIndex) / contextGroup.SampleRate.SamplesPerSecond)) };");
                             break;
                         default:
                             throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");

@@ -26,7 +26,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             using (PowerShell ps = PowerShell.Create())
             {
                 // ensure FluentFTP lib is loaded
-                _ = FtpRemoteExists.NoCheck;
+                _ = new FtpClient();
 
                 var vdsToolLogger = new PwshLogger(_logger);
                 _logger.LogInformation($"Executing script '{_scriptFilePath}'.");

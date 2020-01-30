@@ -6,7 +6,7 @@ namespace OneDas.Hdf.VdsTool
     {
         public AggregationPeriodData(Period period, SampleRateContainer sampleRateContainer, int valueSize)
         {
-            this.SampleCount = sampleRateContainer.SamplesPerSecond * (ulong)period;
+            this.SampleCount = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)period;
             this.ByteCount = this.SampleCount * (ulong)valueSize;
         }
 

@@ -128,8 +128,8 @@ namespace OneDas.Extension.Famos
 
                 foreach (VariableContext variableContext in contextGroup.VariableContextSet)
                 {
-                    var dx = 1.0 / contextGroup.SampleRate.SamplesPerSecond;
-                    var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
+                    var dx = contextGroup.SampleRate.Period;
+                    var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, (double)dx);
 
                     campaignGroup.Channels.Add(variable);
                 }
