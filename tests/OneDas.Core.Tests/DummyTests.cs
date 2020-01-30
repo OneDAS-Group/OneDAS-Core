@@ -23,34 +23,13 @@ namespace OneDas.Core.Tests
             Directory.CreateDirectory(optionsMock.Object.Value.NugetLocalDirectoryPath);
 
             // TODO: upload ExtensionSample to allow testing
-            await packageManager.InstallAsync("OneDas.Extension.Mat73");
+            //await packageManager.InstallAsync("OneDas.Extension.Mat73");
         }
 
         [Fact]
         public void FactTest()
         {
             Assert.False(true == false, "true should be equal to true");
-        }
-
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(0)]
-        public void TheoryTest(int value)
-        {
-            switch (value)
-            {
-                case -1:
-                    Assert.True(value < 1, $"{value} should be < 1");
-                    break;
-
-                case 0:
-                    Assert.True(value < 1, $"{value} should be < 1");
-                    break;
-
-                default:
-                    Assert.False(value < 1, $"{value} should be < 1");
-                    break;
-            }
         }
     }
 }
