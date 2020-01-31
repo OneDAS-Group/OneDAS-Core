@@ -46,10 +46,10 @@ namespace OneDas.DataManagement.Database
                     var guid = new Guid(variable.Name);
                     var displayName = variable.VariableNames.Last();
                     var datasetName = dataset.Name;
-                    var groupName = variable.VariableGroups.Last();
+                    var groupName = variable.VariableGroups.Any() ? variable.VariableGroups.Last() : string.Empty;
                     var dataType = dataset.DataType;
                     var sampleRate = new SampleRateContainer(dataset.Name);
-                    var unit = variable.Units.Last();
+                    var unit = variable.Units.Any() ? variable.Units.Last() : string.Empty;
                     var transferFunctions = variable.TransferFunctions;
 
                     return new VariableDescription(guid, displayName, datasetName, groupName, dataType, sampleRate, unit, transferFunctions, DataStorageType.Simple);

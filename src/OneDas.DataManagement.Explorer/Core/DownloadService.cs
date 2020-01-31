@@ -92,7 +92,8 @@ namespace OneDas.DataManagement.Explorer.Core
                 var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-                var samplesPerDay = sampleRateContainer.SamplesPerDay;
+#warning Is this secure?
+                var samplesPerSecond = (ulong)sampleRateContainer.SamplesPerSecond;
 
                 // epoch & hyperslab
 #warning When removing this, search for all occurences, also in external projects
@@ -103,8 +104,8 @@ namespace OneDas.DataManagement.Explorer.Core
                     throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
 
 #warning Replace this by DateTime. In DataLoader Line 180 everything is converted back to datetime!
-                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
-                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
+                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond);
+                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond);
 
                 try
                 {
@@ -140,8 +141,8 @@ namespace OneDas.DataManagement.Explorer.Core
                     var segmentLength = segmentSize / bytesPerRow;
 
                     // ensure that dataset length is multiple of 1 minute
-                    if ((segmentLength / samplesPerDay) % 60 != 0)
-                        segmentLength = (segmentLength / samplesPerDay / 60) * 60 * samplesPerDay;
+                    if ((segmentLength / samplesPerSecond) % 60 != 0)
+                        segmentLength = (segmentLength / samplesPerSecond / 60) * 60 * samplesPerSecond;
 
                     // start
                     _stateManager.SetState(_connectionId, OneDasExplorerState.Loading);
@@ -156,7 +157,9 @@ namespace OneDas.DataManagement.Explorer.Core
                             var dataLoader = new DataLoader(_stateManager.GetToken(_connectionId));
                             dataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            if (!dataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, new ZipSettings(dateTimeBegin, campaign, nativeDataReader, aggregationDataReader, samplesPerDay, start, block, segmentLength)))
+                            var zipSettings = new ZipSettings(dateTimeBegin, campaign, nativeDataReader, aggregationDataReader, samplesPerSecond, start, block, segmentLength);
+
+                            if (!dataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, zipSettings))
                                 return string.Empty;
                         }
                     }
