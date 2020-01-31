@@ -109,7 +109,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     }
 
                     // campaignInfo
-                    this.AggregateCampaign(dataReader, campaign, targetFileId);
+                    this.AggregateCampaign(dataReader, campaign, dateTimeBegin, targetFileId);
                 }
                 finally
                 {
@@ -122,7 +122,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, long targetFileId)
+        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime dateTimeBegin, long targetFileId)
         {
             var filteredVariables = campaign.Variables.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
 
@@ -133,11 +133,11 @@ namespace OneDas.Hdf.VdsTool.Commands
                 OneDasUtilities.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, targetFileId });
+                                                    new object[] { dataReader, dataset, dateTimeBegin, targetFileId });
             }
         }
 
-        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, long targetFileId) where T : unmanaged
+        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, DateTime dateTimeBegin, long targetFileId) where T : unmanaged
         {
             // value size
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
@@ -187,7 +187,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 var maxSamplesPerReadOperation = _aggregationChunkSizeMb * 1024 * 1024;
 
                 // read data
-                dataReader.ReadFullDay<T>(dataset, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
+                dataReader.ReadFullDay<T>(dataset, dateTimeBegin, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
                 {
                     // get aggregation data
                     var periodToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, periodToDataMap);

@@ -77,7 +77,7 @@ namespace OneDas.DataManagement.Extensions
 
             // get data
             var totalDays = (end - begin).TotalDays;
-            var data = IOHelper.ReadDataset<byte>(_fileId, $"{ campaignName }/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
+            var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
 
             if (totalDays <= 7)
             {

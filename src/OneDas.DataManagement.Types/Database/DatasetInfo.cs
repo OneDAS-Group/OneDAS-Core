@@ -28,6 +28,8 @@ namespace OneDas.DataManagement.Database
 
         public bool IsNative { get; set; } = true;
 
+#warning Encode SamplesPerDay in DatasetInfo instead of name?
+
         #endregion
 
         #region "Methods"

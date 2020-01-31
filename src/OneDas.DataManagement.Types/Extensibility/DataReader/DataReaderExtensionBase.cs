@@ -1,5 +1,6 @@
 ﻿using OneDas.DataManagement.Database;
 using OneDas.DataStorage;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace OneDas.DataManagement.Extensibility
 
         #region Methods
 
-        public void ReadFullDay<T>(DatasetInfo dataset, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
+        public void ReadFullDay<T>(DatasetInfo dataset, DateTime dateTimeBegin, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
         {
             // max period
             var maxPeriod = TimeSpan.FromDays(1);
@@ -49,6 +50,11 @@ namespace OneDas.DataManagement.Extensibility
             if (maxFpCount == 0)
                 throw new Exception("The provided 'maximum samples per read operation' parameter is too small to provide data for at least a single fundamental period.");
 
+#warning being: this is not pretty, remove
+            var samplesPerDay = new SampleRateContainer(dataset.Name).SamplesPerDay;
+            var start = (ulong)Math.Floor((dateTimeBegin - new DateTime(2000, 1, 1)).TotalDays * samplesPerDay);
+#warning end
+
             // load data
             var timeOffset = TimeSpan.Zero;
 
@@ -57,7 +63,7 @@ namespace OneDas.DataManagement.Extensibility
                 var remainingFpCount = (ulong)((maxPeriod - timeOffset).Ticks / fundamentalPeriod.Ticks);
                 var currentFpCount = Math.Min(remainingFpCount, maxFpCount);
                 var length = currentFpCount * samplesPerFundamentalPeriod;
-                var offset = (totalFpCount - remainingFpCount) * samplesPerFundamentalPeriod;
+                var offset = start + (totalFpCount - remainingFpCount) * samplesPerFundamentalPeriod;
 
                 (T[] data, byte[] status) = this.Read<T>(dataset, offset, length);
                 processData?.Invoke(data, status);

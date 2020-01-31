@@ -15,6 +15,7 @@ namespace OneDas.DataManagement.Database
 
         public CampaignInfo(string name) : base(name, null)
         {
+#warning Remove "is_chunk_completed_set"
             this.ChunkDataset = new DatasetInfo("is_chunk_completed_set", this);
             this.Variables = new List<VariableInfo>();
         }
