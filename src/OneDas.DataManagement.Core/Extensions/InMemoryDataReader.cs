@@ -25,7 +25,7 @@ namespace OneDas.DataManagement.Extensions
             return new List<string> { "/ANY_EXTERNAL_DATABASE/TEST/TEST" };
         }
 
-        public override CampaignInfo GetCampaign(string campaignName, DateTime begin)
+        public override CampaignInfo GetCampaign(string campaignName)
         {
             var campaignInfo = new CampaignInfo("/ANY_EXTERNAL_DATABASE/TEST/TEST");
 
@@ -62,7 +62,7 @@ namespace OneDas.DataManagement.Extensions
             return campaignInfo;
         }
 
-        public override bool IsDataOfDayAvailable(string campaignName, DateTime day)
+        public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
         {
             throw new NotImplementedException();
         }

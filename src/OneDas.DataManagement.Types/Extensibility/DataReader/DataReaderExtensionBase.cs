@@ -92,9 +92,9 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract List<string> GetCampaignNames();
 
-        public abstract CampaignInfo GetCampaign(string campaignName, DateTime begin);
+        public abstract CampaignInfo GetCampaign(string campaignName);
 
-        public abstract bool IsDataOfDayAvailable(string campaignName, DateTime day);
+        public abstract bool IsDataOfDayAvailable(string campaignName, DateTime date);
 
         public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end);
 

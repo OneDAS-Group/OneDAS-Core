@@ -42,15 +42,15 @@ namespace OneDas.DataManagement.Extensions
             return _campaigns.Select(campaign => campaign.Name).ToList();
         }
 
-        public override CampaignInfo GetCampaign(string campaignName, DateTime begin)
+        public override CampaignInfo GetCampaign(string campaignName)
         {
             return _campaigns.First(campaign => campaign.Name == campaignName);
         }
 
-        public override bool IsDataOfDayAvailable(string campaignName, DateTime day)
+        public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
         {
-            var folderPath = Path.Combine(this.RootPath, "DATA", day.ToString("yyyy-MM"));
-            var fileNamePattern = $"{campaignName}_V*_{day.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+            var folderPath = Path.Combine(this.RootPath, "DATA", dateTime.ToString("yyyy-MM"));
+            var fileNamePattern = $"{campaignName}_V*_{dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
 
             return Directory.EnumerateFiles(folderPath, fileNamePattern).Any();
         }

@@ -39,20 +39,23 @@ namespace OneDas.DataManagement
 
         public OneDasDatabaseManager()
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, "database.json");
+            // database
+            this.Database = new OneDasDatabase();
+
+            // config
+            var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
 
             if (!File.Exists(filePath))
             {
-                this.Database = new OneDasDatabase();
+                this.Config = new OneDasDatabaseConfig();
             }
             else
             {
                 var jsonString = File.ReadAllText(filePath);
-                this.Database = JsonSerializer.Deserialize<OneDasDatabase>(jsonString);
-                this.Database.Initialize();
+                this.Config = JsonSerializer.Deserialize<OneDasDatabaseConfig>(jsonString);
             }
 
-            _rootPathToDataReaderMap = this.LoadDataReader(this.Database.RootPathToDataReaderIdMap);
+            _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
         }
 
         #endregion
@@ -60,6 +63,9 @@ namespace OneDas.DataManagement
         #region Properties
 
         public OneDasDatabase Database { get; }
+
+        public OneDasDatabaseConfig Config { get; }
+
         public DataReaderExtensionBase AggregationDataReader { get; private set; }
 
         #endregion
@@ -99,7 +105,7 @@ namespace OneDas.DataManagement
                         }
 
                         // get up-to-date campaign from data reader
-                        var campaign = dataReader.GetCampaign(campaignName, container.LastScan);
+                        var campaign = dataReader.GetCampaign(campaignName);
 
                         // if data reader is for aggregation data, update the dataset`s flag
                         if (!isNativeDataReader)
@@ -117,7 +123,6 @@ namespace OneDas.DataManagement
                         //
                         container.Campaign.Merge(campaign);
                         container.CampaignMeta.Purge();
-                        container.LastScan = DateTime.Now.Date;
                     }
                 }
                 finally
@@ -126,7 +131,7 @@ namespace OneDas.DataManagement
                 }
             }
 
-            this.Save(this.Database);
+            this.Save(this.Config);
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)
@@ -147,10 +152,10 @@ namespace OneDas.DataManagement
             return this.Database.CampaignContainers.Select(container => container.Campaign).ToList();
         }
 
-        private void Save(OneDasDatabase database)
+        private void Save(OneDasDatabaseConfig config)
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, "database.json");
-            var jsonString = JsonSerializer.Serialize(database, new JsonSerializerOptions() { WriteIndented = true });
+            var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
+            var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true });
 
             File.WriteAllText(filePath, jsonString);
         }

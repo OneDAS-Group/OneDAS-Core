@@ -50,7 +50,6 @@ namespace OneDas.Hdf.VdsTool
             rootCommand.AddCommand(Program.PrepareAutoVdsCommand());
             rootCommand.AddCommand(Program.PrepareVdsCommand());
             rootCommand.AddCommand(Program.PrepareInitCommand());
-            rootCommand.AddCommand(Program.PrepareUpdateCommand());
             rootCommand.AddCommand(Program.PreparePwshCommand());
             rootCommand.AddCommand(Program.PrepareAggregateCommand());
 
@@ -156,34 +155,6 @@ namespace OneDas.Hdf.VdsTool
                 catch (Exception ex)
                 {
                     logger.LogError($"Execution of the 'init' command failed. Error message: '{ex.Message}'.");
-                    return 1;
-                }
-
-                return 0;
-            });
-
-            return command;
-        }
-
-        private static Command PrepareUpdateCommand()
-        {
-            var command = new Command("update", "Updates the database that is located in the current folder")
-            {
-                //
-            };
-
-            command.Handler = CommandHandler.Create(() =>
-            {
-                var logger = _loggerFactory.CreateLogger("UPDATE");
-
-                try
-                {
-                    new UpdateCommand().Run();
-                    logger.LogInformation($"Execution of the 'update' command finished successfully.");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Execution of the 'update' command failed. Error message: '{ex.Message}'.");
                     return 1;
                 }
 

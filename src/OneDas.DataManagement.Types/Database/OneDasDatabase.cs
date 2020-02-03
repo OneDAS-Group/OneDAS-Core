@@ -8,7 +8,6 @@ namespace OneDas.DataManagement.Database
 
         public OneDasDatabase()
         {
-            this.RootPathToDataReaderIdMap = new Dictionary<string, string>();
             this.CampaignContainers = new List<CampaignContainer>();
         }
 
@@ -16,20 +15,7 @@ namespace OneDas.DataManagement.Database
 
         #region Properties
 
-        public Dictionary<string, string> RootPathToDataReaderIdMap { get; set; }
         public List<CampaignContainer> CampaignContainers { get; set; }
-
-        #endregion
-
-        #region Methods
-
-        public void Initialize()
-        {
-            foreach (var container in this.CampaignContainers)
-            {
-                container.Initialize();
-            }
-        }
 
         #endregion
     }

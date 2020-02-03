@@ -29,8 +29,6 @@ namespace OneDas.DataManagement.Database
 
         public string RootPath { get; set; }
 
-        public DateTime LastScan { get; set; }
-
         public CampaignInfo Campaign { get; set; }
 
         public CampaignMetaInfo CampaignMeta { get; set; }
