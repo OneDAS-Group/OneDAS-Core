@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Serilog.Extensions.Logging;
 using System;
 using System.Globalization;
 using System.IO;
@@ -98,6 +100,16 @@ namespace OneDas.DataManagement.Explorer
 
             var webHost = new WebHostBuilder()
                 .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
+                .ConfigureLogging(loggingBuilder =>
+                {
+                    loggingBuilder.ClearProviders();
+
+                    loggingBuilder.AddConsole();
+                    loggingBuilder.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
+
+                    loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+                    loggingBuilder.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
+                })
                 .UseKestrel()
                 .UseUrls(_options.AspBaseUrl)
                 .UseContentRoot(currentDirectory)

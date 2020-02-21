@@ -15,7 +15,7 @@ namespace OneDas.DataManagement.Convert
     {
         #region Fields
 
-        private string _databaseDirectoryPath;
+        private string _databaseFolderPath;
 
         private ILogger _logger;
         private IDataReader _dataReader;
@@ -24,12 +24,12 @@ namespace OneDas.DataManagement.Convert
 
         #region Constructors
 
-        public OneDasConverter(string databaseDirectoryPath, IDataReader dataReader, ILogger logger)
+        public OneDasConverter(string databaseFolderPath, IDataReader dataReader, ILogger logger)
         {
-            if (!OneDasUtilities.ValidateDatabaseFolderPath(databaseDirectoryPath, out var message))
+            if (!OneDasUtilities.ValidateDatabaseFolderPath(databaseFolderPath, out var message))
                 throw new Exception(message);
 
-            _databaseDirectoryPath = databaseDirectoryPath;
+            _databaseFolderPath = databaseFolderPath;
             _dataReader = dataReader;
             _logger = logger;
         }
@@ -40,7 +40,7 @@ namespace OneDas.DataManagement.Convert
 
         public void Start(string campaignName, int version, string fileNameFormat, uint periodPerFile, int days, string systemName)
         {
-            var sourceDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_ORIGIN", $"{campaignName.Replace('/', '_')}_V{version}");
+            var sourceDirectoryPath = Path.Combine(_databaseFolderPath, "ORIGIN", $"{campaignName.Replace('/', '_')}_V{version}");
             var dateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
             var dateTimeBegin = dateTimeEnd.AddDays(-days);
 
@@ -50,7 +50,7 @@ namespace OneDas.DataManagement.Convert
                 dateTimeBegin = dateTimeBegin.AddDays(1);
 
                 var currentSourceDirectoryPath = Path.Combine(sourceDirectoryPath, dateTimeBegin.ToString("yyyy-MM"));
-                var currentTargetDirectoryPath = Path.Combine(_databaseDirectoryPath, "DB_IMPORT", dateTimeBegin.ToString("yyyy-MM"));
+                var currentTargetDirectoryPath = Path.Combine(_databaseFolderPath, "DATA", dateTimeBegin.ToString("yyyy-MM"));
 
                 if (!Directory.Exists(currentSourceDirectoryPath) || !Directory.EnumerateFileSystemEntries(currentSourceDirectoryPath).Any())
                 {

@@ -185,7 +185,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                 var fundamentalPeriod = TimeSpan.FromMinutes(10);
                 var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
-                var maxSamplesPerReadOperation = _aggregationChunkSizeMb * 1024 * 1024;
+                var maxSamplesPerReadOperation = (ulong)(_aggregationChunkSizeMb * 1024 * 1024 / valueSize);
 
                 // read data
                 dataReader.ReadFullDay<T>(dataset, dateTimeBegin, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>

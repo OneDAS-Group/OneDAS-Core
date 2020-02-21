@@ -33,24 +33,6 @@ namespace OneDas.Extension.Csv
             _settings = settings;
 
             _unixEpoch = new DateTime(1970, 01, 01);
-
-            _numberFormatInfo_data = new NumberFormatInfo()
-            {
-                NumberDecimalSeparator = ".",
-                NumberDecimalDigits = 2,
-                NumberGroupSeparator = string.Empty
-            };
-
-            _numberFormatInfo_index = new NumberFormatInfo()
-            {
-                NumberGroupSeparator = string.Empty
-            };
-
-            _numberFormatInfo_unix = new NumberFormatInfo()
-            {
-                NumberDecimalSeparator = ".",
-                NumberGroupSeparator = string.Empty
-            };
         }
         
         #endregion
@@ -144,10 +126,10 @@ namespace OneDas.Extension.Csv
                     switch (_settings.RowIndexFormat)
                     {
                         case CsvRowIndexFormat.Index:
-                            streamWriter.Write($"{ string.Format(_numberFormatInfo_index, "{0:N0}", fileOffset + rowIndex) };");
+                            streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, "{0:N0}", fileOffset + rowIndex) };");
                             break;
                         case CsvRowIndexFormat.Unix:
-                            streamWriter.Write($"{ string.Format(_numberFormatInfo_unix, "{0:N5}", _unixStart + (double)((fileOffset + rowIndex) / contextGroup.SampleRate.SamplesPerSecond)) };");
+                            streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, "{0:N5}", _unixStart + (double)((fileOffset + rowIndex) / contextGroup.SampleRate.SamplesPerSecond)) };");
                             break;
                         default:
                             throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
@@ -155,10 +137,8 @@ namespace OneDas.Extension.Csv
 
                     for (int i = 0; i < simpleDataStorageSet.Count; i++)
                     {
-                        object value;
-
-                        value = simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)];
-                        streamWriter.Write($"{ string.Format(_numberFormatInfo_data, $"{{0:N}}{_settings.DecimalPlacesCount}", value) };");
+                        var value = simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)];
+                        streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, $"{{0:G{_settings.SignificantPlaces}}}", value) };");
                     }
 
                     streamWriter.WriteLine();

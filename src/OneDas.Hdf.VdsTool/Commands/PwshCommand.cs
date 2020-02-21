@@ -33,6 +33,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                 ps.Runspace.SessionStateProxy.SetVariable("dbRoot", Environment.CurrentDirectory);
                 ps.Runspace.SessionStateProxy.SetVariable("logger", vdsToolLogger);
+                ps.Runspace.SessionStateProxy.SetVariable("scriptRoot", Path.GetDirectoryName(_scriptFilePath));
 
                 ps.AddScript(File.ReadAllText(_scriptFilePath))
                   .Invoke();

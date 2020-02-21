@@ -27,20 +27,12 @@ namespace OneDas.DataManagement.Explorer
                 .AddSignalR(options => options.EnableDetailedErrors = true)
                 .AddJsonProtocol(options => options.PayloadSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = null });
 
-            services.AddLogging(loggingBuilder =>
-            {
-                loggingBuilder.ClearProviders();
-                loggingBuilder.AddConsole();
-                loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "HdfExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
-                loggingBuilder.AddFilter((provider, source, logLevel) => !source.StartsWith("Microsoft."));
-            });
-
             services.AddSingleton<OneDasExplorerStateManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
         {
-            var logger = loggerFactory.CreateLogger("HDF Explorer");
+            var logger = loggerFactory.CreateLogger("OneDAS Explorer");
 
             this.Validate(logger, options);
 

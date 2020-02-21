@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +32,6 @@ namespace OneDas.Hdf.VdsTool
                 return 1;
             }
 
-            Console.CursorVisible = false;
             Console.Title = "VdsTool";
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
@@ -103,7 +104,7 @@ namespace OneDas.Hdf.VdsTool
         {
             bool TryConvertArgument(SymbolResult result, out DateTime value)
             {
-                return DateTime.TryParseExact(result.Token.Value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+                return DateTime.TryParseExact(result.Tokens.First().Value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
             }
 
             var command = new Command("vds", "Updates the database index of files that are part of the specified epoch")
@@ -222,8 +223,8 @@ namespace OneDas.Hdf.VdsTool
                 },
                 new Option("--chunk-size", "The aggregation chunk size in MB.")
                 {
-                    Argument = new Argument<uint>(),
-                    Required = true
+                    Argument = new Argument<uint>(() => 200),
+                    Required = false
                 },
                 new Option("--days", "The number of days in the past to look for files to calculate aggregations for.")
                 {
