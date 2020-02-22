@@ -47,24 +47,29 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             _databaseManager = new OneDasDatabaseManager();
 
+
+            var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();
             var epochEnd = DateTime.UtcNow.Date;
             var epochStart = epochEnd.AddDays(-_days);
 
-            for (int i = 0; i <= _days; i++)
+            foreach (var campaignName in campaignNames)
             {
-                this.CreateAggregatedFiles(epochStart.AddDays(i));
+                for (int i = 0; i <= _days; i++)
+                {
+                    this.CreateAggregatedFiles(campaignName, epochStart.AddDays(i));
+                }
             }
         }
 
-        private void CreateAggregatedFiles(DateTime dateTimeBegin)
+        private void CreateAggregatedFiles(string campaignName, DateTime date)
         {
-            var subfolderName = dateTimeBegin.ToString("yyyy-MM");
+            var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DATA", subfolderName);
 
             using var dataReader = _databaseManager.GetNativeDataReader(campaignName);
 
             // get files
-            if (!dataReader.IsDataOfDayAvailable(campaignName, dateTimeBegin))
+            if (!dataReader.IsDataOfDayAvailable(campaignName, date))
                 return;
 
             // process data
@@ -80,7 +85,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                 // targetFileId
                 var campaignFileName = campaignName.TrimStart('/').Replace("/", "_");
-                var dateTimeFileName = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
+                var dateTimeFileName = date.ToString("yyyy-MM-ddTHH-mm-ssZ");
                 var targetFileName = $"{campaignFileName}_{dateTimeFileName}.h5";
                 var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
 
@@ -98,12 +103,12 @@ namespace OneDas.Hdf.VdsTool.Commands
                     // create attribute if necessary
                     if (H5A.exists(targetFileId, "date_time") == 0)
                     {
-                        var dateTimeString = dateTimeBegin.ToString("yyyy-MM-ddTHH-mm-ssZ");
+                        var dateTimeString = date.ToString("yyyy-MM-ddTHH-mm-ssZ");
                         IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
                     }
 
                     // campaignInfo
-                    this.AggregateCampaign(dataReader, campaign, dateTimeBegin, targetFileId);
+                    this.AggregateCampaign(dataReader, campaign, date, targetFileId);
                 }
                 finally
                 {
@@ -116,26 +121,33 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime dateTimeBegin, long targetFileId)
+        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime date, long targetFileId)
         {
-            _logger.LogInformation($"Processing day {dateTimeBegin.ToString("yyyy-MM-dd")} ... ");
+            _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... ");
 
-            var filteredVariables = campaign.Variables.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
+            var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.CampaignName == campaign.Name).ToList();
 
-            foreach (var filteredVariable in filteredVariables)
+            var variableToAggregationConfigMap = campaign.Variables.ToDictionary(variable => variable, variable =>
             {
-                var dataset = filteredVariable.Datasets.First();
+                return potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(variable, config.Filters)).ToList();
+            });
+
+            foreach (var entry in variableToAggregationConfigMap)
+            {
+                var variable = entry.Key;
+                var dataset = variable.Datasets.First();
+                var aggregationConfigs = entry.Value;
 
                 OneDasUtilities.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, dateTimeBegin, targetFileId });
+                                                    new object[] { dataReader, dataset, aggregationConfigs, date, targetFileId });
             }
 
-            _logger.LogInformation($"Processing day {dateTimeBegin.ToString("yyyy-MM-dd")} ... Done.");
+            _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... Done.");
         }
 
-        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, DateTime dateTimeBegin, long targetFileId) where T : unmanaged
+        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, List<AggregationConfig> aggregationConfigs, DateTime date, long targetFileId) where T : unmanaged
         {
             _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... ");
 
@@ -147,109 +159,123 @@ namespace OneDas.Hdf.VdsTool.Commands
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
-            var periodToDataMap = new Dictionary<Period, AggregationPeriodData>();
-            var periodToBufferDataMap = new Dictionary<Period, AggregationBufferData>();
-            var actualPeriods = new List<Period>();
-
-            // translate method name
-            var methodIdentifier = _method switch
-            {
-                AggregationMethod.Mean => "mean",
-                AggregationMethod.MeanPolar => "mean_polar",
-                AggregationMethod.Min => "min",
-                AggregationMethod.Max => "max",
-                AggregationMethod.Std => "std",
-                AggregationMethod.Rms => "rms",
-                AggregationMethod.MinBitwise => "min_bitwise",
-                AggregationMethod.MaxBitwise => "max_bitwise",
-                _ => throw new Exception($"The aggregation method '{_method}' is unknown.")
-            };
+            var setupToDataMap = new Dictionary<(AggregationConfig, Period), AggregationPeriodData>();
+            var setupToBufferDataMap = new Dictionary<(AggregationConfig, Period), AggregationBufferData>();
+            var actualPeriods = new HashSet<Period>();
 
             try
             {
-                foreach (Period period in Enum.GetValues(typeof(Period)))
+                // prepare buffers
+                foreach (var aggregationConfig in aggregationConfigs)
                 {
-                    var targetDatasetPath = $"{groupPath}/{(int)period} s_{methodIdentifier}";
-
-                    if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                    // translate method name
+                    var methodIdentifier = aggregationConfig.Method switch
                     {
-                        // buffer data
-                        var bufferData = new AggregationBufferData(period);
-                        var bufferSize = (ulong)bufferData.Buffer.Length;
-                        var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
+                        AggregationMethod.Mean => "mean",
+                        AggregationMethod.MeanPolar => "mean_polar",
+                        AggregationMethod.Min => "min",
+                        AggregationMethod.Max => "max",
+                        AggregationMethod.Std => "std",
+                        AggregationMethod.Rms => "rms",
+                        AggregationMethod.MinBitwise => "min_bitwise",
+                        AggregationMethod.MaxBitwise => "max_bitwise",
+                        _ => throw new Exception($"The aggregation method '{aggregationConfig.Method}' is unknown.")
+                    };
 
-                        if (!(H5I.is_valid(datasetId) > 0))
-                            throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
-
-                        bufferData.DatasetId = datasetId;
-                        periodToBufferDataMap[period] = bufferData;
-
-                        // period data
-                        var periodData = new AggregationPeriodData(period, sampleRateContainer, valueSize);
-                        periodToDataMap[period] = periodData;
-
-                        actualPeriods.Add(period);
-                    }
-                    else
+                    foreach (Period period in Enum.GetValues(typeof(Period)))
                     {
-                        // skip period
+                        var targetDatasetPath = $"{groupPath}/{(int)period} s_{methodIdentifier}";
+
+                        if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                        {
+                            // buffer data
+                            var bufferData = new AggregationBufferData(period);
+                            var bufferSize = (ulong)bufferData.Buffer.Length;
+                            var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
+
+                            if (!(H5I.is_valid(datasetId) > 0))
+                                throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
+
+                            bufferData.DatasetId = datasetId;
+                            setupToBufferDataMap[(aggregationConfig, period)] = bufferData;
+
+                            // period data
+                            var periodData = new AggregationPeriodData(period, sampleRateContainer, valueSize);
+                            setupToDataMap[(aggregationConfig, period)] = periodData;
+
+                            actualPeriods.Add(period);
+                        }
+                        else
+                        {
+                            // skip period
+                        }
                     }
                 }
 
+                // read data
                 var fundamentalPeriod = TimeSpan.FromMinutes(10);
                 var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
                 var maxSamplesPerReadOperation = (ulong)(_aggregationChunkSizeMb * 1024 * 1024 / valueSize);
 
-                // read data
-                dataReader.ReadFullDay<T>(dataset, dateTimeBegin, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
+                dataReader.ReadFullDay<T>(dataset, date, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
                 {
-                    // get aggregation data
-                    var periodToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, periodToDataMap);
-
-                    // copy aggregation data into buffer
-                    foreach (var period in actualPeriods)
+                    foreach (var aggregationConfig in aggregationConfigs)
                     {
-                        var partialBuffer = periodToPartialBufferMap[period];
-                        var bufferData = periodToBufferDataMap[period];
+                        // get aggregation data
+                        var periodToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, setupToDataMap);
 
-                        Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
+                        // copy aggregation data into buffer
+                        foreach (var period in actualPeriods)
+                        {
+                            var partialBuffer = periodToPartialBufferMap[period];
+                            var bufferData = setupToBufferDataMap[(aggregationConfig, period)];
 
-                        bufferData.BufferPosition += partialBuffer.Length;
+                            Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
+
+                            bufferData.BufferPosition += partialBuffer.Length;
+                        }
                     }
                 });
 
                 // write data to file
-                foreach (Period period in actualPeriods)
+                foreach (var aggregationConfig in aggregationConfigs)
                 {
-                    var bufferData = periodToBufferDataMap[period];
+                    foreach (Period period in actualPeriods)
+                    {
+                        var bufferData = setupToBufferDataMap[(aggregationConfig, period)];
 
-                    IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
-                    H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
+                        IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
+                        H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
+                    }
                 }
 
                 _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... Done.");
             }
             finally
             {
-                foreach (Period period in actualPeriods)
+                foreach (var aggregationConfig in aggregationConfigs)
                 {
-                    var datasetId = periodToBufferDataMap[period].DatasetId;
-                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                    foreach (Period period in actualPeriods)
+                    {
+                        var datasetId = setupToBufferDataMap[(aggregationConfig, period)].DatasetId;
+                        if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                    }
                 }
             }
         }
 
-        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<Period, AggregationPeriodData> periodToDataMap)
+        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<(AggregationConfig, Period), AggregationPeriodData> setupToDataMap)
         {
             var dataset_double = default(double[]);
             var periodToPartialBufferMap = new Dictionary<Period, double[]>();
 
-            foreach (var item in periodToDataMap)
+            foreach (var item in setupToDataMap)
             {
-                var period = item.Key;
+                var aggregationConfig = item.Key.Item1;
+                var period = item.Key.Item2;
                 var periodData = item.Value;
 
-                switch (_method)
+                switch (aggregationConfig.Method)
                 {
                     case AggregationMethod.Mean:
                     case AggregationMethod.MeanPolar:
@@ -261,20 +287,20 @@ namespace OneDas.Hdf.VdsTool.Commands
                         if (dataset_double == null)
                             dataset_double = ExtendedDataStorageBase.ApplyDatasetStatus(data, statusSet);
 
-                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, (int)periodData.SampleCount, dataset_double, _logger);
+                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(_method, _argument, (int)periodData.SampleCount, data, statusSet, _logger);
+                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, data, statusSet, _logger);
 
                         break;
 
                     default:
 
-                        _logger.LogWarning($"The aggregation method '{_method}' is not known. Skipping period {period}.");
+                        _logger.LogWarning($"The aggregation method '{aggregationConfig.Method}' is not known. Skipping period {period}.");
 
                         continue;
                 }
@@ -283,10 +309,12 @@ namespace OneDas.Hdf.VdsTool.Commands
             return periodToPartialBufferMap;
         }
 
-        private double[] ApplyAggregationFunction(AggregationMethod method, string argument, int kernelSize, double[] data, ILogger logger)
+        private double[] ApplyAggregationFunction(AggregationConfig aggregationConfig, int kernelSize, double[] data, ILogger logger)
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
+            var method = aggregationConfig.Method;
+            var argument = aggregationConfig.Argument;
 
             switch (method)
             {
@@ -402,10 +430,12 @@ namespace OneDas.Hdf.VdsTool.Commands
             return result;
         }
 
-        private double[] ApplyAggregationFunction<T>(AggregationMethod method, string argument, int kernelSize, T[] data, byte[] statusSet, ILogger logger)
+        private double[] ApplyAggregationFunction<T>(AggregationConfig aggregationConfig, int kernelSize, T[] data, byte[] statusSet, ILogger logger)
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
+            var method = aggregationConfig.Method;
+            var argument = aggregationConfig.Argument;
 
             switch (method)
             {
@@ -475,66 +505,66 @@ namespace OneDas.Hdf.VdsTool.Commands
             return result;
         }
 
-        private bool ApplyAggregationFilter(VariableInfo variableInfo)
+        private bool ApplyAggregationFilter(VariableInfo variable, Dictionary<string, string> filters)
         {
             bool result = true;
 
             // channel
-            if (_filters.ContainsKey("--include-channel"))
+            if (filters.ContainsKey("--include-channel"))
             {
-                if (variableInfo.VariableNames.Any())
-                    result &= Regex.IsMatch(variableInfo.VariableNames.Last(), _filters["--include-channel"]);
+                if (variable.VariableNames.Any())
+                    result &= Regex.IsMatch(variable.VariableNames.Last(), filters["--include-channel"]);
                 else
                     result &= false;
             }
 
-            if (_filters.ContainsKey("--exclude-channel"))
+            if (filters.ContainsKey("--exclude-channel"))
             {
-                if (variableInfo.VariableNames.Any())
-                    result &= !Regex.IsMatch(variableInfo.VariableNames.Last(), _filters["--exclude-channel"]);
+                if (variable.VariableNames.Any())
+                    result &= !Regex.IsMatch(variable.VariableNames.Last(), filters["--exclude-channel"]);
                 else
                     result &= true;
             }
 
             // group
-            if (_filters.ContainsKey("--include-group"))
+            if (filters.ContainsKey("--include-group"))
             {
-                if (variableInfo.VariableGroups.Any())
-                    result &= variableInfo.VariableGroups.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, _filters["--include-group"]));
+                if (variable.VariableGroups.Any())
+                    result &= variable.VariableGroups.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
                 else
                     result &= false;
             }
 
-            if (_filters.ContainsKey("--exclude-group"))
+            if (filters.ContainsKey("--exclude-group"))
             {
-                if (variableInfo.VariableGroups.Any())
-                    result &= !variableInfo.VariableGroups.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, _filters["--exclude-group"]));
+                if (variable.VariableGroups.Any())
+                    result &= !variable.VariableGroups.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
                 else
                     result &= true;
             }
 
             // unit
-            if (_filters.ContainsKey("--include-unit"))
+            if (filters.ContainsKey("--include-unit"))
             {
 #warning Remove this special case check.
-                if (variableInfo.Units.Last() == null)
+                if (variable.Units.Last() == null)
                 {
                     _logger.LogWarning("Unit 'null' value detected.");
                     result &= false;
                 }
                 else
                 {
-                    if (variableInfo.Units.Any())
-                        result &= Regex.IsMatch(variableInfo.Units.Last(), _filters["--include-unit"]);
+                    if (variable.Units.Any())
+                        result &= Regex.IsMatch(variable.Units.Last(), filters["--include-unit"]);
                     else
                         result &= false;
                 }
             }
 
-            if (_filters.ContainsKey("--exclude-unit"))
+            if (filters.ContainsKey("--exclude-unit"))
             {
 #warning Remove this special case check.
-                if (variableInfo.Units.Last() == null)
+                if (variable.Units.Last() == null)
                 {
                     _logger.LogWarning("Unit 'null' value detected.");
                     result &= true;
@@ -542,8 +572,8 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
                 else
                 {
-                    if (variableInfo.Units.Any())
-                        result &= !Regex.IsMatch(variableInfo.Units.Last(), _filters["--exclude-unit"]);
+                    if (variable.Units.Any())
+                        result &= !Regex.IsMatch(variable.Units.Last(), filters["--exclude-unit"]);
                     else
                         result &= true;
                 }

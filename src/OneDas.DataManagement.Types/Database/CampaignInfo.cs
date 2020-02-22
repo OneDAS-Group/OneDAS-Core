@@ -9,7 +9,7 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
-    public class CampaignInfo : InfoBase
+    public class CampaignInfo : CampaignElement
     {
         #region "Constructors"
 
@@ -118,7 +118,7 @@ namespace OneDas.DataManagement.Database
             return this.Name;
         }
 
-        public override IEnumerable<InfoBase> GetChilds()
+        public override IEnumerable<CampaignElement> GetChilds()
         {
             return this.Variables;
         }

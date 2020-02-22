@@ -7,12 +7,12 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{GetDisplayName(),nq}")]
-    public class VariableInfo : InfoBase
+    public class VariableInfo : CampaignElement
     {
 #warning Ensure the properties are never zero (right now they may be set from outside)
         #region "Constructors"
 
-        public VariableInfo(string name, InfoBase parent) : base(name, parent)
+        public VariableInfo(string name, CampaignElement parent) : base(name, parent)
         {
             this.VariableNames = new List<string>();
             this.VariableGroups = new List<string>();
@@ -82,7 +82,7 @@ namespace OneDas.DataManagement.Database
             return $"{this.Parent.GetPath()}/{this.Name}";
         }
 
-        public override IEnumerable<InfoBase> GetChilds()
+        public override IEnumerable<CampaignElement> GetChilds()
         {
             return this.Datasets;
         }
