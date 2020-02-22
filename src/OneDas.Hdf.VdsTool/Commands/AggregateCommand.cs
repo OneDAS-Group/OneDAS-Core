@@ -127,10 +127,10 @@ namespace OneDas.Hdf.VdsTool.Commands
 
             var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.CampaignName == campaign.Name).ToList();
 
-            var variableToAggregationConfigMap = campaign.Variables.ToDictionary(variable => variable, variable =>
-            {
-                return potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(variable, config.Filters)).ToList();
-            });
+            var variableToAggregationConfigMap = campaign.Variables
+                .ToDictionary(variable => variable, variable => potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(variable, config.Filters)).ToList())
+                .Where(entry => entry.Value.Any())
+                .ToDictionary(entry => entry.Key, entry => entry.Value);
 
             foreach (var entry in variableToAggregationConfigMap)
             {
@@ -159,17 +159,24 @@ namespace OneDas.Hdf.VdsTool.Commands
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
-            var setupToDataMap = new Dictionary<(AggregationConfig, Period), AggregationPeriodData>();
-            var setupToBufferDataMap = new Dictionary<(AggregationConfig, Period), AggregationBufferData>();
+            var setupToDataMap = new Dictionary<AggregationSetup, AggregationPeriodData>();
+            var setupToBufferDataMap = new Dictionary<AggregationSetup, AggregationBufferData>();
             var actualPeriods = new HashSet<Period>();
+
+            var setups = aggregationConfigs.SelectMany(config =>
+            {
+                return Enum.GetValues(typeof(Period))
+                    .Cast<Period>()
+                    .Select(period => new AggregationSetup(config, period));
+            }).ToList();
 
             try
             {
                 // prepare buffers
-                foreach (var aggregationConfig in aggregationConfigs)
+                foreach (var setup in setups)
                 {
                     // translate method name
-                    var methodIdentifier = aggregationConfig.Method switch
+                    var methodIdentifier = setup.Config.Method switch
                     {
                         AggregationMethod.Mean => "mean",
                         AggregationMethod.MeanPolar => "mean_polar",
@@ -179,36 +186,33 @@ namespace OneDas.Hdf.VdsTool.Commands
                         AggregationMethod.Rms => "rms",
                         AggregationMethod.MinBitwise => "min_bitwise",
                         AggregationMethod.MaxBitwise => "max_bitwise",
-                        _ => throw new Exception($"The aggregation method '{aggregationConfig.Method}' is unknown.")
+                        _ => throw new Exception($"The aggregation method '{setup.Config.Method}' is unknown.")
                     };
 
-                    foreach (Period period in Enum.GetValues(typeof(Period)))
+                    var targetDatasetPath = $"{groupPath}/{(int)setup.Period} s_{methodIdentifier}";
+
+                    if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
                     {
-                        var targetDatasetPath = $"{groupPath}/{(int)period} s_{methodIdentifier}";
+                        // buffer data
+                        var bufferData = new AggregationBufferData(setup.Period);
+                        var bufferSize = (ulong)bufferData.Buffer.Length;
+                        var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
 
-                        if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
-                        {
-                            // buffer data
-                            var bufferData = new AggregationBufferData(period);
-                            var bufferSize = (ulong)bufferData.Buffer.Length;
-                            var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
+                        if (!(H5I.is_valid(datasetId) > 0))
+                            throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
 
-                            if (!(H5I.is_valid(datasetId) > 0))
-                                throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
+                        bufferData.DatasetId = datasetId;
+                        setupToBufferDataMap[setup] = bufferData;
 
-                            bufferData.DatasetId = datasetId;
-                            setupToBufferDataMap[(aggregationConfig, period)] = bufferData;
+                        // period data
+                        var periodData = new AggregationPeriodData(setup.Period, sampleRateContainer, valueSize);
+                        setupToDataMap[setup] = periodData;
 
-                            // period data
-                            var periodData = new AggregationPeriodData(period, sampleRateContainer, valueSize);
-                            setupToDataMap[(aggregationConfig, period)] = periodData;
-
-                            actualPeriods.Add(period);
-                        }
-                        else
-                        {
-                            // skip period
-                        }
+                        actualPeriods.Add(setup.Period);
+                    }
+                    else
+                    {
+                        // skip period
                     }
                 }
 
@@ -219,60 +223,53 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                 dataReader.ReadFullDay<T>(dataset, date, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
                 {
-                    foreach (var aggregationConfig in aggregationConfigs)
+                    // get aggregation data
+                    var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, setupToDataMap);
+
+                    foreach (var setup in setups)
                     {
-                        // get aggregation data
-                        var periodToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, setupToDataMap);
-
                         // copy aggregation data into buffer
-                        foreach (var period in actualPeriods)
-                        {
-                            var partialBuffer = periodToPartialBufferMap[period];
-                            var bufferData = setupToBufferDataMap[(aggregationConfig, period)];
+                        var partialBuffer = setupToPartialBufferMap[setup];
+                        var bufferData = setupToBufferDataMap[setup];
 
-                            Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
+                        Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
 
-                            bufferData.BufferPosition += partialBuffer.Length;
-                        }
+                        bufferData.BufferPosition += partialBuffer.Length;
                     }
                 });
 
                 // write data to file
-                foreach (var aggregationConfig in aggregationConfigs)
+                foreach (var setup in setups)
                 {
-                    foreach (Period period in actualPeriods)
-                    {
-                        var bufferData = setupToBufferDataMap[(aggregationConfig, period)];
+                    var bufferData = setupToBufferDataMap[setup];
 
-                        IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
-                        H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
-                    }
+                    IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
+                    H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
                 }
 
                 _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... Done.");
             }
             finally
             {
-                foreach (var aggregationConfig in aggregationConfigs)
+                foreach (var setup in setups)
                 {
-                    foreach (Period period in actualPeriods)
-                    {
-                        var datasetId = setupToBufferDataMap[(aggregationConfig, period)].DatasetId;
-                        if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                    }
+                    var datasetId = setupToBufferDataMap[setup].DatasetId;
+
+                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 }
             }
         }
 
-        private Dictionary<Period, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<(AggregationConfig, Period), AggregationPeriodData> setupToDataMap)
+        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<AggregationSetup, AggregationPeriodData> setupToDataMap)
         {
             var dataset_double = default(double[]);
-            var periodToPartialBufferMap = new Dictionary<Period, double[]>();
+            var setupToPartialBufferMap = new Dictionary<AggregationSetup, double[]>();
 
             foreach (var item in setupToDataMap)
             {
-                var aggregationConfig = item.Key.Item1;
-                var period = item.Key.Item2;
+                var setup = item.Key;
+                var aggregationConfig = setup.Config;
+                var period = setup.Period;
                 var periodData = item.Value;
 
                 switch (aggregationConfig.Method)
@@ -287,14 +284,14 @@ namespace OneDas.Hdf.VdsTool.Commands
                         if (dataset_double == null)
                             dataset_double = ExtendedDataStorageBase.ApplyDatasetStatus(data, statusSet);
 
-                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, _logger);
+                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        periodToPartialBufferMap[period] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, data, statusSet, _logger);
+                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, data, statusSet, _logger);
 
                         break;
 
@@ -306,7 +303,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
             }
 
-            return periodToPartialBufferMap;
+            return setupToPartialBufferMap;
         }
 
         private double[] ApplyAggregationFunction(AggregationConfig aggregationConfig, int kernelSize, double[] data, ILogger logger)
