@@ -21,12 +21,9 @@ namespace OneDas.Hdf.VdsTool.Commands
     {
         #region Fields
 
-        private AggregationMethod _method;
-        private string _argument;
-        private string _campaignName;
+
         private uint _days;
         private uint _aggregationChunkSizeMb;
-        private Dictionary<string, string> _filters;
         private ILogger _logger;
 
         private OneDasDatabaseManager _databaseManager;
@@ -35,15 +32,11 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Constructors
 
-        public AggregateCommand(AggregationMethod method, string argument, string campaignName, uint days, uint aggregationChunkSizeMb, Dictionary<string, string> filters, ILogger logger)
+        public AggregateCommand(uint days, uint aggregationChunkSizeMb, ILogger logger)
         {
-            _method = method;
-            _argument = argument;
-            _campaignName = campaignName;
             _days = days;
             _aggregationChunkSizeMb = aggregationChunkSizeMb;
             _logger = logger;
-            _filters = filters;
         }
 
         #endregion
@@ -59,11 +52,11 @@ namespace OneDas.Hdf.VdsTool.Commands
 
             for (int i = 0; i <= _days; i++)
             {
-                this.CreateAggregatedFiles(epochStart.AddDays(i), _campaignName);
+                this.CreateAggregatedFiles(epochStart.AddDays(i));
             }
         }
 
-        private void CreateAggregatedFiles(DateTime dateTimeBegin, string campaignName)
+        private void CreateAggregatedFiles(DateTime dateTimeBegin)
         {
             var subfolderName = dateTimeBegin.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DATA", subfolderName);

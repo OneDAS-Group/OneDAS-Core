@@ -206,21 +206,6 @@ namespace OneDas.Hdf.VdsTool
         {
             var command = new Command("aggregate", "Aggregates data of channels that match the filter conditions.")
             {
-                new Option("--method", "Possible arguments are 'Mean', 'MeanPolar', 'Min', 'Max', 'Std', 'Rms', 'MinBitwise' and 'MaxBitwise'")
-                {
-                    Argument = new Argument<AggregationMethod>(),
-                    Required = true
-                },
-                new Option("--argument", "Zero or more arguments for the selected aggregation method.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = true
-                },
-                new Option("--campaign-name", "The campaign name, e.g /A/B/C.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = true
-                },
                 new Option("--chunk-size", "The aggregation chunk size in MB.")
                 {
                     Argument = new Argument<uint>(() => 200),
@@ -230,62 +215,16 @@ namespace OneDas.Hdf.VdsTool
                 {
                     Argument = new Argument<uint>(),
                     Required = true
-                },
-                new Option("--include-channel", "A regex based filter to include channels with certain names.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = false
-                },
-                new Option("--include-group", "A regex based filter to include channels within certain groups.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = false
-                },
-                new Option("--include-unit", "A regex based filter to include channels with certain unit.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = false
-                },
-                new Option("--exclude-channel", "A regex based filter to exclude channels with certain names.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = false
-                },
-                new Option("--exclude-group", "A regex based filter to exclude channels within certain groups.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = false
-                },
-                new Option("--exclude-unit", "A regex based filter to exclude channels with certain unit.")
-                {
-                    Argument = new Argument<string>(),
-                    Required = false
                 }
             };
 
-            command.Handler = CommandHandler.Create((AggregationMethod method, string argument, string campaignName, uint chunkSize, uint days, ParseResult parseResult) =>
+            command.Handler = CommandHandler.Create((uint chunkSize, uint days) =>
             {
                 var logger = _loggerFactory.CreateLogger("AGGREGATE");
-                var filters = new Dictionary<string, string>();
-                var skip = 7;
-                var isOption = true;
-
-                for (int i = skip; i < parseResult.Tokens.Count - 1; i++)
-                {
-                    if (isOption)
-                    {
-                        var filterOption = parseResult.Tokens[i].Value;
-                        var filterArgument = parseResult.Tokens[i + 1].Value;
-
-                        filters[filterOption] = filterArgument;
-                    }
-
-                    isOption = !isOption;
-                }
-
+                
                 try
                 {
-                    new AggregateCommand(method, argument, campaignName, days, chunkSize, filters, logger).Run();
+                    new AggregateCommand(days, chunkSize, logger).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)
