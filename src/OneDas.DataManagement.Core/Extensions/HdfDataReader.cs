@@ -50,7 +50,8 @@ namespace OneDas.DataManagement.Extensions
         public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
         {
             var folderPath = Path.Combine(this.RootPath, "DATA", dateTime.ToString("yyyy-MM"));
-            var fileNamePattern = $"{campaignName}_V*_{dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+            var campaignNameFile = campaignName.TrimStart('/').Replace('/', '_');
+            var fileNamePattern = $"{campaignNameFile}_V*_{dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
 
             return Directory.EnumerateFiles(folderPath, fileNamePattern).Any();
         }
@@ -155,6 +156,11 @@ namespace OneDas.DataManagement.Extensions
 
         protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
         {
+            this.EnsureOpened();
+
+            var currentLocation = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = this.RootPath;
+
             byte[] statusSet = null;
 
             var datasetPath = dataset.GetPath();
@@ -162,6 +168,8 @@ namespace OneDas.DataManagement.Extensions
 
             if (H5L.exists(_fileId, datasetPath + "_status") > 0)
                 statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, length, 1).Cast<byte>().ToArray();
+
+            Environment.CurrentDirectory = currentLocation;
 
             return (data, statusSet);
         }

@@ -206,7 +206,7 @@ namespace OneDas.Hdf.VdsTool
         {
             var command = new Command("aggregate", "Aggregates data of channels that match the filter conditions.")
             {
-                new Option("--method", "Possible arguments are 'mean', 'mean_polar', 'min', 'max', 'std', 'rms', 'min_bitwise' and 'max_bitwise'")
+                new Option("--method", "Possible arguments are 'Mean', 'MeanPolar', 'Min', 'Max', 'Std', 'Rms', 'MinBitwise' and 'MaxBitwise'")
                 {
                     Argument = new Argument<AggregationMethod>(),
                     Required = true
@@ -224,7 +224,7 @@ namespace OneDas.Hdf.VdsTool
                 new Option("--chunk-size", "The aggregation chunk size in MB.")
                 {
                     Argument = new Argument<uint>(() => 200),
-                    Required = false
+                    Required = true
                 },
                 new Option("--days", "The number of days in the past to look for files to calculate aggregations for.")
                 {
@@ -263,7 +263,7 @@ namespace OneDas.Hdf.VdsTool
                 }
             };
 
-            command.Handler = CommandHandler.Create((AggregationMethod method, string argument, string campaignName, uint days, uint aggregationChunkSizeMb, ParseResult parseResult) =>
+            command.Handler = CommandHandler.Create((AggregationMethod method, string argument, string campaignName, uint chunkSize, uint days, ParseResult parseResult) =>
             {
                 var logger = _loggerFactory.CreateLogger("AGGREGATE");
                 var filters = new Dictionary<string, string>();
@@ -285,7 +285,7 @@ namespace OneDas.Hdf.VdsTool
 
                 try
                 {
-                    new AggregateCommand(method, argument, campaignName, days, aggregationChunkSizeMb, filters, logger).Run();
+                    new AggregateCommand(method, argument, campaignName, days, chunkSize, filters, logger).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)

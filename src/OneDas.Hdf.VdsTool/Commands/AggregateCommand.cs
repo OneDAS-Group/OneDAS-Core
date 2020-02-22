@@ -125,6 +125,8 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime dateTimeBegin, long targetFileId)
         {
+            _logger.LogInformation($"Processing day {dateTimeBegin.ToString("yyyy-MM-dd")} ... ");
+
             var filteredVariables = campaign.Variables.Where(variableInfo => this.ApplyAggregationFilter(variableInfo)).ToList();
 
             foreach (var filteredVariable in filteredVariables)
@@ -136,10 +138,14 @@ namespace OneDas.Hdf.VdsTool.Commands
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
                                                     new object[] { dataReader, dataset, dateTimeBegin, targetFileId });
             }
+
+            _logger.LogInformation($"Processing day {dateTimeBegin.ToString("yyyy-MM-dd")} ... Done.");
         }
 
         private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, DateTime dateTimeBegin, long targetFileId) where T : unmanaged
         {
+            _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... ");
+
             // value size
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
 
@@ -152,11 +158,25 @@ namespace OneDas.Hdf.VdsTool.Commands
             var periodToBufferDataMap = new Dictionary<Period, AggregationBufferData>();
             var actualPeriods = new List<Period>();
 
+            // translate method name
+            var methodIdentifier = _method switch
+            {
+                AggregationMethod.Mean => "mean",
+                AggregationMethod.MeanPolar => "mean_polar",
+                AggregationMethod.Min => "min",
+                AggregationMethod.Max => "max",
+                AggregationMethod.Std => "std",
+                AggregationMethod.Rms => "rms",
+                AggregationMethod.MinBitwise => "min_bitwise",
+                AggregationMethod.MaxBitwise => "max_bitwise",
+                _ => throw new Exception($"The aggregation method '{_method}' is unknown.")
+            };
+
             try
             {
                 foreach (Period period in Enum.GetValues(typeof(Period)))
                 {
-                    var targetDatasetPath = $"{groupPath}/{(int)period}s_{_method}";
+                    var targetDatasetPath = $"{groupPath}/{(int)period} s_{methodIdentifier}";
 
                     if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
                     {
@@ -213,6 +233,8 @@ namespace OneDas.Hdf.VdsTool.Commands
                     IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
                     H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
                 }
+
+                _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... Done.");
             }
             finally
             {

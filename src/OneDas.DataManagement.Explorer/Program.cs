@@ -82,7 +82,6 @@ namespace OneDas.DataManagement.Explorer
 
             // load and update database
             Program.DatabaseManager = new OneDasDatabaseManager();
-            Program.DatabaseManager.Update();
 
             // service vs. interactive
             if (isUserInteractive)

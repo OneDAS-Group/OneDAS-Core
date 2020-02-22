@@ -56,6 +56,8 @@ namespace OneDas.DataManagement
             }
 
             _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
+
+            this.Update();
         }
 
         #endregion
