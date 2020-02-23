@@ -96,14 +96,13 @@ namespace OneDas.DataManagement.Convert
             while (currentOffset < TimeSpan.FromDays(1))
             {
                 var currentDateTimeBegin = dateTimeBegin + currentOffset;
+                currentOffset += periodPerFile;
 
                 if (convertContext.ProcessedPeriods.Contains(currentDateTimeBegin))
                     continue;
 
                 var fileName = currentDateTimeBegin.ToString(fileNameFormat);
                 var sourceFilePath = Path.Combine(sourceDirectoryPath, fileName);
-
-                currentOffset += periodPerFile;
 
                 if (!File.Exists(sourceFilePath))
                 {

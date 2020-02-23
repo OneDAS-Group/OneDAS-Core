@@ -47,7 +47,6 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             _databaseManager = new OneDasDatabaseManager();
 
-
             var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();
             var epochEnd = DateTime.UtcNow.Date;
             var epochStart = epochEnd.AddDays(-_days);
