@@ -10,9 +10,9 @@ namespace OneDas.DataManagement.Explorer.Web.Pages
 {
     public class FileModel : PageModel
     {
-        private HdfExplorerOptions _options;
+        private OneDasExplorerOptions _options;
 
-        public FileModel(IOptions<HdfExplorerOptions> options)
+        public FileModel(IOptions<OneDasExplorerOptions> options)
         {
             _options = options.Value;
         }

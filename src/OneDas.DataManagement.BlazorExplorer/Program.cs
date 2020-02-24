@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Serilog.Extensions.Logging;
@@ -13,7 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.Explorer
+namespace OneDas.DataManagement.BlazorExplorer
 {
     public class Program
     {
@@ -84,20 +85,20 @@ namespace OneDas.DataManagement.Explorer
             Program.DatabaseManager = new OneDasDatabaseManager();
 
             // service vs. interactive
-            if (isUserInteractive)
-                await Program.CreateWebHost(currentDirectory).RunAsync();
-            else
-                Program.CreateWebHost(currentDirectory).RunAsService();
+            await Program.CreateHostBuilder(currentDirectory).Build().RunAsync();
+            //if (isUserInteractive)
+            //    await Program.CreateWebHost(currentDirectory).RunAsync();
+            //else
+            //    Program.CreateWebHost(currentDirectory).RunAsService();
 
             return 0;
         }
 
-        private static IWebHost CreateWebHost(string currentDirectory)
-        {
-            if (!Directory.Exists(Path.Combine(currentDirectory, "wwwroot")))
-                currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        #endregion
 
-            var webHost = new WebHostBuilder()
+
+        public static IHostBuilder CreateHostBuilder(string currentDirectory) =>
+            Host.CreateDefaultBuilder()
                 .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
                 .ConfigureLogging(loggingBuilder =>
                 {
@@ -109,16 +110,12 @@ namespace OneDas.DataManagement.Explorer
                     loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
                     loggingBuilder.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
                 })
-                .UseKestrel()
-                .UseUrls(_options.AspBaseUrl)
-                .UseContentRoot(currentDirectory)
-                .UseStartup<Startup>()
-                .SuppressStatusMessages(true)
-                .Build();
-
-            return webHost;
-        }
-
-        #endregion
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls(_options.AspBaseUrl);
+                    webBuilder.UseContentRoot(currentDirectory);
+                    webBuilder.SuppressStatusMessages(true);
+                });
     }
 }

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <Description>Provides a web-based user interface to browse the OneDAS database and export desired data.</Description>
+    <PackageTags>OneDAS explorer export</PackageTags>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlazorEmbedLibrary" Version="1.0.0" />
+    <PackageReference Include="MatBlazor" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.2" />
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20104.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\extensions\OneDas.Extension.Csv\OneDas.Extension.Csv.csproj" />
+    <ProjectReference Include="..\..\extensions\OneDas.Extension.Famos\OneDas.Extension.Famos.csproj" />
+    <ProjectReference Include="..\..\extensions\OneDas.Extension.Mat73\OneDas.Extension.Mat73.csproj" />
+    <ProjectReference Include="..\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj" />
+  </ItemGroup>
+
+</Project>

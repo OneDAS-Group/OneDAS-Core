@@ -3,12 +3,12 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 
-namespace OneDas.DataManagement.Explorer
+namespace OneDas.DataManagement.BlazorExplorer
 {
     [DataContract]
-    public class HdfExplorerOptions
+    public class OneDasExplorerOptions
     {
-        public HdfExplorerOptions()
+        public OneDasExplorerOptions()
         {
             // unset, mutable
             this.DataBaseFolderPath = string.Empty;

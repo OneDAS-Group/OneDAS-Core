@@ -19,10 +19,10 @@ namespace OneDas.DataManagement.Explorer.Core
         private ILogger _logger;
         private OneDasExplorerStateManager _stateManager;
         private IHubContext<Broadcaster> _context;
-        private HdfExplorerOptions _options;
+        private OneDasExplorerOptions _options;
         private string _connectionId;
 
-        public DownloadService(OneDasExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options, string connectionId)
+        public DownloadService(OneDasExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<OneDasExplorerOptions> options, string connectionId)
         {
             _stateManager = stateManager;
             _context = context;
