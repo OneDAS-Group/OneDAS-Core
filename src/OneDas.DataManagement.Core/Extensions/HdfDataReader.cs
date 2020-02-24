@@ -78,69 +78,80 @@ namespace OneDas.DataManagement.Extensions
 
             // get data
             var totalDays = (end - begin).TotalDays;
-            var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
 
-            if (totalDays <= 7)
-            {
-                granularity = DataAvailabilityGranularity.ChunkLevel;
-                aggregatedData = data;
-            }
-            else if (totalDays <= 365)
-            {
-                granularity = DataAvailabilityGranularity.DayLevel;
-                offset = (ulong)begin.TimeOfDay.TotalMinutes;
-                aggregatedData = new int[(int)Math.Ceiling(totalDays)];
+            var currentLocation = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = this.RootPath;
 
-                Parallel.For(0, (int)Math.Ceiling(totalDays), day =>
+            try
+            {
+                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
+
+                if (totalDays <= 7)
                 {
-                    var startIndex = (ulong)day * samplesPerDay; // inclusive
-                    var endIndex = startIndex + samplesPerDay; // exclusive
-
-                    if ((int)startIndex - (int)offset < 0)
-                        startIndex = 0;
-                    else
-                        startIndex = startIndex - offset;
-
-                    if (endIndex - offset >= (ulong)data.Length)
-                        endIndex = (ulong)data.Length;
-                    else
-                        endIndex = endIndex - offset;
-
-                    aggregatedData[day] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
-                });
-            }
-            else
-            {
-                var totalMonths = (end.Month - begin.Month) + 1 + 12 * (end.Year - begin.Year);
-                var totalDateTimeBegin = new DateTime(begin.Year, begin.Month, 1);
-
-                granularity = DataAvailabilityGranularity.MonthLevel;
-                offset = (ulong)(begin - totalDateTimeBegin).TotalMinutes;
-                aggregatedData = new int[totalMonths];
-
-                Parallel.For(0, totalMonths, month =>
+                    granularity = DataAvailabilityGranularity.ChunkLevel;
+                    aggregatedData = data;
+                }
+                else if (totalDays <= 365)
                 {
-                    ulong startIndex; // inclusive
-                    ulong endIndex; // exclusive
+                    granularity = DataAvailabilityGranularity.DayLevel;
+                    offset = (ulong)begin.TimeOfDay.TotalMinutes;
+                    aggregatedData = new int[(int)Math.Ceiling(totalDays)];
 
-                    var currentDateTimeBegin = totalDateTimeBegin.AddMonths(month);
-                    var currentDateTimeEnd = currentDateTimeBegin.AddMonths(1);
+                    Parallel.For(0, (int)Math.Ceiling(totalDays), day =>
+                    {
+                        var startIndex = (ulong)day * samplesPerDay; // inclusive
+                        var endIndex = startIndex + samplesPerDay; // exclusive
 
-                    if ((currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset < 0)
-                        startIndex = 0;
-                    else
-                        startIndex = (ulong)(currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset;
+                        if ((int)startIndex - (int)offset < 0)
+                            startIndex = 0;
+                        else
+                            startIndex = startIndex - offset;
 
-                    if ((currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset >= data.Length)
-                        endIndex = (ulong)data.Length;
-                    else
-                        endIndex = (ulong)(currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset;
+                        if (endIndex - offset >= (ulong)data.Length)
+                            endIndex = (ulong)data.Length;
+                        else
+                            endIndex = endIndex - offset;
 
-                    aggregatedData[month] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
-                });
+                        aggregatedData[day] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
+                    });
+                }
+                else
+                {
+                    var totalMonths = (end.Month - begin.Month) + 1 + 12 * (end.Year - begin.Year);
+                    var totalDateTimeBegin = new DateTime(begin.Year, begin.Month, 1);
+
+                    granularity = DataAvailabilityGranularity.MonthLevel;
+                    offset = (ulong)(begin - totalDateTimeBegin).TotalMinutes;
+                    aggregatedData = new int[totalMonths];
+
+                    Parallel.For(0, totalMonths, month =>
+                    {
+                        ulong startIndex; // inclusive
+                        ulong endIndex; // exclusive
+
+                        var currentDateTimeBegin = totalDateTimeBegin.AddMonths(month);
+                        var currentDateTimeEnd = currentDateTimeBegin.AddMonths(1);
+
+                        if ((currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset < 0)
+                            startIndex = 0;
+                        else
+                            startIndex = (ulong)(currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset;
+
+                        if ((currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset >= data.Length)
+                            endIndex = (ulong)data.Length;
+                        else
+                            endIndex = (ulong)(currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset;
+
+                        aggregatedData[month] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
+                    });
+                }
+
+                return new DataAvailabilityStatistics(granularity, aggregatedData);
             }
-
-            return new DataAvailabilityStatistics(granularity, aggregatedData);
+            finally
+            {
+                Environment.CurrentDirectory = currentLocation;
+            }
         }
 
         public override void Dispose()
@@ -158,18 +169,24 @@ namespace OneDas.DataManagement.Extensions
         {
             this.EnsureOpened();
 
+            T[] data;
+            byte[] statusSet = null;
+
             var currentLocation = Environment.CurrentDirectory;
             Environment.CurrentDirectory = this.RootPath;
 
-            byte[] statusSet = null;
+            try
+            {
+                var datasetPath = dataset.GetPath();
+                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, 1, length, 1);
 
-            var datasetPath = dataset.GetPath();
-            var data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, 1, length, 1);
-
-            if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, length, 1).Cast<byte>().ToArray();
-
-            Environment.CurrentDirectory = currentLocation;
+                if (H5L.exists(_fileId, datasetPath + "_status") > 0)
+                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, length, 1).Cast<byte>().ToArray();
+            }
+            finally
+            {
+                Environment.CurrentDirectory = currentLocation;
+            }
 
             return (data, statusSet);
         }

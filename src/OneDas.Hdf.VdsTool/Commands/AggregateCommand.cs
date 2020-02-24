@@ -215,6 +215,9 @@ namespace OneDas.Hdf.VdsTool.Commands
                     }
                 }
 
+                if (!setupToDataMap.Any())
+                    return;
+
                 // read data
                 var fundamentalPeriod = TimeSpan.FromMinutes(10);
                 var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
@@ -225,8 +228,10 @@ namespace OneDas.Hdf.VdsTool.Commands
                     // get aggregation data
                     var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, setupToDataMap);
 
-                    foreach (var setup in setups)
+                    foreach (var entry in setupToDataMap)
                     {
+                        var setup = entry.Key;
+
                         // copy aggregation data into buffer
                         var partialBuffer = setupToPartialBufferMap[setup];
                         var bufferData = setupToBufferDataMap[setup];
@@ -238,8 +243,9 @@ namespace OneDas.Hdf.VdsTool.Commands
                 });
 
                 // write data to file
-                foreach (var setup in setups)
+                foreach (var entry in setupToDataMap)
                 {
+                    var setup = entry.Key;
                     var bufferData = setupToBufferDataMap[setup];
 
                     IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
@@ -252,9 +258,12 @@ namespace OneDas.Hdf.VdsTool.Commands
             {
                 foreach (var setup in setups)
                 {
-                    var datasetId = setupToBufferDataMap[setup].DatasetId;
+                    if (setupToBufferDataMap.ContainsKey(setup))
+                    {
+                        var datasetId = setupToBufferDataMap[setup].DatasetId;
 
-                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                        if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                    }
                 }
             }
         }

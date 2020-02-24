@@ -83,7 +83,11 @@ namespace OneDas.DataManagement.Database
                     if (referenceDataset is null)
                         throw new KeyNotFoundException($"The requested dataset '{referenceDataset.Name}' is unknown.");
 
-                    return new DatasetInfo(referenceDataset.Name, variable) { DataType = referenceDataset.DataType };
+                    return new DatasetInfo(referenceDataset.Name, variable) 
+                    { 
+                        DataType = referenceDataset.DataType,
+                        IsNative = referenceDataset.IsNative
+                    };
                 }).ToList();
 
                 return variable;

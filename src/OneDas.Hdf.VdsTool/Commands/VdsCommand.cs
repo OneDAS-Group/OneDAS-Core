@@ -166,14 +166,18 @@ namespace OneDas.Hdf.VdsTool.Commands
                 // load is_chunk_completed_set
                 campaigns.ForEach(campaignInfo =>
                 {
-                    if (_datasetToSourceFilesMap[campaignInfo.ChunkDataset].Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
+                    // the averages database has no "is_chunk_completed_set"
+                    if (_datasetToSourceFilesMap.ContainsKey(campaignInfo.ChunkDataset))
                     {
-                        var key = $"{sourceFilePath}+{campaignInfo.GetPath()}";
-
-                        if (!_isChunkCompletedMap.ContainsKey(key))
+                        if (_datasetToSourceFilesMap[campaignInfo.ChunkDataset].Any(sourceFileInfo => sourceFileInfo.FilePath == sourceFilePath))
                         {
-                            var isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{campaignInfo.GetPath()}/is_chunk_completed_set");
-                            _isChunkCompletedMap[key] = isChunkCompletedSet.ToList();
+                            var key = $"{sourceFilePath}+{campaignInfo.GetPath()}";
+
+                            if (!_isChunkCompletedMap.ContainsKey(key))
+                            {
+                                var isChunkCompletedSet = IOHelper.ReadDataset<byte>(sourceFileId, $"{campaignInfo.GetPath()}/is_chunk_completed_set");
+                                _isChunkCompletedMap[key] = isChunkCompletedSet.ToList();
+                            }
                         }
                     }
                 });
@@ -255,6 +259,11 @@ namespace OneDas.Hdf.VdsTool.Commands
             long propertyId = -1;
 
             var createDataset = false;
+
+            // the averages database has no "is_chunk_completed_set"
+            if (!_datasetToTypeIdMap.ContainsKey(datasetInfo))
+                return;
+                
             var typeId = _datasetToTypeIdMap[datasetInfo];
 
             try
@@ -270,14 +279,23 @@ namespace OneDas.Hdf.VdsTool.Commands
                 {
                     long sourceSpaceId = -1;
 
-                    var relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Environment.CurrentDirectory.TrimEnd('\\').TrimEnd('/').Length)}";
-
                     sourceSpaceId = H5S.create_simple(1, new ulong[] { sourceFileInfo.Length }, new ulong[] { sourceFileInfo.Length });
 
+                    var relativeFilePath = $".{sourceFileInfo.FilePath.Remove(0, Environment.CurrentDirectory.TrimEnd('\\').TrimEnd('/').Length)}";
                     var key = $"{sourceFileInfo.FilePath}+{campaignPath}";
-                    var chunkCount = _isChunkCompletedMap[key].Count;
-                    var firstIndex = _isChunkCompletedMap[key].FindIndex(value => value > 0);
-                    var lastIndex = _isChunkCompletedMap[key].FindLastIndex(value => value > 0);
+
+                    int chunkCount = 1440;
+                    int firstIndex = 0;
+                    int lastIndex = 1439;
+
+                    // the averages database has no "is_chunk_completed_set"
+                    if (_isChunkCompletedMap.ContainsKey(key))
+                    {
+                        var isChunkCompletedSet = _isChunkCompletedMap[key];
+                        chunkCount = isChunkCompletedSet.Count;
+                        firstIndex = isChunkCompletedSet.FindIndex(value => value > 0);
+                        lastIndex = isChunkCompletedSet.FindLastIndex(value => value > 0);
+                    }
 
                     var offset = (ulong)((sourceFileInfo.StartDateTime - epochStart).TotalDays * sampleRate.SamplesPerDay);
                     var start = (ulong)((double)sourceFileInfo.Length * firstIndex / chunkCount);

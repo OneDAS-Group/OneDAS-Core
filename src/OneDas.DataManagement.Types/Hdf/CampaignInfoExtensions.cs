@@ -1,6 +1,5 @@
 ﻿using HDF.PInvoke;
 using OneDas.DataManagement.Database;
-using OneDas.DataManagement.Hdf;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,15 +15,18 @@ namespace OneDas.DataManagement.Hdf
             var idx = 0UL;
 
             // read chunk dataset info
-            datasetId = H5D.open(campaignGroupId, campaign.ChunkDataset.Name);
+            if (IOHelper.CheckLinkExists(campaignGroupId, campaign.ChunkDataset.Name))
+            {
+                datasetId = H5D.open(campaignGroupId, campaign.ChunkDataset.Name);
 
-            try
-            {
-                campaign.ChunkDataset.Update(datasetId, fileContext, updateSourceFileMap);
-            }
-            finally
-            {
-                if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                try
+                {
+                    campaign.ChunkDataset.Update(datasetId, fileContext, updateSourceFileMap);
+                }
+                finally
+                {
+                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                }
             }
 
             // continue
