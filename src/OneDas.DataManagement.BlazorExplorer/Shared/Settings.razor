@@ -1,9 +1,67 @@
-﻿
-<MatButton>Content</MatButton>
+﻿@inject AppState appState
 
-@for (int i = 0; i < 15; i++)
-{
-    <p>
-        status=2147746065
-    </p>
-}
+<div class="settings-content mat-elevation-z11">
+
+    <MatSubtitle2>From (UTC)</MatSubtitle2>
+    <MatDatePicker class="settings-control"
+                   Maximum="appState.DateTimeBeginMaximum"
+                   Format="dd.MM.yyyy HH:mm"
+                   @bind-Value="appState.DateTimeBegin"
+                   EnableTime="true"
+                   Enable24hours="true">
+    </MatDatePicker>
+
+    <MatSubtitle2>To (UTC)</MatSubtitle2>
+    <MatDatePicker class="settings-control"
+                   Minimum="appState.DateTimeEndMinimum"
+                   Format="dd.MM.yyyy HH:mm"
+                   @bind-Value="appState.DateTimeEnd"
+                   EnableTime="true"
+                   Enable24hours="true">
+    </MatDatePicker>
+
+    <MatSubtitle2>Sample Rate</MatSubtitle2>
+    <MatSelectItem class="settings-control"
+                    @bind-Value="appState.SampleRate"
+                    Items="appState.SampleRateValues">
+    </MatSelectItem>
+
+    <MatSubtitle2>Granularity</MatSubtitle2>
+    <MatSelectItem class="settings-control"
+                    @bind-Value="appState.FileGranularity"
+                    Items="appState.FileGranularityValues">
+        <ItemTemplate Context="value">
+            @Utilities.GetEnumLocalization(@value)
+        </ItemTemplate>
+    </MatSelectItem>
+
+    <MatSubtitle2>File Type</MatSubtitle2>
+    <MatSelectItem class="settings-control"
+                    @bind-Value="appState.FileFormat"
+                    Items="appState.FileFormatValues">
+        <ItemTemplate Context="value">
+            @Utilities.GetEnumLocalization(@value)
+        </ItemTemplate>
+    </MatSelectItem>
+
+    <MatDivider></MatDivider>
+
+    <div class="configuration-panel">
+        <MatDivider></MatDivider>
+        <div class="flex-row">
+            <MatIconButton>
+                <i class="fas fa-folder-open" aria-hidden="true"></i>
+            </MatIconButton>
+
+            <MatIconButton>
+                <i class="fas fa-file-download" aria-hidden="true"></i>
+            </MatIconButton>
+        </div>
+
+        <div class="flex-row">
+            <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
+            <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
+        </div>
+    </div>
+
+</div>

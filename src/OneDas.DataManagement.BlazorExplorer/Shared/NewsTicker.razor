@@ -1,0 +1,23 @@
+﻿@inject AppState appState
+
+@*<MatHeadline3 class="news-headline">News</MatHeadline3>*@
+
+@foreach (var newsEntry in appState.NewsPaper.News)
+{
+    <MatCard class="news-card mat-elevation-z11">
+        <MatCardContent>
+            <div>
+                <MatHeadline6 class="clear-margin">
+                    @newsEntry.Title
+                </MatHeadline6>
+                <MatSubtitle2 class="clear-margin">
+                    @newsEntry.Date.ToString("dd.MM.yyyy")
+                </MatSubtitle2>
+            </div>
+
+            <MatBody2>
+                @newsEntry.Message
+            </MatBody2>
+        </MatCardContent>
+    </MatCard>
+}

@@ -97,6 +97,31 @@ namespace OneDas.DataManagement
                         {
                             container = new CampaignContainer(campaignName, dataReader.RootPath);
                             this.Database.CampaignContainers.Add(container);
+
+                            // try to load campaign meta data
+                            var filePath = Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+
+                            CampaignMetaInfo campaignMeta;
+
+                            if (File.Exists(filePath))
+                            {
+                                var jsonString = File.ReadAllText(filePath);
+                                campaignMeta = JsonSerializer.Deserialize<CampaignMetaInfo>(jsonString);
+                            }
+                            else
+                            {
+                                campaignMeta = new CampaignMetaInfo(campaignName);
+                                var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
+                                File.WriteAllText(filePath, jsonString);
+                            }
+
+                            if (string.IsNullOrWhiteSpace(campaignMeta.ShortDescription))
+                                campaignMeta.ShortDescription = "<no description available>";
+
+                            if (string.IsNullOrWhiteSpace(campaignMeta.LongDescription))
+                                campaignMeta.LongDescription = "<no description available>";
+
+                            container.CampaignMeta = campaignMeta;
                         }
 
                         // ensure that found campaign container root path matches that of the data reader

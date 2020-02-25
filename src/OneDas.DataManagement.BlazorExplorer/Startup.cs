@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OneDas.DataManagement.BlazorExplorer.Data;
+using OneDas.DataManagement.BlazorExplorer.Core;
 
 namespace OneDas.DataManagement.BlazorExplorer
 {
@@ -20,7 +20,7 @@ namespace OneDas.DataManagement.BlazorExplorer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddTransient<AppState>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

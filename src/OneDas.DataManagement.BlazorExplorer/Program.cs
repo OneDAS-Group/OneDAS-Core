@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -39,7 +38,7 @@ namespace OneDas.DataManagement.BlazorExplorer
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
             // check interactivity
-            var isUserInteractive = !args.Contains("--non-interactive");
+            var isWindowsService = args.Contains("--non-interactive");
 
             // configure logging
             var serviceProvider = new ServiceCollection().AddLogging(builder =>
@@ -85,19 +84,15 @@ namespace OneDas.DataManagement.BlazorExplorer
             Program.DatabaseManager = new OneDasDatabaseManager();
 
             // service vs. interactive
-            await Program.CreateHostBuilder(currentDirectory).Build().RunAsync();
-            //if (isUserInteractive)
-            //    await Program.CreateWebHost(currentDirectory).RunAsync();
-            //else
-            //    Program.CreateWebHost(currentDirectory).RunAsService();
+            if (isWindowsService)
+                await Program.CreateHostBuilder(currentDirectory).UseWindowsService().Build().RunAsync();
+            else
+                await Program.CreateHostBuilder(currentDirectory).Build().RunAsync();
 
             return 0;
         }
 
-        #endregion
-
-
-        public static IHostBuilder CreateHostBuilder(string currentDirectory) =>
+        public static IHostBuilder CreateHostBuilder(string currentDirectory) => 
             Host.CreateDefaultBuilder()
                 .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
                 .ConfigureLogging(loggingBuilder =>
@@ -117,5 +112,7 @@ namespace OneDas.DataManagement.BlazorExplorer
                     webBuilder.UseContentRoot(currentDirectory);
                     webBuilder.SuppressStatusMessages(true);
                 });
+
+        #endregion
     }
 }

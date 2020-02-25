@@ -1,7 +1,4 @@
-﻿@using BlazorEmbedLibrary
-@inherits LayoutComponentBase
-
-<EmbeddedContent BaseType="@(typeof(MatBlazor.BaseMapper))" />
+﻿@inherits LayoutComponentBase
 
 <div class="flex-row">
     <NavMenu />
@@ -15,20 +12,6 @@
         @Body
     </div>
     <div class="news flex-column">
-        <News />
+        <NewsTicker />
     </div>
 </div>
-
-@code
-{
-    bool hasConnected = false;
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-        if (firstRender)
-        {
-            StateHasChanged();
-            hasConnected = true;
-        }
-    }
-}

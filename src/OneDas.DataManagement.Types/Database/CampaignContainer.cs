@@ -12,7 +12,6 @@ namespace OneDas.DataManagement.Database
             this.Name = campaignName;
             this.RootPath = rootPath;
             this.Campaign = new CampaignInfo(campaignName);
-            this.CampaignMeta = new CampaignMetaInfo(campaignName);
         }
 
         private CampaignContainer()

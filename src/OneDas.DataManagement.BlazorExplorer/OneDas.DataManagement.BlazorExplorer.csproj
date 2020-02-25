@@ -7,10 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlazorEmbedLibrary" Version="1.0.0" />
     <PackageReference Include="MatBlazor" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.2" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20104.2" />
@@ -21,6 +20,22 @@
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Famos\OneDas.Extension.Famos.csproj" />
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Mat73\OneDas.Extension.Mat73.csproj" />
     <ProjectReference Include="..\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\EnumerationDescription.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EnumerationDescription.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\EnumerationDescription.resx">
+      <CustomToolNamespace>OneDas.DataManagement.BlazorExplorer</CustomToolNamespace>
+      <LastGenOutput>EnumerationDescription.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

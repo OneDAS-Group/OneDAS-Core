@@ -1,5 +1,84 @@
 ﻿@page "/"
 
-Body
+<div class="content-content">
+    <div class="campaign-box mat-elevation-z11">
+        <div class="campaign-box-available">
+            <MatHeadline5>Available Campaigns</MatHeadline5>
 
-    <MatButton Raised="true">Raised</MatButton>
+            <MatList SingleSelection="true" TwoLine="true">
+                @foreach (var campaignContainer in this.AppState.CampaignContainers)
+                {
+                    <MatListItem OnClick="() => this.OnCampaignContainerSelected(campaignContainer)">
+                        <MatListItemText>
+                            <MatListItemPrimaryText>@campaignContainer.CampaignMeta.Name.TrimStart('/').Replace("/", " / ")</MatListItemPrimaryText>
+                            <MatListItemSecondaryText>@campaignContainer.CampaignMeta.ShortDescription</MatListItemSecondaryText>
+                        </MatListItemText>
+                    </MatListItem>
+                }
+            </MatList>
+        </div>
+        <div class="campaign-box-selected">
+
+            @if (this.AppState.CampaignContainer != null)
+            {
+                <MatHeadline5>@this.AppState.CampaignContainer.CampaignMeta.Name.TrimStart('/').Replace("/", " / ")</MatHeadline5>
+                <p class="long-description">
+                    @this.AppState.CampaignContainer.CampaignMeta.LongDescription
+                </p>
+            }
+            else
+            {
+                <MatHeadline5>Select a Campaign ...</MatHeadline5>
+            }
+        </div>
+    </div>
+    <div class="channel-box mat-elevation-z11">
+
+        @if (this.AppState.GroupedVariables != null)
+        {
+            <div class="channel-box-headline">
+                <MatHeadline5>Available Variables</MatHeadline5>
+                <MatHeadline5>Selected Variables</MatHeadline5>
+            </div>
+
+            <div class="channel-box-content">
+                <div class="available-groups">
+                    <MatTextField @bind-Value="@this.AppState.SearchString" Label="Search" Icon="search" IconTrailing="true"></MatTextField>
+
+                    <MatList SingleSelection="true" TwoLine="true">
+                        @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key))
+                        {
+                            <MatListItem OnClick="() => this.OnVariableGroupSelected(entry.Value)">
+                                <MatListItemText>
+                                    <MatListItemPrimaryText>@entry.Key</MatListItemPrimaryText>
+                                </MatListItemText>
+                            </MatListItem>
+                        }
+                    </MatList>
+                </div>
+
+                <div class="available-variables">
+                    @if (this.AppState.VariableGroup != null)
+                    {
+                        <MatList SingleSelection="true" TwoLine="true">
+                            @foreach (var variable in this.AppState.VariableGroup.OrderBy(variable => variable.VariableNames.Last()))
+                            {
+                                <MatListItem>
+                                    <MatListItemText>
+                                        <MatListItemPrimaryText>@variable.VariableNames.Last() + @variable.Units.Last() + @variable.Datasets.First().Name</MatListItemPrimaryText>
+                                    </MatListItemText>
+                                </MatListItem>
+                            }
+                        </MatList>
+                    }
+                </div>
+
+                <div class="selected-variables">
+
+
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

@@ -7,13 +7,18 @@ html, body {
     font-family: 'OpenSans-Regular';
 }
 
+.scroller {
+    width: 300px;
+    height: 100px;
+}
+
 html {
+    min-height: 850px; 
     height: 100vh;
 }
 
 body {
     min-height: 100vh;
-    background-color: pink;
     margin: 0;
 }
 
@@ -23,14 +28,63 @@ app {
     flex-direction: column;
     height: 100%;
     width: 100%;
-    background-color: yellow;
+}
+
+.settings {
+    min-width: 300px;
+    width: 300px;
+    height: 100%;
+    min-height: 750px;
+}
+
+.content {
+    width: 100%;
+    min-width: 800px;
+}
+
+.news {
+    min-width: 350px;
+    width: 350px;
 }
 
 .nav {
-    background-color: black;
     color: white;
+    background-color: #343a40;
     padding: 10px;
-    height:50px;
+    height: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.nav .nav-logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 1.25rem;
+}
+
+.nav .nav-logo img {
+    width: 35px;
+    height: 35px;
+    margin-right: 7px;
+}
+
+.nav .nav-signin {
+    color: rgba(255,255,255,.8);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 1.0rem;
+}
+
+.nav .nav-signin:hover  {
+    color: white;
+}
+
+.nav .nav-signin svg {
+    margin-left: 10px;
 }
 
 .main {
@@ -38,20 +92,148 @@ app {
     flex-direction: row;
     justify-content: space-between;
     height: 100%;
-    background-color: green;
 }
 
-.settings {
-    width: 300px;
-}
-
-.news {
-    width: 300px;
-}
-
-.content {
+.settings-control {
     width: 100%;
-    min-width: 1000px;
+}
+
+.settings-control .mdc-select__anchor {
+    width: 100%;
+}
+
+.mdc-menu {
+    width: 250px;
+}
+
+.settings-content {
+    padding: 10px;
+    height: 100%;
+    margin: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-content h6 {
+    margin: 0;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+.content-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-content h5 {
+    margin: 15px;
+}
+
+.campaign-box {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    padding: 10px;
+    margin: 15px;
+}
+
+.campaign-box-available {
+    flex: 1;
+    padding: 10px;
+    height: 300px;
+}
+
+.campaign-box-available .mdc-list {
+    height: 70%;
+    overflow-y: scroll;
+    scrollbar-color: darkgray white;
+    scrollbar-width: thin;
+}
+
+.campaign-box-selected {
+    flex: 1;
+    padding: 10px;
+}
+
+.long-description {
+    margin: 0;
+    margin-left: 15px;
+    font-family: Roboto, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.01786em;
+    display: block;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.channel-box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 2;
+    padding: 10px;
+    margin: 15px;
+}
+
+.channel-box-headline {
+    display: flex;
+    flex-direction: row;
+}
+
+.channel-box-headline h5 {
+    flex: 1;
+}
+
+.channel-box-content {
+    display: flex;
+    flex-direction: row;
+}
+
+.configuration-panel {
+    margin-top: auto;
+}
+
+.configuration-panel h6 {
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.available-groups {
+    flex: 1;
+}
+
+.available-groups .mdc-list-item {
+    height: 55px !important;
+}
+
+.available-groups .mdc-list-item__primary-text {
+    margin-bottom: 0px !important;
+}
+
+.available-variables {
+    flex: 2;
+}
+
+.selected-variables {
+    flex: 2;
+}
+
+.news-card {
+    padding: 10px;
+    margin-top: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.news-headline {
+    margin-left: 15px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.clear-margin {
+    margin: 0;
 }
 
 .flex-row {
@@ -64,6 +246,10 @@ app {
 .flex-column {
     display: flex;
     flex-direction: column;
+    height: 100%;
+}
+
+.h-100 {
     height: 100%;
 }
 
