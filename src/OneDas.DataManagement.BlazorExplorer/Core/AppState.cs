@@ -78,7 +78,8 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             set
             {
                 _campaignContainer = value;
-                this.UpdateGroupedVariabled();
+                this.UpdateGroupedVariables();
+                this.VariableGroup = null;
             }
         }
 
@@ -121,7 +122,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #region Methods
 
-        private void UpdateGroupedVariabled()
+        private void UpdateGroupedVariables()
         {
             if (this.CampaignContainer != null)
             {

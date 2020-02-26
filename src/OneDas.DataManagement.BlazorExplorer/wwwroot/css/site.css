@@ -13,12 +13,13 @@ html, body {
 }
 
 html {
-    min-height: 850px; 
-    height: 100vh;
+    min-height: 850px;
+    min-width: 1750px;
 }
 
 body {
-    min-height: 100vh;
+    min-height: 850px;
+    min-width: 1750px;
     margin: 0;
 }
 
@@ -30,19 +31,29 @@ app {
     width: 100%;
 }
 
+.main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
 .settings {
+    display: flex;
+    flex-direction: column;
     min-width: 300px;
     width: 300px;
-    height: 100%;
-    min-height: 750px;
 }
 
 .content {
-    width: 100%;
-    min-width: 800px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .news {
+    display: flex;
+    flex-direction: column;
     min-width: 350px;
     width: 350px;
 }
@@ -87,13 +98,6 @@ app {
     margin-left: 10px;
 }
 
-.main {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    height: 100%;
-}
-
 .settings-control {
     width: 100%;
 }
@@ -120,13 +124,7 @@ app {
     margin-bottom: 10px;
 }
 
-.content-content {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.content-content h5 {
+.content h5 {
     margin: 15px;
 }
 
@@ -168,7 +166,6 @@ app {
 }
 
 .channel-box {
-    width: 100%;
     display: flex;
     flex-direction: column;
     flex: 2;
