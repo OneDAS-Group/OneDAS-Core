@@ -1,0 +1,25 @@
+﻿<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
+    <MatDialogTitle>Attachments</MatDialogTitle>
+    <MatDialogContent>
+        @if (this.AppState.Attachments != null)
+        {
+            <div class="attachments">
+
+                @foreach (var attachment in this.AppState.Attachments)
+                {
+                    <div class="attachment">
+                        <div class="attachment-icon">
+                            <i class="far fa-@this.GetIcon(attachment)"></i>
+                        </div>
+                        <a class="attachment-name" href="@this.GetHref(attachment)" target="_blank">
+                            @this.GetFileName(attachment)
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="() => this.OnIsOpenChanged(false)">Close</MatButton>
+    </MatDialogActions>
+</MatDialog>

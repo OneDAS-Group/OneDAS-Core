@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using OneDas.DataManagement.BlazorExplorer.Core;
+using System;
+using System.IO;
 
 namespace OneDas.DataManagement.BlazorExplorer
 {
@@ -20,7 +23,7 @@ namespace OneDas.DataManagement.BlazorExplorer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddTransient<AppState>();
+            services.AddScoped<AppState>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -35,6 +38,12 @@ namespace OneDas.DataManagement.BlazorExplorer
             }
 
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "META")),
+                RequestPath = "/download"
+            });
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

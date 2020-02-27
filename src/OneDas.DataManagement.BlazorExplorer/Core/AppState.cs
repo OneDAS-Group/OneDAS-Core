@@ -3,6 +3,7 @@ using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -47,7 +48,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         #region Properties
 
         public string Version { get; }
-
+        
         public DateTime DateTimeBegin
         {
             get
@@ -79,15 +80,17 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             {
                 _campaignContainer = value;
                 this.UpdateGroupedVariables();
-                this.VariableGroup = null;
+                this.UpdateAttachments();
             }
         }
 
+        public List<string> Attachments { get; private set; }
+
         public ReadOnlyCollection<CampaignContainer> CampaignContainers { get; }
 
-        public Dictionary<string, List<VariableInfo>> GroupedVariables { get; private set; }
+        public Dictionary<string, List<VariableInfoViewModel>> GroupedVariables { get; private set; }
 
-        public List<VariableInfo> VariableGroup { get; set; }
+        public List<VariableInfoViewModel> VariableGroup { get; set; }
 
         public NewsPaper NewsPaper { get; }
 
@@ -122,14 +125,32 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #region Methods
 
-        private void UpdateGroupedVariables()
+        private void UpdateAttachments()
         {
+            this.Attachments = null;
+
             if (this.CampaignContainer != null)
             {
-                this.GroupedVariables = new Dictionary<string, List<VariableInfo>>();
+                var folderPath = Path.Combine(Environment.CurrentDirectory, "META", this.CampaignContainer.PhysicalName);
+
+                if (Directory.Exists(folderPath))
+                    this.Attachments = Directory.GetFiles(folderPath, "*").ToList();
+            }
+        }
+
+        private void UpdateGroupedVariables()
+        {
+            this.VariableGroup = null;
+
+            if (this.CampaignContainer != null)
+            {
+                this.GroupedVariables = new Dictionary<string, List<VariableInfoViewModel>>();
 
                 foreach (var variable in this.CampaignContainer.Campaign.Variables)
                 {
+                    var variableMeta = this.CampaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Name == variable.Name);
+                    var variableViewModel = new VariableInfoViewModel(variable, variableMeta);
+
                     var groupNames = variable.VariableGroups.Last().Split('\n');
 
                     foreach (string groupName in groupNames)
@@ -138,12 +159,17 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                         
                         if (!success)
                         {
-                            group = new List<VariableInfo>();
+                            group = new List<VariableInfoViewModel>();
                             this.GroupedVariables[groupName] = group;
                         }
 
-                        group.Add(variable);
+                        group.Add(variableViewModel);
                     }
+                }
+
+                foreach (var entry in this.GroupedVariables)
+                {
+                    entry.Value.Sort((x, y) => x.Name.CompareTo(y.Name));
                 }
             }
         }

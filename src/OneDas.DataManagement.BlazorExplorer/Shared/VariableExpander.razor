@@ -1,0 +1,41 @@
+﻿<div class="variable-expander" @onclick="this.OnClick">
+    <div class="variable-name">
+        @if (this.IsExpanded)
+        {
+            <span><i class="fas fa-sort-down"></i></span>
+        }
+        else
+        {
+            <span><i class="fas fa-sort-down" style="transform: rotate(-90deg);"></i></span>
+        }
+        @this.Variable.Name
+    </div>
+    <span class="variable-description">
+        @this.Variable.Description
+    </span>
+</div>
+
+@if (this.IsExpanded)
+{
+    <div class="variable-expander-content">
+        @foreach (var dataset in this.Variable.Datasets)
+        {
+            <span>
+                @dataset.Name
+            </span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsExpanded { get; set; }
+
+    [Parameter]
+    public VariableInfoViewModel Variable { get; set; }
+
+    private void OnClick()
+    {
+        this.IsExpanded = !this.IsExpanded;
+    }
+}

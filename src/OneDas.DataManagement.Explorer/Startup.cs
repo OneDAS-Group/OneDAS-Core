@@ -6,8 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Web;
-using System;
-using System.IO;
 using System.Text.Json;
 
 namespace OneDas.DataManagement.Explorer

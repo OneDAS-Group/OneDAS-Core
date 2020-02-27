@@ -25,6 +25,8 @@ namespace OneDas.DataManagement.Database
 
         public string Name { get; set; }
 
+        public string PhysicalName => this.Name.TrimStart('/').Replace('/', '_');
+
         public string RootPath { get; set; }
 
         public CampaignInfo Campaign { get; set; }

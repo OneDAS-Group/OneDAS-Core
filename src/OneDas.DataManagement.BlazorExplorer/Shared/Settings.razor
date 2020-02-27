@@ -2,8 +2,8 @@
 
 <div class="settings-content mat-elevation-z11">
 
-    <MatSubtitle2>From (UTC)</MatSubtitle2>
     <MatDatePicker class="settings-control"
+                   Label="From (UTC)"
                    Maximum="appState.DateTimeBeginMaximum"
                    Format="dd.MM.yyyy HH:mm"
                    @bind-Value="appState.DateTimeBegin"
@@ -11,8 +11,8 @@
                    Enable24hours="true">
     </MatDatePicker>
 
-    <MatSubtitle2>To (UTC)</MatSubtitle2>
     <MatDatePicker class="settings-control"
+                   Label="To (UTC)"
                    Minimum="appState.DateTimeEndMinimum"
                    Format="dd.MM.yyyy HH:mm"
                    @bind-Value="appState.DateTimeEnd"
@@ -20,31 +20,29 @@
                    Enable24hours="true">
     </MatDatePicker>
 
-    <MatSubtitle2>Sample Rate</MatSubtitle2>
     <MatSelectItem class="settings-control"
-                    @bind-Value="appState.SampleRate"
-                    Items="appState.SampleRateValues">
-    </MatSelectItem>
-
-    <MatSubtitle2>Granularity</MatSubtitle2>
-    <MatSelectItem class="settings-control"
-                    @bind-Value="appState.FileGranularity"
-                    Items="appState.FileGranularityValues">
+                   Label="File Granularity"
+                   @bind-Value="appState.FileGranularity"
+                   Items="appState.FileGranularityValues">
         <ItemTemplate Context="value">
             @Utilities.GetEnumLocalization(@value)
         </ItemTemplate>
     </MatSelectItem>
 
-    <MatSubtitle2>File Type</MatSubtitle2>
     <MatSelectItem class="settings-control"
-                    @bind-Value="appState.FileFormat"
-                    Items="appState.FileFormatValues">
+                   Label="File Type"
+                   @bind-Value="appState.FileFormat"
+                   Items="appState.FileFormatValues">
         <ItemTemplate Context="value">
             @Utilities.GetEnumLocalization(@value)
         </ItemTemplate>
     </MatSelectItem>
 
-    <MatDivider></MatDivider>
+    <MatSelectItem class="settings-control"
+                   Label="Sample Rate"
+                   @bind-Value="appState.SampleRate"
+                   Items="appState.SampleRateValues">
+    </MatSelectItem>
 
     <div class="configuration-panel">
         <MatDivider></MatDivider>

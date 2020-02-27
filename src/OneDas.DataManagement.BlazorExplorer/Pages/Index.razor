@@ -9,7 +9,7 @@
             {
                 <MatListItem OnClick="() => this.OnCampaignContainerSelected(campaignContainer)">
                     <MatListItemText>
-                        <MatListItemPrimaryText>@campaignContainer.CampaignMeta.Name.TrimStart('/').Replace("/", " / ")</MatListItemPrimaryText>
+                        <MatListItemPrimaryText>@campaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatListItemPrimaryText>
                         <MatListItemSecondaryText>@campaignContainer.CampaignMeta.ShortDescription</MatListItemSecondaryText>
                     </MatListItemText>
                 </MatListItem>
@@ -20,10 +20,16 @@
 
         @if (this.AppState.CampaignContainer != null)
         {
-            <MatHeadline5>@this.AppState.CampaignContainer.CampaignMeta.Name.TrimStart('/').Replace("/", " / ")</MatHeadline5>
+            <MatHeadline5>@this.AppState.CampaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatHeadline5>
             <p class="long-description">
                 @this.AppState.CampaignContainer.CampaignMeta.LongDescription
             </p>
+            <span class="campaign-box-selected-footer">
+                @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
+                {
+                    <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="@OpenattachmentDialog" />
+                }
+            </span>
         }
         else
         {
@@ -36,39 +42,43 @@
     @if (this.AppState.GroupedVariables != null)
     {
         <div class="channel-box-headline">
-            <MatHeadline5>Available Variables</MatHeadline5>
-            <MatHeadline5>Selected Variables</MatHeadline5>
+            <MatTextField class="channel-box-headline-1" @bind-Value="@this.AppState.SearchString" Label="Search" Icon="search" IconTrailing="true"></MatTextField>
+
+            @*@if(this.AppState.VariableGroup != null)
+            {
+                <MatHeadline5 class="channel-box-headline-2">Variables</MatHeadline5>
+            }
+
+            <MatHeadline5 class="channel-box-headline-3">Selected</MatHeadline5>*@
         </div>
 
         <div class="channel-box-content">
             <div class="available-groups">
-                <MatTextField @bind-Value="@this.AppState.SearchString" Label="Search" Icon="search" IconTrailing="true"></MatTextField>
-
-                <MatList SingleSelection="true" TwoLine="true">
-                    @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key))
+                <div>
+                    @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key).Skip(groupPage * groupPageSize).Take(groupPageSize))
                     {
-                        <MatListItem OnClick="() => this.OnVariableGroupSelected(entry.Value)">
-                            <MatListItemText>
-                                <MatListItemPrimaryText>@entry.Key</MatListItemPrimaryText>
-                            </MatListItemText>
-                        </MatListItem>
+                        <MatRipple @onclick="() => this.OnVariableGroupSelected(entry.Value)"
+                                   Color="@MatRippleColor.Secondary"
+                                   class="@(this.AppState.VariableGroup == entry.Value? "selected" : "")">
+                            @entry.Key
+                        </MatRipple>
                     }
-                </MatList>
+                </div>
+
+                <Paginator Length="this.AppState.GroupedVariables.Count" PageSize="groupPageSize" @bind-Page="@groupPage"></Paginator>
             </div>
 
             <div class="available-variables">
                 @if (this.AppState.VariableGroup != null)
                 {
-                    <MatList SingleSelection="true" TwoLine="true">
-                        @foreach (var variable in this.AppState.VariableGroup.OrderBy(variable => variable.VariableNames.Last()))
+                    <div>
+                        @foreach (var variable in this.AppState.VariableGroup.Skip(@variablePage * variablePageSize).Take(variablePageSize))
                         {
-                            <MatListItem>
-                                <MatListItemText>
-                                    <MatListItemPrimaryText>@variable.VariableNames.Last() + @variable.Units.Last() + @variable.Datasets.First().Name</MatListItemPrimaryText>
-                                </MatListItemText>
-                            </MatListItem>
+                            <VariableExpander Variable="variable" />
                         }
-                    </MatList>
+                    </div>
+
+                    <Paginator Length="this.AppState.VariableGroup.Count" PageSize="variablePageSize" @bind-Page="@variablePage"></Paginator>
                 }
             </div>
 
@@ -80,3 +90,13 @@
     }
 
 </div>
+
+<Attachments @bind-IsOpen="this.attachmentDialogIsOpen" />
+
+@code {
+    int groupPageSize = 17;
+    int groupPage = 0;
+
+    int variablePageSize = 10;
+    int variablePage = 0;
+}

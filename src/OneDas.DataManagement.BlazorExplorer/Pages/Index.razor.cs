@@ -12,16 +12,23 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 		[Inject]
 		public AppState AppState { get; set; }
 
+		public bool attachmentDialogIsOpen { get; set; }
+
 		#endregion
 
 		#region Methods
+
+		public void OpenattachmentDialog()
+		{
+			this.attachmentDialogIsOpen = true;
+		}
 
 		public void OnCampaignContainerSelected(CampaignContainer campaignContainer)
 		{
 			this.AppState.CampaignContainer = campaignContainer;
 		}
 
-		public void OnVariableGroupSelected(List<VariableInfo> variableGroup)
+		public void OnVariableGroupSelected(List<VariableInfoViewModel> variableGroup)
 		{
 			this.AppState.VariableGroup = variableGroup;
 		}
