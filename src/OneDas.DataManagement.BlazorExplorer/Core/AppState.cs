@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         private CampaignContainer _campaignContainer;
         private List<VariableInfoViewModel> _variableGroup;
 
-        private List<DatasetInfoViewModel> _selectedDatasets;
+        private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
         private Dictionary<CampaignContainer, List<VariableInfoViewModel>> _campaignContainerToVariablesMap;
 
         #endregion
@@ -57,8 +57,8 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
             this.NewsPaper = NewsPaper.Load();
 
+            this.InitializeSampleRateToDatasetsMap();
             this.InitializeCampaignContainerToVariableMap();
-            this.UpdateSelectedDatasets();
         }
 
         #endregion
@@ -151,42 +151,37 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         public string SampleRate
         {
             get { return _sampleRate; }
-            set { base.SetProperty(ref _sampleRate, value); }
+            set 
+            {
+                base.SetProperty(ref _sampleRate, value);
+                this.RaisePropertyChanged(nameof(AppState.SelectedDatasets));
+            }
         }
 
         public FileGranularity FileGranularity { get; set; }
 
         public FileFormat FileFormat { get; set; }
 
-        public List<DatasetInfoViewModel> SelectedDatasets
-        {
-            get { return _selectedDatasets; }
-            set { base.SetProperty(ref _selectedDatasets, value); }
-        }
-
+        public IReadOnlyCollection<DatasetInfoViewModel> SelectedDatasets => this.GetSelectedDatasets();
         #endregion
 
         #region Methods
 
-        public void OnDatasetSelectionChanged()
+        public bool IsDatasetSeleced(DatasetInfoViewModel dataset)
         {
-            this.UpdateSelectedDatasets();
+            return this.SelectedDatasets.Contains(dataset);
         }
 
-        private void UpdateSelectedDatasets()
+        public void ToggleDatasetSelection(DatasetInfoViewModel dataset)
         {
-            if (this.CampaignContainer != null)
-            {
-                this.SelectedDatasets = _campaignContainerToVariablesMap.ToList().SelectMany(entry =>
-                {
-                    return entry.Value.SelectMany(variable => variable.Datasets)
-                                      .Where(dataset => dataset.IsSelected);
-                }).ToList();
-            }
+            var isSelected = this.SelectedDatasets.Contains(dataset);
+
+            if (isSelected)
+                this.GetSelectedDatasets().Remove(dataset);
             else
-            {
-                this.SelectedDatasets = new List<DatasetInfoViewModel>();
-            }
+                this.GetSelectedDatasets().Add(dataset);
+
+            this.RaisePropertyChanged(nameof(AppState.SelectedDatasets));
         }
 
         private void UpdateAttachments()
@@ -262,6 +257,19 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                     return new VariableInfoViewModel(variable, variableMeta);
                 }).ToList();
             }
+        }
+
+        private void InitializeSampleRateToDatasetsMap()
+        {
+            _sampleRateToSelectedDatasetsMap = this.SampleRateValues.ToDictionary(sampleRate => sampleRate, sampleRate => new List<DatasetInfoViewModel>());
+        }
+
+        private List<DatasetInfoViewModel> GetSelectedDatasets()
+        {
+            if (string.IsNullOrWhiteSpace(this.SampleRate))
+                return new List<DatasetInfoViewModel>();
+            else
+                return _sampleRateToSelectedDatasetsMap[this.SampleRate];
         }
 
         #endregion

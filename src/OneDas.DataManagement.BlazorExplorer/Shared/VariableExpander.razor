@@ -1,36 +1,32 @@
 ﻿<div class="variable-expander" @onclick="this.OnClick">
     <div class="variable-name">
-        @if (this.IsExpanded)
-        {
-            <span style="@(_filteredDatasets.Any() ? "" : "visibility: hidden")">
-                <i class="fas fa-sort-down"></i>
-            </span>
-        }
-        else
-        {
-            <span style="@(_filteredDatasets.Any() ? "" : "visibility: hidden")">
-                <i class="fas fa-sort-down" style="transform: rotate(-90deg);"></i>
-            </span>
-        }
         @this.Variable.Name
+        <div class="variable-datasets">
+            @if (_filteredDatasets.Any())
+            {
+                @foreach (var dataset in _filteredDatasets)
+                {
+                    <div @onclick="() => this.AppState.ToggleDatasetSelection(dataset)"
+                         class="@(this.AppState.IsDatasetSeleced(dataset) ? "selected" : "")">
+                        @dataset.Name
+                    </div>
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(this.AppState.SearchString))
+            {
+                <div>
+                    select a sample rate ...
+                </div>
+            }
+            else
+            {
+                <div>
+                    &lt;no dataset available&gt;
+                </div>
+            }
+        </div>
     </div>
     <span class="variable-description">
         @this.Variable.Description
     </span>
 </div>
-
-@if (this.IsExpanded)
-{
-    <div class="variable-expander-content">
-        @foreach (var dataset in _filteredDatasets)
-        {
-            <span>
-                <MatRipple @onclick="() => this.OnDatasetToggled(dataset)"
-                           Color="@MatRippleColor.Secondary"
-                           class="@(dataset.IsSelected ? "selected" : "")">
-                    @dataset.Name
-                </MatRipple>
-            </span>
-        }
-    </div>
-}

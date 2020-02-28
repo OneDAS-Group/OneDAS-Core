@@ -48,23 +48,21 @@
         <div class="available-groups">
 
             <MatTextField @bind-Value="this.AppState.SearchString"
-                          OnInput="@(e => this.AppState.SearchString = e.Value.ToString())"
+                          OnInput="e => this.AppState.SearchString = e.Value.ToString()"
                           Label="Search"
-                          Icon="search"
+                          Icon="@_searchIcon"
+                          IconOnClick="@(() => this.AppState.SearchString = "")"
                           IconTrailing="true">
             </MatTextField>
 
             <div class="available-groups-list">
                 @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key).Skip(this.GroupPage * this.GroupPageSize).Take(this.GroupPageSize))
                 {
-                    <MatRipple @onclick="() => this.OnVariableGroupSelected(entry.Value)"
-                               Color="@MatRippleColor.Secondary"
-                               class="@(this.AppState.VariableGroup == entry.Value? "selected" : "")">
-                        <div class="group-entry">
-                            <span class="group-entry-name">@entry.Key</span>
-                            <span class="group-entry-count">@entry.Value.Count</span>
-                        </div>
-                    </MatRipple>
+                    <div @onclick="() => this.OnVariableGroupSelected(entry.Value)"
+                         class="group-entry @(this.AppState.VariableGroup == entry.Value? "selected" : "")">
+                        <span class="group-entry-name">@entry.Key</span>
+                        <span class="group-entry-count">@entry.Value.Count</span>
+                    </div>
                 }
             </div>
 
@@ -88,7 +86,7 @@
         <div class="selected-variables">
             @foreach (var dataset in this.AppState.SelectedDatasets)
             {
-                <div class="selected-variable">
+                <div class="selected-variable" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
                     <span class="selected-variable-name">@dataset.Parent.Name (@this.AppState.SampleRate)</span>
                     <span class="selected-variable-campaign">@dataset.Parent.Parent.Name.TrimStart('/').Replace("/", " / ")</span>
                 </div>

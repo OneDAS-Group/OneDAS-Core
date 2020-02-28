@@ -50,9 +50,9 @@ app {
     min-width: 1000px;
 }
 
-.content h5 {
-    margin: 15px;
-}
+    .content h5 {
+        margin: 15px;
+    }
 
 
 .news {
@@ -73,34 +73,34 @@ app {
     justify-content: space-between;
 }
 
-.nav .nav-logo {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    font-size: 1.25rem;
-}
+    .nav .nav-logo {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-size: 1.25rem;
+    }
 
-.nav .nav-logo img {
-    width: 35px;
-    height: 35px;
-    margin-right: 7px;
-}
+        .nav .nav-logo img {
+            width: 35px;
+            height: 35px;
+            margin-right: 7px;
+        }
 
-.nav .nav-signin {
-    color: rgba(255,255,255,.8);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    font-size: 1.0rem;
-}
+    .nav .nav-signin {
+        color: rgba(255,255,255,.8);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-size: 1.0rem;
+    }
 
-.nav .nav-signin:hover  {
-    color: white;
-}
+        .nav .nav-signin:hover {
+            color: white;
+        }
 
-.nav .nav-signin svg {
-    margin-left: 10px;
-}
+        .nav .nav-signin svg {
+            margin-left: 10px;
+        }
 
 .settings-control {
     width: 100%;
@@ -108,10 +108,10 @@ app {
     background-color: #ffffff00 !important;
 }
 
-.settings-control .mdc-select__anchor {
-    width: 100%;
-    background-color: #ffffff00 !important;
-}
+    .settings-control .mdc-select__anchor {
+        width: 100%;
+        background-color: #ffffff00 !important;
+    }
 
 .mdc-menu {
     width: 250px;
@@ -126,20 +126,20 @@ app {
     flex-direction: column;
 }
 
-.settings-content h6 {
-    margin: 0;
-    margin-top: 25px;
-    margin-bottom: 10px;
-}
+    .settings-content h6 {
+        margin: 0;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
 
 .configuration-panel {
     margin-top: auto;
 }
 
-.configuration-panel h6 {
-    margin: 0;
-    margin-bottom: 5px;
-}
+    .configuration-panel h6 {
+        margin: 0;
+        margin-bottom: 5px;
+    }
 
 .campaign-box {
     display: flex;
@@ -156,12 +156,12 @@ app {
     height: 300px;
 }
 
-.campaign-box-available .mdc-list {
-    height: 70%;
-    overflow-y: scroll;
-    scrollbar-color: darkgray #fff0;
-    scrollbar-width: thin;
-}
+    .campaign-box-available .mdc-list {
+        height: 70%;
+        overflow-y: scroll;
+        scrollbar-color: darkgray #fff0;
+        scrollbar-width: thin;
+    }
 
 .campaign-box-selected {
     display: flex;
@@ -180,9 +180,9 @@ app {
     color: rgba(0, 0, 0, 0.54);
 }
 
-.campaign-box-selected-footer div {
-    margin-bottom: 0.5rem;
-}
+    .campaign-box-selected-footer div {
+        margin-bottom: 0.5rem;
+    }
 
 .long-description {
     margin: 0;
@@ -250,6 +250,7 @@ app {
     background-color: #ffffffe0;
     padding: 10px;
     margin: 15px;
+    user-select: none;
 }
 
 .available-groups {
@@ -264,28 +265,34 @@ app {
     min-width: 250px;
 }
 
-.available-groups .mdc-text-field {
-    background-color: #ffffff00 !important;
-}
+    .available-groups .mdc-text-field {
+        background-color: #ffffff00 !important;
+    }
 
-.available-groups .mdc-text-field {
-    margin-bottom: 15px;
-}
-
-.available-groups .selected {
-    background-color: rgba(1, 135, 134, 0.54);
-}
-
-.available-groups .mdc-ripple-surface {
-    padding: 3px 5px 3px 5px;
-}
+    .available-groups .mdc-text-field {
+        margin-bottom: 15px;
+    }
 
 .group-entry {
     display: flex;
+    padding: 3px 5px 3px 5px;
     flex-direction: row;
     justify-content: space-between;
     align-items: end;
 }
+
+    .group-entry.selected {
+        background-color: #348c9f !important;
+        color: white !important;
+    }
+
+        .group-entry.selected .group-entry-count {
+            color: white;
+        }
+
+    .group-entry:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
 
 .group-entry-name {
     white-space: nowrap;
@@ -309,52 +316,59 @@ app {
     flex-direction: column;
     justify-content: space-between;
     flex: 1;
-    cursor: pointer;
     min-width: 350px;
     margin-left: 15px;
     margin-top: 15px;
-    user-select: none;
 }
 
 .variable-expander {
     display: flex;
     flex-direction: column;
     height: 3rem;
+    padding: 3px;
 }
 
 .variable-expander:hover {
-    background-color: rgba(1, 135, 134, 0.10);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
-.variable-expander svg {
-    margin-right: 0.5rem;
+.variable-name {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
+
+.variable-datasets {
+    display: flex;
+    flex-direction: row;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+    .variable-datasets div {
+        font-size: 0.9rem;
+        padding: 2px 4px 2px 4px;
+        margin: 0px 3px 0px 3px;
+        border-radius: 8px;
+        color: rgba(0, 0, 0, 0.54);
+        background-color: #ffffffe0
+    }
+
+        .variable-datasets div:hover {
+            background-color: rgba(1, 135, 134, 0.10);
+        }
+
+        .variable-datasets .selected {
+            color: white;
+            background-color: #348c9f !important;
+        }
 
 .variable-description {
-    margin-left: 22px;
     font-size: 0.9rem;
     color: #646464;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.variable-expander-content {
-    flex-direction: column;
-    display: flex;
-    margin-left: 22px;
-}
-
-.variable-expander-content span {
-    font-size: 0.9rem;
-}
-
-.variable-expander-content span:hover {
-    background-color: rgba(1, 135, 134, 0.10);
-}
-
-.variable-expander-content span .selected {
-    background-color: rgba(1, 135, 134, 0.54);
 }
 
 .selected-variables {
@@ -373,9 +387,9 @@ app {
     white-space: nowrap;
 }
 
-.selected-variable:hover {
-    background-color: rgba(1, 135, 134, 0.10);
-}
+    .selected-variable:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
 
 .selected-variable-name {
     font-weight: bold;
@@ -437,12 +451,12 @@ app {
     z-index: 1000;
 }
 
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
-}
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
 
 .paginator {
     display: flex;
@@ -451,6 +465,6 @@ app {
     width: 140px;
 }
 
-.paginator .disabled {
-    color: rgba(0, 0, 0, 0.20);
-}
+    .paginator .disabled {
+        color: rgba(0, 0, 0, 0.20);
+    }

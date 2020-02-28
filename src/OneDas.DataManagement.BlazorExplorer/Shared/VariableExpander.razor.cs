@@ -65,12 +65,6 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
                 _filteredDatasets = this.Variable.Datasets.Where(dataset => dataset.Name.Contains(this.AppState.SampleRate)).ToList();
         }
 
-        private void OnDatasetToggled(DatasetInfoViewModel dataset)
-        {
-            dataset.IsSelected = !dataset.IsSelected;
-            this.AppState.OnDatasetSelectionChanged();
-        }
-
         #endregion
 
         #region IDisposable Support

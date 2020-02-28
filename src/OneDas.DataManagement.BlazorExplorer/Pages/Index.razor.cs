@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using MatBlazor;
+using Microsoft.AspNetCore.Components;
 using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.Database;
 using System;
@@ -12,6 +13,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 	{
 		#region Fields
 
+		private string _searchIcon = MatIconNames.Search;
 		private PropertyChangedEventHandler _propertyChanged;
 
 		#endregion
@@ -43,6 +45,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 				{
 					this.InvokeAsync(() =>
 					{
+						_searchIcon = string.IsNullOrWhiteSpace(this.AppState.SearchString) ? MatIconNames.Search : MatIconNames.Close;
 						this.StateHasChanged();
 					});
 				}

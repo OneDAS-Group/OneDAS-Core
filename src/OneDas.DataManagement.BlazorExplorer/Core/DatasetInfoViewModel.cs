@@ -28,8 +28,6 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         public OneDasDataType DataType => _model.DataType;
 
-        public bool IsSelected { get; set; }
-
         public VariableInfoViewModel Parent { get; }
 
         #endregion
