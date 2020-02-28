@@ -161,11 +161,17 @@ app {
 }
 
 .campaign-box-selected-footer {
-    align-self: end;
+    display: flex;
+    flex-direction: row;
     margin-top: auto;
     margin-left: 15px;
-    margin-right: 15px;
+    justify-content: space-between;
+    align-items: end;
     color: rgba(0, 0, 0, 0.54);
+}
+
+.campaign-box-selected-footer div {
+    margin-bottom: 0.5rem;
 }
 
 .long-description {

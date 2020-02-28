@@ -39,6 +39,15 @@ namespace OneDas.DataManagement.Extensions
             this.EnsureOpened();
 
             _campaigns = GeneralHelper.GetCampaigns(_fileId).ToList();
+
+            this.SwitchLocation(() =>
+            {
+                foreach (var campaign in _campaigns)
+                {
+                    GeneralHelper.UpdateCampaignStartAndEnd(_fileId, campaign, maxProbingCount: 20);
+                }
+            });
+
             return _campaigns.Select(campaign => campaign.Name).ToList();
         }
 
@@ -61,8 +70,8 @@ namespace OneDas.DataManagement.Extensions
             this.EnsureOpened();
 
             ulong offset;
-            int[] aggregatedData;
-            DataAvailabilityGranularity granularity;
+            int[] aggregatedData = null;
+            DataAvailabilityGranularity granularity = DataAvailabilityGranularity.ChunkLevel;
 
             // epoch & hyperslab
             var epochStart = new DateTime(2000, 01, 01);
@@ -79,10 +88,7 @@ namespace OneDas.DataManagement.Extensions
             // get data
             var totalDays = (end - begin).TotalDays;
 
-            var currentLocation = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = this.RootPath;
-
-            try
+            this.SwitchLocation(() =>
             {
                 var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
 
@@ -145,13 +151,9 @@ namespace OneDas.DataManagement.Extensions
                         aggregatedData[month] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
                     });
                 }
+            });
 
-                return new DataAvailabilityStatistics(granularity, aggregatedData);
-            }
-            finally
-            {
-                Environment.CurrentDirectory = currentLocation;
-            }
+            return new DataAvailabilityStatistics(granularity, aggregatedData);
         }
 
         public override void Dispose()
@@ -169,26 +171,34 @@ namespace OneDas.DataManagement.Extensions
         {
             this.EnsureOpened();
 
-            T[] data;
+            T[] data = null;
             byte[] statusSet = null;
 
-            var currentLocation = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = this.RootPath;
-
-            try
+            this.SwitchLocation(() =>
             {
                 var datasetPath = dataset.GetPath();
                 data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, 1, length, 1);
 
                 if (H5L.exists(_fileId, datasetPath + "_status") > 0)
                     statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, length, 1).Cast<byte>().ToArray();
+            });
+
+            return (data, statusSet);
+        }
+
+        private void SwitchLocation(Action action)
+        {
+            var currentLocation = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = this.RootPath;
+
+            try
+            {
+                action.Invoke();
             }
             finally
             {
                 Environment.CurrentDirectory = currentLocation;
             }
-
-            return (data, statusSet);
         }
 
         #endregion
