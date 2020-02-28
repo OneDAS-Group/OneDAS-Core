@@ -29,6 +29,10 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
+        public DateTime CampaignStart { get; set; }
+
+        public DateTime CampaignEnd { get; set; }
+
         public DatasetInfo ChunkDataset { get; set; }
 
         public List<VariableInfo> Variables { get; set; }
@@ -115,6 +119,17 @@ namespace OneDas.DataManagement.Database
             }
 
             this.Variables.AddRange(newVariables);
+
+            // merge other data
+            if (this.CampaignStart == DateTime.MinValue)
+                this.CampaignStart = campaign.CampaignStart;
+            else
+                this.CampaignStart = new DateTime(Math.Min(this.CampaignStart.Ticks, campaign.CampaignStart.Ticks));
+
+            if (this.CampaignEnd == DateTime.MinValue)
+                this.CampaignEnd = campaign.CampaignEnd;
+            else
+                this.CampaignEnd = new DateTime(Math.Max(this.CampaignEnd.Ticks, campaign.CampaignEnd.Ticks));
         }
 
         public override string GetPath()
