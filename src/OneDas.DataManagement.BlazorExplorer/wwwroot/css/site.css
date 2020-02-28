@@ -47,8 +47,13 @@ app {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 0;
+    min-width: 1000px;
 }
+
+.content h5 {
+    margin: 15px;
+}
+
 
 .news {
     display: flex;
@@ -60,7 +65,7 @@ app {
 .nav {
     color: white;
     background-color: #0d343e;
-    padding: 10px;
+    padding: 10px 15px 10px 15px;
     height: 40px;
     width: 100%;
     display: flex;
@@ -127,8 +132,13 @@ app {
     margin-bottom: 10px;
 }
 
-.content h5 {
-    margin: 15px;
+.configuration-panel {
+    margin-top: auto;
+}
+
+.configuration-panel h6 {
+    margin: 0;
+    margin-bottom: 5px;
 }
 
 .campaign-box {
@@ -235,57 +245,11 @@ app {
 
 .channel-box {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex: 2;
     background-color: #ffffffe0;
     padding: 10px;
     margin: 15px;
-}
-
-.channel-box-headline {
-    display: flex;
-    flex-direction: row;
-}
-
-.channel-box-headline-1 {
-    min-width: 220px;
-    max-width: 220px;
-    margin-left: 15px;
-}
-
-.channel-box-headline-2 {
-    min-width: 220px;
-    max-width: 220px;
-    margin-left: 35px !important;
-}
-
-.channel-box-headline-3 {
-    min-width: 300px;
-    max-width: 300px;
-    margin-left: auto !important;
-}
-
-.channel-box-headline .mdc-text-field {
-    background-color: #ffffff00 !important;
-}
-
-.channel-box-headline h5 {
-    flex: 1;
-}
-
-.channel-box-content {
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-}
-
-.configuration-panel {
-    margin-top: auto;
-}
-
-.configuration-panel h6 {
-    margin: 0;
-    margin-bottom: 5px;
 }
 
 .available-groups {
@@ -296,8 +260,16 @@ app {
     margin-left: 15px;
     margin-right: 15px;
     cursor: pointer;
-    max-width: 220px;
-    min-width: 220px;
+    max-width: 250px;
+    min-width: 250px;
+}
+
+.available-groups .mdc-text-field {
+    background-color: #ffffff00 !important;
+}
+
+.available-groups .mdc-text-field {
+    margin-bottom: 15px;
 }
 
 .available-groups .selected {
@@ -305,12 +277,31 @@ app {
 }
 
 .available-groups .mdc-ripple-surface {
-    padding: 3px;
-    padding-left:5px;
-    padding-right:5px;
+    padding: 3px 5px 3px 5px;
+}
+
+.group-entry {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+}
+
+.group-entry-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.group-entry-count {
+    width: 30px;
+    direction: rtl;
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.available-groups-list {
+    margin-bottom: auto;
 }
 
 .available-variables {
@@ -320,6 +311,9 @@ app {
     flex: 1;
     cursor: pointer;
     min-width: 350px;
+    margin-left: 15px;
+    margin-top: 15px;
+    user-select: none;
 }
 
 .variable-expander {
@@ -346,14 +340,54 @@ app {
 }
 
 .variable-expander-content {
+    flex-direction: column;
+    display: flex;
     margin-left: 22px;
 }
 
+.variable-expander-content span {
+    font-size: 0.9rem;
+}
+
+.variable-expander-content span:hover {
+    background-color: rgba(1, 135, 134, 0.10);
+}
+
+.variable-expander-content span .selected {
+    background-color: rgba(1, 135, 134, 0.54);
+}
+
 .selected-variables {
-    min-width: 300px;
-    max-width: 300px;
-    margin-left: auto !important;
-    margin-right: 15px;
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    max-width: 320px;
+    margin: 15px 15px 0px 15px;
+    cursor: pointer;
+}
+
+.selected-variable {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    white-space: nowrap;
+}
+
+.selected-variable:hover {
+    background-color: rgba(1, 135, 134, 0.10);
+}
+
+.selected-variable-name {
+    font-weight: bold;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.selected-variable-campaign {
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.54);
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .news-card {

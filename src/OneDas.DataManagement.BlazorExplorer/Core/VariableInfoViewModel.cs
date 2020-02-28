@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
             this.Datasets = variable.Datasets
                 .Where(dataset => !dataset.Name.EndsWith("_status"))
-                .Select(dataset => new DatasetInfoViewModel(dataset)).ToList();
+                .Select(dataset => new DatasetInfoViewModel(dataset, this)).ToList();
         }
 
         #endregion
@@ -32,9 +32,13 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         public string Name => _variable.VariableNames.Last();
 
+        public string Group => _variable.VariableGroups.Last();
+
         public string Unit => _variableMeta == null ? _variable.Units.Last() : _variableMeta.Unit;
 
         public string Description => _variableMeta == null ? "<no description available>" : _variableMeta.Description;
+
+        public CampaignInfo Parent => (CampaignInfo)_variable.Parent;
 
         public List<TransferFunction> TransferFunctions => _variableMeta == null ? new List<TransferFunction>() : _variableMeta.TransferFunctions;
 

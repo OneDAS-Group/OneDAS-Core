@@ -36,7 +36,7 @@ namespace OneDas.DataManagement.BlazorExplorer
             {
                 app.UseExceptionHandler("/Error");
             }
-
+            
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {

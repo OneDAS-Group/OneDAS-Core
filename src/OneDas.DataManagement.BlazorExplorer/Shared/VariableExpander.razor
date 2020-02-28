@@ -2,11 +2,15 @@
     <div class="variable-name">
         @if (this.IsExpanded)
         {
-            <span><i class="fas fa-sort-down"></i></span>
+            <span style="@(_filteredDatasets.Any() ? "" : "visibility: hidden")">
+                <i class="fas fa-sort-down"></i>
+            </span>
         }
         else
         {
-            <span><i class="fas fa-sort-down" style="transform: rotate(-90deg);"></i></span>
+            <span style="@(_filteredDatasets.Any() ? "" : "visibility: hidden")">
+                <i class="fas fa-sort-down" style="transform: rotate(-90deg);"></i>
+            </span>
         }
         @this.Variable.Name
     </div>
@@ -18,24 +22,15 @@
 @if (this.IsExpanded)
 {
     <div class="variable-expander-content">
-        @foreach (var dataset in this.Variable.Datasets)
+        @foreach (var dataset in _filteredDatasets)
         {
             <span>
-                @dataset.Name
+                <MatRipple @onclick="() => this.OnDatasetToggled(dataset)"
+                           Color="@MatRippleColor.Secondary"
+                           class="@(dataset.IsSelected ? "selected" : "")">
+                    @dataset.Name
+                </MatRipple>
             </span>
         }
     </div>
-}
-
-@code {
-    [Parameter]
-    public bool IsExpanded { get; set; }
-
-    [Parameter]
-    public VariableInfoViewModel Variable { get; set; }
-
-    private void OnClick()
-    {
-        this.IsExpanded = !this.IsExpanded;
-    }
 }

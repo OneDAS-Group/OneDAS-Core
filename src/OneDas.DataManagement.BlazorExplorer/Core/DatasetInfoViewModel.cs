@@ -13,9 +13,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #region Constructors
 
-        public DatasetInfoViewModel(DatasetInfo dataset)
+        public DatasetInfoViewModel(DatasetInfo dataset, VariableInfoViewModel parent)
         {
             _model = dataset;
+
+            this.Parent = parent;
         }
 
         #endregion
@@ -27,6 +29,8 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         public OneDasDataType DataType => _model.DataType;
 
         public bool IsSelected { get; set; }
+
+        public VariableInfoViewModel Parent { get; }
 
         #endregion
     }
