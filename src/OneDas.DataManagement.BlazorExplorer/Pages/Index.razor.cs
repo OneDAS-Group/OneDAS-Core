@@ -21,7 +21,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 		#region Properties
 
 		[Inject]
-		public AppState AppState { get; set; }
+		public AppStateViewModel AppState { get; set; }
 
 		public bool AttachmentDialogIsOpen { get; set; }
 
@@ -41,7 +41,14 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 		{
 			_propertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(AppState.SearchString))
+				if (e.PropertyName == nameof(AppStateViewModel))
+				{
+					this.InvokeAsync(() =>
+					{
+						this.StateHasChanged();
+					});
+				}
+				else if (e.PropertyName == nameof(AppStateViewModel.SearchString))
 				{
 					this.InvokeAsync(() =>
 					{
@@ -49,15 +56,15 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 						this.StateHasChanged();
 					});
 				}
-				else if (e.PropertyName == nameof(AppState.CampaignContainer))
+				else if (e.PropertyName == nameof(AppStateViewModel.CampaignContainer))
 				{
 					this.GroupPage = 0;
 				}
-				else if (e.PropertyName == nameof(AppState.VariableGroup))
+				else if (e.PropertyName == nameof(AppStateViewModel.VariableGroup))
 				{
 					this.VariablePage = 0;
 				}
-				else if (e.PropertyName == nameof(AppState.SelectedDatasets))
+				else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
 				{
 					this.InvokeAsync(() =>
 					{

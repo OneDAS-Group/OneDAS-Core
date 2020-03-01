@@ -1,29 +1,29 @@
-﻿@inject AppState appState
+﻿@using BlazorInputFile
 
 <div class="settings-content mat-elevation-z11">
 
     <MatDatePicker class="settings-control"
                    Label="From (UTC)"
-                   Maximum="appState.DateTimeBeginMaximum"
+                   Maximum="this.AppState.DateTimeBeginMaximum"
                    Format="dd.MM.yyyy HH:mm"
-                   @bind-Value="appState.DateTimeBegin"
+                   @bind-Value="this.AppState.DateTimeBegin"
                    EnableTime="true"
                    Enable24hours="true">
     </MatDatePicker>
 
     <MatDatePicker class="settings-control"
                    Label="To (UTC)"
-                   Minimum="appState.DateTimeEndMinimum"
+                   Minimum="this.AppState.DateTimeEndMinimum"
                    Format="dd.MM.yyyy HH:mm"
-                   @bind-Value="appState.DateTimeEnd"
+                   @bind-Value="this.AppState.DateTimeEnd"
                    EnableTime="true"
                    Enable24hours="true">
     </MatDatePicker>
 
     <MatSelectItem class="settings-control"
                    Label="File Granularity"
-                   @bind-Value="appState.FileGranularity"
-                   Items="appState.FileGranularityValues">
+                   @bind-Value="this.AppState.FileGranularity"
+                   Items="this.AppState.FileGranularityValues">
         <ItemTemplate Context="value">
             @Utilities.GetEnumLocalization(@value)
         </ItemTemplate>
@@ -31,8 +31,8 @@
 
     <MatSelectItem class="settings-control"
                    Label="File Type"
-                   @bind-Value="appState.FileFormat"
-                   Items="appState.FileFormatValues">
+                   @bind-Value="this.AppState.FileFormat"
+                   Items="this.AppState.FileFormatValues">
         <ItemTemplate Context="value">
             @Utilities.GetEnumLocalization(@value)
         </ItemTemplate>
@@ -40,8 +40,8 @@
 
     <MatSelectItem class="settings-control"
                    Label="Sample Rate"
-                   @bind-Value="appState.SampleRate"
-                   Items="appState.SampleRateValues">
+                   @bind-Value="this.AppState.SampleRate"
+                   Items="this.AppState.SampleRateValues">
     </MatSelectItem>
 
     <div class="configuration-panel">
@@ -51,7 +51,7 @@
                 <i class="fas fa-folder-open" aria-hidden="true"></i>
             </MatIconButton>
 
-            <MatIconButton>
+            <MatIconButton OnClick="OnSaveExportSettings">
                 <i class="fas fa-file-download" aria-hidden="true"></i>
             </MatIconButton>
         </div>
@@ -59,6 +59,7 @@
         <div class="flex-row">
             <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
             <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
+            <InputFile OnChange="OnLoadExportSettings" />
         </div>
     </div>
 

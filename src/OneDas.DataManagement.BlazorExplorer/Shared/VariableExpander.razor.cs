@@ -20,7 +20,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
         #region Properties
 
         [Inject]
-        public AppState AppState { get; set; }
+        public AppStateViewModel AppState { get; set; }
 
         [Parameter]
         public bool IsExpanded { get; set; }
@@ -36,7 +36,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
         {
             _propertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(AppState.SampleRate))
+                if (e.PropertyName == nameof(AppStateViewModel.SampleRate))
                 {
                     this.InvokeAsync(() =>
                     {

@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.BlazorExplorer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddScoped<AppState>();
+            services.AddScoped<AppStateViewModel>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

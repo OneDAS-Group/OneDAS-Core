@@ -9,7 +9,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
         #region Properties
 
         [Inject]
-        public AppState AppState { get; set; }
+        public AppStateViewModel AppState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }

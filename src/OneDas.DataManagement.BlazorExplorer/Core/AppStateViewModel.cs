@@ -10,15 +10,14 @@ using System.Reflection;
 
 namespace OneDas.DataManagement.BlazorExplorer.Core
 {
-    public class AppState : BindableBase
+    public class AppStateViewModel : BindableBase
     {
         #region Fields
 
-        private string _searchString;
-        private string _sampleRate;
+#warning make this private!
+        public ExportConfiguration _model;
 
-        private DateTime _dateTimeBegin;
-        private DateTime _dateTimeEnd;
+        private string _searchString;
 
         private CampaignContainer _campaignContainer;
         private List<VariableInfoViewModel> _variableGroup;
@@ -30,23 +29,21 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #region Constructors
 
-        public AppState()
+        public AppStateViewModel() : this(new ExportConfiguration())
         {
+            //
+        }
+
+        public AppStateViewModel(ExportConfiguration exportConfiguration)
+        {
+            this.SetExportConfiguration(exportConfiguration);
+
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
-
-            this.DateTimeBegin = DateTime.UtcNow.Date.AddDays(-2);
-            this.DateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
-            
-            this.DateTimeBeginMaximum = this.DateTimeEnd;
-            this.DateTimeEndMinimum = this.DateTimeBegin;
-
-            this.FileGranularity = FileGranularity.Hour;
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
-
-            this.FileFormat = FileFormat.CSV;
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
 
             this.CampaignContainers = Program.DatabaseManager.Database.CampaignContainers.AsReadOnly();
+
             this.SampleRateValues = this.CampaignContainers.SelectMany(campaignContainer =>
             {
                 return campaignContainer.Campaign.Variables.SelectMany(variable =>
@@ -55,10 +52,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                                             .Where(sampleRate => !sampleRate.Contains("600 s"));
                 });
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
+
             this.NewsPaper = NewsPaper.Load();
 
-            this.InitializeSampleRateToDatasetsMap();
             this.InitializeCampaignContainerToVariableMap();
+            this.InitializeSampleRateToDatasetsMap();
         }
 
         #endregion
@@ -67,20 +65,9 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         public string Version { get; }
         
-        public DateTime DateTimeBegin
-        {
-            get
-            {
-                return _dateTimeBegin;
-            }
-            set
-            {
-                _dateTimeBegin = value;
-                this.DateTimeEndMinimum = value;
-            }
-        }
+        public DateTime DateTimeBeginMaximum { get; private set; }
 
-        public DateTime DateTimeBeginMaximum;
+        public DateTime DateTimeEndMinimum { get; private set; }
 
         public List<string> SampleRateValues { get; set; }
 
@@ -131,41 +118,65 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #endregion
 
-        #region Serializable
+        #region Relay Properties
+
+        public DateTime DateTimeBegin
+        {
+            get { return _model.DateTimeBegin; }
+            set
+            {
+                base.SetProperty(ref _model.DateTimeBeginField, value);
+                this.DateTimeEndMinimum = value;
+            }
+        }
 
         public DateTime DateTimeEnd
         {
-            get
-            {
-                return _dateTimeEnd;
-            }
+            get { return _model.DateTimeEnd; }
             set
             {
-                _dateTimeEnd = value;
+                base.SetProperty(ref _model.DateTimeEndField, value);
                 this.DateTimeBeginMaximum = value;
             }
         }
 
-        public DateTime DateTimeEndMinimum;
+        public FileGranularity FileGranularity
+        {
+            get { return _model.FileGranularity; }
+            set { base.SetProperty(ref _model.FileGranularityField, value); }
+        }
+
+        public FileFormat FileFormat
+        {
+            get { return _model.FileFormat; }
+            set { base.SetProperty(ref _model.FileFormatField, value); }
+        }
 
         public string SampleRate
         {
-            get { return _sampleRate; }
-            set 
+            get { return _model.SampleRate; }
+            set
             {
-                base.SetProperty(ref _sampleRate, value);
-                this.RaisePropertyChanged(nameof(AppState.SelectedDatasets));
+                base.SetProperty(ref _model.SampleRateField, value);
+                this.RaisePropertyChanged(nameof(AppStateViewModel.SelectedDatasets));
             }
         }
 
-        public FileGranularity FileGranularity { get; set; }
-
-        public FileFormat FileFormat { get; set; }
-
         public IReadOnlyCollection<DatasetInfoViewModel> SelectedDatasets => this.GetSelectedDatasets();
+
         #endregion
 
         #region Methods
+
+        public void SetExportConfiguration(ExportConfiguration exportConfiguration)
+        {
+            _model = exportConfiguration;
+
+            this.DateTimeBeginMaximum = this.DateTimeEnd;
+            this.DateTimeEndMinimum = this.DateTimeBegin;
+
+            this.RaisePropertyChanged(nameof(AppStateViewModel));
+        }
 
         public bool IsDatasetSeleced(DatasetInfoViewModel dataset)
         {
@@ -181,7 +192,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             else
                 this.GetSelectedDatasets().Add(dataset);
 
-            this.RaisePropertyChanged(nameof(AppState.SelectedDatasets));
+            this.RaisePropertyChanged(nameof(AppStateViewModel.SelectedDatasets));
         }
 
         private void UpdateAttachments()
