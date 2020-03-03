@@ -1,10 +1,12 @@
-﻿using ChartJs.Blazor.ChartJS.Common;
+﻿using ChartJs.Blazor.ChartJS.BarChart;
+using ChartJs.Blazor.ChartJS.BarChart.Axes;
 using ChartJs.Blazor.ChartJS.Common.Axes;
 using ChartJs.Blazor.ChartJS.Common.Axes.Ticks;
 using ChartJs.Blazor.ChartJS.Common.Enums;
 using ChartJs.Blazor.ChartJS.Common.Handlers;
 using ChartJs.Blazor.ChartJS.Common.Properties;
-using ChartJs.Blazor.ChartJS.LineChart;
+using ChartJs.Blazor.ChartJS.Common.Time;
+using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,54 +15,46 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
     public partial class DataAvailabilityBox
     {
-        #region Properties
-
-        private LineConfig Config { get; set; }
-
-        #endregion
-
         #region Constructors
 
         public DataAvailabilityBox()
         {
-            this.Config = new LineConfig
+            this.Config = new BarConfig
             {
-                Options = new LineOptions
+                Options = new BarOptions
                 {
-                    Animation = new Animation()
-                    {
-                        Duration = 0
-                    },
-                    Hover = new LineOptionsHover()
-                    {
-                        AnimationDuration = 0
-                    },
                     Legend = new Legend
                     {
                         Display = false
                     },
                     MaintainAspectRatio = false,
-                    ResponsiveAnimationDuration = 0,
-                    Scales = new Scales
+                    Scales = new BarScales
                     {
-                        xAxes = new List<CartesianAxis>
+                        XAxes = new List<CartesianAxis>
                         {
-                            new LinearCartesianAxis
+                            new BarTimeAxis
                             {
-                                Display = AxisDisplay.True,
+                                BarPercentage = 0.9,
+                                Offset = true,
+                                Time = new TimeOptions
+                                {
+                                    Unit = TimeMeasurement.Day
+                                },
+                                Ticks = new TimeTicks
+                                {
+                                    FontColor = "rgba(0, 0, 0, 0.54)",
+                                    FontSize = 15
+                                }
                             }
                         },
-                        yAxes = new List<CartesianAxis>
+                        YAxes = new List<CartesianAxis>
                         {
                             new LinearCartesianAxis
                             {
                                 Position = Position.Left,
                                 ScaleLabel = new ScaleLabel
                                 {
-                                    Display = true,
-                                    LabelString = "Availability in %",
-                                    FontColor = "rgba(0, 0, 0, 0.54)",
-                                    FontSize = 20
+                                    Display = false
                                 },
                                 Ticks = new LinearCartesianTicks
                                 {
@@ -68,7 +62,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
                                     Min = 0,
                                     BeginAtZero = true,
                                     FontColor = "rgba(0, 0, 0, 0.54)",
-                                    FontSize = 20
+                                    FontSize = 15
                                 }
                             }
                         }
@@ -83,31 +77,120 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         #endregion
 
+        #region Properties
+
+        private BarConfig Config { get; set; }
+
+        private BarDataset<TimeTuple<double>> Dataset { get; set; }
+
+        #endregion
+
         #region Methods
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
-            var statistics = await this.AppState.GetDataAvailabilityStatisticsAsync();
+            this.PropertyChanged = async (sender, e) =>
+            {
+                await this.UpdateChart();
 
-            LineDataset<Point> dataset = new LineDataset<Point>
+                if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+                {
+                    await this.InvokeAsync(() =>
+                    {
+                        this.StateHasChanged();
+                    });
+                }
+                else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
+                {
+                    await this.InvokeAsync(() =>
+                    {
+                        this.StateHasChanged();
+                    });
+                }
+                else if (e.PropertyName == nameof(AppStateViewModel.CampaignContainer))
+                {
+                    await this.InvokeAsync(() =>
+                    {
+                        this.StateHasChanged();
+                    });
+                }
+            };
+
+            this.Dataset = new BarDataset<TimeTuple<double>>
             {
                 BackgroundColor = "rgba(136, 14, 79, 0.2)",
                 BorderColor = "rgba(136, 14, 79)",
-                BorderWidth = 3,
-                LineTension = 0.25,
-                PointRadius = 0,
-                Label = "Messung"
+                BorderWidth = 2
             };
 
-            dataset.AddRange(statistics.Data
-                .Select((value, i) =>
-                {
-                    return new Point(i, value);
-                })
-            );
+            this.Config.Data.Datasets.Clear();
+            this.Config.Data.Datasets.Add(this.Dataset);
 
-            this.Config.Data.Datasets.Add(dataset);
-            await lineChart.Update();
+            base.OnInitialized();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await this.UpdateChart();
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
+        private async Task UpdateChart()
+        {
+            var axis = (BarTimeAxis)barChart.Config.Options.Scales.XAxes[0];
+            var statistics = await this.AppState.GetDataAvailabilityStatisticsAsync();
+
+            this.Dataset.RemoveRange(0, this.Dataset.Data.Count);
+
+            switch (statistics.Granularity)
+            {
+                case DataAvailabilityGranularity.ChunkLevel:
+
+                    axis.Time.Unit = TimeMeasurement.Minute;
+                    var dateTimeBegin1 = this.AppState.DateTimeBegin.Date;
+
+                    this.Dataset.AddRange(statistics.Data
+                        .Select((value, i) =>
+                        {
+                            return new TimeTuple<double>((Moment)dateTimeBegin1.AddMinutes(i), value);
+                        })
+                    );
+
+                    break;
+
+                case DataAvailabilityGranularity.DayLevel:
+
+                    axis.Time.Unit = TimeMeasurement.Day;
+                    var dateTimeBegin2 = this.AppState.DateTimeBegin.Date;
+
+                    this.Dataset.AddRange(statistics.Data
+                        .Select((value, i) =>
+                        {
+                            return new TimeTuple<double>((Moment)dateTimeBegin2.AddDays(i), value);
+                        })
+                    );
+
+                    break;
+
+                case DataAvailabilityGranularity.MonthLevel:
+
+                    axis.Time.Unit = TimeMeasurement.Month;
+                    var dateTimeBegin3 = this.AppState.DateTimeBegin.Date;
+
+                    this.Dataset.AddRange(statistics.Data
+                        .Select((value, i) =>
+                        {
+                            return new TimeTuple<double>((Moment)dateTimeBegin3.AddMonths(i), value);
+                        })
+                    );
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            await barChart.Update();
         }
 
         #endregion

@@ -4,11 +4,14 @@
 
 <div class="data-availability">
 
-    <div class="data-availability-chart">
-        <ChartJsLineChart @ref="lineChart" Config="this.Config" Height="450"></ChartJsLineChart>
+    <div class="data-availability-chart-container">
+        <span>Availability&nbsp;in&nbsp;%</span>
+        <div class="data-availability-chart">
+            <ChartJsBarChart @ref="barChart" Config="this.Config"></ChartJsBarChart>
+        </div>
     </div>
 
-    <MatButton OnClick="() => this.AppState.ToggleDataAvailability()"
+    <MatButton OnClick="this.AppState.ToggleDataAvailability"
                Outlined="true"
                Label="Back">
     </MatButton>
@@ -16,5 +19,5 @@
 </div>
 
 @code {
-    private ChartJsLineChart lineChart;
+    private ChartJsBarChart barChart;
 }

@@ -15,7 +15,7 @@ body {
     height: 100%;
     min-width: 1750px;
     max-width: 100%;
-    margin: 0;
+    data-availability-chart margin: 0;
 }
 
 app {
@@ -224,6 +224,10 @@ app {
     display: flex;
     flex-direction: row;
 }
+
+    .campaign-box-selected-footer-icons .selected {
+        color: #880e4f;
+    }
 
 .long-description {
     margin: 0;
@@ -592,6 +596,30 @@ app {
 .data-availability button {
     align-self: end;
     width: 150px;
+}
+
+.data-availability-chart-container {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    margin: 15px;
+}
+
+    .data-availability-chart-container span {
+        margin-top: auto;
+        margin-bottom: auto;
+        writing-mode: vertical-rl;
+        transform: rotate(-180deg);
+        color: rgba(0, 0, 0, 0.54);
+    }
+
+.data-availability-chart {
+    display: flex;
+    flex: 1;
+}
+
+.data-availability-chart .row {
+    flex: 1;
 }
 
 .clear-margin {

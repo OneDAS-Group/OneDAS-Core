@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
@@ -31,8 +33,11 @@ namespace OneDas.DataManagement.BlazorExplorer
             services.AddSingleton<OneDasExplorerStateManager>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<OneDasExplorerOptions> options)
         {
+            var logger = loggerFactory.CreateLogger("OneDAS Explorer");
+            logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -32,7 +32,7 @@
                     <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentDialog" />
                 }
 
-                <MatIconButton Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
+                <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
             </div>
         </div>
     }

@@ -3,6 +3,7 @@ using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -64,12 +65,12 @@ namespace OneDas.DataManagement.Extensions
 
         public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
         {
-            throw new NotImplementedException();
+            return new DataAvailabilityStatistics(DataAvailabilityGranularity.DayLevel, Enumerable.Range(1, (int)Math.Ceiling((end - begin).TotalDays)).ToArray());
         }
 
         public override void Dispose()
