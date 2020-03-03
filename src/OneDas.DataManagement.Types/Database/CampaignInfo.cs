@@ -61,17 +61,13 @@ namespace OneDas.DataManagement.Database
             }).ToList();
         }
 
-        public CampaignInfo ToSparseCampaign(Dictionary<string, List<string>> variableMap)
+        public CampaignInfo ToSparseCampaign(List<DatasetInfo> datasets)
         {
             var campaign = new CampaignInfo(this.Name);
+            var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
 
-            campaign.Variables = variableMap.Select(variableEntry =>
+            campaign.Variables = variables.Select(referenceVariable =>
             {
-                var referenceVariable = this.Variables.FirstOrDefault(currentVariable => currentVariable.Name == variableEntry.Key);
-
-                if (referenceVariable is null)
-                    throw new KeyNotFoundException($"The requested variable '{referenceVariable.Name}' is unknown.");
-
                 var variable = new VariableInfo(referenceVariable.Name, campaign)
                 {
                     TransferFunctions = referenceVariable.TransferFunctions,
@@ -80,15 +76,12 @@ namespace OneDas.DataManagement.Database
                     VariableNames = referenceVariable.VariableNames
                 };
 
-                variable.Datasets = variableEntry.Value.Select(datasetName =>
+                var referenceDatasets = datasets.Where(dataset => (VariableInfo)dataset.Parent == referenceVariable);
+
+                variable.Datasets = referenceDatasets.Select(referenceDataset =>
                 {
-                    var referenceDataset = referenceVariable.Datasets.FirstOrDefault(currentDataset => currentDataset.Name == datasetName);
-
-                    if (referenceDataset is null)
-                        throw new KeyNotFoundException($"The requested dataset '{referenceDataset.Name}' is unknown.");
-
-                    return new DatasetInfo(referenceDataset.Name, variable) 
-                    { 
+                    return new DatasetInfo(referenceDataset.Name, variable)
+                    {
                         DataType = referenceDataset.DataType,
                         IsNative = referenceDataset.IsNative
                     };
@@ -116,6 +109,8 @@ namespace OneDas.DataManagement.Database
                     referenceVariable.Merge(variable);
                 else
                     newVariables.Add(variable);
+
+                variable.Parent = this;
             }
 
             this.Variables.AddRange(newVariables);

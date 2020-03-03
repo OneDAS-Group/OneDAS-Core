@@ -95,7 +95,7 @@ namespace OneDas.DataManagement.Extensions
                 if (totalDays <= 7)
                 {
                     granularity = DataAvailabilityGranularity.ChunkLevel;
-                    aggregatedData = data;
+                    aggregatedData = data.Select(value => value * 100).ToArray();
                 }
                 else if (totalDays <= 365)
                 {

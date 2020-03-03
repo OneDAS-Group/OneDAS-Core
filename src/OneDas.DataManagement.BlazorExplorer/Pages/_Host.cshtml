@@ -12,12 +12,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OneDas.DataManagement.BlazorExplorer</title>
     <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link href="css/site.css" rel="stylesheet" />
-    <link href="_content/MatBlazor/dist/matBlazor.css" rel="stylesheet" />
-    <link href="lib/font-awesome/css/fontawesome.min.css" rel="stylesheet" />
-    <link href="lib/font-awesome/css/solid.min.css" rel="stylesheet" />
-    <link href="lib/font-awesome/css/regular.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/site.css" />
+    <link rel="stylesheet" href="css/uPlot.css" />
+    <link rel="stylesheet" href="_content/MatBlazor/dist/matBlazor.css" />
+    <link rel="stylesheet" href="lib/font-awesome/css/fontawesome.min.css" />
+    <link rel="stylesheet" href="lib/font-awesome/css/solid.min.css" />
+    <link rel="stylesheet" href="lib/font-awesome/css/regular.min.css" />
+
+    <!-- Some styling -->
+    <link rel="stylesheet" href="_content/ChartJs.Blazor/ChartJSBlazor.css" />
 </head>
 <body>
     <app>
@@ -38,8 +41,19 @@
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/MatBlazor/dist/matBlazor.js"></script>
     <script src="_content/BlazorInputFile/inputfile.js"></script>
+    <script src="js/site.js"></script>
+    <script src="js/uPlot.iife.min.js"></script>
     <script src="lib/font-awesome/js/fontawesome.min.js"></script>
     <script src="lib/font-awesome/js/solid.min.js"></script>
     <script src="lib/font-awesome/js/regular.min.js"></script>
+
+    <!-- Reference the included moment.js javascript file. -->
+    <script src="_content/ChartJs.Blazor/moment-with-locales.min.js" type="text/javascript" language="javascript"></script>
+
+    <!-- Reference the included ChartJs javascript file. -->
+    <script src="_content/ChartJs.Blazor/Chart.min.js" type="text/javascript" language="javascript"></script>
+
+    <!-- This is the glue between the C# code and the ChartJs charts -->
+    <script src="_content/ChartJs.Blazor/ChartJsBlazorInterop.js" type="text/javascript" language="javascript"></script>
 </body>
 </html>

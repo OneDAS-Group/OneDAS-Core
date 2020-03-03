@@ -10,7 +10,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.BlazorExplorer
@@ -35,7 +34,9 @@ namespace OneDas.DataManagement.BlazorExplorer
 
         public static async Task<int> Main(string[] args)
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
             // check interactivity
             var isWindowsService = args.Contains("--non-interactive");

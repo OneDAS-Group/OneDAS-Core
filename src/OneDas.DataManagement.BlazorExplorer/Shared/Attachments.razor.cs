@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OneDas.DataManagement.BlazorExplorer.Core;
+using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System.IO;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared

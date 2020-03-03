@@ -92,7 +92,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-#warning Is this secure?
+#warning Is this safe?
                 var samplesPerSecond = (ulong)sampleRateContainer.SamplesPerSecond;
 
                 // epoch & hyperslab

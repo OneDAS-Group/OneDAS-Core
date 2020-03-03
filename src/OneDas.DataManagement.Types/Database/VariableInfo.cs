@@ -61,6 +61,8 @@ namespace OneDas.DataManagement.Database
                     referenceDataset.Merge(dataset);
                 else
                     newDatasets.Add(dataset);
+
+                dataset.Parent = this;
             }
 
             this.Datasets.AddRange(newDatasets);

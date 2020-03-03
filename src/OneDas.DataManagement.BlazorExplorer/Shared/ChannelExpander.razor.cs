@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using OneDas.DataManagement.BlazorExplorer.Core;
+using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
-    public partial class VariableExpander : IDisposable
+    public partial class ChannelExpander : IDisposable
     {
         #region Fields
 

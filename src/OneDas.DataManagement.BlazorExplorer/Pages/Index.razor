@@ -1,99 +1,38 @@
 ﻿@page "/"
+@inherits AppStateComponentBase
 
-<div class="campaign-box mat-elevation-z11">
-    <div class="campaign-box-available">
-        <MatHeadline5>Available Campaigns</MatHeadline5>
-
-        <MatList SingleSelection="true" TwoLine="true">
-            @foreach (var campaignContainer in this.AppState.CampaignContainers)
-            {
-                <MatListItem OnClick="() => this.OnCampaignContainerSelected(campaignContainer)">
-                    <MatListItemText>
-                        <MatListItemPrimaryText>@campaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatListItemPrimaryText>
-                        <MatListItemSecondaryText>@campaignContainer.CampaignMeta.ShortDescription</MatListItemSecondaryText>
-                    </MatListItemText>
-                </MatListItem>
-            }
-        </MatList>
+@if (this.AppState.ClientState != ClientState.PrepareDownload)
+{
+    <div class="left-column">
+        <SettingsBox />
     </div>
-    <div class="campaign-box-selected">
-
-        @if (this.AppState.CampaignContainer != null)
-        {
-            <MatHeadline5>@this.AppState.CampaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatHeadline5>
-            <p class="long-description">
-                @this.AppState.CampaignContainer.CampaignMeta.LongDescription
-            </p>
-            <div class="campaign-box-selected-footer">
-                <div>
-                    <b>Start: </b> @this.AppState.CampaignContainer.Campaign.CampaignStart.ToString("dd.MM.yyyy") &nbsp;&nbsp;&nbsp; <b>End: </b> @this.AppState.CampaignContainer.Campaign.CampaignEnd.ToString("dd.MM.yyyy")
-                </div>
-
-                @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
-                {
-                    <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="@OpenAttachmentDialog" />
-                }
-            </div>
-        }
-        else
-        {
-            <MatHeadline5>Select a Campaign ...</MatHeadline5>
-        }
+    <div class="center-column">
+        <div class="campaign-box mat-elevation-z11">
+            <CampaignBox />
+        </div>
+        <div class="channel-box mat-elevation-z11">
+            @if (this.AppState.ClientState != ClientState.DataAvailability)
+            {
+                <ChannelBox />
+            }
+            else
+            {
+                <DataAvailabilityBox />
+            }
+        </div>
     </div>
-</div>
-<div class="channel-box mat-elevation-z11">
-
-    @if (this.AppState.GroupedVariables != null)
-    {
-        <div class="available-groups">
-
-            <MatTextField @bind-Value="this.AppState.SearchString"
-                          OnInput="e => this.AppState.SearchString = e.Value.ToString()"
-                          Label="Search"
-                          Icon="@_searchIcon"
-                          IconOnClick="@(() => this.AppState.SearchString = "")"
-                          IconTrailing="true">
-            </MatTextField>
-
-            <div class="available-groups-list">
-                @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key).Skip(this.GroupPage * this.GroupPageSize).Take(this.GroupPageSize))
-                {
-                    <div @onclick="() => this.OnVariableGroupSelected(entry.Value)"
-                         class="group-entry @(this.AppState.VariableGroup == entry.Value? "selected" : "")">
-                        <span class="group-entry-name">@entry.Key</span>
-                        <span class="group-entry-count">@entry.Value.Count</span>
-                    </div>
-                }
-            </div>
-
-            <Paginator Length="this.AppState.GroupedVariables.Count" PageSize="this.GroupPageSize" @bind-Page="@this.GroupPage"></Paginator>
+    <div class="right-column">
+        <div class="news-box mat-elevation-z11">
+            <NewsTicker />
         </div>
-
-        <div class="available-variables">
-            @if (this.AppState.VariableGroup != null)
-            {
-                <div>
-                    @foreach (var variable in this.AppState.VariableGroup.Skip(this.VariablePage * this.VariablePageSize).Take(this.VariablePageSize))
-                    {
-                        <VariableExpander Variable="variable" />
-                    }
-                </div>
-
-                <Paginator Length="this.AppState.VariableGroup.Count" PageSize="this.VariablePageSize" @bind-Page="@this.VariablePage"></Paginator>
-            }
+        <div class="variable-box mat-elevation-z11">
+            <DownloadBox />
         </div>
-
-        <div class="selected-variables">
-            @foreach (var dataset in this.AppState.SelectedDatasets)
-            {
-                <div class="selected-variable" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
-                    <span class="selected-variable-name">@dataset.Parent.Name (@this.AppState.SampleRate)</span>
-                    <span class="selected-variable-campaign">@dataset.Parent.Parent.Name.TrimStart('/').Replace("/", " / ")</span>
-                </div>
-            }
-        </div>
-    }
-
-</div>
-
-<Attachments @bind-IsOpen="this.AttachmentDialogIsOpen" />
+    </div>
+}
+else
+{
+    <div class="downloader mat-elevation-z11">
+        <DownloadUI />
+    </div>
+}

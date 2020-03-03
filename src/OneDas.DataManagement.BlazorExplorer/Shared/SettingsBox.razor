@@ -1,4 +1,6 @@
-﻿@using BlazorInputFile
+﻿@inherits AppStateComponentBase
+
+@using BlazorInputFile
 
 <div class="settings-content mat-elevation-z11">
 
@@ -6,7 +8,7 @@
                    Label="From (UTC)"
                    Maximum="this.AppState.DateTimeBeginMaximum"
                    Format="dd.MM.yyyy HH:mm"
-                   @bind-Value="this.AppState.DateTimeBegin"
+                   @bind-Value="this.AppState.DateTimeBeginWorkaround"
                    EnableTime="true"
                    Enable24hours="true">
     </MatDatePicker>
@@ -15,7 +17,7 @@
                    Label="To (UTC)"
                    Minimum="this.AppState.DateTimeEndMinimum"
                    Format="dd.MM.yyyy HH:mm"
-                   @bind-Value="this.AppState.DateTimeEnd"
+                   @bind-Value="this.AppState.DateTimeEndWorkaround"
                    EnableTime="true"
                    Enable24hours="true">
     </MatDatePicker>
@@ -46,20 +48,22 @@
 
     <div class="configuration-panel">
         <MatDivider></MatDivider>
-        <div class="flex-row">
-            <MatIconButton>
-                <i class="fas fa-folder-open" aria-hidden="true"></i>
-            </MatIconButton>
-
-            <MatIconButton OnClick="OnSaveExportSettings">
-                <i class="fas fa-file-download" aria-hidden="true"></i>
-            </MatIconButton>
-        </div>
 
         <div class="flex-row">
-            <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
-            <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
-            <InputFile OnChange="OnLoadExportSettings" />
+            <div class="configuration-panel-hover">
+                <div class="icon-button">
+                    <i class="fas fa-folder-open" aria-hidden="true"></i>
+                    <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
+                </div>
+                <InputFile OnChange="OnLoadExportSettingsAsync" accept="application/JSON" />
+            </div>
+
+            <div class="configuration-panel-hover">
+                <div class="icon-button" @onclick="OnSaveExportSettingsAsync">
+                    <i class="fas fa-file-download" aria-hidden="true"></i>
+                    <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
+                </div>
+            </div>
         </div>
     </div>
 

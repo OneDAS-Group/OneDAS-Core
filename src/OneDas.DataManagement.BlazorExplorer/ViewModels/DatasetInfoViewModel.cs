@@ -1,22 +1,15 @@
 ﻿using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
 
-namespace OneDas.DataManagement.BlazorExplorer.Core
+namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 {
     public class DatasetInfoViewModel
     {
-        #region Fields
-
-        private DatasetInfo _model;
-
-        #endregion
-
         #region Constructors
 
         public DatasetInfoViewModel(DatasetInfo dataset, VariableInfoViewModel parent)
         {
-            _model = dataset;
-
+            this.Model = dataset;
             this.Parent = parent;
         }
 
@@ -24,9 +17,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #region Properties
 
-        public string Name => _model.Name;
+        public DatasetInfo Model { get; }
 
-        public OneDasDataType DataType => _model.DataType;
+        public string Name => Model.Name;
+
+        public OneDasDataType DataType => Model.DataType;
 
         public VariableInfoViewModel Parent { get; }
 

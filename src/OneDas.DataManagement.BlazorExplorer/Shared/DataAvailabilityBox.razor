@@ -1,0 +1,20 @@
+﻿@inherits AppStateComponentBase
+
+@using ChartJs.Blazor.Charts
+
+<div class="data-availability">
+
+    <div class="data-availability-chart">
+        <ChartJsLineChart @ref="lineChart" Config="this.Config" Height="450"></ChartJsLineChart>
+    </div>
+
+    <MatButton OnClick="() => this.AppState.ToggleDataAvailability()"
+               Outlined="true"
+               Label="Back">
+    </MatButton>
+
+</div>
+
+@code {
+    private ChartJsLineChart lineChart;
+}

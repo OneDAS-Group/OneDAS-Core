@@ -3,7 +3,7 @@ using OneDas.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OneDas.DataManagement.BlazorExplorer.Core
+namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 {
     public class VariableInfoViewModel
     {
@@ -29,6 +29,8 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         #endregion
 
         #region Properties
+
+        public string ID => _variable.Name;
 
         public string Name => _variable.VariableNames.Last();
 

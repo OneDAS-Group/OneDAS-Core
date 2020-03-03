@@ -1,28 +1,24 @@
-@font-face {
-    font-family: 'OpenSans-Regular';
-    src: url('../fonts/OpenSans-Regular.ttf');
-}
-
 html, body {
-    font-family: 'OpenSans-Regular';
+    font-family: 'Roboto';
 }
 
 html {
     min-height: 700px;
+    height: 100%;
     min-width: 1750px;
     max-width: 100%;
     background-color: #215d6a;
 }
 
 body {
-    min-height: 700px;
+    min-height: 900px;
+    height: 100%;
     min-width: 1750px;
     max-width: 100%;
     margin: 0;
 }
 
 app {
-    position: absolute;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -33,33 +29,8 @@ app {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    flex-grow: 1;
-}
-
-.settings {
-    display: flex;
-    flex-direction: column;
-    min-width: 300px;
-    width: 300px;
-}
-
-.content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 1000px;
-}
-
-    .content h5 {
-        margin: 15px;
-    }
-
-
-.news {
-    display: flex;
-    flex-direction: column;
-    min-width: 350px;
-    width: 350px;
+    height: 100%;
+    min-height: 0;
 }
 
 .nav {
@@ -102,6 +73,13 @@ app {
             margin-left: 10px;
         }
 
+.left-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    width: 300px;
+}
+
 .settings-control {
     width: 100%;
     margin-bottom: 2em;
@@ -141,11 +119,70 @@ app {
         margin-bottom: 5px;
     }
 
+.configuration-panel-hover {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    user-select: none;
+}
+
+    .configuration-panel-hover:hover {
+        background-color: rgba(255,255,255,.6);
+        border-radius: 40px;
+    }
+
+    .configuration-panel-hover:active {
+        background-color: rgba(255,255,255,.6);
+        border-radius: 40px;
+    }
+
+    .configuration-panel-hover div {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+    }
+
+    .configuration-panel-hover input[type=file] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+.icon-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+    .icon-button svg {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+
+.center-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 1000px;
+}
+
+    .center-column h5 {
+        margin: 15px;
+    }
+
 .campaign-box {
     display: flex;
     flex-direction: row;
     background-color: #ffffffe0;
-    flex: 1;
+    flex: 1.2;
     padding: 10px;
     margin: 15px;
 }
@@ -153,7 +190,6 @@ app {
 .campaign-box-available {
     flex: 1;
     padding: 10px;
-    height: 300px;
 }
 
     .campaign-box-available .mdc-list {
@@ -180,9 +216,14 @@ app {
     color: rgba(0, 0, 0, 0.54);
 }
 
-    .campaign-box-selected-footer div {
-        margin-bottom: 0.5rem;
-    }
+.campaign-box-selected-footer-date {
+    margin-bottom: 0.8rem;
+}
+
+.campaign-box-selected-footer-icons {
+    display: flex;
+    flex-direction: row;
+}
 
 .long-description {
     margin: 0;
@@ -371,19 +412,102 @@ app {
     text-overflow: ellipsis;
 }
 
+.right-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 350px;
+    width: 350px;
+}
+
+.news-box {
+    flex: 1.2;
+    margin: 15px;
+    padding: 10px 0px 10px 10px;
+    min-height: 0;
+    background-color: #ffffffe0 !important;
+}
+
+.news {
+    height: 100%;
+    overflow: auto;
+    scrollbar-color: darkgray #fff0;
+    scrollbar-width: thin;
+}
+
+.news-card {
+    padding: 10px;
+}
+
+    .news-card span {
+        font-family: Roboto, sans-serif;
+        font-size: 0.875rem;
+        font-weight: 400;
+        letter-spacing: 0.01786em;
+        display: block;
+        color: rgba(0, 0, 0, 0.54);
+        text-align: justify;
+        hyphens: auto;
+    }
+
+.news-card-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 5px;
+}
+
+    .news-card-header span {
+        padding-bottom: 5px;
+    }
+
+.variable-box {
+    flex: 2;
+    margin: 15px;
+    background-color: #ffffffe0 !important;
+    padding: 10px 0px 10px 10px;
+    min-height: 0;
+}
+
+.variable-box-sub {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+    .variable-box-sub button {
+        margin-top: auto;
+        margin-right: 15px;
+    }
+
 .selected-variables {
     display: flex;
     flex-direction: column;
-    min-width: 320px;
-    max-width: 320px;
-    margin: 15px 15px 0px 15px;
     cursor: pointer;
+    height: 100%;
+    overflow: auto;
+    margin-bottom: 15px;
+    scrollbar-color: darkgray #fff0;
+    scrollbar-width: thin;
 }
+
+    .selected-variables > span {
+        margin-top: auto;
+        margin-bottom: auto;
+        margin-right: 10px;
+        align-self: center;
+        font-family: Roboto, sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        letter-spacing: 0.01786em;
+        color: rgba(0, 0, 0, 0.54);
+    }
 
 .selected-variable {
     display: flex;
     flex-direction: column;
-    padding: 5px;
+    padding: 10px;
+    margin-right: 15px;
     white-space: nowrap;
 }
 
@@ -392,9 +516,10 @@ app {
     }
 
 .selected-variable-name {
-    font-weight: bold;
     text-overflow: ellipsis;
     overflow: hidden;
+    font-weight: 500;
+    margin-bottom: 3px;
 }
 
 .selected-variable-campaign {
@@ -404,18 +529,69 @@ app {
     overflow: hidden;
 }
 
-.news-card {
-    background-color: #ffffffe0 !important;
-    padding: 10px;
-    margin-top: 15px;
-    margin-left: 15px;
-    margin-right: 15px;
+.downloader {
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    margin-bottom: 100px;
+    padding: 70px;
+    background-color: #ffffffe0;
 }
 
-.news-headline {
-    margin-left: 15px;
-    margin-top: 15px;
-    margin-bottom: 15px;
+.downloader-headline {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex: 1;
+}
+
+.downloader-content {
+    display: flex;
+    flex-direction: column;
+    flex: 2;
+}
+
+    .downloader-content > div {
+        font-family: Roboto, sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        letter-spacing: 0.01786em;
+        color: rgba(0, 0, 0, 0.54);
+        margin-bottom: 15px;
+    }
+
+    .downloader-content button {
+        margin-top: 15px;
+        width: 150px;
+        align-self: end;
+    }
+
+    .downloader-content .mdc-linear-progress {
+        height: 15px;
+        color: var(--mdc-theme-primary, #6200ee);
+    }
+
+.mdc-linear-progress__bar-inner {
+    display: inline-block;
+    position: absolute;
+    width: 100%;
+    animation: none;
+    border-top: 40px solid !important;
+}
+
+.data-availability {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.data-availability button {
+    align-self: end;
+    width: 150px;
 }
 
 .clear-margin {
@@ -468,3 +644,12 @@ app {
     .paginator .disabled {
         color: rgba(0, 0, 0, 0.20);
     }
+
+/* workaround for MatBlazor not applying theme colors everywhere */
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+    color: #880e4f !important;
+}
+
+.mdc-select--focused:not(.mdc-select--disabled) .mdc-floating-label {
+    color: #880e4f !important;
+}

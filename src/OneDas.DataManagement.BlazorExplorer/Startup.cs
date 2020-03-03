@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using OneDas.DataManagement.BlazorExplorer.Core;
+using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
 using System.IO;
 
@@ -14,7 +15,7 @@ namespace OneDas.DataManagement.BlazorExplorer
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -23,7 +24,11 @@ namespace OneDas.DataManagement.BlazorExplorer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddHttpContextAccessor();
             services.AddScoped<AppStateViewModel>();
+            services.AddScoped<DownloadService>();
+            services.AddSingleton<OneDasExplorerStateManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -42,6 +47,11 @@ namespace OneDas.DataManagement.BlazorExplorer
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "META")),
                 RequestPath = "/download"
+            });
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "EXPORT")),
+                RequestPath = "/export"
             });
 
             app.UseRouting();

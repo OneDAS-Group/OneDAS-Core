@@ -1,21 +1,21 @@
 ﻿@inject AppStateViewModel appState
 
-@foreach (var newsEntry in appState.NewsPaper.News)
-{
-    <MatCard class="news-card mat-elevation-z11">
-        <MatCardContent>
-            <div>
-                <MatHeadline6 class="clear-margin">
+<div class="news">
+    @foreach (var newsEntry in appState.NewsPaper.News)
+    {
+        <div class="news-card">
+            <div class="news-card-header">
+                <MatSubtitle1 class="clear-margin">
                     @newsEntry.Title
-                </MatHeadline6>
-                <MatSubtitle2 class="clear-margin">
+                </MatSubtitle1>
+                <span>
                     @newsEntry.Date.ToString("dd.MM.yyyy")
-                </MatSubtitle2>
+                </span>
             </div>
 
-            <MatBody2>
+            <span>
                 @newsEntry.Message
-            </MatBody2>
-        </MatCardContent>
-    </MatCard>
-}
+            </span>
+        </div>
+    }
+</div>

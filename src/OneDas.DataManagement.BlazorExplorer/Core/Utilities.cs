@@ -15,5 +15,17 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         {
             return Enum.GetValues(typeof(T)).Cast<T>().ToList();
         }
+
+        public static string FormatByteCount(long byteCount)
+        {
+            if (byteCount >= 1000 * 1000 * 1000)
+                return $"{(double)byteCount / 1000 / 1000 / 1000:G3} GB";
+            else if (byteCount >= 1000 * 1000)
+                return $"{(double)byteCount / 1000 / 1000:G3} MB";
+            else if (byteCount >= 1000)
+                return $"{(double)byteCount / 1000:G3} kB";
+            else
+                return $"{(double)byteCount:F0} B";
+        }
     }
 }
