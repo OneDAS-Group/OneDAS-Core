@@ -1,4 +1,6 @@
-﻿<div class="campaign-box-available">
+﻿@inherits AppStateComponentBase
+
+<div class="campaign-box-available">
     <MatHeadline5>Available Campaigns</MatHeadline5>
 
     <MatList SingleSelection="true" TwoLine="true">
@@ -38,7 +40,7 @@
     }
     else
     {
-        <MatHeadline5>Select a Campaign ...</MatHeadline5>
+        <span>no campaign selected</span>
     }
 </div>
 

@@ -70,8 +70,8 @@ namespace OneDas.DataManagement.Extensions
             this.EnsureOpened();
 
             ulong offset;
-            int[] aggregatedData = null;
-            DataAvailabilityGranularity granularity = DataAvailabilityGranularity.ChunkLevel;
+            int[] aggregatedData = default;
+            DataAvailabilityGranularity granularity = default;
 
             // epoch & hyperslab
             var epochStart = new DateTime(2000, 01, 01);
@@ -92,12 +92,7 @@ namespace OneDas.DataManagement.Extensions
             {
                 var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
 
-                if (totalDays <= 7)
-                {
-                    granularity = DataAvailabilityGranularity.ChunkLevel;
-                    aggregatedData = data.Select(value => value * 100).ToArray();
-                }
-                else if (totalDays <= 365)
+                if (totalDays <= 365)
                 {
                     granularity = DataAvailabilityGranularity.DayLevel;
                     offset = (ulong)begin.TimeOfDay.TotalMinutes;

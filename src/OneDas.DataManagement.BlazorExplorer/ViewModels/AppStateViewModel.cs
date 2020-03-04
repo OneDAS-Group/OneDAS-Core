@@ -299,7 +299,7 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
                     var fileName = downloadLink.Split(" / ").Last();
-                    await FileUtilities.FileSaveAs(_jsRuntime, fileName, downloadLink);
+                    await JsInteropHelper.FileSaveAs(_jsRuntime, fileName, downloadLink);
                 }
             }
             finally
@@ -318,6 +318,14 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
         {
             if (this.ClientState != ClientState.DataAvailability)
                 this.ClientState = ClientState.DataAvailability;
+            else
+                this.ClientState = ClientState.Normal;
+        }
+
+        public void ToggleDataVisualization()
+        {
+            if (this.ClientState != ClientState.DataVisualizing)
+                this.ClientState = ClientState.DataVisualizing;
             else
                 this.ClientState = ClientState.Normal;
         }

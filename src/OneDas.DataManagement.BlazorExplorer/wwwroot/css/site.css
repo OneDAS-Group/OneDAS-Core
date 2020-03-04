@@ -15,7 +15,7 @@ body {
     height: 100%;
     min-width: 1750px;
     max-width: 100%;
-    data-availability-chart margin: 0;
+    margin: 0;
 }
 
 app {
@@ -95,7 +95,7 @@ app {
     width: 250px;
 }
 
-.settings-content {
+.settings-box {
     background-color: #ffffffe0;
     padding: 10px;
     height: 100%;
@@ -104,7 +104,7 @@ app {
     flex-direction: column;
 }
 
-    .settings-content h6 {
+    .settings-box h6 {
         margin: 0;
         margin-top: 25px;
         margin-bottom: 10px;
@@ -124,16 +124,17 @@ app {
     width: 80px;
     height: 80px;
     user-select: none;
+    border-radius: 40px;
 }
 
     .configuration-panel-hover:hover {
+        color: rgb(136, 14, 79);
         background-color: rgba(255,255,255,.6);
         border-radius: 40px;
     }
 
-    .configuration-panel-hover:active {
-        background-color: rgba(255,255,255,.6);
-        border-radius: 40px;
+    .configuration-panel-hover.active {
+        color: rgb(136, 14, 79) !important;
     }
 
     .configuration-panel-hover div {
@@ -206,6 +207,16 @@ app {
     padding: 10px;
 }
 
+    .campaign-box-selected > span {
+        margin-top: auto;
+        margin-bottom: auto;
+        align-self: center;
+        font-size: 1rem;
+        font-weight: 400;
+        letter-spacing: 0.01786em;
+        color: rgba(0, 0, 0, 0.54);
+    }
+
 .campaign-box-selected-footer {
     display: flex;
     flex-direction: row;
@@ -232,7 +243,6 @@ app {
 .long-description {
     margin: 0;
     margin-left: 15px;
-    font-family: Roboto, sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     letter-spacing: 0.01786em;
@@ -443,7 +453,6 @@ app {
 }
 
     .news-card span {
-        font-family: Roboto, sans-serif;
         font-size: 0.875rem;
         font-weight: 400;
         letter-spacing: 0.01786em;
@@ -500,7 +509,6 @@ app {
         margin-bottom: auto;
         margin-right: 10px;
         align-self: center;
-        font-family: Roboto, sans-serif;
         font-size: 1rem;
         font-weight: 400;
         letter-spacing: 0.01786em;
@@ -559,7 +567,6 @@ app {
 }
 
     .downloader-content > div {
-        font-family: Roboto, sans-serif;
         font-size: 1rem;
         font-weight: 400;
         letter-spacing: 0.01786em;
@@ -620,6 +627,25 @@ app {
 
 .data-availability-chart .row {
     flex: 1;
+}
+
+.visualize-box {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffffe0;
+    padding: 10px;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    margin: 15px;
+}
+
+#visualize-chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    max-height: 100%;
 }
 
 .clear-margin {

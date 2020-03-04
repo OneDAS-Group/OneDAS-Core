@@ -43,7 +43,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
         {
 			var configuration = this.AppState.ExportConfiguration;
 			var jsonString = JsonSerializer.Serialize(configuration, new JsonSerializerOptions() { WriteIndented = true });
-			await FileUtilities.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
+			await JsInteropHelper.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
 		}
 
         private async Task OnLoadExportSettingsAsync(IFileListEntry[] files)

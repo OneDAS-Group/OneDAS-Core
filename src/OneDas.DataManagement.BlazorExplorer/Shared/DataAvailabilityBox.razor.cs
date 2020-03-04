@@ -144,29 +144,15 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
             switch (statistics.Granularity)
             {
-                case DataAvailabilityGranularity.ChunkLevel:
+                case DataAvailabilityGranularity.DayLevel:
 
-                    axis.Time.Unit = TimeMeasurement.Minute;
+                    axis.Time.Unit = TimeMeasurement.Day;
                     var dateTimeBegin1 = this.AppState.DateTimeBegin.Date;
 
                     this.Dataset.AddRange(statistics.Data
                         .Select((value, i) =>
                         {
-                            return new TimeTuple<double>((Moment)dateTimeBegin1.AddMinutes(i), value);
-                        })
-                    );
-
-                    break;
-
-                case DataAvailabilityGranularity.DayLevel:
-
-                    axis.Time.Unit = TimeMeasurement.Day;
-                    var dateTimeBegin2 = this.AppState.DateTimeBegin.Date;
-
-                    this.Dataset.AddRange(statistics.Data
-                        .Select((value, i) =>
-                        {
-                            return new TimeTuple<double>((Moment)dateTimeBegin2.AddDays(i), value);
+                            return new TimeTuple<double>((Moment)dateTimeBegin1.AddDays(i), value);
                         })
                     );
 
@@ -175,12 +161,12 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
                 case DataAvailabilityGranularity.MonthLevel:
 
                     axis.Time.Unit = TimeMeasurement.Month;
-                    var dateTimeBegin3 = this.AppState.DateTimeBegin.Date;
+                    var dateTimeBegin2 = this.AppState.DateTimeBegin.Date;
 
                     this.Dataset.AddRange(statistics.Data
                         .Select((value, i) =>
                         {
-                            return new TimeTuple<double>((Moment)dateTimeBegin3.AddMonths(i), value);
+                            return new TimeTuple<double>((Moment)dateTimeBegin2.AddMonths(i), value);
                         })
                     );
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using OneDas.DataManagement.BlazorExplorer.ViewModels;
+﻿using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using OneDas.DataManagement.Database;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared
@@ -8,10 +7,25 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
     {
 		#region Properties
 
-		[Inject]
-		public AppStateViewModel AppState { get; set; }
-
 		public bool AttachmentDialogIsOpen { get; set; }
+
+		#endregion
+
+		#region Constructors
+
+		public CampaignBox()
+		{
+			this.PropertyChanged = (sender, e) =>
+			{
+				if (e.PropertyName == nameof(AppStateViewModel.ClientState))
+				{
+					this.InvokeAsync(() =>
+					{
+						this.StateHasChanged();
+					});
+				}
+			};
+		}
 
 		#endregion
 

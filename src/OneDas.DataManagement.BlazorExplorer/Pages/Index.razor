@@ -4,22 +4,33 @@
 @if (this.AppState.ClientState != ClientState.PrepareDownload)
 {
     <div class="left-column">
-        <SettingsBox />
+        <div class="settings-box mat-elevation-z11">
+            <SettingsBox />
+        </div>
     </div>
     <div class="center-column">
-        <div class="campaign-box mat-elevation-z11">
-            <CampaignBox />
-        </div>
-        <div class="channel-box mat-elevation-z11">
-            @if (this.AppState.ClientState != ClientState.DataAvailability)
-            {
-                <ChannelBox />
-            }
-            else
-            {
-                <DataAvailabilityBox />
-            }
-        </div>
+        @if (this.AppState.ClientState != ClientState.DataVisualizing)
+        {
+            <div class="campaign-box mat-elevation-z11">
+                <CampaignBox />
+            </div>
+            <div class="channel-box mat-elevation-z11">
+                @if (this.AppState.ClientState != ClientState.DataAvailability)
+                {
+                    <ChannelBox />
+                }
+                else
+                {
+                    <DataAvailabilityBox />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="visualize-box mat-elevation-z11">
+                <VisualizeBox />
+            </div>
+        }
     </div>
     <div class="right-column">
         <div class="news-box mat-elevation-z11">

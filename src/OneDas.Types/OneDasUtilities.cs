@@ -74,9 +74,9 @@ namespace OneDas
             };
         }
 
-        public static Type GetTypeFromOneDasDataType(OneDasDataType dateType)
+        public static Type GetTypeFromOneDasDataType(OneDasDataType dataType)
         {
-            return dateType switch
+            return dataType switch
             {
                 OneDasDataType.BOOLEAN              => typeof(bool),
                 OneDasDataType.UINT8                => typeof(Byte),
@@ -89,7 +89,7 @@ namespace OneDas
                 OneDasDataType.INT64                => typeof(Int64),
                 OneDasDataType.FLOAT32              => typeof(Single),
                 OneDasDataType.FLOAT64              => typeof(Double),
-                _                                   => throw new NotSupportedException()
+                _                                   => throw new NotSupportedException($"The specified data type '{dataType}' is not supported.")
             };
         }
 
