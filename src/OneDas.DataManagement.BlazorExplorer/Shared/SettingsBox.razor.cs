@@ -20,10 +20,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
             {
                 if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
                 {
-                    this.InvokeAsync(() =>
-                    {
-                        this.StateHasChanged();
-                    });
+                    this.InvokeAsync(() => { this.StateHasChanged(); });
+                }
+                else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
+                {
+                    this.InvokeAsync(() => { this.StateHasChanged(); });
                 }
             };
         }
@@ -43,7 +44,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
         {
 			var configuration = this.AppState.ExportConfiguration;
 			var jsonString = JsonSerializer.Serialize(configuration, new JsonSerializerOptions() { WriteIndented = true });
-			await JsInteropHelper.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
+			await JsInterop.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
 		}
 
         private async Task OnLoadExportSettingsAsync(IFileListEntry[] files)

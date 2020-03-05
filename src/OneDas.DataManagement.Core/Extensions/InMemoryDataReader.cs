@@ -79,19 +79,33 @@ namespace OneDas.DataManagement.Extensions
 
         protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
         {
-            throw new NotImplementedException();
+            var random = new Random();
+            var movingAverage = new MovingAverage();
+            var dataDouble = new double[length];
+
+            for (int i = 0; i < (int)length; i++)
+            {
+                var value = random.Next(0, 1000);
+                movingAverage.ComputeAverage(value);
+                dataDouble[i] = (double)movingAverage.Average;
+            }
+
+            var data = dataDouble.Select(value => (T)Convert.ChangeType(value, typeof(T))).ToArray();
+            var statusSet = Enumerable.Range((int)start, (int)length).Select(value => (byte)1).ToArray();
+
+            return (data, statusSet);
         }
 
         private void InitializeCampaign()
         {
             _campaign = new CampaignInfo("/ANY_EXTERNAL_DATABASE/TEST/TEST");
 
-            var variable1 = new VariableInfo(Guid.NewGuid().ToString(), _campaign);
-            var variable2 = new VariableInfo(Guid.NewGuid().ToString(), _campaign);
-            var variable3 = new VariableInfo(Guid.NewGuid().ToString(), _campaign);
+            var variable1 = new VariableInfo("7dec6d79-b92e-4af2-9358-21be1f3626c9", _campaign);
+            var variable2 = new VariableInfo("cf50190b-fd2a-477b-9655-48f4f41ba7bf", _campaign);
+            var variable3 = new VariableInfo("f01b6a96-1de6-4caa-9205-184d8a3eb2f8", _campaign);
 
             var dataset1 = new DatasetInfo("25 Hz", variable1) { DataType = Infrastructure.OneDasDataType.INT32 };
-            var dataset2 = new DatasetInfo("25 Hz", variable2) { DataType = Infrastructure.OneDasDataType.INT32 };
+            var dataset2 = new DatasetInfo("1 s_max", variable2) { DataType = Infrastructure.OneDasDataType.INT32 };
             var dataset3 = new DatasetInfo("1 s_mean", variable2) { DataType = Infrastructure.OneDasDataType.INT32 };
             var dataset4 = new DatasetInfo("25 Hz", variable3) { DataType = Infrastructure.OneDasDataType.INT32 };
 
@@ -135,5 +149,27 @@ namespace OneDas.DataManagement.Extensions
         }
 
         #endregion
+
+        public class MovingAverage
+        {
+            private Queue<Decimal> _samples = new Queue<Decimal>();
+            private int _windowSize = 60;
+            private Decimal _sampleAccumulator;
+
+            public Decimal Average { get; private set; }
+
+            public void ComputeAverage(Decimal newSample)
+            {
+                _sampleAccumulator += newSample;
+                _samples.Enqueue(newSample);
+
+                if (_samples.Count > _windowSize)
+                {
+                    _sampleAccumulator -= _samples.Dequeue();
+                }
+
+                this.Average = _sampleAccumulator / _samples.Count;
+            }
+        }
     }
 }

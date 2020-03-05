@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Extensibility;
+using OneDas.DataStorage;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,6 +88,32 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         //    writer.TryComplete();
         //}
+
+        public Task<double[]> LoadDatasetAsync(DateTime dateTimeBegin, DateTime dateTimeEnd, DatasetInfo dataset)
+        {
+            return Task.Run(() =>
+            {
+                var campaignName = dataset.Parent.Parent.Name;
+
+                var epochStart = new DateTime(2000, 01, 01);
+                var samplesPerDay = new SampleRateContainer(dataset.Name).SamplesPerDay;
+                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
+                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
+
+                var dataReader = dataset.IsNative 
+                    ? Program.DatabaseManager.GetNativeDataReader(campaignName) 
+                    : Program.DatabaseManager.AggregationDataReader;
+
+                var genericType = OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType);
+                var dataStorage = (ISimpleDataStorage)OneDasUtilities.InvokeGenericMethod(dataReader,
+                                            nameof(DataReaderExtensionBase.LoadDataset),
+                                            BindingFlags.Instance | BindingFlags.Public,
+                                            genericType,
+                                            new object[] { dataset, start, block });
+
+                return dataStorage.DataBuffer.ToArray();
+            });
+        }
 
         public Task<string> GetDataAsync(IPAddress remoteIpAddress,
                                          DateTime dateTimeBegin,

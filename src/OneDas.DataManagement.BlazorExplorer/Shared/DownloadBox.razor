@@ -7,14 +7,14 @@
     <div class="selected-variables">
         @if (!this.AppState.SelectedDatasets.Any())
         {
-            <span>no channels selected</span>
+            <span class="small-text">no channels selected</span>
         }
         else
         {
             @foreach (var dataset in this.AppState.SelectedDatasets)
             {
                 <div class="selected-variable" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
-                    <span class="selected-variable-name">@dataset.Parent.Name (@this.AppState.SampleRate)</span>
+                    <span class="selected-variable-name">@dataset.Parent.Name (@dataset.Name)</span>
                     <span class="selected-variable-campaign">@dataset.Parent.Parent.Name.TrimStart('/').Replace("/", " / ")</span>
                 </div>
             }

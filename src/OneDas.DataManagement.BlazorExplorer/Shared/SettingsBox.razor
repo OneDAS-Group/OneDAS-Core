@@ -63,11 +63,24 @@
             </div>
         </div>
 
-        <div class="configuration-panel-hover @(this.AppState.ClientState == ClientState.DataVisualizing ? "active" : "")">
-            <div class="icon-button" @onclick="this.AppState.ToggleDataVisualization">
-                <i class="fas fa-chart-area" aria-hidden="true"></i>
-                <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
+        @if (this.AppState.CanVisualize())
+        {
+            <div class="configuration-panel-hover @(this.AppState.ClientState == ClientState.DataVisualizing ? "active" : "")">
+                <div class="icon-button" @onclick="this.AppState.ToggleDataVisualization">
+                    <i class="fas fa-chart-area" aria-hidden="true"></i>
+                    <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
+                </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="configuration-panel-hover disabled">
+                <div class="icon-button">
+                    <i class="fas fa-chart-area" aria-hidden="true"></i>
+                    <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
+                </div>
+            </div>
+        }
+
     </div>
 </div>

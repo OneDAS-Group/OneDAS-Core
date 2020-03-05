@@ -19,10 +19,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 			{
 				if (e.PropertyName == nameof(AppStateViewModel.ClientState))
 				{
-					this.InvokeAsync(() =>
-					{
-						this.StateHasChanged();
-					});
+					this.InvokeAsync(() => { this.StateHasChanged(); });
 				}
 			};
 		}

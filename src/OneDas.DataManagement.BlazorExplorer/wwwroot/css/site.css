@@ -1,3 +1,14 @@
+:root {
+    --main-bg-color:            #215d6a;
+    --nav-color:                #0d343e;
+    --box-color:                rgba(255, 255, 255, 0.87);
+    --font-color-subtitle:      rgba(0, 0, 0, 0.54);
+    --hover-color:              rgba(255, 255, 255, 0.6);
+    --active-color:             rgba(136,14,79,1);
+    --active-background-color:  rgba(255, 255, 255, 0.8);
+    --disabled-color:           rgba(0, 0, 0, 0.3);
+}
+
 html, body {
     font-family: 'Roboto';
 }
@@ -7,7 +18,7 @@ html {
     height: 100%;
     min-width: 1750px;
     max-width: 100%;
-    background-color: #215d6a;
+    background-color: var(--main-bg-color);
 }
 
 body {
@@ -35,7 +46,7 @@ app {
 
 .nav {
     color: white;
-    background-color: #0d343e;
+    background-color: var(--nav-color);
     padding: 10px 15px 10px 15px;
     height: 40px;
     width: 100%;
@@ -83,12 +94,12 @@ app {
 .settings-control {
     width: 100%;
     margin-bottom: 2em;
-    background-color: #ffffff00 !important;
+    background-color: #00000000 !important;
 }
 
     .settings-control .mdc-select__anchor {
         width: 100%;
-        background-color: #ffffff00 !important;
+        background-color: #00000000 !important;
     }
 
 .mdc-menu {
@@ -96,7 +107,7 @@ app {
 }
 
 .settings-box {
-    background-color: #ffffffe0;
+    background-color: var(--box-color);
     padding: 10px;
     height: 100%;
     margin: 15px;
@@ -128,13 +139,16 @@ app {
 }
 
     .configuration-panel-hover:hover {
-        color: rgb(136, 14, 79);
-        background-color: rgba(255,255,255,.6);
+        background-color: var(--hover-color);
         border-radius: 40px;
     }
 
     .configuration-panel-hover.active {
-        color: rgb(136, 14, 79) !important;
+        color: var(--active-color) !important;
+    }
+
+    .configuration-panel-hover.disabled {
+        color: var(--disabled-color) !important;
     }
 
     .configuration-panel-hover div {
@@ -182,7 +196,7 @@ app {
 .campaign-box {
     display: flex;
     flex-direction: row;
-    background-color: #ffffffe0;
+    background-color: var(--box-color);
     flex: 1.2;
     padding: 10px;
     margin: 15px;
@@ -211,10 +225,6 @@ app {
         margin-top: auto;
         margin-bottom: auto;
         align-self: center;
-        font-size: 1rem;
-        font-weight: 400;
-        letter-spacing: 0.01786em;
-        color: rgba(0, 0, 0, 0.54);
     }
 
 .campaign-box-selected-footer {
@@ -224,7 +234,7 @@ app {
     margin-left: 15px;
     justify-content: space-between;
     align-items: end;
-    color: rgba(0, 0, 0, 0.54);
+    color: var(--font-color-subtitle);
 }
 
 .campaign-box-selected-footer-date {
@@ -243,11 +253,8 @@ app {
 .long-description {
     margin: 0;
     margin-left: 15px;
-    font-size: 0.875rem;
-    font-weight: 400;
-    letter-spacing: 0.01786em;
     display: block;
-    color: rgba(0, 0, 0, 0.54);
+    font-size: 0.875rem !important;
 }
 
 .mdc-dialog__content {
@@ -279,12 +286,12 @@ app {
 }
 
 .attachment a:link {
-    color: rgba(0, 0, 0, 0.54);
+    color: var(--font-color-subtitle);
     text-decoration: none;
 }
 
 .attachment a:visited {
-    color: rgba(0, 0, 0, 0.54);
+    color: var(--font-color-subtitle);
     text-decoration: none;
 }
 
@@ -294,7 +301,7 @@ app {
 }
 
 .attachment a:active {
-    color: rgba(0, 0, 0, 0.54);
+    color: var(--font-color-subtitle);
     text-decoration: none;
 }
 
@@ -302,7 +309,7 @@ app {
     display: flex;
     flex-direction: row;
     flex: 2;
-    background-color: #ffffffe0;
+    background-color: var(--box-color);
     padding: 10px;
     margin: 15px;
     user-select: none;
@@ -315,7 +322,6 @@ app {
     flex: 1;
     margin-left: 15px;
     margin-right: 15px;
-    cursor: pointer;
     max-width: 250px;
     min-width: 250px;
 }
@@ -337,16 +343,14 @@ app {
 }
 
     .group-entry.selected {
-        background-color: #348c9f !important;
-        color: white !important;
+        color: var(--active-color) !important;
+        background-color: var(--active-background-color);
+        font-weight: 500;
+        letter-spacing: 0.05rem;
     }
 
-        .group-entry.selected .group-entry-count {
-            color: white;
-        }
-
     .group-entry:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: var(--hover-color);
     }
 
 .group-entry-name {
@@ -359,11 +363,12 @@ app {
     width: 30px;
     direction: rtl;
     font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.54);
+    color: var(--font-color-subtitle);
 }
 
 .available-groups-list {
     margin-bottom: auto;
+    cursor: pointer;
 }
 
 .available-variables {
@@ -384,7 +389,7 @@ app {
 }
 
 .variable-expander:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--hover-color);
 }
 
 .variable-name {
@@ -405,17 +410,16 @@ app {
         padding: 2px 4px 2px 4px;
         margin: 0px 3px 0px 3px;
         border-radius: 8px;
-        color: rgba(0, 0, 0, 0.54);
-        background-color: #ffffffe0
+        color: var(--font-color-subtitle);
     }
 
         .variable-datasets div:hover {
-            background-color: rgba(1, 135, 134, 0.10);
+            background-color: var(--hover-color) !important;
         }
 
         .variable-datasets .selected {
-            color: white;
-            background-color: #348c9f !important;
+            color: var(--active-color);
+            background-color: var(--active-background-color) !important;
         }
 
 .variable-description {
@@ -438,7 +442,7 @@ app {
     margin: 15px;
     padding: 10px 0px 10px 10px;
     min-height: 0;
-    background-color: #ffffffe0 !important;
+    background-color: var(--box-color);
 }
 
 .news {
@@ -453,13 +457,10 @@ app {
 }
 
     .news-card span {
-        font-size: 0.875rem;
-        font-weight: 400;
-        letter-spacing: 0.01786em;
         display: block;
-        color: rgba(0, 0, 0, 0.54);
         text-align: justify;
         hyphens: auto;
+        font-size: 0.875rem;
     }
 
 .news-card-header {
@@ -477,7 +478,7 @@ app {
 .variable-box {
     flex: 2;
     margin: 15px;
-    background-color: #ffffffe0 !important;
+    background-color: var(--box-color);
     padding: 10px 0px 10px 10px;
     min-height: 0;
 }
@@ -509,10 +510,6 @@ app {
         margin-bottom: auto;
         margin-right: 10px;
         align-self: center;
-        font-size: 1rem;
-        font-weight: 400;
-        letter-spacing: 0.01786em;
-        color: rgba(0, 0, 0, 0.54);
     }
 
 .selected-variable {
@@ -536,7 +533,7 @@ app {
 
 .selected-variable-campaign {
     font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.54);
+    color: var(--font-color-subtitle);
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -550,7 +547,7 @@ app {
     margin-top: 100px;
     margin-bottom: 100px;
     padding: 70px;
-    background-color: #ffffffe0;
+    background-color: var(--box-color);
 }
 
 .downloader-headline {
@@ -567,10 +564,6 @@ app {
 }
 
     .downloader-content > div {
-        font-size: 1rem;
-        font-weight: 400;
-        letter-spacing: 0.01786em;
-        color: rgba(0, 0, 0, 0.54);
         margin-bottom: 15px;
     }
 
@@ -582,7 +575,7 @@ app {
 
     .downloader-content .mdc-linear-progress {
         height: 15px;
-        color: var(--mdc-theme-primary, #6200ee);
+        color: var(--mdc-theme-primary);
     }
 
 .mdc-linear-progress__bar-inner {
@@ -617,7 +610,7 @@ app {
         margin-bottom: auto;
         writing-mode: vertical-rl;
         transform: rotate(-180deg);
-        color: rgba(0, 0, 0, 0.54);
+        color: var(--font-color-subtitle);
     }
 
 .data-availability-chart {
@@ -632,7 +625,7 @@ app {
 .visualize-box {
     display: flex;
     flex-direction: column;
-    background-color: #ffffffe0;
+    background-color: var(--box-color);
     padding: 10px;
     height: 100%;
     max-height: 100%;
@@ -640,10 +633,29 @@ app {
     margin: 15px;
 }
 
-#visualize-chart-container {
+.visualize-box-progress {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    height: 100%;
+    padding: 0 100px 0 100px;
+}
+
+    .visualize-box-progress h4 {
+        color: var(--font-color-subtitle)
+    }
+
+    .visualize-box-progress .mdc-linear-progress {
+        height: 10px;
+        color: var(--mdc-theme-primary);
+    }
+
+#visualize-chart-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: start;
     flex: 1;
     max-height: 100%;
 }
@@ -693,11 +705,24 @@ app {
     flex-direction: row;
     justify-content: space-between;
     width: 140px;
+    cursor: pointer;
 }
 
     .paginator .disabled {
-        color: rgba(0, 0, 0, 0.20);
+        color: var(--disabled-color) !important;
     }
+
+    .paginator i:hover {
+        color: var(--active-color);
+        background-color: var(--hover-color);
+    }
+
+.small-text {
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.01786em;
+    color: var(--font-color-subtitle);
+}
 
 /* workaround for MatBlazor not applying theme colors everywhere */
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {

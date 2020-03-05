@@ -13,10 +13,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Pages
 			{
 				if (e.PropertyName == nameof(AppStateViewModel.ClientState))
 				{
-					this.InvokeAsync(() =>
-					{
-						this.StateHasChanged();
-					});
+					this.InvokeAsync(() => { this.StateHasChanged(); });
 				}
 			};
 		}

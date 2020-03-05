@@ -21,10 +21,10 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
         #region Fields
 
         private string _searchString;
+        private string _downloadMessage;
 
         private ClientState _clientState;
 
-        private string _downloadMessage;
         private double _downloadProgress;
         private CancellationTokenSource _cts_download;
         private DownloadService _downloadService;
@@ -261,6 +261,11 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         #region Methods
 
+        public Task<double[]> LoadDatasetAsync(DatasetInfoViewModel dataset)
+        {
+            return _downloadService.LoadDatasetAsync(this.DateTimeBegin, this.DateTimeEnd, dataset.Model);
+        }
+
         public bool CanDownload()
         {
             return this.DateTimeBegin < this.DateTimeEnd &&
@@ -299,7 +304,7 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
                     var fileName = downloadLink.Split(" / ").Last();
-                    await JsInteropHelper.FileSaveAs(_jsRuntime, fileName, downloadLink);
+                    await JsInterop.FileSaveAs(_jsRuntime, fileName, downloadLink);
                 }
             }
             finally
@@ -320,6 +325,17 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                 this.ClientState = ClientState.DataAvailability;
             else
                 this.ClientState = ClientState.Normal;
+        }
+
+        public bool CanVisualize()
+        {
+            return this.SelectedDatasets.Any()
+                && this.DateTimeBegin < this.DateTimeEnd;
+        }
+
+        public bool IsSizeLimitExceeded()
+        {
+            return this.GetByteCount() > 20 * 1000 * 1000;
         }
 
         public void ToggleDataVisualization()

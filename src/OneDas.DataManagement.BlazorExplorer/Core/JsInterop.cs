@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.BlazorExplorer.Core
 {
-    public static class JsInteropHelper
+    public static class JsInterop
     {
         #region Methods
 
@@ -19,14 +19,9 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             await jsRuntime.InvokeAsync<object>("FileSaveAs", fileName, href);
         }
 
-        public static async Task DrawChartAsync(IJSRuntime jsRuntime, List<ChartEntry> chartEntries)
+        public static async Task UpdateChartAsync(IJSRuntime jsRuntime, double[] timeData, List<ChartEntry> chartEntries)
         {
-            await jsRuntime.InvokeAsync<object>("DrawChart", chartEntries);
-        }
-
-        public static async Task UpdateChartDataAsync(IJSRuntime jsRuntime)
-        {
-            await jsRuntime.InvokeAsync<object>("UpdateChartData");
+            await jsRuntime.InvokeAsync<object>("UpdateChart", timeData, chartEntries);
         }
 
         #endregion

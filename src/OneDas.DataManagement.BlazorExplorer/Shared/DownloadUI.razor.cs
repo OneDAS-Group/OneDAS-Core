@@ -12,17 +12,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 			{
 				if (e.PropertyName == nameof(AppStateViewModel.DownloadMessage))
 				{
-					this.InvokeAsync(() =>
-					{
-						this.StateHasChanged();
-					});
+					this.InvokeAsync(() => { this.StateHasChanged(); });
 				}
 				else if (e.PropertyName == nameof(AppStateViewModel.DownloadProgress))
 				{
-					this.InvokeAsync(() =>
-					{
-						this.StateHasChanged();
-					});
+					this.InvokeAsync(() => { this.StateHasChanged(); });
 				}
 			};
 		}

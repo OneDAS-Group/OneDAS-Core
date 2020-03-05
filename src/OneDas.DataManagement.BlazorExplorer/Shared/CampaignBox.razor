@@ -20,7 +20,7 @@
     @if (this.AppState.CampaignContainer != null)
     {
         <MatHeadline5>@this.AppState.CampaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatHeadline5>
-        <p class="long-description">
+        <p class="long-description small-text">
             @this.AppState.CampaignContainer.CampaignMeta.LongDescription
         </p>
         <div class="campaign-box-selected-footer">
@@ -40,7 +40,7 @@
     }
     else
     {
-        <span>no campaign selected</span>
+        <span class="small-text">no campaign selected</span>
     }
 </div>
 

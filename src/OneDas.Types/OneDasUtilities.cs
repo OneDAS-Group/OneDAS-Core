@@ -11,6 +11,11 @@ namespace OneDas
 {
     public static class OneDasUtilities
     {
+        public static double ToUnixTimeStamp(this DateTime value)
+        {
+            return value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+        }
+
         public static bool ValidateDatabaseFolderPath(string databaseFolderPath, out string message)
         {
             var result = true;
@@ -125,6 +130,11 @@ namespace OneDas
                 value = "X_" + value;
 
             return value;
+        }
+
+        public static object InvokeGenericMethod<T>(T instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)
+        {
+            return OneDasUtilities.InvokeGenericMethod(typeof(T), instance, methodName, bindingFlags, genericType, parameters);
         }
 
         public static object InvokeGenericMethod(Type methodParent, object instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)

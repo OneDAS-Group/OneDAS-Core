@@ -1,4 +1,20 @@
 ﻿@inherits AppStateComponentBase
 
-<div id="visualize-chart-container">
-</div>
+@if (_showWarning)
+{
+    <div class="visualize-box-progress">
+        <MatHeadline4>Size limit (20 MB) exeeded</MatHeadline4>
+    </div>
+}
+else if (_showProgressBar)
+{
+    <div class="visualize-box-progress">
+        <MatHeadline4>Loading data ...</MatHeadline4>
+        <MatProgressBar Indeterminate="true" />
+    </div>
+}
+else
+{
+    <div id="visualize-chart-container">
+    </div>
+}

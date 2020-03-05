@@ -137,7 +137,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 var dataset = variable.Datasets.First();
                 var aggregationConfigs = entry.Value;
 
-                OneDasUtilities.InvokeGenericMethod(typeof(AggregateCommand), this, nameof(this.OrchestrateAggregation),
+                OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
                                                     new object[] { dataReader, dataset, aggregationConfigs, date, targetFileId });

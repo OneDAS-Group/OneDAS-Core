@@ -42,7 +42,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
                                 },
                                 Ticks = new TimeTicks
                                 {
-                                    FontColor = "rgba(0, 0, 0, 0.54)",
+                                    FontColor = "var (--font-color)",
                                     FontSize = 15
                                 }
                             }
@@ -61,7 +61,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
                                     Max = 100,
                                     Min = 0,
                                     BeginAtZero = true,
-                                    FontColor = "rgba(0, 0, 0, 0.54)",
+                                    FontColor = "var (--font-color)",
                                     FontSize = 15
                                 }
                             }
@@ -95,24 +95,15 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
                 if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
                 {
-                    await this.InvokeAsync(() =>
-                    {
-                        this.StateHasChanged();
-                    });
+                    await this.InvokeAsync(() => { this.StateHasChanged(); });
                 }
                 else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
                 {
-                    await this.InvokeAsync(() =>
-                    {
-                        this.StateHasChanged();
-                    });
+                    await this.InvokeAsync(() => { this.StateHasChanged(); });
                 }
                 else if (e.PropertyName == nameof(AppStateViewModel.CampaignContainer))
                 {
-                    await this.InvokeAsync(() =>
-                    {
-                        this.StateHasChanged();
-                    });
+                    await this.InvokeAsync(() => { this.StateHasChanged(); });
                 }
             };
 
