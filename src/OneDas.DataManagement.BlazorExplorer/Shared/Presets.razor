@@ -1,18 +1,18 @@
 ﻿<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
-    <MatDialogTitle>Attachments</MatDialogTitle>
+    <MatDialogTitle>Preset Files</MatDialogTitle>
     <MatDialogContent>
         @if (this.IsOpen)
         {
             <div class="attachments">
 
-                @foreach (var attachment in this.AppState.Attachments)
+                @foreach (var preset in this.AppState.GetPresets())
                 {
                     <div class="attachment">
                         <div class="attachment-icon">
-                            <i class="far fa-@this.GetIcon(attachment)"></i>
+                            <i class="far fa-file-code"></i>
                         </div>
-                        <a class="attachment-name" href="@this.GetHref(attachment)" target="_blank">
-                            @this.GetFileName(attachment)
+                        <a class="attachment-name" href="@this.GetHref(preset)" target="_blank">
+                            @this.GetFileName(preset)
                         </a>
                     </div>
                 }

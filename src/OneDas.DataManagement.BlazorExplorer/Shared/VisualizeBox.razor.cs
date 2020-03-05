@@ -3,14 +3,13 @@ using Microsoft.JSInterop;
 using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using OneDas.Infrastructure;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
-	public partial class VisualizeBox
+    public partial class VisualizeBox
     {
 		#region Fields
 

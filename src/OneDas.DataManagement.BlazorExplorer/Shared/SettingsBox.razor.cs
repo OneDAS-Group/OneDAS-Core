@@ -38,7 +38,18 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         #endregion
 
+        #region Properties
+
+        public bool PresetsDialogIsOpen { get; set; }
+
+        #endregion
+
         #region Methods
+
+        private void OpenPresetsDialog()
+        {
+            this.PresetsDialogIsOpen = true;
+        }
 
         private async Task OnSaveExportSettingsAsync()
         {

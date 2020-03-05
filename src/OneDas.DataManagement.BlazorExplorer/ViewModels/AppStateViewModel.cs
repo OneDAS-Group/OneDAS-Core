@@ -261,6 +261,12 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         #region Methods
 
+        public List<string> GetPresets()
+        {
+            var folderPath = "PRESETS";
+            return Directory.EnumerateFiles(folderPath, "*.json", SearchOption.TopDirectoryOnly).ToList();
+        }
+
         public Task<double[]> LoadDatasetAsync(DatasetInfoViewModel dataset)
         {
             return _downloadService.LoadDatasetAsync(this.DateTimeBegin, this.DateTimeEnd, dataset.Model);
@@ -353,12 +359,11 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         public void SetExportConfiguration(ExportConfiguration exportConfiguration)
         {
-            this.ExportConfiguration = exportConfiguration;
-
-            this.DateTimeBeginMaximum = this.DateTimeEnd;
-            this.DateTimeEndMinimum = this.DateTimeBegin;
-
+            this.DateTimeBeginMaximum = exportConfiguration.DateTimeEnd;
+            this.DateTimeEndMinimum = exportConfiguration.DateTimeBegin;
             this.InitializeSampleRateToDatasetsMap();
+
+            this.ExportConfiguration = exportConfiguration;
             var selectedDatasets = this.GetSelectedDatasets();
 
             exportConfiguration.Variables.ForEach(value =>
@@ -380,12 +385,11 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                         var dataset = variable.Datasets.FirstOrDefault(current => current.Name == datasetName);
 
                         if (dataset != null)
-                        {
                             selectedDatasets.Add(dataset);
-                        }
                     }
                 }
             });
+
 
             this.RaisePropertyChanged(nameof(AppStateViewModel.ExportConfiguration));
         }
@@ -511,10 +515,12 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         private List<DatasetInfoViewModel> GetSelectedDatasets()
         {
-            if (string.IsNullOrWhiteSpace(this.SampleRate))
-                return new List<DatasetInfoViewModel>();
-            else
+            var containsKey = !string.IsNullOrWhiteSpace(this.SampleRate) && _sampleRateToSelectedDatasetsMap.ContainsKey(this.SampleRate);
+
+            if (containsKey)
                 return _sampleRateToSelectedDatasetsMap[this.SampleRate];
+            else
+                return new List<DatasetInfoViewModel>();
         }
 
         #endregion

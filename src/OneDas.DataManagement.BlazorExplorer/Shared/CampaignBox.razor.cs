@@ -5,12 +5,6 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
 	public partial class CampaignBox
     {
-		#region Properties
-
-		public bool AttachmentDialogIsOpen { get; set; }
-
-		#endregion
-
 		#region Constructors
 
 		public CampaignBox()
@@ -26,14 +20,20 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
 		#endregion
 
+		#region Properties
+
+		public bool AttachmentsDialogIsOpen { get; set; }
+
+		#endregion
+
 		#region Methods
 
-		public void OpenAttachmentDialog()
+		private void OpenAttachmentsDialog()
 		{
-			this.AttachmentDialogIsOpen = true;
+			this.AttachmentsDialogIsOpen = true;
 		}
 
-		public void OnCampaignContainerSelected(CampaignContainer campaignContainer)
+		private void OnCampaignContainerSelected(CampaignContainer campaignContainer)
 		{
 			this.AppState.CampaignContainer = campaignContainer;
 		}

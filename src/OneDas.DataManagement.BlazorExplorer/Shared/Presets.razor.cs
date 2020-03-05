@@ -4,7 +4,7 @@ using System.IO;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
-    public partial class Attachments
+    public partial class Presets
     {
         #region Properties
 
@@ -21,24 +21,6 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         #region Methods
 
-        public string GetIcon(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-
-            return extension switch
-            {
-                ".docx" => "file-word",
-                ".xlsx" => "file-excel",
-                ".pptx" => "file-powerpoint",
-                ".pdf" => "file-pdf",
-                ".jpg" => "file-image",
-                ".jpeg" => "file-image",
-                ".png" => "file-image",
-                ".tiff" => "file-image",
-                _ => "file"
-            };
-        }
-
         public string GetFileName(string filePath)
         {
             return Path.GetFileName(filePath);
@@ -46,7 +28,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         public string GetHref(string filePath)
         {
-            return $"/download/{this.AppState.CampaignContainer.PhysicalName}/{this.GetFileName(filePath)}";
+            return $"/download/{filePath}/{this.GetFileName(filePath)}";
         }
 
         private void OnIsOpenChanged(bool value)

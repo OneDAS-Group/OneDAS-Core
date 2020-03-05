@@ -107,12 +107,13 @@ app {
 }
 
 .settings-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background-color: var(--box-color);
     padding: 10px;
     height: 100%;
     margin: 15px;
-    display: flex;
-    flex-direction: column;
 }
 
     .settings-box h6 {
@@ -121,8 +122,14 @@ app {
         margin-bottom: 10px;
     }
 
+.preset-panel {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+}
+
 .configuration-panel {
-    margin-top: auto;
+    
 }
 
     .configuration-panel h6 {

@@ -2,85 +2,98 @@
 
 @using BlazorInputFile
 
-<MatDatePicker class="settings-control"
-               Label="From (UTC)"
-               Maximum="this.AppState.DateTimeBeginMaximum"
-               Format="dd.MM.yyyy HH:mm"
-               @bind-Value="this.AppState.DateTimeBeginWorkaround"
-               EnableTime="true"
-               Enable24hours="true">
-</MatDatePicker>
+<div>
+    <MatDatePicker class="settings-control"
+                    Label="From (UTC)"
+                    Maximum="this.AppState.DateTimeBeginMaximum"
+                    Format="dd.MM.yyyy HH:mm"
+                    @bind-Value="this.AppState.DateTimeBeginWorkaround"
+                    EnableTime="true"
+                    Enable24hours="true">
+    </MatDatePicker>
 
-<MatDatePicker class="settings-control"
-               Label="To (UTC)"
-               Minimum="this.AppState.DateTimeEndMinimum"
-               Format="dd.MM.yyyy HH:mm"
-               @bind-Value="this.AppState.DateTimeEndWorkaround"
-               EnableTime="true"
-               Enable24hours="true">
-</MatDatePicker>
+    <MatDatePicker class="settings-control"
+                    Label="To (UTC)"
+                    Minimum="this.AppState.DateTimeEndMinimum"
+                    Format="dd.MM.yyyy HH:mm"
+                    @bind-Value="this.AppState.DateTimeEndWorkaround"
+                    EnableTime="true"
+                    Enable24hours="true">
+    </MatDatePicker>
 
-<MatSelectItem class="settings-control"
-               Label="File Granularity"
-               @bind-Value="this.AppState.FileGranularity"
-               Items="this.AppState.FileGranularityValues">
-    <ItemTemplate Context="value">
-        @Utilities.GetEnumLocalization(@value)
-    </ItemTemplate>
-</MatSelectItem>
+    <MatSelectItem class="settings-control"
+                    Label="File Granularity"
+                    @bind-Value="this.AppState.FileGranularity"
+                    Items="this.AppState.FileGranularityValues">
+        <ItemTemplate Context="value">
+            @Utilities.GetEnumLocalization(@value)
+        </ItemTemplate>
+    </MatSelectItem>
 
-<MatSelectItem class="settings-control"
-               Label="File Type"
-               @bind-Value="this.AppState.FileFormat"
-               Items="this.AppState.FileFormatValues">
-    <ItemTemplate Context="value">
-        @Utilities.GetEnumLocalization(@value)
-    </ItemTemplate>
-</MatSelectItem>
+    <MatSelectItem class="settings-control"
+                    Label="File Type"
+                    @bind-Value="this.AppState.FileFormat"
+                    Items="this.AppState.FileFormatValues">
+        <ItemTemplate Context="value">
+            @Utilities.GetEnumLocalization(@value)
+        </ItemTemplate>
+    </MatSelectItem>
 
-<MatSelectItem class="settings-control"
-               Label="Sample Rate"
-               @bind-Value="this.AppState.SampleRate"
-               Items="this.AppState.SampleRateValues">
-</MatSelectItem>
+    <MatSelectItem class="settings-control"
+                    Label="Sample Rate"
+                    @bind-Value="this.AppState.SampleRate"
+                    Items="this.AppState.SampleRateValues">
+    </MatSelectItem>
+</div>
 
-<div class="configuration-panel">
-    <MatDivider></MatDivider>
+<div>
+    <div class="preset-panel">
+        <MatDivider></MatDivider>
+        <MatButton Icon="@MatIconNames.File_copy" 
+                   OnClick="this.OpenPresetsDialog"
+                   Label="Open Presets"></MatButton>
+        <MatDivider></MatDivider>
+    </div>
 
-    <div class="flex-row">
-        <div class="configuration-panel-hover">
-            <div class="icon-button">
-                <i class="fas fa-folder-open" aria-hidden="true"></i>
-                <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
-            </div>
-            <InputFile OnChange="OnLoadExportSettingsAsync" accept="application/JSON" />
-        </div>
+    <div class="configuration-panel">
 
-        <div class="configuration-panel-hover">
-            <div class="icon-button" @onclick="OnSaveExportSettingsAsync">
-                <i class="fas fa-file-download" aria-hidden="true"></i>
-                <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
-            </div>
-        </div>
-
-        @if (this.AppState.CanVisualize())
-        {
-            <div class="configuration-panel-hover @(this.AppState.ClientState == ClientState.DataVisualizing ? "active" : "")">
-                <div class="icon-button" @onclick="this.AppState.ToggleDataVisualization">
-                    <i class="fas fa-chart-area" aria-hidden="true"></i>
-                    <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="configuration-panel-hover disabled">
+        <div class="flex-row">
+            <div class="configuration-panel-hover">
                 <div class="icon-button">
-                    <i class="fas fa-chart-area" aria-hidden="true"></i>
-                    <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
+                    <i class="fas fa-folder-open" aria-hidden="true"></i>
+                    <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
+                </div>
+                <InputFile OnChange="OnLoadExportSettingsAsync" accept="application/JSON" />
+            </div>
+
+            <div class="configuration-panel-hover">
+                <div class="icon-button" @onclick="OnSaveExportSettingsAsync">
+                    <i class="fas fa-file-download" aria-hidden="true"></i>
+                    <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
                 </div>
             </div>
-        }
 
+            @if (this.AppState.CanVisualize())
+            {
+                <div class="configuration-panel-hover @(this.AppState.ClientState == ClientState.DataVisualizing ? "active" : "")">
+                    <div class="icon-button" @onclick="this.AppState.ToggleDataVisualization">
+                        <i class="fas fa-chart-area" aria-hidden="true"></i>
+                        <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="configuration-panel-hover disabled">
+                    <div class="icon-button">
+                        <i class="fas fa-chart-area" aria-hidden="true"></i>
+                        <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
+                    </div>
+                </div>
+            }
+
+        </div>
     </div>
 </div>
+
+<Presets @bind-IsOpen="this.PresetsDialogIsOpen" />

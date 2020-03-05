@@ -31,7 +31,7 @@
             <div class="campaign-box-selected-footer-icons">
                 @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
                 {
-                    <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentDialog" />
+                    <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />
                 }
 
                 <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
@@ -44,4 +44,4 @@
     }
 </div>
 
-<Attachments @bind-IsOpen="this.AttachmentDialogIsOpen" />
+<Attachments @bind-IsOpen="this.AttachmentsDialogIsOpen" />

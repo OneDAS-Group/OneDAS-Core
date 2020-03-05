@@ -1,9 +1,8 @@
-﻿using OneDas.DataManagement.BlazorExplorer.Core;
-using OneDas.DataManagement.BlazorExplorer.ViewModels;
+﻿using OneDas.DataManagement.BlazorExplorer.ViewModels;
 
 namespace OneDas.DataManagement.BlazorExplorer.Pages
 {
-	public partial class Index
+    public partial class Index
 	{
 		#region Constructors
 

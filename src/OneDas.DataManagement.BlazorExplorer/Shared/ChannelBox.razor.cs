@@ -1,11 +1,10 @@
 ﻿using MatBlazor;
-using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System.Collections.Generic;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
-	public partial class ChannelBox
+    public partial class ChannelBox
     {
 		#region Fields
 
