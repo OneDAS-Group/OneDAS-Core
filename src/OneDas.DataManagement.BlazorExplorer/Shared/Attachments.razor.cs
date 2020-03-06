@@ -46,7 +46,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         public string GetHref(string filePath)
         {
-            return $"/download/{this.AppState.CampaignContainer.PhysicalName}/{this.GetFileName(filePath)}";
+            return $"/attachments/{this.AppState.CampaignContainer.PhysicalName}/{this.GetFileName(filePath)}";
         }
 
         private void OnIsOpenChanged(bool value)

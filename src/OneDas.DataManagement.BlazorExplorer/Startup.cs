@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -24,6 +26,9 @@ namespace OneDas.DataManagement.BlazorExplorer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<ApplicationDbContext>();
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
@@ -33,11 +38,17 @@ namespace OneDas.DataManagement.BlazorExplorer
             services.AddSingleton<OneDasExplorerStateManager>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<OneDasExplorerOptions> options)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, ApplicationDbContext userDB, IOptions<OneDasExplorerOptions> options)
         {
+            // logger
             var logger = loggerFactory.CreateLogger("OneDAS Explorer");
             logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
 
+            // database
+            if (userDB.Database.EnsureCreated())
+                logger.LogInformation($"Database initialized.");
+
+            // rest
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -50,13 +61,13 @@ namespace OneDas.DataManagement.BlazorExplorer
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "PRESETS")),
-                RequestPath = "/presets"
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS")),
+                RequestPath = "/attachments"
             });
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "META")),
-                RequestPath = "/download"
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "PRESETS")),
+                RequestPath = "/presets"
             });
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -65,6 +76,9 @@ namespace OneDas.DataManagement.BlazorExplorer
             });
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

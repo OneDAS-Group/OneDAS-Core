@@ -127,13 +127,25 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
         public DateTime DateTimeBeginWorkaround
         {
             get { return DateTime.SpecifyKind(this.DateTimeBegin, DateTimeKind.Local); }
-            set { this.DateTimeBegin = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc); }
+            set 
+            { 
+                if (value.Kind == DateTimeKind.Local)
+                    this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                else
+                    this.DateTimeBegin = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+            }
         }
 
         public DateTime DateTimeEndWorkaround
         {
             get { return DateTime.SpecifyKind(this.DateTimeEnd, DateTimeKind.Local); }
-            set { this.DateTimeEnd = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc); }
+            set
+            {
+                if (value.Kind == DateTimeKind.Local)
+                    this.DateTimeEnd = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                else
+                    this.DateTimeEnd = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+            }
         }
 
         public DateTime DateTimeBeginMaximum { get; private set; }

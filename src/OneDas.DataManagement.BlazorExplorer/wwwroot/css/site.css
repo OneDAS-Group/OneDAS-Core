@@ -46,14 +46,14 @@ app {
 }
 
 .nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     color: white;
     background-color: var(--nav-color);
     padding: 10px 15px 10px 15px;
     height: 40px;
     width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
 }
 
     .nav .nav-logo {
@@ -69,7 +69,13 @@ app {
             margin-right: 7px;
         }
 
-    .nav .nav-signin {
+.login-display {
+    display: flex;
+    flex-direction: row;
+
+}
+
+    .login-display .nav-signin {
         color: rgba(255,255,255,.8);
         display: flex;
         flex-direction: row;
@@ -77,11 +83,11 @@ app {
         font-size: 1.0rem;
     }
 
-        .nav .nav-signin:hover {
+        .login-display .nav-signin:hover {
             color: white;
         }
 
-        .nav .nav-signin svg {
+        .login-display .nav-signin svg {
             margin-left: 10px;
         }
 

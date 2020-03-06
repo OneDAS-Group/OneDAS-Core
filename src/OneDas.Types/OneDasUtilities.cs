@@ -21,6 +21,7 @@ namespace OneDas
             var result = true;
 
             var exists = Directory.Exists(databaseFolderPath) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "ATTACHMENTS")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DATA")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "EXTENSION")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "META")) &&

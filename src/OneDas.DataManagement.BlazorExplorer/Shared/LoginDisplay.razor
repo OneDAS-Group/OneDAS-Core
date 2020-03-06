@@ -1,0 +1,22 @@
+﻿<div class="login-display">
+    <AuthorizeView>
+        <Authorized>
+            <MatIconButton>
+                <i class="fas fa-cogs" aria-hidden="true"></i>
+            </MatIconButton>
+
+            <a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>
+            <form method="post" action="Identity/Account/LogOut">
+                <button type="submit" class="nav-link btn btn-link">Log out</button>
+            </form>
+        </Authorized>
+        <NotAuthorized>
+            <MatButton Link="Identity/Account/Register">
+                <i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Register
+            </MatButton>
+            <MatButton Link="Identity/Account/Login">
+                <i class="fa fa-sign-in-alt" aria-hidden="true"></i> &nbsp; Log in
+            </MatButton>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
