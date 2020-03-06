@@ -12,7 +12,6 @@ namespace OneDas.DataManagement.Database
             this.Name = campaignName;
             this.RootPath = rootPath;
             this.Campaign = new CampaignInfo(campaignName);
-            this.CampaignMeta = new CampaignMetaInfo(campaignName);
         }
 
         private CampaignContainer()
@@ -25,6 +24,8 @@ namespace OneDas.DataManagement.Database
         #region "Properties"
 
         public string Name { get; set; }
+
+        public string PhysicalName => this.Name.TrimStart('/').Replace('/', '_');
 
         public string RootPath { get; set; }
 

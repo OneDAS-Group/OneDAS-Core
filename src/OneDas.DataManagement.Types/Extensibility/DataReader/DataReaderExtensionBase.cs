@@ -50,7 +50,7 @@ namespace OneDas.DataManagement.Extensibility
             if (maxFpCount == 0)
                 throw new Exception("The provided 'maximum samples per read operation' parameter is too small to provide data for at least a single fundamental period.");
 
-#warning being: this is not pretty, remove
+#warning begin: this is not pretty, remove
             var samplesPerDay = new SampleRateContainer(dataset.Name).SamplesPerDay;
             var start = (ulong)Math.Floor((dateTimeBegin - new DateTime(2000, 1, 1)).TotalDays * samplesPerDay);
 #warning end

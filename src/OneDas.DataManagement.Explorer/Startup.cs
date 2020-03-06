@@ -6,8 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Web;
-using System;
-using System.IO;
 using System.Text.Json;
 
 namespace OneDas.DataManagement.Explorer
@@ -30,7 +28,7 @@ namespace OneDas.DataManagement.Explorer
             services.AddSingleton<OneDasExplorerStateManager>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<OneDasExplorerOptions> options)
         {
             var logger = loggerFactory.CreateLogger("OneDAS Explorer");
 
@@ -47,7 +45,7 @@ namespace OneDas.DataManagement.Explorer
             });
         }
 
-        private void Validate(ILogger logger, IOptions<HdfExplorerOptions> options)
+        private void Validate(ILogger logger, IOptions<OneDasExplorerOptions> options)
         {
             // check thread safety of HDF library
             var isLibraryThreadSafe = 0U;

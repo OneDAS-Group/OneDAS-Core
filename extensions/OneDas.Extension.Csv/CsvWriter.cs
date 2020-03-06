@@ -16,9 +16,6 @@ namespace OneDas.Extension.Csv
         #region "Fields"
 
         private CsvSettings _settings;
-        private NumberFormatInfo _numberFormatInfo_data;
-        private NumberFormatInfo _numberFormatInfo_index;
-        private NumberFormatInfo _numberFormatInfo_unix;
 
         private double _unixStart;
         private DateTime _unixEpoch;

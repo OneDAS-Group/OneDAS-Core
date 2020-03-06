@@ -14,7 +14,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private bool _isActive;
         private System.Timers.Timer _activityTimer;
-        private HdfExplorerOptions _options;
+        private OneDasExplorerOptions _options;
         private ConcurrentDictionary<string, OneDasExplorerState> _stateSet;
         private ConcurrentDictionary<string, CancellationTokenSource> _ctsSet;
         private IHubContext<Broadcaster> _hubContext;
@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region "Constructors"
 
-        public OneDasExplorerStateManager(IHubContext<Broadcaster> hubContext, IOptions<HdfExplorerOptions> options)
+        public OneDasExplorerStateManager(IHubContext<Broadcaster> hubContext, IOptions<OneDasExplorerOptions> options)
         {
             _hubContext = hubContext;
             _options = options.Value;

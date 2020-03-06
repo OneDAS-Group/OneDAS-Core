@@ -19,10 +19,10 @@ namespace OneDas.DataManagement.Explorer.Core
         private ILogger _logger;
         private OneDasExplorerStateManager _stateManager;
         private IHubContext<Broadcaster> _context;
-        private HdfExplorerOptions _options;
+        private OneDasExplorerOptions _options;
         private string _connectionId;
 
-        public DownloadService(OneDasExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options, string connectionId)
+        public DownloadService(OneDasExplorerStateManager stateManager, IHubContext<Broadcaster> context, ILoggerFactory loggerFactory, IOptions<OneDasExplorerOptions> options, string connectionId)
         {
             _stateManager = stateManager;
             _context = context;
@@ -92,7 +92,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-#warning Is this secure?
+#warning Is this safe?
                 var samplesPerSecond = (ulong)sampleRateContainer.SamplesPerSecond;
 
                 // epoch & hyperslab

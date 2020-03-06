@@ -19,13 +19,13 @@ namespace OneDas.DataManagement.Explorer.Web
         private ILogger _logger;
         private IServiceProvider _serviceProvider;
         private OneDasExplorerStateManager _stateManager;
-        private HdfExplorerOptions _options;
+        private OneDasExplorerOptions _options;
 
         #endregion
 
         #region "Constructors"
 
-        public Broadcaster(OneDasExplorerStateManager stateManager, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IOptions<HdfExplorerOptions> options)
+        public Broadcaster(OneDasExplorerStateManager stateManager, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IOptions<OneDasExplorerOptions> options)
         {
             _stateManager = stateManager;
             _serviceProvider = serviceProvider;

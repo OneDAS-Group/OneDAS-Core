@@ -11,6 +11,11 @@ namespace OneDas
 {
     public static class OneDasUtilities
     {
+        public static double ToUnixTimeStamp(this DateTime value)
+        {
+            return value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+        }
+
         public static bool ValidateDatabaseFolderPath(string databaseFolderPath, out string message)
         {
             var result = true;
@@ -18,6 +23,8 @@ namespace OneDas
             var exists = Directory.Exists(databaseFolderPath) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "DATA")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "EXTENSION")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "META")) &&
+                         Directory.Exists(Path.Combine(databaseFolderPath, "PRESETS")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "VDS"));
 
             message = string.Empty;
@@ -73,9 +80,9 @@ namespace OneDas
             };
         }
 
-        public static Type GetTypeFromOneDasDataType(OneDasDataType dateType)
+        public static Type GetTypeFromOneDasDataType(OneDasDataType dataType)
         {
-            return dateType switch
+            return dataType switch
             {
                 OneDasDataType.BOOLEAN              => typeof(bool),
                 OneDasDataType.UINT8                => typeof(Byte),
@@ -88,7 +95,7 @@ namespace OneDas
                 OneDasDataType.INT64                => typeof(Int64),
                 OneDasDataType.FLOAT32              => typeof(Single),
                 OneDasDataType.FLOAT64              => typeof(Double),
-                _                                   => throw new NotSupportedException()
+                _                                   => throw new NotSupportedException($"The specified data type '{dataType}' is not supported.")
             };
         }
 
@@ -124,6 +131,11 @@ namespace OneDas
                 value = "X_" + value;
 
             return value;
+        }
+
+        public static object InvokeGenericMethod<T>(T instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)
+        {
+            return OneDasUtilities.InvokeGenericMethod(typeof(T), instance, methodName, bindingFlags, genericType, parameters);
         }
 
         public static object InvokeGenericMethod(Type methodParent, object instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)

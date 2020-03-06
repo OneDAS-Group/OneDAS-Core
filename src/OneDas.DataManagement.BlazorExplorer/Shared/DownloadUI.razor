@@ -1,0 +1,21 @@
+﻿@inherits AppStateComponentBase
+
+<div class="downloader-headline">
+    <MatHeadline2>Preparing download (@Utilities.FormatByteCount(this.AppState.GetByteCount()))</MatHeadline2>
+</div>
+
+<div class="downloader-content">
+    <div class="small-text">
+        @this.AppState.DownloadMessage
+    </div>
+    <MatProgressBar Progress="@this.AppState.DownloadProgress"></MatProgressBar>
+
+    @if (!this.IsCancelling)
+    {
+        <MatButton Raised="true" @onclick="this.CancelDownload">Cancel</MatButton>
+    }
+    else
+    {
+        <MatButton Raised="true" Disabled="true">Cancelling ...</MatButton>
+    }
+</div>

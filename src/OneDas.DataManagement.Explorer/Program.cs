@@ -19,7 +19,7 @@ namespace OneDas.DataManagement.Explorer
     {
         #region Fields
 
-        private static HdfExplorerOptions _options;
+        private static OneDasExplorerOptions _options;
         private static IConfiguration _configuration;
         private static ILoggerFactory _loggerFactory;
 
@@ -59,11 +59,11 @@ namespace OneDas.DataManagement.Explorer
             configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
 
             _configuration = configurationBuilder.Build();
-            _options = _configuration.Get<HdfExplorerOptions>();
+            _options = _configuration.Get<OneDasExplorerOptions>();
 
             if (_options == null)
             {
-                _options = new HdfExplorerOptions();
+                _options = new OneDasExplorerOptions();
                 _configuration.Bind(_options);
                 _options.Save(configurationDirectoryPath);
             }
@@ -98,7 +98,7 @@ namespace OneDas.DataManagement.Explorer
                 currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
             var webHost = new WebHostBuilder()
-                .ConfigureServices(services => services.Configure<HdfExplorerOptions>(_configuration))
+                .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
                 .ConfigureLogging(loggingBuilder =>
                 {
                     loggingBuilder.ClearProviders();

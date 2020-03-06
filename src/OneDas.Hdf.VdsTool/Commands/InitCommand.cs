@@ -16,6 +16,8 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DATA"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "EXTENSION"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "META"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "PRESETS"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "VDS"));
         }
 

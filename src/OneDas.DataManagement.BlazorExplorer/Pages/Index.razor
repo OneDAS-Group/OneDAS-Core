@@ -1,0 +1,49 @@
+﻿@page "/"
+@inherits AppStateComponentBase
+
+@if (this.AppState.ClientState != ClientState.PrepareDownload)
+{
+    <div class="left-column">
+        <div class="settings-box mat-elevation-z11">
+            <SettingsBox />
+        </div>
+    </div>
+    <div class="center-column">
+        @if (this.AppState.ClientState != ClientState.DataVisualizing)
+        {
+            <div class="campaign-box mat-elevation-z11">
+                <CampaignBox />
+            </div>
+            <div class="channel-box mat-elevation-z11">
+                @if (this.AppState.ClientState != ClientState.DataAvailability)
+                {
+                    <ChannelBox />
+                }
+                else
+                {
+                    <DataAvailabilityBox />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="visualize-box mat-elevation-z11">
+                <VisualizeBox />
+            </div>
+        }
+    </div>
+    <div class="right-column">
+        <div class="news-box mat-elevation-z11">
+            <NewsTicker />
+        </div>
+        <div class="variable-box mat-elevation-z11">
+            <DownloadBox />
+        </div>
+    </div>
+}
+else
+{
+    <div class="downloader mat-elevation-z11">
+        <DownloadUI />
+    </div>
+}

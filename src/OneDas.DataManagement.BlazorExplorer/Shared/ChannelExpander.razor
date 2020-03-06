@@ -1,0 +1,32 @@
+﻿<div class="variable-expander" @onclick="this.OnClick">
+    <div class="variable-name">
+        @this.Variable.Name
+        <div class="variable-datasets">
+            @if (_filteredDatasets.Any())
+            {
+                @foreach (var dataset in _filteredDatasets)
+                {
+                    <div @onclick="() => this.AppState.ToggleDatasetSelection(dataset)"
+                         class="@(this.AppState.IsDatasetSeleced(dataset) ? "selected" : "")">
+                        @dataset.Name
+                    </div>
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(this.AppState.SampleRate))
+            {
+                <div>
+                    select a sample rate ...
+                </div>
+            }
+            else
+            {
+                <div>
+                    no dataset available
+                </div>
+            }
+        </div>
+    </div>
+    <span class="variable-description">
+        @this.Variable.Description
+    </span>
+</div>

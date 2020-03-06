@@ -1,0 +1,7 @@
+﻿<div class="paginator">
+    <MatIcon Icon="first_page" @onclick="() => NavigateToPage(MatPaginatorAction.First, PageSize)" class="@(this.Page <= 0 ? "disabled" : "")"></MatIcon>
+    <MatIcon Icon="navigate_before" @onclick="() => NavigateToPage(MatPaginatorAction.Previous, PageSize)" class="@(this.Page <= 0 ? "disabled" : "")"></MatIcon>
+
+    <MatIcon Icon="navigate_next" @onclick="() => NavigateToPage(MatPaginatorAction.Next, PageSize)" class="@(this.TotalPages - this.Page <= 1 ? "disabled" : "")"></MatIcon>
+    <MatIcon Icon="last_page" @onclick="() => NavigateToPage(MatPaginatorAction.Last, PageSize)" class="@(this.TotalPages - this.Page <= 1 ? "disabled" : "")"></MatIcon>
+</div>
