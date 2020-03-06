@@ -19,9 +19,9 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             await jsRuntime.InvokeAsync<object>("FileSaveAs", fileName, href);
         }
 
-        public static async Task UpdateChartAsync(IJSRuntime jsRuntime, double[] timeData, List<ChartEntry> chartEntries)
+        public static async Task UpdateChartAsync(IJSRuntime jsRuntime, double[] timeData, List<ChartEntry> chartEntries, bool beginAtZero)
         {
-            await jsRuntime.InvokeAsync<object>("UpdateChart", timeData, chartEntries);
+            await jsRuntime.InvokeAsync<object>("UpdateChart", timeData, chartEntries, beginAtZero);
         }
 
         #endregion

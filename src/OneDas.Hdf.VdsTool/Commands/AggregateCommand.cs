@@ -21,7 +21,6 @@ namespace OneDas.Hdf.VdsTool.Commands
     {
         #region Fields
 
-
         private uint _days;
         private uint _aggregationChunkSizeMb;
         private ILogger _logger;

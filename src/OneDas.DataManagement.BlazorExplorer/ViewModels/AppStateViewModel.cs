@@ -23,14 +23,15 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
         private string _searchString;
         private string _downloadMessage;
 
-        private ClientState _clientState;
-
         private double _downloadProgress;
-        private CancellationTokenSource _cts_download;
-        private DownloadService _downloadService;
 
+        private bool _visualizeBeginAtZero;
+
+        private ClientState _clientState;
         private IJSRuntime _jsRuntime;
 
+        private DownloadService _downloadService;
+        private CancellationTokenSource _cts_download;
         private PropertyChangedEventHandler _propertyChanged;
 
         private CampaignContainer _campaignContainer;
@@ -53,18 +54,24 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
             this.CampaignContainers = Program.DatabaseManager.Database.CampaignContainers.AsReadOnly();
             this.NewsPaper = NewsPaper.Load();
+            this.VisualizeBeginAtZero = true;
 
             this.SampleRateValues = this.CampaignContainers.SelectMany(campaignContainer =>
             {
                 return campaignContainer.Campaign.Variables.SelectMany(variable =>
                 {
-                    return variable.Datasets.Select(dataset => dataset.Name.Split('_')[0])
-                                            .Where(sampleRate => !sampleRate.Contains("600 s"));
+                    return variable.Datasets.Select(dataset => dataset.Name.Split('_')[0]);
                 });
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
 
             this.InitializeCampaignContainerToVariableMap();
             this.InitializeSampleRateToDatasetsMap();
+
+            // set default campaign container and variable group
+            //this.CampaignContainer = this.CampaignContainers.FirstOrDefault();
+
+            //if (this.GroupedVariables.Any())
+            //    this.VariableGroup = this.GroupedVariables.First().Value;
 
             // state manager
             _propertyChanged = (sender, e) =>
@@ -138,6 +145,12 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
         public List<FileGranularity> FileGranularityValues { get; }
 
         public List<FileFormat> FileFormatValues { get; }
+
+        public bool VisualizeBeginAtZero
+        {
+            get { return _visualizeBeginAtZero; }
+            set { this.SetProperty(ref _visualizeBeginAtZero, value); }
+        }
 
         #endregion
 
@@ -277,7 +290,8 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
             return this.DateTimeBegin < this.DateTimeEnd &&
                    this.SelectedDatasets.Count > 0 &&
                    (ulong)this.FileGranularity >= 86400 / new SampleRateContainer(this.SampleRate).SamplesPerDay &&
-                   this.State == OneDasExplorerState.Ready;
+                   this.State == OneDasExplorerState.Ready &&
+                   !this.SampleRate.Contains("600 s");
         }
 
         public async Task DownloadAsync(IPAddress remoteIpAdress)

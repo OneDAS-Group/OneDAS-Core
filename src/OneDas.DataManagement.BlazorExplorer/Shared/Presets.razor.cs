@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
+using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
+using System;
 using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.BlazorExplorer.Shared
 {
@@ -21,14 +25,24 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         #region Methods
 
-        public string GetFileName(string filePath)
+        private string GetFileName(string filePath)
         {
             return Path.GetFileName(filePath);
         }
 
-        public string GetHref(string filePath)
+        private void LoadPreset(string filePath)
         {
-            return $"/download/{filePath}/{this.GetFileName(filePath)}";
+            var jsonString = File.ReadAllText(filePath);
+            var exportConfiguration = JsonSerializer.Deserialize<ExportConfiguration>(jsonString);
+
+            var timeSpan = exportConfiguration.DateTimeEnd - exportConfiguration.DateTimeBegin;
+            var dt = exportConfiguration.DateTimeEnd;
+            var now = DateTime.UtcNow.AddDays(-1);
+
+            exportConfiguration.DateTimeEnd = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second); ;
+            exportConfiguration.DateTimeBegin = exportConfiguration.DateTimeEnd - timeSpan;
+
+            this.AppState.SetExportConfiguration(exportConfiguration);
         }
 
         private void OnIsOpenChanged(bool value)

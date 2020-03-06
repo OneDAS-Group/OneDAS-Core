@@ -50,6 +50,11 @@ namespace OneDas.DataManagement.BlazorExplorer
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "PRESETS")),
+                RequestPath = "/presets"
+            });
+            app.UseStaticFiles(new StaticFileOptions
+            {
                 FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "META")),
                 RequestPath = "/download"
             });

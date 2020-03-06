@@ -7,14 +7,14 @@
 
                 @foreach (var attachment in this.AppState.Attachments)
                 {
-                    <div class="attachment">
+                    <a class="attachment" href="@this.GetHref(attachment)" target="_blank">
                         <div class="attachment-icon">
                             <i class="far fa-@this.GetIcon(attachment)"></i>
                         </div>
-                        <a class="attachment-name" href="@this.GetHref(attachment)" target="_blank">
+                        <span class="attachment-name">
                             @this.GetFileName(attachment)
-                        </a>
-                    </div>
+                        </span>
+                    </a>
                 }
             </div>
         }

@@ -1,5 +1,5 @@
 ﻿<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
-    <MatDialogTitle>Preset Files</MatDialogTitle>
+    <MatDialogTitle>Presets</MatDialogTitle>
     <MatDialogContent>
         @if (this.IsOpen)
         {
@@ -7,13 +7,13 @@
 
                 @foreach (var preset in this.AppState.GetPresets())
                 {
-                    <div class="attachment">
+                    <div class="attachment" @onclick="() => this.LoadPreset(preset)">
                         <div class="attachment-icon">
                             <i class="far fa-file-code"></i>
                         </div>
-                        <a class="attachment-name" href="@this.GetHref(preset)" target="_blank">
+                        <span class="attachment-name">
                             @this.GetFileName(preset)
-                        </a>
+                        </span>
                     </div>
                 }
             </div>

@@ -41,7 +41,12 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 				{
 					_showProgressBar = true;
 
-					if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+					if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
+					{
+						await this.InvokeAsync(() => { this.StateHasChanged(); });
+						await this.UpdateChartAsync();
+					}
+					else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
 					{
 						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
@@ -52,6 +57,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 						await this.UpdateChartAsync();
 					}
 					else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
+					{
+						await this.InvokeAsync(() => { this.StateHasChanged(); });
+						await this.UpdateChartAsync();
+					}
+					else if (e.PropertyName == nameof(AppStateViewModel.VisualizeBeginAtZero))
 					{
 						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
@@ -133,7 +143,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 			_showProgressBar = false;
 
 			await this.InvokeAsync(() => { this.StateHasChanged(); });
-			await JsInterop.UpdateChartAsync(this.JsRuntime, timeData, chartEntries);
+			await JsInterop.UpdateChartAsync(this.JsRuntime, timeData, chartEntries, this.AppState.VisualizeBeginAtZero);
 		}
 
 		#endregion

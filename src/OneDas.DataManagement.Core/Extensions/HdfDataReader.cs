@@ -86,7 +86,7 @@ namespace OneDas.DataManagement.Extensions
             var block = (ulong)Math.Ceiling((end - begin).TotalDays * samplesPerDay);
 
             // get data
-            var totalDays = (end - begin).TotalDays;
+            var totalDays = (int)Math.Ceiling((end - begin).TotalDays);
 
             this.SwitchLocation(() =>
             {
@@ -96,9 +96,9 @@ namespace OneDas.DataManagement.Extensions
                 {
                     granularity = DataAvailabilityGranularity.DayLevel;
                     offset = (ulong)begin.TimeOfDay.TotalMinutes;
-                    aggregatedData = new int[(int)Math.Ceiling(totalDays)];
+                    aggregatedData = new int[totalDays];
 
-                    Parallel.For(0, (int)Math.Ceiling(totalDays), day =>
+                    Parallel.For(0, totalDays, day =>
                     {
                         var startIndex = (ulong)day * samplesPerDay; // inclusive
                         var endIndex = startIndex + samplesPerDay; // exclusive

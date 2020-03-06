@@ -100,7 +100,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                 var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
                 var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
 
-                var dataReader = dataset.IsNative 
+                using var dataReader = dataset.IsNative 
                     ? Program.DatabaseManager.GetNativeDataReader(campaignName) 
                     : Program.DatabaseManager.AggregationDataReader;
 

@@ -91,19 +91,17 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
         {
             this.PropertyChanged = async (sender, e) =>
             {
-                await this.UpdateChart();
-
                 if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
                 {
-                    await this.InvokeAsync(() => { this.StateHasChanged(); });
+                    await this.UpdateChart();
                 }
                 else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
                 {
-                    await this.InvokeAsync(() => { this.StateHasChanged(); });
+                    await this.UpdateChart();
                 }
                 else if (e.PropertyName == nameof(AppStateViewModel.CampaignContainer))
                 {
-                    await this.InvokeAsync(() => { this.StateHasChanged(); });
+                    await this.UpdateChart();
                 }
             };
 
@@ -122,7 +120,9 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await this.UpdateChart();
+            if (firstRender)
+                await this.UpdateChart();
+
             await base.OnAfterRenderAsync(firstRender);
         }
 
