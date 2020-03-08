@@ -29,7 +29,7 @@ namespace OneDas.DataManagement.Extensibility
 
         #region Methods
 
-        public void ReadFullDay<T>(DatasetInfo dataset, DateTime dateTimeBegin, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
+        public void ReadFullDay<T>(DatasetInfo dataset, DateTime begin, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
         {
             // max period
             var maxPeriod = TimeSpan.FromDays(1);
@@ -44,16 +44,11 @@ namespace OneDas.DataManagement.Extensibility
 
             var totalFpCount = (ulong)tmp;
 
-            // max fundamental periods count
-            var maxFpCount = maxSamplesPerReadOperation / samplesPerFundamentalPeriod;
+            // max number of fundamental periods
+            var maxFpPerReadOperation = maxSamplesPerReadOperation / samplesPerFundamentalPeriod;
 
-            if (maxFpCount == 0)
+            if (maxFpPerReadOperation == 0)
                 throw new Exception("The provided 'maximum samples per read operation' parameter is too small to provide data for at least a single fundamental period.");
-
-#warning begin: this is not pretty, remove
-            var samplesPerDay = new SampleRateContainer(dataset.Name).SamplesPerDay;
-            var start = (ulong)Math.Floor((dateTimeBegin - new DateTime(2000, 1, 1)).TotalDays * samplesPerDay);
-#warning end
 
             // load data
             var timeOffset = TimeSpan.Zero;
@@ -61,20 +56,20 @@ namespace OneDas.DataManagement.Extensibility
             while (timeOffset < maxPeriod)
             {
                 var remainingFpCount = (ulong)((maxPeriod - timeOffset).Ticks / fundamentalPeriod.Ticks);
-                var currentFpCount = Math.Min(remainingFpCount, maxFpCount);
-                var length = currentFpCount * samplesPerFundamentalPeriod;
-                var offset = start + (totalFpCount - remainingFpCount) * samplesPerFundamentalPeriod;
+                var currentFpCount = Math.Min(remainingFpCount, maxFpPerReadOperation);
+                var currentBegin = begin + timeOffset;
+                var currentEnd = currentBegin + currentFpCount * fundamentalPeriod;
 
-                (T[] data, byte[] status) = this.Read<T>(dataset, offset, length);
+                (T[] data, byte[] status) = this.Read<T>(dataset, currentBegin, currentEnd);
                 processData?.Invoke(data, status);
 
                 timeOffset += fundamentalPeriod * currentFpCount;
             }
         }
 
-        public ISimpleDataStorage LoadDataset<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged
+        public ISimpleDataStorage LoadDataset<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
         {
-            (var data, var statusSet) = this.Read<T>(dataset, start, length);
+            (var data, var statusSet) = this.Read<T>(dataset, begin, end);
 
             // apply status (only if native dataset)
             if (statusSet != null)
@@ -100,7 +95,7 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract void Dispose();
 
-        protected abstract (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged;
+        protected abstract (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 
         #endregion
     }

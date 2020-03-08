@@ -252,7 +252,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath)
+        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo dataset, string campaignPath)
         {
             long datasetId = -1;
             long spaceId = -1;
@@ -261,21 +261,20 @@ namespace OneDas.Hdf.VdsTool.Commands
             var createDataset = false;
 
             // the averages database has no "is_chunk_completed_set"
-            if (!_datasetToTypeIdMap.ContainsKey(datasetInfo))
+            if (!_datasetToTypeIdMap.ContainsKey(dataset))
                 return;
                 
-            var typeId = _datasetToTypeIdMap[datasetInfo];
+            var typeId = _datasetToTypeIdMap[dataset];
 
             try
             {
-                var datasetName = datasetInfo.Name;
-                var sampleRate = new SampleRateContainer(datasetName);
+                var sampleRate = dataset.SampleRate;
                 var vdsLength = (ulong)(epochEnd - epochStart).Days * sampleRate.SamplesPerDay;
 
                 spaceId = H5S.create_simple(1, new ulong[] { vdsLength }, new ulong[] { H5S.UNLIMITED });
                 propertyId = H5P.create(H5P.DATASET_CREATE);
 
-                foreach (SourceFileInfo sourceFileInfo in _datasetToSourceFilesMap[datasetInfo])
+                foreach (SourceFileInfo sourceFileInfo in _datasetToSourceFilesMap[dataset])
                 {
                     long sourceSpaceId = -1;
 
@@ -314,7 +313,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                             H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { offset + start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
                             H5S.select_hyperslab(sourceSpaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
-                            H5P.set_virtual(propertyId, spaceId, relativeFilePath, datasetInfo.GetPath(), sourceSpaceId);
+                            H5P.set_virtual(propertyId, spaceId, relativeFilePath, dataset.GetPath(), sourceSpaceId);
                         }
                         finally
                         {

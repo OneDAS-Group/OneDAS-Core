@@ -153,7 +153,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
 
             // check source sample rate
-            var sampleRateContainer = new SampleRateContainer(dataset.Name, ensureNonZeroIntegerHz: true);
+            var sampleRate = new SampleRateContainer(dataset.Name, ensureNonZeroIntegerHz: true);
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
@@ -203,7 +203,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                         setupToBufferDataMap[setup] = bufferData;
 
                         // period data
-                        var periodData = new AggregationPeriodData(setup.Period, sampleRateContainer, valueSize);
+                        var periodData = new AggregationPeriodData(setup.Period, sampleRate, valueSize);
                         setupToDataMap[setup] = periodData;
 
                         actualPeriods.Add(setup.Period);
@@ -218,8 +218,8 @@ namespace OneDas.Hdf.VdsTool.Commands
                     return;
 
                 // read data
-                var fundamentalPeriod = TimeSpan.FromMinutes(10);
-                var samplesPerFundamentalPeriod = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
+                var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions gets data with a multiple length of 10 minutes
+                var samplesPerFundamentalPeriod = sampleRate.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
                 var maxSamplesPerReadOperation = (ulong)(_aggregationChunkSizeMb * 1024 * 1024 / valueSize);
 
                 dataReader.ReadFullDay<T>(dataset, date, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
@@ -236,7 +236,6 @@ namespace OneDas.Hdf.VdsTool.Commands
                         var bufferData = setupToBufferDataMap[setup];
 
                         Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
-
                         bufferData.BufferPosition += partialBuffer.Length;
                     }
                 });

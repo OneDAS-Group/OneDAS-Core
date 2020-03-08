@@ -12,6 +12,20 @@ namespace OneDas.DataManagement.Hdf
 {
     public static class GeneralHelper
     {
+        public static (ulong start, ulong block) GetStartAndBlock(DateTime begin, DateTime end, ulong samplesPerDay)
+        {
+            var epochStart = new DateTime(2000, 01, 01);
+            var epochEnd = new DateTime(2030, 01, 01);
+
+            if (!(epochStart <= begin && begin <= end && end <= epochEnd))
+                throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
+
+            var start = (ulong)Math.Floor((begin - epochStart).TotalDays * samplesPerDay);
+            var block = (ulong)Math.Ceiling((end - begin).TotalDays * samplesPerDay);
+
+            return (start, block);
+        }
+
         public static void UpdateCampaigns(long fileId, List<CampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             GeneralHelper.InternalUpdateCampaigns(fileId, campaigns, null, updateSourceFileMap);

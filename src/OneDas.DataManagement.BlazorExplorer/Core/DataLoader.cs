@@ -167,7 +167,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                         var dataStorage = (IDataStorage)OneDasUtilities.InvokeGenericMethod(typeof(DataReaderExtensionBase), dataReader, nameof(DataReaderExtensionBase.LoadDataset),
                                                                                             BindingFlags.Instance | BindingFlags.Public,
                                                                                             OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                                                            new object[] { dataset, currentStart, currentRowCount });
+                                                                                            new object[] { dataset, currentStart_x, currentRowCount_x });
 
                         dataStorageSet.Add(dataStorage);
                         this.OnProgressUpdated(new ProgressUpdatedEventArgs((currentSegment * (double)datasetCount + currentDataset) / (segmentCount * datasetCount), $"Loading dataset segment {currentSegment * datasetCount + currentDataset + 1} / {segmentCount * datasetCount} ..."));

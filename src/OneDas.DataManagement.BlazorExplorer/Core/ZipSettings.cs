@@ -6,26 +6,23 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 {
     public class ZipSettings
     {
-        public ZipSettings(DateTime dateTimeBegin,
-                           CampaignInfo campaign,
+        public ZipSettings(CampaignInfo campaign,
                            DataReaderExtensionBase nativeDataReader,
                            DataReaderExtensionBase aggregationDataReader,
-                           double sampleRate,
-                           ulong start,
-                           ulong block,
+                           DateTime begin,
+                           DateTime end,
+                           ulong samplesPerDay,
                            ulong segmentLength)
         {
-            this.DateTimeBegin = dateTimeBegin;
             this.Campaign = campaign;
             this.NativeDataReader = nativeDataReader;
             this.AggregationDataReader = aggregationDataReader;
-            this.SampleRate = sampleRate;
-            this.Start = start;
-            this.Block = block;
+            this.Begin = begin;
+            this.End = end;
+            this.SamplesPerDay = samplesPerDay;
             this.SegmentLength = segmentLength;
         }
 
-        public DateTime DateTimeBegin { get; private set; }
 
         public CampaignInfo Campaign { get; private set; }
 
@@ -33,11 +30,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         public DataReaderExtensionBase AggregationDataReader { get; private set; }
 
-        public double SampleRate { get; private set; }
+        public DateTime Begin { get; private set; }
 
-        public ulong Start { get; private set; }
-        
-        public ulong Block { get; private set; }
+        public DateTime End { get; private set; }
+
+        public ulong SamplesPerDay { get; private set; }
 
         public ulong SegmentLength { get; private set; }
     }

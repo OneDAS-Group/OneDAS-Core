@@ -77,10 +77,12 @@ namespace OneDas.DataManagement.Extensions
             //
         }
 
-        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
+        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             var random = new Random();
             var movingAverage = new MovingAverage();
+            var length = (int)((end - begin).TotalDays * dataset.SampleRate.SamplesPerDay);
+
             var dataDouble = new double[length];
 
             for (int i = 0; i < (int)length; i++)
@@ -91,7 +93,7 @@ namespace OneDas.DataManagement.Extensions
             }
 
             var data = dataDouble.Select(value => (T)Convert.ChangeType(value, typeof(T))).ToArray();
-            var statusSet = Enumerable.Range((int)start, (int)length).Select(value => (byte)1).ToArray();
+            var statusSet = Enumerable.Range(0, length).Select(value => (byte)1).ToArray();
 
             return (data, statusSet);
         }

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.BlazorExplorer.Core;
+using OneDas.DataManagement.BlazorExplorer.Hubs;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
 using System.IO;
@@ -27,10 +27,18 @@ namespace OneDas.DataManagement.BlazorExplorer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>();
+
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddSignalR()
+                .AddMessagePackProtocol(options =>
+                {
+                    options.FormatterResolvers.Add(new Test());
+                });
 
             services.AddHttpContextAccessor();
             services.AddScoped<AppStateViewModel>();
@@ -83,6 +91,7 @@ namespace OneDas.DataManagement.BlazorExplorer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapHub<DataHub>("datahub");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

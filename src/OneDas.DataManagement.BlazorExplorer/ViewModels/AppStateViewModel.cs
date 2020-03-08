@@ -67,12 +67,6 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
             this.InitializeCampaignContainerToVariableMap();
             this.InitializeSampleRateToDatasetsMap();
 
-            // set default campaign container and variable group
-            //this.CampaignContainer = this.CampaignContainers.FirstOrDefault();
-
-            //if (this.GroupedVariables.Any())
-            //    this.VariableGroup = this.GroupedVariables.First().Value;
-
             // state manager
             _propertyChanged = (sender, e) =>
             {
@@ -294,7 +288,7 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         public Task<double[]> LoadDatasetAsync(DatasetInfoViewModel dataset)
         {
-            return _downloadService.LoadDatasetAsync(this.DateTimeBegin, this.DateTimeEnd, dataset.Model);
+            return _downloadService.LoadDatasetAsync(dataset.Model, this.DateTimeBegin, this.DateTimeEnd);
         }
 
         public bool CanDownload()
@@ -466,8 +460,6 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         private void UpdateGroupedVariables()
         {
-            this.VariableGroup = null;
-
             if (this.CampaignContainer != null)
             {
                 this.GroupedVariables = new Dictionary<string, List<VariableInfoViewModel>>();
@@ -498,6 +490,11 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                     entry.Value.Sort((x, y) => x.Name.CompareTo(y.Name));
                 }
             }
+
+            if (this.GroupedVariables.Any())
+                this.VariableGroup = this.GroupedVariables.First().Value;
+            else
+                this.VariableGroup = null;
         }
 
         private void UpdateExportConfiguration()

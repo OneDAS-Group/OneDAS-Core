@@ -30,6 +30,8 @@ namespace OneDas.DataManagement.Database
 
 #warning Encode SamplesPerDay in DatasetInfo instead of name?
 
+        public SampleRateContainer SampleRate => new SampleRateContainer(this.Name);
+
         #endregion
 
         #region "Methods"

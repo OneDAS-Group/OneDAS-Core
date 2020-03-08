@@ -89,16 +89,11 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
         //    writer.TryComplete();
         //}
 
-        public Task<double[]> LoadDatasetAsync(DateTime dateTimeBegin, DateTime dateTimeEnd, DatasetInfo dataset)
+        public Task<double[]> LoadDatasetAsync(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             return Task.Run(() =>
             {
                 var campaignName = dataset.Parent.Parent.Name;
-
-                var epochStart = new DateTime(2000, 01, 01);
-                var samplesPerDay = new SampleRateContainer(dataset.Name).SamplesPerDay;
-                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalDays * samplesPerDay);
-                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalDays * samplesPerDay);
 
                 using var dataReader = dataset.IsNative 
                     ? Program.DatabaseManager.GetNativeDataReader(campaignName) 
@@ -109,15 +104,15 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                                             nameof(DataReaderExtensionBase.LoadDataset),
                                             BindingFlags.Instance | BindingFlags.Public,
                                             genericType,
-                                            new object[] { dataset, start, block });
+                                            new object[] { dataset, begin, end });
 
                 return dataStorage.DataBuffer.ToArray();
             });
         }
 
         public Task<string> GetDataAsync(IPAddress remoteIpAddress,
-                                         DateTime dateTimeBegin,
-                                         DateTime dateTimeEnd,
+                                         DateTime begin,
+                                         DateTime end,
                                          SampleRateContainer sampleRateContainer,
                                          FileFormat fileFormat,
                                          FileGranularity fileGranularity,
@@ -128,27 +123,15 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             {
                 _stateManager.CheckState();
 
-                if (!datasets.Any() || dateTimeBegin == dateTimeEnd)
+                if (!datasets.Any() || begin == end)
                     return string.Empty;
 
                 // zip file
-                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{dateTimeBegin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
+                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-#warning Is this safe?
-                var samplesPerSecond = (ulong)sampleRateContainer.SamplesPerSecond;
-
-                // epoch & hyperslab
-#warning When removing this, search for all occurences, also in external projects
-                var epochStart = new DateTime(2000, 01, 01);
-                var epochEnd = new DateTime(2030, 01, 01);
-
-                if (!(epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeEnd <= epochEnd))
-                    throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
-
-#warning Replace this by DateTime. In DataLoader Line 180 everything is converted back to datetime!
-                var start = (ulong)Math.Floor((dateTimeBegin - epochStart).TotalSeconds * samplesPerSecond);
-                var block = (ulong)Math.Ceiling((dateTimeEnd - dateTimeBegin).TotalSeconds * samplesPerSecond);
+                var samplesPerDay = sampleRateContainer.SamplesPerDay;
+                var samplesPerMinute = sampleRateContainer.SamplesPerSecond / 60;
 
                 try
                 {
@@ -164,8 +147,8 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                     var segmentLength = segmentSize / bytesPerRow;
 
                     // ensure that dataset length is multiple of 1 minute
-                    if ((segmentLength / samplesPerSecond) % 60 != 0)
-                        segmentLength = (segmentLength / samplesPerSecond / 60) * 60 * samplesPerSecond;
+                    if (segmentLength / samplesPerMinute != 0)
+                        segmentLength = (ulong)((segmentLength / (ulong)samplesPerMinute) * samplesPerMinute);
 
                     // convert datasets into campaigns
                     var campaignNames = datasets.Select(dataset => dataset.Parent.Parent.Name).Distinct();
@@ -188,7 +171,13 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                             var dataLoader = new DataLoader(cancellationToken);
                             dataLoader.ProgressUpdated += this.OnProgressUpdated;
 
-                            var zipSettings = new ZipSettings(dateTimeBegin, campaign, nativeDataReader, aggregationDataReader, samplesPerSecond, start, block, segmentLength);
+                            var zipSettings = new ZipSettings(campaign,
+                                                              nativeDataReader,
+                                                              aggregationDataReader,
+                                                              begin,
+                                                              end,
+                                                              samplesPerDay,
+                                                              segmentLength);
 
                             if (!dataLoader.WriteZipFileCampaignEntry(zipArchive, fileGranularity, fileFormat, zipSettings))
                                 return string.Empty;
@@ -201,7 +190,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                     throw;
                 }
 
-                var message = $"{remoteIpAddress} requested data: {dateTimeBegin.ToString("yyyy-MM-dd HH:mm:ss")} to {dateTimeEnd.ToString("yyyy-MM-dd HH:mm:ss")}";
+                var message = $"{remoteIpAddress} requested data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")}";
                 _logger.LogInformation(message);
 
                 return $"export/{Path.GetFileName(zipFilePath)}";

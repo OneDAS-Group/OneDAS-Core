@@ -52,7 +52,7 @@ namespace OneDas.DataManagement.Database
                     var datasetName = dataset.Name;
                     var groupName = variable.VariableGroups.Any() ? variable.VariableGroups.Last() : string.Empty;
                     var dataType = dataset.DataType;
-                    var sampleRate = new SampleRateContainer(dataset.Name);
+                    var sampleRate = dataset.SampleRate;
                     var unit = variable.Units.Any() ? variable.Units.Last() : string.Empty;
                     var transferFunctions = variable.TransferFunctions;
 
