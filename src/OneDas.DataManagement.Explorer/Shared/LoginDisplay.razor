@@ -10,11 +10,15 @@
                 </div>
             </a>
 
-            <NavLink href="/settings">
-                <div class="mdc-button">
-                    <i class="fas fa-cogs" aria-hidden="true"></i> &nbsp; Settings
-                </div>
-            </NavLink>            
+            <AuthorizeView Policy="RequireAdmin" Context="_">
+                <Authorized>
+                    <NavLink href="/settings">
+                        <div class="mdc-button">
+                            <i class="fas fa-cogs" aria-hidden="true"></i> &nbsp; Settings
+                        </div>
+                    </NavLink>
+                </Authorized>
+            </AuthorizeView>          
 
             <form method="post" action="Identity/Account/LogOut">
                 <button type="submit" class="submit-button">
