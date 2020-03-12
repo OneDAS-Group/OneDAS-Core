@@ -25,26 +25,23 @@ before_build:
   - ps: ./init_solution.ps1
 
 build_script:
-  - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                         -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./src/OneDas.DataManagement.Types/OneDas.DataManagement.Types.csproj               -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./src/OneDas.DataManagement.Convert/OneDas.DataManagement.Convert.csproj           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj         -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./src/OneDas.DataManagement.Types/OneDas.DataManagement.Types.csproj           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./src/OneDas.DataManagement.Convert/OneDas.DataManagement.Convert.csproj       -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
-  - ps: dotnet pack  ./src/OneDas.Core.WebServer/OneDas.Core.WebServer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet pack  ./src/OneDas.DataManagement.Explorer/OneDas.DataManagement.Explorer.csproj         -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Can/OneDas.Extension.Can.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Csv/OneDas.Extension.Csv.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Ethercat/OneDas.Extension.Ethercat.csproj        -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Famos/OneDas.Extension.Famos.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Hdf/OneDas.Extension.Hdf.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Mat73/OneDas.Extension.Mat73.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Modbus/OneDas.Extension.Modbus.csproj            -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.OpcUa/OneDas.Extension.OpcUa.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.RaspberryPi/OneDas.Extension.RaspberryPi.csproj  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+  - ps: dotnet build ./extensions/OneDas.Extension.Udp/OneDas.Extension.Udp.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
-  - ps: dotnet build ./extensions/OneDas.Extension.Can/OneDas.Extension.Can.csproj                   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Csv/OneDas.Extension.Csv.csproj                   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Ethercat/OneDas.Extension.Ethercat.csproj         -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Famos/OneDas.Extension.Famos.csproj               -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Hdf/OneDas.Extension.Hdf.csproj                   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Mat73/OneDas.Extension.Mat73.csproj               -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Modbus/OneDas.Extension.Modbus.csproj             -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.OpcUa/OneDas.Extension.OpcUa.csproj               -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.RaspberryPi/OneDas.Extension.RaspberryPi.csproj   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-  - ps: dotnet build ./extensions/OneDas.Extension.Udp/OneDas.Extension.Udp.csproj                   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-
-  - ps: if ($isWindows) { dotnet publish .\src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
+  - ps: if ($isWindows) { dotnet publish .\src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
   - ps: if ($isWindows) { dotnet publish .\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
 
   - ps: if ($isWindows) { msbuild .\src\OneDas.Core.Deployment\OneDas.Core.Deployment.wixproj     /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }

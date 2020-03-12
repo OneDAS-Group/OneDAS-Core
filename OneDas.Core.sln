@@ -97,7 +97,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Hdf.VdsTool", "src\O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Core", "src\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj", "{D8F9AD6E-1B43-4E9D-88C2-D46338A157C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.BlazorExplorer", "src\OneDas.DataManagement.BlazorExplorer\OneDas.DataManagement.BlazorExplorer.csproj", "{1042FC81-FE35-402F-98A5-944032B9134E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Explorer", "src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj", "{1042FC81-FE35-402F-98A5-944032B9134E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
