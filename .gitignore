@@ -2,6 +2,7 @@
 artifacts/
 
 **/node_modules
+**/OneDas.Core.WebServer/wwwroot/js/
 **/wwwroot/lib/
 
 *.suo
