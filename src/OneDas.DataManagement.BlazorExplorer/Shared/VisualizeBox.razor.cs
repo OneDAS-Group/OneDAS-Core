@@ -13,7 +13,6 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
     {
 		#region Fields
 
-		private bool _showProgressBar;
 		private bool _showWarning;
 
 		#endregion
@@ -22,8 +21,6 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 
 		public VisualizeBox()
 		{
-			_showProgressBar = true;
-
 			this.PropertyChanged = async (sender, e) =>
 			{
 				_showWarning = false;
@@ -39,32 +36,29 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 				}
 				else
 				{
-					_showProgressBar = true;
-
 					if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
 					{
-						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
 					}
 					else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
 					{
-						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
 					}
 					else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
 					{
-						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
 					}
 					else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
 					{
-						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
 					}
 					else if (e.PropertyName == nameof(AppStateViewModel.VisualizeBeginAtZero))
 					{
-						await this.InvokeAsync(() => { this.StateHasChanged(); });
 						await this.UpdateChartAsync();
+					}
+					else if (e.PropertyName == nameof(AppStateViewModel.VisualizeProgress))
+					{
+						await this.InvokeAsync(() => { this.StateHasChanged(); });
 					}
 				}
 			};
@@ -97,7 +91,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 			await base.OnAfterRenderAsync(firstRender);
 		}
 
-		private async Task<List<ChartEntry>> BuildChartEntriesAsync()
+		private List<ChartEntry> BuildChartEntriesAsync()
 		{
 			var chartEntries = new List<ChartEntry>();
 
@@ -109,41 +103,26 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
 				if (datasetNameParts.Count() == 2)
 					name += $" ({datasetNameParts[1]})";
 
-				var data = await this.AppState.LoadDatasetAsync(dataset);
+				var path = dataset.Model.GetPath();
 
-				// remove nans
-				for (int i = 0; i < data.Length; i++)
-				{
-					if (double.IsNaN(data[i]) || double.IsInfinity(data[i]))
-						data[i] = 0;
-				}
-
-				chartEntries.Add(new ChartEntry(name, dataset.Parent.Unit, data));
+				chartEntries.Add(new ChartEntry(name, path, dataset.Parent.Unit));
 			}
 
 			return chartEntries;
 		}
 
-		private double[] BuildTimeData()
-		{
-			var begin = this.AppState.DateTimeBegin.ToUnixTimeStamp();
-			var end = this.AppState.DateTimeEnd.ToUnixTimeStamp();
-			var sampleRate = (double)new SampleRateContainer(this.AppState.SampleRate).SamplesPerSecond;
-			var dt = 1 / sampleRate;
-			var count = (int)((end - begin) * sampleRate);
-
-			return Enumerable.Range(0, count).Select(i => begin + i * dt).ToArray();
-		}
-
 		private async Task UpdateChartAsync()
 		{
-			var timeData = this.BuildTimeData();
-			var chartEntries = await this.BuildChartEntriesAsync();
+			var chartEntries = this.BuildChartEntriesAsync();
+			var begin = this.AppState.DateTimeBegin;
+			var end = this.AppState.DateTimeEnd;
+			var sampleRate = (double)new SampleRateContainer(this.AppState.SampleRate).SamplesPerSecond;
+			var dt = 1 / sampleRate;
 
-			_showProgressBar = false;
+			var count = (int)((end - begin).TotalSeconds * sampleRate);
 
 			await this.InvokeAsync(() => { this.StateHasChanged(); });
-			await JsInterop.UpdateChartAsync(this.JsRuntime, timeData, chartEntries, this.AppState.VisualizeBeginAtZero);
+			await JsInterop.UpdateChartAsync(this.JsRuntime, this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
 		}
 
 		#endregion

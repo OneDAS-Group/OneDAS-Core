@@ -12,6 +12,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         private bool _isActive;
         private System.Timers.Timer _activityTimer;
+        private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private OneDasExplorerState _state;
 
@@ -19,8 +20,9 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         #region Constructors
 
-        public OneDasExplorerStateManager(IOptions<OneDasExplorerOptions> options)
+        public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager, IOptions<OneDasExplorerOptions> options)
         {
+            _databaseManager = databaseManager;
             _options = options.Value;
 
             this.OnActivityTimerElapsed();
@@ -88,7 +90,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
             if (_isActive)
             {
-                Program.DatabaseManager.Update();
+                _databaseManager.Update();
                 this.State = OneDasExplorerState.Ready;
             }
             else

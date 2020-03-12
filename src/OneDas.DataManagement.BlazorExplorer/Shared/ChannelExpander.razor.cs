@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
     {
         #region Fields
 
+        private bool _showSampleRates;
         private List<DatasetInfoViewModel> _filteredDatasets;
         private PropertyChangedEventHandler _propertyChanged;
 
@@ -63,6 +65,15 @@ namespace OneDas.DataManagement.BlazorExplorer.Shared
                 _filteredDatasets = new List<DatasetInfoViewModel>();
             else
                 _filteredDatasets = this.Variable.Datasets.Where(dataset => dataset.Name.Contains(this.AppState.SampleRate)).ToList();
+        }
+
+        private List<string> GetSampleRates()
+        {
+            return this.Variable.Datasets
+                .Select(dataset => dataset.Name.Split('_')[0])
+                .Distinct()
+                .Where(sampleRate => sampleRate != this.AppState.SampleRate)
+                .OrderBy(x => x, new SampleRateStringComparer()).ToList();
         }
 
         #endregion

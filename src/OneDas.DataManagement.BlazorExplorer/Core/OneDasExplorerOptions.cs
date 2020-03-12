@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 
-namespace OneDas.DataManagement.BlazorExplorer
+namespace OneDas.DataManagement.BlazorExplorer.Core
 {
     [DataContract]
     public class OneDasExplorerOptions

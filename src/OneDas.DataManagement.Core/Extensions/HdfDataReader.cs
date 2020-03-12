@@ -162,7 +162,7 @@ namespace OneDas.DataManagement.Extensions
                 _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
-        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             this.EnsureOpened();
 

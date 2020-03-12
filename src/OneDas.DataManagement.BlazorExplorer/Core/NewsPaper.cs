@@ -42,7 +42,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             }
             else
             {
-                var newsPaper = new NewsPaper(new List<NewsEntry>() { new NewsEntry(DateTime.UtcNow, "Our Changing Planet", "First news.") });
+                var newsPaper = new NewsPaper(new List<NewsEntry>() { new NewsEntry(DateTime.UtcNow, "First News", "News description.") });
                 var jsonString = JsonSerializer.Serialize(newsPaper, new JsonSerializerOptions() { WriteIndented = true });
                 File.WriteAllText(filePath, jsonString);
 

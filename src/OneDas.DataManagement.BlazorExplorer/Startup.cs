@@ -12,6 +12,7 @@ using OneDas.DataManagement.BlazorExplorer.Hubs;
 using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
 using System.IO;
+using System.Security.Claims;
 
 namespace OneDas.DataManagement.BlazorExplorer
 {
@@ -26,27 +27,44 @@ namespace OneDas.DataManagement.BlazorExplorer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // database
             services.AddDbContext<ApplicationDbContext>();
 
+            // identity (customize: https://docs.microsoft.com/en-us/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-3.1)
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            // blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
-            services.AddSignalR()
-                .AddMessagePackProtocol(options =>
-                {
-                    options.FormatterResolvers.Add(new Test());
-                });
+            // authorization
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireAdmin", policy => policy.RequireClaim("IsAdmin", "true"));
+            });
 
+            // signalr
+            services.AddSignalR()
+                .AddMessagePackProtocol();
+
+            // authorization
+
+            // custom
             services.AddHttpContextAccessor();
             services.AddScoped<AppStateViewModel>();
-            services.AddScoped<DownloadService>();
+            services.AddScoped<SettingsViewModel>();
+            services.AddScoped<DataService>();
+            services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton<OneDasExplorerStateManager>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, ApplicationDbContext userDB, IOptions<OneDasExplorerOptions> options)
+        public void Configure(IApplicationBuilder app,
+                              IWebHostEnvironment env,
+                              ILoggerFactory loggerFactory,
+                              ApplicationDbContext userDB,
+                              UserManager<IdentityUser> userManager,
+                              IOptions<OneDasExplorerOptions> options)
         {
             // logger
             var logger = loggerFactory.CreateLogger("OneDAS Explorer");
@@ -56,7 +74,25 @@ namespace OneDas.DataManagement.BlazorExplorer
             if (userDB.Database.EnsureCreated())
                 logger.LogInformation($"Database initialized.");
 
-            // rest
+            // ensure there is a root user
+            if (userManager.FindByNameAsync("root@root.org").Result == null)
+            {
+                var user = new IdentityUser()
+                {
+                    UserName = "root@root.org",
+                };
+
+                var defaultPassword = "#root0/User1";
+                var result = userManager.CreateAsync(user, defaultPassword).Result;
+
+                if (result.Succeeded)
+                {
+                    var claim = new Claim("IsAdmin", "true");
+                    userManager.AddClaimAsync(user, claim).Wait();
+                }
+            }
+
+            // ...
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -3,8 +3,8 @@
     --main-bg-color:            #215d6a;
     --box-color:                rgba(255, 255, 255, 0.87);
     --font-color-subtitle:      rgba(0, 0, 0, 0.54);
-    --hover-color:              rgba(255, 255, 255, 0.6);
-    --hover-background-color:   rgb(239, 239, 239);
+    --hover-color:              rgba(136, 14, 79, 0.80);
+    --hover-background-color:   rgba(255, 255, 255, 0.6);
     --active-color:             rgba(136,14,79,1);
     --active-background-color:  rgba(255, 255, 255, 0.8);
     --disabled-color:           rgba(0, 0, 0, 0.3);
@@ -72,8 +72,22 @@ app {
 .login-display {
     display: flex;
     flex-direction: row;
-
 }
+    .login-display a.active .mdc-button {
+        border-bottom: 1px solid var(--active-color);
+    }
+
+    .login-display .mdc-button {
+        color: var(--box-color) !important;
+        margin-left: 15px;
+    }
+
+    .login-display .submit-button {
+        border: none;
+        outline: none;
+        background: none;
+        padding: 0;
+    }
 
     .login-display .nav-signin {
         color: rgba(255,255,255,.8);
@@ -81,6 +95,10 @@ app {
         flex-direction: row;
         align-items: center;
         font-size: 1.0rem;
+    }
+
+    .login-display a {
+        text-decoration: none;
     }
 
         .login-display .nav-signin:hover {
@@ -390,11 +408,10 @@ app {
         color: var(--active-color) !important;
         background-color: var(--active-background-color);
         font-weight: 500;
-        letter-spacing: 0.05rem;
     }
 
     .group-entry:hover {
-        background-color: var(--hover-color);
+        background-color: var(--hover-background-color);
     }
 
 .group-entry-name {
@@ -432,43 +449,64 @@ app {
     padding: 2px 2px 2px 2px;
 }
 
-.variable-expander:hover {
-    background-color: var(--hover-color);
-}
+    .variable-expander:hover {
+        color: var(--hover-color) !important;
+        background-color: var(--hover-background-color);
+    }
 
 .variable-name {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
 }
 
 .variable-datasets {
     display: flex;
     flex-direction: row;
-    font-size: 0.8rem;
     cursor: pointer;
 }
 
     .variable-datasets div {
         font-size: 0.9rem;
         padding: 2px 4px 2px 4px;
-        margin: 0px 3px 0px 3px;
-        border-radius: 8px;
+        margin: 0px 2px 0px 2px;
+        border: 1px solid rgba(0, 0, 0, 0.30);
         color: var(--font-color-subtitle);
     }
 
         .variable-datasets div:hover {
-            background-color: var(--hover-color) !important;
+            color: var(--hover-color);
+            border: 1px solid var(--hover-color);
         }
 
-        .variable-datasets .selected {
-            color: var(--active-color);
-            background-color: var(--active-background-color) !important;
-        }
+.variable-dataset.selected {
+    color: var(--active-color) !important;
+    border: 1px solid var(--active-color) !important;
+}
+
+.variable-sample-rates {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+}
+
+.variable-sample-rate {
+    font-size: 0.9rem;
+    padding: 0 0.5rem 0 0.5rem;
+    color: var(--font-color-subtitle);
+}
+
+    .variable-sample-rate:hover {
+        color: var(--hover-color);
+    }
+
+    .variable-sample-rate svg {
+        margin-left: 5px;
+        margin-right: 2px;
+    }
 
 .variable-description {
     font-size: 0.9rem;
-    color: #646464;
+    color: var(--font-color-subtitle);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -671,12 +709,15 @@ app {
 .visualize-box {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+     align-items: center;
     background-color: var(--box-color);
     padding: 10px;
     height: 100%;
     max-height: 100%;
     min-height: 0;
     margin: 15px;
+    position: relative;
 }
 
 .visualize-box-progress {
@@ -685,16 +726,29 @@ app {
     justify-content: center;
     align-items: center;
     height: 100%;
-    padding: 0 100px 0 100px;
+    width: 100%;
+    max-width: 100%;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 100;
 }
 
     .visualize-box-progress h4 {
-        color: var(--font-color-subtitle)
+        color: rgba(255, 255, 255, 0.50);
     }
 
     .visualize-box-progress .mdc-linear-progress {
-        height: 10px;
+        height: 5px;
+        width: 90%;
         color: var(--mdc-theme-primary);
+    }
+
+    .visualize-box-progress .mdc-linear-progress__buffer {
+        background-color: rgba(255, 255, 255, 0.20);
+    }
+
+    .visualize-box-progress .mdc-linear-progress__buffering-dots {
+        display: none;
     }
 
 #visualize-chart-container {
@@ -704,7 +758,33 @@ app {
     align-items: start;
     flex: 1;
     max-height: 100%;
+    width: 100%;
 }
+
+.settings-nav-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--box-color);
+    padding: 10px;
+    height: 100%;
+    margin: 15px;
+}
+
+.settings-content-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--box-color);
+    padding: 10px;
+    height: 100%;
+    width: 50%;
+    margin: 15px;
+}
+
+    .settings-content-box ul {
+        height: 100%;
+    }
 
 .clear-margin {
     margin: 0;
@@ -760,7 +840,7 @@ app {
 
     .paginator i:hover {
         color: var(--active-color);
-        background-color: var(--hover-color);
+        background-color: var(--hover-background-color);
     }
 
 .small-text {
@@ -768,6 +848,10 @@ app {
     font-weight: 400;
     letter-spacing: 0.01786em;
     color: var(--font-color-subtitle);
+}
+
+.ml-auto {
+    margin-left: auto;
 }
 
 /* workaround for MatBlazor not applying theme colors everywhere */

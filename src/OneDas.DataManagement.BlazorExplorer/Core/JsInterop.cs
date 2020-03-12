@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using OneDas.DataManagement.BlazorExplorer.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,9 +20,10 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             await jsRuntime.InvokeAsync<object>("FileSaveAs", fileName, href);
         }
 
-        public static async Task UpdateChartAsync(IJSRuntime jsRuntime, double[] timeData, List<ChartEntry> chartEntries, bool beginAtZero)
+        public static async Task UpdateChartAsync(IJSRuntime jsRuntime, AppStateViewModel appState, List<ChartEntry> chartEntries, DateTime begin, DateTime end, int count, double dt, bool beginAtZero)
         {
-            await jsRuntime.InvokeAsync<object>("UpdateChart", timeData, chartEntries, beginAtZero);
+            var appStateRef = DotNetObjectReference.Create(appState);
+            await jsRuntime.InvokeAsync<object>("UpdateChart", appStateRef, chartEntries, begin, end, count, dt, beginAtZero);
         }
 
         #endregion

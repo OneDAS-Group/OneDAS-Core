@@ -1,4 +1,6 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.JSInterop;
 using OneDas.DataManagement.BlazorExplorer.Core;
 using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
@@ -24,15 +26,18 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
         private string _downloadMessage;
 
         private double _downloadProgress;
+        private double _visualizeProgress;
 
         private bool _visualizeBeginAtZero;
 
         private ClientState _clientState;
         private IJSRuntime _jsRuntime;
 
-        private DownloadService _downloadService;
+        private DataService _dataService;
         private CancellationTokenSource _cts_download;
         private PropertyChangedEventHandler _propertyChanged;
+        private UserManager<IdentityUser> _userManager;
+        private AuthenticationStateProvider _authenticationStateProvider;
 
         private CampaignContainer _campaignContainer;
         private List<VariableInfoViewModel> _variableGroup;
@@ -44,17 +49,28 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         #region Constructors
 
-        public AppStateViewModel(IJSRuntime jsRuntime, OneDasExplorerStateManager stateManager, DownloadService downloadService)
+        public AppStateViewModel(IJSRuntime jsRuntime,
+                                 AuthenticationStateProvider authenticationStateProvider,
+                                 UserManager<IdentityUser> userManager,
+                                 OneDasExplorerStateManager stateManager,
+                                 OneDasDatabaseManager databaseManager,
+                                 DataService dataService)
         {
             _jsRuntime = jsRuntime;
-            _downloadService = downloadService;
+            _authenticationStateProvider = authenticationStateProvider;
+            _userManager = userManager;
+            _dataService = dataService;
 
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
-            this.CampaignContainers = Program.DatabaseManager.Database.CampaignContainers.AsReadOnly();
             this.NewsPaper = NewsPaper.Load();
             this.VisualizeBeginAtZero = true;
+
+            // campaign containers and dependent init steps
+            var campaignContainers = databaseManager.Database.CampaignContainers;
+            var restrictedCampaigns = databaseManager.Config.RestrictedCampaigns;
+            this.CampaignContainers = GetAllowedCampainContainers(campaignContainers, restrictedCampaigns).Result.AsReadOnly();
 
             this.SampleRateValues = this.CampaignContainers.SelectMany(campaignContainer =>
             {
@@ -81,8 +97,6 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
             // export configuration
             this.SetExportConfiguration(new ExportConfiguration());
-
-            var a = this.DateTimeBegin.ToLocalTime();
         }
 
         #endregion
@@ -215,6 +229,16 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
         #endregion
 
+        #region Properties - Visualization
+
+        public double VisualizeProgress
+        {
+            get { return _visualizeProgress; }
+            set { this.SetProperty(ref _visualizeProgress, value); }
+        }
+
+        #endregion
+
         #region Properties - Relay Properties
 
         public OneDasExplorerState State => this.StateManager.State;
@@ -286,11 +310,6 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
             return Directory.EnumerateFiles(folderPath, "*.json", SearchOption.TopDirectoryOnly).ToList();
         }
 
-        public Task<double[]> LoadDatasetAsync(DatasetInfoViewModel dataset)
-        {
-            return _downloadService.LoadDatasetAsync(dataset.Model, this.DateTimeBegin, this.DateTimeEnd);
-        }
-
         public bool CanDownload()
         {
             return this.DateTimeBegin < this.DateTimeEnd &&
@@ -313,12 +332,12 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
             try
             {
                 this.ClientState = ClientState.PrepareDownload;
-                _downloadService.ProgressUpdated += eventHandler;
+                _dataService.Progress.ProgressChanged += eventHandler;
 
                 var sampleRateContainer = new SampleRateContainer(this.SampleRate);
                 var selectedDatasets = this.GetSelectedDatasets().Select(dataset => dataset.Model).ToList();
 
-                var downloadLink = await _downloadService.GetDataAsync(remoteIpAdress,
+                var downloadLink = await _dataService.ExportDataAsync(remoteIpAdress,
                                                                        this.DateTimeBegin,
                                                                        this.DateTimeEnd,
                                                                        sampleRateContainer,
@@ -329,14 +348,16 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
 
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
-                    var fileName = downloadLink.Split(" / ").Last();
+                    var fileName = downloadLink.Split("/").Last();
                     await JsInterop.FileSaveAs(_jsRuntime, fileName, downloadLink);
                 }
             }
             finally
             {
-                _downloadService.ProgressUpdated -= eventHandler;
+                _dataService.Progress.ProgressChanged -= eventHandler;
                 this.ClientState = ClientState.Normal;
+                this.DownloadMessage = string.Empty;
+                this.DownloadProgress = 0;
             }
         }
 
@@ -372,9 +393,15 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                 this.ClientState = ClientState.Normal;
         }
 
+        [JSInvokable]
+        public void SetVisualizeProgress(double progress)
+        {
+            this.VisualizeProgress = progress;
+        }
+
         public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
         {
-            return await _downloadService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Name, this.DateTimeBegin, this.DateTimeEnd);
+            return await _dataService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Name, this.DateTimeBegin, this.DateTimeEnd);
         }
 
         public void SetExportConfiguration(ExportConfiguration exportConfiguration)
@@ -544,6 +571,40 @@ namespace OneDas.DataManagement.BlazorExplorer.ViewModels
                 return _sampleRateToSelectedDatasetsMap[this.SampleRate];
             else
                 return new List<DatasetInfoViewModel>();
+        }
+
+        private async Task<List<CampaignContainer>> GetAllowedCampainContainers(List<CampaignContainer> campaignContainers, List<string> restrictedCampaigns)
+        {
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var principal = authState.User;
+            var identity = principal.Identity;
+
+            IdentityUser user = default;
+            
+            if (identity.IsAuthenticated)
+                user = await _userManager.FindByNameAsync(identity.Name);
+
+            var visibleCampaigns = campaignContainers.Where(campaignContainer =>
+            {
+                if (!restrictedCampaigns.Contains(campaignContainer.Name))
+                {
+                    return true;
+                }
+                else if (user != null)
+                {
+                    var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
+                    var canAccessCampaignContainer = principal.HasClaim(claim => claim.Type == "CanAccessCampaign"
+                                                                         && claim.Value.Split(";").Any(campaignName => campaignName == campaignContainer.Name));
+
+                    return isAdmin || canAccessCampaignContainer;
+                }
+                else
+                {
+                    return false;
+                }
+            }).ToList();
+
+            return visibleCampaigns;
         }
 
         #endregion

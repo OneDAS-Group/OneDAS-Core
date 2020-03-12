@@ -12,7 +12,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
                            DateTime begin,
                            DateTime end,
                            ulong samplesPerDay,
-                           ulong segmentLength)
+                           ulong blockSizeLimit)
         {
             this.Campaign = campaign;
             this.NativeDataReader = nativeDataReader;
@@ -20,22 +20,22 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
             this.Begin = begin;
             this.End = end;
             this.SamplesPerDay = samplesPerDay;
-            this.SegmentLength = segmentLength;
+            this.BlockSizeLimit = blockSizeLimit;
         }
 
 
-        public CampaignInfo Campaign { get; private set; }
+        public CampaignInfo Campaign { get; }
 
-        public DataReaderExtensionBase NativeDataReader { get; private set; }
+        public DataReaderExtensionBase NativeDataReader { get; }
 
-        public DataReaderExtensionBase AggregationDataReader { get; private set; }
+        public DataReaderExtensionBase AggregationDataReader { get; }
 
-        public DateTime Begin { get; private set; }
+        public DateTime Begin { get; }
 
-        public DateTime End { get; private set; }
+        public DateTime End { get; }
 
-        public ulong SamplesPerDay { get; private set; }
+        public ulong SamplesPerDay { get; }
 
-        public ulong SegmentLength { get; private set; }
+        public ulong BlockSizeLimit { get; }
     }
 }

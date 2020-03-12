@@ -1,22 +1,43 @@
 ﻿<div class="login-display">
     <AuthorizeView>
         <Authorized>
-            <MatIconButton>
-                <i class="fas fa-cogs" aria-hidden="true"></i>
-            </MatIconButton>
 
-            <a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>
+            @*<a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>*@
+
+            <a href="Identity/Account/Manage">
+                <div class="mdc-button">
+                    <i class="fas fa-user" aria-hidden="true"></i> &nbsp; Manage
+                </div>
+            </a>
+
+            <NavLink href="/settings">
+                <div class="mdc-button">
+                    <i class="fas fa-cogs" aria-hidden="true"></i> &nbsp; Settings
+                </div>
+            </NavLink>            
+
             <form method="post" action="Identity/Account/LogOut">
-                <button type="submit" class="nav-link btn btn-link">Log out</button>
+                <button type="submit" class="submit-button">
+                    <div class="mdc-button">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> &nbsp; Log out
+                    </div>
+                </button>
             </form>
         </Authorized>
         <NotAuthorized>
-            <MatButton Link="Identity/Account/Register">
-                <i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Register
-            </MatButton>
-            <MatButton Link="Identity/Account/Login">
-                <i class="fa fa-sign-in-alt" aria-hidden="true"></i> &nbsp; Log in
-            </MatButton>
+
+            <a href="Identity/Account/Register">
+                <div class="mdc-button">
+                    <i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Register
+                </div>
+            </a>
+
+            <a href="Identity/Account/Login">
+                <div class="mdc-button">
+                    <i class="fa fa-sign-in-alt" aria-hidden="true"></i> &nbsp; Log in
+                </div>
+            </a>
+
         </NotAuthorized>
     </AuthorizeView>
 </div>

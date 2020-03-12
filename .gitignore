@@ -2,7 +2,6 @@
 artifacts/
 
 **/node_modules
-**/wwwroot/js/
 **/wwwroot/lib/
 
 *.suo

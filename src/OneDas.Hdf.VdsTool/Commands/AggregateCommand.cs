@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OneDas.Hdf.VdsTool.Commands
@@ -217,28 +218,31 @@ namespace OneDas.Hdf.VdsTool.Commands
                 if (!setupToDataMap.Any())
                     return;
 
-                // read data
+                // process data
                 var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions gets data with a multiple length of 10 minutes
-                var samplesPerFundamentalPeriod = sampleRate.SamplesPerSecondAsUInt64 * (ulong)fundamentalPeriod.TotalSeconds;
-                var maxSamplesPerReadOperation = (ulong)(_aggregationChunkSizeMb * 1024 * 1024 / valueSize);
+                var endDate = date.AddDays(1);
+                var blockSizeLimit = _aggregationChunkSizeMb * 1000 * 1000;
 
-                dataReader.ReadFullDay<T>(dataset, date, fundamentalPeriod, samplesPerFundamentalPeriod, maxSamplesPerReadOperation, (data, statusSet) =>
+                // read data
+                dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, progressRecord =>
                 {
-                    // get aggregation data
-                    var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, data, statusSet, setupToDataMap);
+                    var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
+
+                    // aggregate data
+                    var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.StatusSet, setupToDataMap);
 
                     foreach (var entry in setupToDataMap)
                     {
                         var setup = entry.Key;
 
-                        // copy aggregation data into buffer
+                        // copy aggregated data into buffer
                         var partialBuffer = setupToPartialBufferMap[setup];
                         var bufferData = setupToBufferDataMap[setup];
 
                         Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
                         bufferData.BufferPosition += partialBuffer.Length;
                     }
-                });
+                }, CancellationToken.None);
 
                 // write data to file
                 foreach (var entry in setupToDataMap)

@@ -4,11 +4,11 @@
     {
         #region Constructors
 
-        public ChartEntry(string name, string unit, double[] data)
+        public ChartEntry(string name, string path, string unit)
         {
             this.Name = name;
+            this.Path = path;
             this.Unit = unit;
-            this.Data = data;
         }
 
         #endregion
@@ -17,9 +17,9 @@
 
         public string Name { get; set; }
 
-        public string Unit { get; set; }
+        public string Path { get; set; }
 
-        public double[] Data { get; set; }
+        public string Unit { get; set; }
 
         #endregion
     }

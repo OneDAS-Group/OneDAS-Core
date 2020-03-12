@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -82,6 +83,18 @@ namespace OneDas.DataStorage
             });
 
             return dataset_double;
+        }
+
+        public static double[] ApplyDatasetStatus2(Array dataset, byte[] statusSet)
+        {
+            var methodName = nameof(ExtendedDataStorageBase.ApplyDatasetStatus);
+            var flags = BindingFlags.Public | BindingFlags.Static;
+            var genericType = dataset.GetType().GetElementType();
+            var parameters = new object[] { dataset, statusSet };
+
+            var result = OneDasUtilities.InvokeGenericMethod<ExtendedDataStorageBase>(null, methodName, flags, genericType, parameters);
+
+            return (double[])result;
         }
 
         public abstract double[] ApplyDatasetStatus();
