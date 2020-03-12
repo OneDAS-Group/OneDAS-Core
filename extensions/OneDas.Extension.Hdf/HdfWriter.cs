@@ -1,11 +1,10 @@
 ﻿using HDF.PInvoke;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Hdf;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -67,33 +66,30 @@ namespace OneDas.Extension.Hdf
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
 
-#warning Use Span.GetPinnableReference, remove DataBufferPtr property and pass an already sliced Span to the writers instead of 'dataStorage.DataBufferPtr + (int)dataStorageOffset + ...' and 'simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)]'?
+#warning Use Span.GetPinnableReference, remove DataBufferPtr property and pass an already sliced Span to the writers instead of 'dataStorage.DataBufferPtr + (int)bufferOffset + ...' and 'simpleDataStorageSet[i].DataBuffer[(int)(bufferOffset + rowIndex)]'?
             this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
 
             _systemTimeChangedSet.Clear();
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
             long datasetId = -1;
             long dataspaceId = -1;
-            long dataspaceId_memory = -1;
+            long dataspaceId_buffer = -1;
             long groupId = -1;
 
             long result = -1;
 
-            long firstChunk;
-            long lastChunk;
-
             try
             {
-                firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SampleRate);
-                lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SampleRate) - 1;
+                var firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SampleRate);
+                var lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SampleRate) - 1;
 
                 groupId = H5G.open(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}");
                 datasetId = H5D.open(groupId, "is_chunk_completed_set");
                 dataspaceId = H5D.get_space(datasetId);
-                dataspaceId_memory = H5S.create_simple(1, new ulong[] { 1 }, new ulong[] { 1 });
+                dataspaceId_buffer = H5S.create_simple(1, new ulong[] { 1 }, new ulong[] { 1 });
 
                 _lastCompletedChunk = IOHelper.ReadAttribute<long>(groupId, "last_completed_chunk").FirstOrDefault();
 
@@ -105,7 +101,7 @@ namespace OneDas.Extension.Hdf
                 // write data
                 for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
                 {
-                    this.WriteData(fileOffset, dataStorageOffset, length, contextGroup.VariableContextSet[i]);
+                    this.WriteData(fileOffset, bufferOffset, length, contextGroup.VariableContextSet[i]);
                 }
 
                 // system time changed
@@ -115,7 +111,7 @@ namespace OneDas.Extension.Hdf
                 for (long chunkIndex = firstChunk; chunkIndex <= lastChunk; chunkIndex++)
                 {
                     result = H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { (ulong)chunkIndex }, new ulong[] { 1 }, new ulong[] { 1 }, new ulong[] { 1 });
-                    result = H5D.write(datasetId, H5T.NATIVE_UINT8, dataspaceId_memory, dataspaceId, H5P.DEFAULT, _isChunkCompletedIntPtr);
+                    result = H5D.write(datasetId, H5T.NATIVE_UINT8, dataspaceId_buffer, dataspaceId, H5P.DEFAULT, _isChunkCompletedIntPtr);
                 }
 
                 // write last_completed_chunk
@@ -125,7 +121,7 @@ namespace OneDas.Extension.Hdf
             {
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
-                if (H5I.is_valid(dataspaceId_memory) > 0) { H5S.close(dataspaceId_memory); }
+                if (H5I.is_valid(dataspaceId_buffer) > 0) { H5S.close(dataspaceId_buffer); }
                 if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
 
                 H5F.flush(_fileId, H5F.scope_t.GLOBAL);
@@ -224,42 +220,35 @@ namespace OneDas.Extension.Hdf
             }
         }
 
-        private void WriteData(ulong fileOffset, ulong dataStorageOffset, ulong length, VariableContext variableContext)
+        private unsafe void WriteData(ulong fileOffset, ulong bufferOffset, ulong length, VariableContext variableContext)
         {
-            Contract.Requires(variableContext != null, nameof(variableContext));
-
             long groupId = -1;
 
-            string datasetName;
             long datasetTypeId = -1;
             long datasetId = -1;
             long dataspaceId = -1;
-            long dataspaceId_Memory = -1;
+            long dataspaceId_Buffer = -1;
 
-            string datasetName_Status;
             long datasetTypeId_Status = -1;
             long datasetId_Status = -1;
             long dataspaceId_Status = -1;
-            long dataspaceId_Memory_Status = -1;
-
-            IDataStorage dataStorage;
-            IExtendedDataStorage extendedDataStorage;
-            Type elementType;
+            long dataspaceId_Buffer_Status = -1;
 
             try
             {
-                dataStorage = variableContext.DataStorage;
-                extendedDataStorage = dataStorage as IExtendedDataStorage;
+                var buffer = variableContext.Buffer;
+                var extendedBuffer = buffer as IExtendedBuffer;
+                var elementType = OneDasUtilities.GetTypeFromOneDasDataType(variableContext.VariableDescription.DataType);
+                var campaignDescription = this.DataWriterContext.CampaignDescription;
 
-                elementType = OneDasUtilities.GetTypeFromOneDasDataType(variableContext.VariableDescription.DataType);
-                groupId = H5G.open(_fileId, $"/{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }/{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }/{ this.DataWriterContext.CampaignDescription.CampaignName }/{ variableContext.VariableDescription.Guid.ToString() }");
+                groupId = H5G.open(_fileId, $"/{campaignDescription.PrimaryGroupName}/{campaignDescription.SecondaryGroupName}/{campaignDescription.CampaignName}/{variableContext.VariableDescription.Guid.ToString()}");
 
                 // dataset
-                datasetName = variableContext.VariableDescription.DatasetName;
+                var datasetName = variableContext.VariableDescription.DatasetName;
                 datasetTypeId = TypeConversionHelper.GetHdfTypeIdFromType(elementType);
                 datasetId = H5D.open(groupId, datasetName);
                 dataspaceId = H5D.get_space(datasetId);
-                dataspaceId_Memory = H5S.create_simple(1, new ulong[] { length }, null);
+                dataspaceId_Buffer = H5S.create_simple(1, new ulong[] { length }, null);
 
                 H5S.select_hyperslab(dataspaceId,
                                     H5S.seloper_t.SET,
@@ -270,8 +259,14 @@ namespace OneDas.Extension.Hdf
 
                 if (elementType.IsPrimitive)
                 {
-                    if (H5D.write(datasetId, datasetTypeId, dataspaceId_Memory, dataspaceId, H5P.DEFAULT, dataStorage.DataBufferPtr + (int)dataStorageOffset * dataStorage.ElementSize) < 0)
-                        throw new Exception(ErrorMessage.HdfWriter_CouldNotWriteChunk_Dataset);
+                    var offset = (int)bufferOffset * buffer.ElementSize;
+                    var rawBuffer = buffer.RawBuffer[offset..];
+
+                    fixed (byte* bufferPtr = rawBuffer)
+                    {
+                        if (H5D.write(datasetId, datasetTypeId, dataspaceId_Buffer, dataspaceId, H5P.DEFAULT, new IntPtr(bufferPtr)) < 0)
+                            throw new Exception(ErrorMessage.HdfWriter_CouldNotWriteChunk_Dataset);
+                    }
                 }
                 else
                 {
@@ -279,24 +274,28 @@ namespace OneDas.Extension.Hdf
                 }
 
                 // dataset status
-                if (extendedDataStorage != null)
+                if (extendedBuffer != null)
                 {
-                    datasetName_Status = $"{datasetName}_status";
+                    var datasetName_Status = $"{datasetName}_status";
                     datasetTypeId_Status = TypeConversionHelper.GetHdfTypeIdFromType(typeof(byte));
                     datasetId_Status = H5D.open(groupId, datasetName_Status);
                     dataspaceId_Status = H5D.get_space(datasetId_Status);
-                    dataspaceId_Memory_Status = H5S.create_simple(1, new ulong[] { length }, null);
+                    dataspaceId_Buffer_Status = H5S.create_simple(1, new ulong[] { length }, null);
 
                     H5S.select_hyperslab(dataspaceId_Status, 
-                        H5S.seloper_t.SET, 
-                        new ulong[] { fileOffset }, 
-                        new ulong[] { 1 }, 
-                        new ulong[] { 1 }, 
-                        new ulong[] { length });
+                                         H5S.seloper_t.SET, 
+                                         new ulong[] { fileOffset }, 
+                                         new ulong[] { 1 }, 
+                                         new ulong[] { 1 }, 
+                                         new ulong[] { length });
 
-                    if (H5D.write(datasetId_Status, datasetTypeId_Status, dataspaceId_Memory_Status, dataspaceId_Status, H5P.DEFAULT, extendedDataStorage.StatusBufferPtr + (int)dataStorageOffset) < 0)
+                    var offset = (int)bufferOffset;
+                    var statusBuffer = extendedBuffer.StatusBuffer[offset..];
+
+                    fixed (byte* bufferPtr = statusBuffer)
                     {
-                        throw new Exception(ErrorMessage.HdfWriter_CouldNotWriteChunk_Status);
+                        if (H5D.write(datasetId_Status, datasetTypeId_Status, dataspaceId_Buffer_Status, dataspaceId_Status, H5P.DEFAULT, new IntPtr(bufferPtr)) < 0)
+                            throw new Exception(ErrorMessage.HdfWriter_CouldNotWriteChunk_Status);
                     }
                 }
             }
@@ -307,21 +306,19 @@ namespace OneDas.Extension.Hdf
                 // dataset status
                 if (H5I.is_valid(datasetId_Status) > 0) { H5D.close(datasetId_Status); }
                 if (H5I.is_valid(dataspaceId_Status) > 0) { H5S.close(dataspaceId_Status); }
-                if (H5I.is_valid(dataspaceId_Memory_Status) > 0) { H5S.close(dataspaceId_Memory_Status); }
+                if (H5I.is_valid(dataspaceId_Buffer_Status) > 0) { H5S.close(dataspaceId_Buffer_Status); }
                 if (H5I.is_valid(datasetTypeId_Status) > 0) { H5T.close(datasetTypeId_Status); }
 
                 // dataset
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
-                if (H5I.is_valid(dataspaceId_Memory) > 0) { H5S.close(dataspaceId_Memory); }
+                if (H5I.is_valid(dataspaceId_Buffer) > 0) { H5S.close(dataspaceId_Buffer); }
                 if (H5I.is_valid(datasetTypeId) > 0) { H5T.close(datasetTypeId); }
             }
         }
 
         private void PrepareVariable(long locationId, VariableDescription variableDescription)
         {
-            Contract.Requires(variableDescription != null, nameof(variableDescription));
-
             long groupId = -1;
             long datasetId = -1;
             long datasetTypeId = -1;
@@ -355,7 +352,7 @@ namespace OneDas.Extension.Hdf
                 datasetId = IOHelper.OpenOrCreateDataset(groupId, datasetName, datasetTypeId, chunkLength, this.ChunkCount).DatasetId;
 
                 // dataset (status)
-                if (variableDescription.DataStorageType == DataStorageType.Extended)
+                if (variableDescription.BufferType == BufferType.Extended)
                 {
                     datasetName = $"{datasetName}_status";
                     datasetId_status = IOHelper.OpenOrCreateDataset(groupId, datasetName, H5T.NATIVE_UINT8, chunkLength, this.ChunkCount).DatasetId;

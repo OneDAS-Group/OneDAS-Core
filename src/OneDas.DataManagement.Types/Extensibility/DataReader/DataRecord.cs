@@ -6,10 +6,10 @@ namespace OneDas.DataManagement.Extensibility
     {
         #region Constructors
 
-        public DataRecord(Array dataset, byte[] statusSet)
+        public DataRecord(Array dataset, byte[] status)
         {
             this.Dataset = dataset;
-            this.StatusSet = statusSet;
+            this.Status = status;
         }
 
         #endregion
@@ -18,7 +18,7 @@ namespace OneDas.DataManagement.Extensibility
 
         public Array Dataset { get; }
 
-        public byte[] StatusSet { get; }
+        public byte[] Status { get; }
 
         #endregion
     }

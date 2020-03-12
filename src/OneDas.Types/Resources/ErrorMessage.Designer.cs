@@ -277,20 +277,20 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The data storage type is invalid. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The buffer type is invalid. ähnelt.
         /// </summary>
-        internal static string VariableContext_DataStorageTypeInvalid {
+        internal static string VariableContext_BufferTypeInvalid {
             get {
-                return ResourceManager.GetString("VariableContext_DataStorageTypeInvalid", resourceCulture);
+                return ResourceManager.GetString("VariableContext_BufferTypeInvalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IDataStorage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IBuffer. ähnelt.
         /// </summary>
-        internal static string VariableDescription_DataStorageTypeInvalid {
+        internal static string VariableDescription_BufferTypeInvalid {
             get {
-                return ResourceManager.GetString("VariableDescription_DataStorageTypeInvalid", resourceCulture);
+                return ResourceManager.GetString("VariableDescription_BufferTypeInvalid", resourceCulture);
             }
         }
     }

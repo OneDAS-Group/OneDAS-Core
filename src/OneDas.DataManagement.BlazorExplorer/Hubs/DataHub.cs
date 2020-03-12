@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.BlazorExplorer.Core;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using System;
 using System.Linq;
 using System.Threading;
@@ -93,7 +93,7 @@ namespace OneDas.DataManagement.BlazorExplorer.Hubs
                     dataReader.Read(dataset, begin, end, 5 * 1000 * 1000UL, async progressRecord =>
                     {
                         var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
-                        var doubleData = ExtendedDataStorageBase.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.StatusSet);
+                        var doubleData = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
 
                         await writer.WriteAsync(doubleData, cancellationToken);
                     }, cancellationToken);

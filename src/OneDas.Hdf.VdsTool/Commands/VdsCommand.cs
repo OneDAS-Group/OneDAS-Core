@@ -331,7 +331,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
 
                 if (createDataset) // otherwise there will be an error, if set_virtual has never been called.
-                    datasetId = H5D.create(groupId, datasetName, typeId, spaceId, H5P.DEFAULT, propertyId);
+                    datasetId = H5D.create(groupId, dataset.Name, typeId, spaceId, H5P.DEFAULT, propertyId);
             }
             finally
             {

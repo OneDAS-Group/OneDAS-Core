@@ -1,6 +1,4 @@
-﻿using OneDas.DataManagement.BlazorExplorer.ViewModels;
-
-namespace OneDas.DataManagement.BlazorExplorer.Pages
+﻿namespace OneDas.DataManagement.BlazorExplorer.Pages
 {
     public partial class Settings
 	{

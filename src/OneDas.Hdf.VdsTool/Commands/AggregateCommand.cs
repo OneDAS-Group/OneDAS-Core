@@ -5,7 +5,7 @@ using OneDas.DataManagement;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -229,7 +229,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
 
                     // aggregate data
-                    var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.StatusSet, setupToDataMap);
+                    var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, setupToDataMap);
 
                     foreach (var entry in setupToDataMap)
                     {
@@ -270,7 +270,10 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset, T[] data, byte[] statusSet, Dictionary<AggregationSetup, AggregationPeriodData> setupToDataMap)
+        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset,
+                                                                                   T[] data,
+                                                                                   byte[] statusSet,
+                                                                                   Dictionary<AggregationSetup, AggregationPeriodData> setupToDataMap) where T : unmanaged
         {
             var dataset_double = default(double[]);
             var setupToPartialBufferMap = new Dictionary<AggregationSetup, double[]>();
@@ -292,7 +295,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     case AggregationMethod.Rms:
 
                         if (dataset_double == null)
-                            dataset_double = ExtendedDataStorageBase.ApplyDatasetStatus(data, statusSet);
+                            dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
 
                         setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, _logger);
 

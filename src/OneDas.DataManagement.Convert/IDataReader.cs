@@ -1,5 +1,5 @@
-﻿using OneDas.DataStorage;
-using OneDas.Extensibility;
+﻿using OneDas.Extensibility;
+using OneDas.Buffers;
 using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Convert
@@ -8,6 +8,6 @@ namespace OneDas.DataManagement.Convert
     {
         List<VariableDescription> GetVariableDescriptions(string filePath);
 
-        List<IDataStorage> GetData(string filePath, List<VariableDescription> variableDescriptionSet);
+        List<IBuffer> GetData(string filePath, List<VariableDescription> variableDescriptionSet);
     }
 }

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using OneDas.Extensibility;
 using OneDas.Extension.Famos;
 using OneDas.Infrastructure;
@@ -49,16 +49,16 @@ namespace OneDas.Core.Tests
 
             for (int i = 0; i < 9; i++)
             {
-                var dataStorageSet = variableDescriptionSet.Select(current =>
+                var buffers = variableDescriptionSet.Select(current =>
                 {
                     var length = (int)current.SampleRate.SamplesPerDay / 1440;
                     var offset = length * i;
                     var data = Enumerable.Range(offset, length).Select(value => value * 0 + (double)i + 1).ToArray();
 
-                    return new SimpleDataStorage(data);
+                    return BufferUtilities.CreateSimpleBuffer(data);
                 }).ToList();
 
-                dataWriter.Write(currentDate, period, dataStorageSet.Cast<IDataStorage>().ToList());
+                dataWriter.Write(currentDate, period, buffers.Cast<IBuffer>().ToList());
                 currentDate += period;
             }
 
@@ -73,7 +73,7 @@ namespace OneDas.Core.Tests
             var datasetName = sampleRate.ToUnitString();
             var transferFunctionSet = new List<TransferFunction>();
 
-            return new VariableDescription(guid, variableName, datasetName, group, dataType, sampleRate, unit, transferFunctionSet, DataStorageType.Simple);
+            return new VariableDescription(guid, variableName, datasetName, group, dataType, sampleRate, unit, transferFunctionSet, BufferType.Simple);
         }
 
         private static void ConfigureServices(IServiceCollection services)

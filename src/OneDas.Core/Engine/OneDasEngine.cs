@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.Core.ProjectManagement;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using OneDas.ProjectManagement;
@@ -31,7 +31,7 @@ namespace OneDas.Core.Engine
 
         // one time initialization
         private const int TIMER_SHIFT = 2;
-        private const int STORAGE_COUNT = 2;
+        private const int BUFFER_COUNT = 2;
 
         private long _baseFrequency_To_DateTime;
         private double _ratedCycleTime_Ms;
@@ -58,8 +58,8 @@ namespace OneDas.Core.Engine
         private long _timerDrift;
 
         private int _chunkIndex;
-        private int _currentStorageIndex;
-        private int _cachedDataStorageIndex;
+        private int _currentBufferIndex;
+        private int _cachedBufferIndex;
         private int _timerLateCounter;
         private int _cycleTimeTooLongCounter;
 
@@ -79,9 +79,9 @@ namespace OneDas.Core.Engine
         private DateTime _lastActivationDateTime;
 
         private List<(DataPort Source, DataPort Target)> _linkedDataPortSet;
-        private Dictionary<SampleRateContainer, List<DataStorageContext>> _sampleRateToDataStorageContextMap;
+        private Dictionary<SampleRateContainer, List<StorageContext>> _sampleRateToStorageContextMap;
         private Dictionary<DataWriterExtensionLogicBase, List<VariableDescription>> _dataWriterToVariableDescriptionMap;
-        private Dictionary<DataWriterExtensionLogicBase, List<List<IDataStorage>>> _dataWriterToStorageSetMap;
+        private Dictionary<DataWriterExtensionLogicBase, List<List<IBuffer>>> _dataWriterToBuffersMap;
         private Dictionary<DataGatewayExtensionLogicBase, bool> _hasValidDataSet;
 
         // overwritten
@@ -248,9 +248,9 @@ namespace OneDas.Core.Engine
 
         public void Start()
         {
-            for (int i = 0; i < STORAGE_COUNT; i++)
+            for (int i = 0; i < BUFFER_COUNT; i++)
             {
-                this.ClearDataStorages(i);
+                this.ClearBuffers(i);
             }
 
             this.OneDasState = OneDasState.Run;
@@ -421,8 +421,8 @@ namespace OneDas.Core.Engine
             _timerDrift = 0;
 
             _chunkIndex = 0;
-            _currentStorageIndex = 0;
-            _cachedDataStorageIndex = 0;
+            _currentBufferIndex = 0;
+            _cachedBufferIndex = 0;
             _timerLateCounter = 0;
             _cycleTimeTooLongCounter = 0;
 
@@ -507,18 +507,18 @@ namespace OneDas.Core.Engine
 
             // prepare _dataWriterToVariableDescriptionMap
             _dataWriterToVariableDescriptionMap = new Dictionary<DataWriterExtensionLogicBase, List<VariableDescription>>();
-            _dataWriterToStorageSetMap = new Dictionary<DataWriterExtensionLogicBase, List<List<IDataStorage>>>();
+            _dataWriterToBuffersMap = new Dictionary<DataWriterExtensionLogicBase, List<List<IBuffer>>>();
 
             this.Project.DataWriterSet.ForEach(dataWriter =>
             {
                 _dataWriterToVariableDescriptionMap[dataWriter] = new List<VariableDescription>();
-                _dataWriterToStorageSetMap[dataWriter] = new List<List<IDataStorage>>();
+                _dataWriterToBuffersMap[dataWriter] = new List<List<IBuffer>>();
 
-                Enumerable.Range(0, STORAGE_COUNT).ToList().ForEach(index => _dataWriterToStorageSetMap[dataWriter].Add(new List<IDataStorage>()));
+                Enumerable.Range(0, BUFFER_COUNT).ToList().ForEach(index => _dataWriterToBuffersMap[dataWriter].Add(new List<IBuffer>()));
             });
 
             /* ----------------------------------------- */
-            //     _sampleRateToDataStorageContextMap
+            //     _sampleRateToStorageContextMap
             //           SR1     SR2      SR3
             //           /        |        \
             //        ctx1      ctx4       ctx7
@@ -526,7 +526,7 @@ namespace OneDas.Core.Engine
             //        ctx3      ctx6       ctx9
             /* ----------------------------------------- */
 
-            _sampleRateToDataStorageContextMap = sr_to_ch_map.ToDictionary(entry => entry.Key, entry => entry.Value.Select(subEntry =>
+            _sampleRateToStorageContextMap = sr_to_ch_map.ToDictionary(entry => entry.Key, entry => entry.Value.Select(subEntry =>
             {
                 var sampleRate = entry.Key;
                 var channelHub = subEntry.Key;
@@ -534,15 +534,15 @@ namespace OneDas.Core.Engine
                 var dataWriterSet = subEntry.Value.ToList();
 
                 // create data storages
-                var dataStorageSet = this.CreateDataStorages(sampleRate, channelHub.Settings.DataType, STORAGE_COUNT);
+                var buffers = this.CreateBuffers(sampleRate, channelHub.Settings.DataType, BUFFER_COUNT);
 
                 // helper dictionaries
                 dataWriterSet.ForEach(dataWriter =>
                 {
                     // _dataWriterToStorageSetMap
-                    for (int i = 0; i < STORAGE_COUNT; i++)
+                    for (int i = 0; i < BUFFER_COUNT; i++)
                     {
-                        _dataWriterToStorageSetMap[dataWriter][i].Add(dataStorageSet[i]);
+                        _dataWriterToBuffersMap[dataWriter][i].Add(buffers[i]);
                     }
 
                     // _dataWriterToVariableDescriptionMap
@@ -555,11 +555,11 @@ namespace OneDas.Core.Engine
                         sampleRate,
                         channelHubSettings.Unit,
                         channelHubSettings.TransferFunctionSet,
-                        DataStorageType.Extended
+                        BufferType.Extended
                     ));
                 });
 
-                return new DataStorageContext(dataStorageSet, channelHub.AssociatedDataInput.AssociatedDataGateway, channelHub.AssociatedDataInput);
+                return new StorageContext(buffers, channelHub.AssociatedDataInput.AssociatedDataGateway, channelHub.AssociatedDataInput);
             }).ToList());
         }
 
@@ -623,12 +623,12 @@ namespace OneDas.Core.Engine
                 _engineLogger.LogInformation($"process priority is: RealTime");
         }
 
-        private List<IExtendedDataStorage> CreateDataStorages(SampleRateContainer sampleRate, OneDasDataType dataType, int count)
+        private List<IExtendedBuffer> CreateBuffers(SampleRateContainer sampleRate, OneDasDataType dataType, int count)
         {
             var length = Convert.ToInt32(sampleRate.SamplesPerSecondAsUInt64 * OneDasConstants.ChunkPeriod);
-            var type = typeof(ExtendedDataStorage<>).MakeGenericType(new Type[] { OneDasUtilities.GetTypeFromOneDasDataType(dataType) });
+            var extendedBuffer = BufferUtilities.CreateExtendedBuffer(dataType, length);
 
-            return Enumerable.Range(0, count).Select(x => (IExtendedDataStorage)Activator.CreateInstance(type, length)).ToList();
+            return Enumerable.Range(0, count).Select(x => extendedBuffer).ToList();
         }
 
         private List<ChannelHubBase> FilterChannelHubs(List<ChannelHubBase> channelHubSet, string groupFilter)
@@ -764,17 +764,17 @@ namespace OneDas.Core.Engine
                         if (_chunkDateTime != _lastChunkDateTime && _lastChunkDateTime != DateTime.MinValue)
                         {
                             // ensure that the storage thread gets unmodified copies
-                            _cachedDataStorageIndex = _currentStorageIndex;
+                            _cachedBufferIndex = _currentBufferIndex;
                             _cachedChunkDateTime = _lastChunkDateTime;
 
                             if (this.OneDasState == OneDasState.Run)
                                 _storageAutoResetEvent.Set();
 
-                            _currentStorageIndex = (_currentStorageIndex + 1) % STORAGE_COUNT;
+                            _currentBufferIndex = (_currentBufferIndex + 1) % BUFFER_COUNT;
                         }
 
                         // store data: data port (input) --> data storage
-                        foreach (var entry in _sampleRateToDataStorageContextMap)
+                        foreach (var entry in _sampleRateToStorageContextMap)
                         {
                             int realChunkIndex;
 
@@ -783,7 +783,7 @@ namespace OneDas.Core.Engine
 
                             realChunkIndex = _chunkIndex / (int)entry.Key.NativeSampleRateFactor;
 
-                            foreach (DataGatewayExtensionLogicBase dataGateway in this.Project.DataGatewaySet)
+                            foreach (var dataGateway in this.Project.DataGatewaySet)
                             {
                                 int referencePeriod;
 
@@ -798,16 +798,16 @@ namespace OneDas.Core.Engine
                                 _hasValidDataSet[dataGateway] = dataGateway.LastSuccessfulUpdate?.Elapsed.TotalMilliseconds <= referencePeriod;
                             }
 
-                            foreach (DataStorageContext context in entry.Value)
+                            foreach (var context in entry.Value)
                             {
                                 if (_hasValidDataSet[context.DataGateway])
                                 {
-                                    this.CopyToDataStorage(context.DataStorageSet[_currentStorageIndex], realChunkIndex, context.DataPort, 1);
+                                    this.CopyToBuffer(context.Buffers[_currentBufferIndex], realChunkIndex, context.DataPort, 1);
                                 }
                                 // Improve: implement more than just 0 / 1 as data quality indicator
                                 //else
                                 //{
-                                //    this.WriteToDataStorage(context.ChannelHub.AssociatedDataStorageSet[_currentStorageIndex], realChunkIndex, context.DataPort, 0);
+                                //    this.CopyToBuffer(context.ChannelHub.AssociatedDataStorageSet[_currentBufferIndex], realChunkIndex, context.DataPort, 0);
                                 //}
                             }
                         }
@@ -832,13 +832,13 @@ namespace OneDas.Core.Engine
             return DateTime.MinValue;
         }
 
-        public unsafe void CopyToDataStorage(IExtendedDataStorage dataStorage, int index, DataPort dataPort, byte status)
+        public unsafe void CopyToBuffer(IExtendedBuffer buffer, int index, DataPort dataPort, byte status)
         {
-            var elementSize = dataStorage.ElementSize;
+            var elementSize = buffer.ElementSize;
             var sourcePtr = (byte*)dataPort.DataPtr.ToPointer();
-            var targetPtr = (byte*)dataStorage.DataBufferPtr.ToPointer() + index * elementSize;
+            var target = buffer.RawBuffer.Slice(index * elementSize);
 
-            dataStorage.GetStatusBuffer()[index] = status;
+            buffer.StatusBuffer[index] = status;
 
             if (dataPort.DataType == OneDasDataType.BOOLEAN && dataPort.BitOffset > -1) // special handling for boolean
             {
@@ -846,7 +846,7 @@ namespace OneDas.Core.Engine
                 bool value;
 
                 value = (*sourcePtr & (1 << dataPort.BitOffset)) > 0;
-                targetPtr[0] = *(byte*)&value;
+                target[0] = *(byte*)&value;
             }
             else
             {
@@ -856,7 +856,7 @@ namespace OneDas.Core.Engine
 
                         for (int i = 0; i < elementSize; i++)
                         {
-                            targetPtr[i] = sourcePtr[i];
+                            target[i] = sourcePtr[i];
                         }
 
                         break;
@@ -865,7 +865,7 @@ namespace OneDas.Core.Engine
 
                         for (int i = 0; i < elementSize; i++)
                         {
-                            targetPtr[i] = sourcePtr[elementSize - i - 1];
+                            target[i] = sourcePtr[elementSize - i - 1];
                         }
 
                         break;
@@ -938,13 +938,13 @@ namespace OneDas.Core.Engine
 
         #region "Data storage"
 
-        public void ClearDataStorages(int index)
+        public void ClearBuffers(int index)
         {
-            foreach (var entry in _sampleRateToDataStorageContextMap)
+            foreach (var entry in _sampleRateToStorageContextMap)
             {
-                foreach (DataStorageContext context in entry.Value)
+                foreach (var context in entry.Value)
                 {
-                    context.DataStorageSet[index].Clear();
+                    context.Buffers[index].Clear();
                 }
             }
         }
@@ -964,10 +964,10 @@ namespace OneDas.Core.Engine
 
                     this.Project.GetEnabledDataWriters().Where(dataWriter => dataWriter.Settings.Description.IsEnabled).ToList().ForEach(dataWriter =>
                     {
-                        dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataWriterToStorageSetMap[dataWriter][_cachedDataStorageIndex]);
+                        dataWriter.Write(_cachedChunkDateTime, TimeSpan.FromMinutes(1), _dataWriterToBuffersMap[dataWriter][_cachedBufferIndex]);
                     });
 
-                    this.ClearDataStorages(_cachedDataStorageIndex);
+                    this.ClearBuffers(_cachedBufferIndex);
                 }
                 catch (Exception ex)
                 {

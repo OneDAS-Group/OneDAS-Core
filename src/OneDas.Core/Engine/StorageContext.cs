@@ -1,19 +1,19 @@
-﻿using OneDas.DataStorage;
+﻿using OneDas.Buffers;
 using OneDas.Extensibility;
 using System.Collections.Generic;
 
 namespace OneDas.Core.Engine
 {
-    public class DataStorageContext
+    public class StorageContext
     {
-        public DataStorageContext(List<IExtendedDataStorage> dataStorageSet, DataGatewayExtensionLogicBase dataGateway, DataPort dataPort)
+        public StorageContext(List<IExtendedBuffer> buffers, DataGatewayExtensionLogicBase dataGateway, DataPort dataPort)
         {
-            this.DataStorageSet = dataStorageSet;
+            this.Buffers = buffers;
             this.DataGateway = dataGateway;
             this.DataPort = dataPort;
         }
 
-        public List<IExtendedDataStorage> DataStorageSet { get; private set; }
+        public List<IExtendedBuffer> Buffers { get; private set; }
         public DataGatewayExtensionLogicBase DataGateway { get; private set; }
         public DataPort DataPort { get; private set; }
     }

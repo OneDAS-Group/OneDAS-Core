@@ -1,4 +1,4 @@
-﻿using OneDas.DataStorage;
+﻿using OneDas.Buffers;
 using System;
 
 namespace OneDas.Extensibility
@@ -7,13 +7,13 @@ namespace OneDas.Extensibility
     {
         #region "Constructors"
 
-        public VariableContext(VariableDescription variableDescription, IDataStorage dataStorage)
+        public VariableContext(VariableDescription variableDescription, IBuffer buffer)
         {
             this.VariableDescription = variableDescription;
-            this.DataStorage = dataStorage;
+            this.Buffer = buffer;
 
-            if (!(variableDescription.DataStorageType == dataStorage.Type))
-                throw new ArgumentException(ErrorMessage.VariableContext_DataStorageTypeInvalid);
+            if (variableDescription.BufferType != buffer.Type)
+                throw new ArgumentException(ErrorMessage.VariableContext_BufferTypeInvalid);
         }
 
         #endregion
@@ -21,7 +21,8 @@ namespace OneDas.Extensibility
         #region "Properties"
 
         public VariableDescription VariableDescription { get; private set; }
-        public IDataStorage DataStorage { get; private set; }
+
+        public IBuffer Buffer { get; private set; }
 
         #endregion
     }

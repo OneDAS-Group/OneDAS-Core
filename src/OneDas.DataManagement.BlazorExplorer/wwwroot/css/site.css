@@ -1,13 +1,15 @@
 :root {
-    --nav-color:                #0d343e;
-    --main-bg-color:            #215d6a;
-    --box-color:                rgba(255, 255, 255, 0.87);
-    --font-color-subtitle:      rgba(0, 0, 0, 0.54);
-    --hover-color:              rgba(136, 14, 79, 0.80);
-    --hover-background-color:   rgba(255, 255, 255, 0.6);
-    --active-color:             rgba(136,14,79,1);
-    --active-background-color:  rgba(255, 255, 255, 0.8);
-    --disabled-color:           rgba(0, 0, 0, 0.3);
+    --nav-bg-color: #0d343e;
+    --main-bg-color: #215d6a;
+    --box-color: rgba(255, 255, 255, 0.87);
+    --font-color: rgba(0, 0, 0, 1);
+    --font-color-inverse: rgba(255, 255, 255, 1);
+    --font-color-subtitle: rgba(0, 0, 0, 0.54);
+    --hover-color: rgba(136, 14, 79, 0.80);
+    --hover-bg-color: rgba(255, 255, 255, 0.6);
+    --active-color: rgba(136,14,79,1);
+    --active-bg-color: rgba(255, 255, 255, 0.8);
+    --disabled-color: rgba(0, 0, 0, 0.3);
 }
 
 html, body {
@@ -19,6 +21,7 @@ html {
     height: 100%;
     min-width: 1750px;
     max-width: 100%;
+    color: var(--font-color);
     background-color: var(--main-bg-color);
 }
 
@@ -50,7 +53,8 @@ app {
     flex-direction: row;
     justify-content: space-between;
     color: white;
-    background-color: var(--nav-color);
+    color: var(--font-color-inverse);
+    background-color: var(--nav-bg-color);
     padding: 10px 15px 10px 15px;
     height: 40px;
     width: 100%;
@@ -336,7 +340,7 @@ app {
 
     .attachments a:hover {
         color: var(--active-color);
-        background-color: var(--hover-background-color) !important;
+        background-color: var(--hover-bg-color) !important;
     }
 
 .attachment {
@@ -348,7 +352,7 @@ app {
 
     .attachment:hover {
         color: var(--active-color);
-        background-color: var(--hover-background-color) !important;
+        background-color: var(--hover-bg-color) !important;
     }
 
         .attachment:hover a {
@@ -406,12 +410,12 @@ app {
 
     .group-entry.selected {
         color: var(--active-color) !important;
-        background-color: var(--active-background-color);
+        background-color: var(--active-bg-color);
         font-weight: 500;
     }
 
     .group-entry:hover {
-        background-color: var(--hover-background-color);
+        background-color: var(--hover-bg-color);
     }
 
 .group-entry-name {
@@ -451,7 +455,7 @@ app {
 
     .variable-expander:hover {
         color: var(--hover-color) !important;
-        background-color: var(--hover-background-color);
+        background-color: var(--hover-bg-color);
     }
 
 .variable-name {
@@ -840,7 +844,7 @@ app {
 
     .paginator i:hover {
         color: var(--active-color);
-        background-color: var(--hover-background-color);
+        background-color: var(--hover-bg-color);
     }
 
 .small-text {

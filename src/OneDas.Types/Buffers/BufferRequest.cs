@@ -1,7 +1,7 @@
 ﻿using OneDas.Infrastructure;
 using System.Runtime.Serialization;
 
-namespace OneDas.DataStorage
+namespace OneDas.Buffers
 {
     [DataContract]
     public class BufferRequest

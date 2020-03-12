@@ -13,16 +13,13 @@ namespace OneDas.Extensibility.DataGatewaySample
 
         public DataGatewaySampleGateway(DataGatewaySampleSettings settings) : base(settings, NullLogger.Instance)
         {
-            Random random;
+            var random = new Random();
 
-            random = new Random();
             _settings = settings;
 
             _numberGeneratorSet = this.DataPortSet.Where(dataPort => dataPort.DataDirection == DataDirection.Input).ToList().Select(dataPort =>
             {
-                Type type;
-
-                type = typeof(DataGatewaySampleNumberGenerator<>).MakeGenericType(OneDasUtilities.GetTypeFromOneDasDataType(dataPort.DataType));
+                var type = typeof(DataGatewaySampleNumberGenerator<>).MakeGenericType(OneDasUtilities.GetTypeFromOneDasDataType(dataPort.DataType));
 
                 return (DataGatewaySampleNumberGeneratorBase)Activator.CreateInstance(type, dataPort, random);
             }).ToList();

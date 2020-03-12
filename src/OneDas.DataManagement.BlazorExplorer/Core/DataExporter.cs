@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
-using OneDas.DataManagement.Extensibility;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using OneDas.Extensibility;
 using OneDas.Extension.Csv;
 using OneDas.Extension.Famos;
@@ -206,17 +205,17 @@ namespace OneDas.DataManagement.BlazorExplorer.Core
 
         private void ProcessData(DataWriterExtensionLogicBase dataWriter, DataReaderProgressRecord progressRecord)
         {
-            var dataStorages = progressRecord.DatasetToRecordMap.Values.Select(dataRecord =>
+            var buffers = progressRecord.DatasetToRecordMap.Values.Select(dataRecord =>
             {
-                var data = ExtendedDataStorageBase.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.StatusSet);
-                return (IDataStorage)new SimpleDataStorage(data);
+                var data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+                return (IBuffer)BufferUtilities.CreateSimpleBuffer(data);
             }).ToList();
 
             var period = progressRecord.End - progressRecord.Begin;
-            dataWriter.Write(progressRecord.Begin, period, dataStorages);
+            dataWriter.Write(progressRecord.Begin, period, buffers);
 
             // clean up
-            dataStorages = null;
+            buffers = null;
             GC.Collect();
         }
 

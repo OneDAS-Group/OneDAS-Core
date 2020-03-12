@@ -1,4 +1,4 @@
-﻿using OneDas.DataStorage;
+﻿using OneDas.Buffers;
 using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
@@ -55,7 +55,7 @@ namespace OneDas.DataManagement.Database
                     var unit = variable.Units.Any() ? variable.Units.Last() : string.Empty;
                     var transferFunctions = variable.TransferFunctions;
 
-                    return new VariableDescription(guid, displayName, datasetName, groupName, dataType, sampleRate, unit, transferFunctions, DataStorageType.Simple);
+                    return new VariableDescription(guid, displayName, datasetName, groupName, dataType, sampleRate, unit, transferFunctions, BufferType.Simple);
                 });
             }).ToList();
         }
