@@ -1,4 +1,4 @@
-﻿namespace OneDas.DataManagement.Explorer.Core
+﻿namespace OneDas.DataManagement.Infrastructure
 {
     public enum FileFormat
     {

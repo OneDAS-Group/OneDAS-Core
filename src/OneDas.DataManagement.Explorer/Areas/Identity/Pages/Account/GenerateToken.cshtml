@@ -1,0 +1,21 @@
+﻿@page
+
+@attribute [IgnoreAntiforgeryToken]
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
+@using OneDas.DataManagement.Explorer.Core
+@using System.Text.Json
+
+@inject JwtService<IdentityUser> jwtService
+
+@functions {
+
+    public async Task<IActionResult> OnPost()
+    {
+        var jsonString = await new System.IO.StreamReader(this.Request.Body).ReadToEndAsync();
+        var credentials = JsonSerializer.Deserialize<UserCredentials>(jsonString);
+        var token = await jwtService.GenerateTokenAsync(credentials);
+
+        return new JsonResult(token);
+    }
+}

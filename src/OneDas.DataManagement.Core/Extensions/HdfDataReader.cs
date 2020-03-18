@@ -48,12 +48,12 @@ namespace OneDas.DataManagement.Extensions
                 }
             });
 
-            return _campaigns.Select(campaign => campaign.Name).ToList();
+            return _campaigns.Select(campaign => campaign.Id).ToList();
         }
 
         public override CampaignInfo GetCampaign(string campaignName)
         {
-            return _campaigns.First(campaign => campaign.Name == campaignName);
+            return _campaigns.First(campaign => campaign.Id == campaignName);
         }
 
         public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)

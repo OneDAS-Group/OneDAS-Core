@@ -77,7 +77,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 var targetFileId = -1L;
 
                 // campaign
-                var campaign = _databaseManager.GetCampaigns().FirstOrDefault(campaign => campaign.Name == campaignName);
+                var campaign = _databaseManager.GetCampaigns().FirstOrDefault(campaign => campaign.Id == campaignName);
 
                 if (campaign is null)
                     throw new Exception($"The requested campaign '{campaignName}' could not be found.");
@@ -124,7 +124,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... ");
 
-            var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.CampaignName == campaign.Name).ToList();
+            var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.CampaignName == campaign.Id).ToList();
 
             var variableToAggregationConfigMap = campaign.Variables
                 .ToDictionary(variable => variable, variable => potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(variable, config.Filters)).ToList())
@@ -154,7 +154,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
 
             // check source sample rate
-            var sampleRate = new SampleRateContainer(dataset.Name, ensureNonZeroIntegerHz: true);
+            var sampleRate = new SampleRateContainer(dataset.Id, ensureNonZeroIntegerHz: true);
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();

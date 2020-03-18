@@ -97,15 +97,15 @@ namespace OneDas.DataManagement.Explorer
         public static IHostBuilder CreateHostBuilder(string currentDirectory) => 
             Host.CreateDefaultBuilder()
                 .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
-                .ConfigureLogging(loggingBuilder =>
+                .ConfigureLogging(logging =>
                 {
-                    loggingBuilder.ClearProviders();
+                    logging.ClearProviders();
 
-                    loggingBuilder.AddConsole();
-                    loggingBuilder.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
+                    logging.AddConsole();
+                    logging.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
 
-                    loggingBuilder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
-                    loggingBuilder.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
+                    logging.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+                    logging.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -7,17 +8,27 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Hubs;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.IO;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer
 {
     public class Startup
     {
+        #region Properties
+
+        public static SymmetricSecurityKey SecurityKey { get; } = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+
+        #endregion
+
+        #region Methods
+
         public Startup(IConfiguration configuration)
         {
             this.Configuration = configuration;
@@ -32,11 +43,45 @@ namespace OneDas.DataManagement.Explorer
 
             // identity (customize: https://docs.microsoft.com/en-us/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-3.1)
             services.AddDefaultIdentity<IdentityUser>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>();            
 
             // blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            // authentication
+            services.AddAuthentication(options =>
+            {
+                // Identity made Cookie authentication the default.
+                // However, we want JWT Bearer Auth to be the default.
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        ValidateActor = false,
+                        ValidateLifetime = true,
+                        IssuerSigningKey = Startup.SecurityKey
+                    };
+
+                    options.Events = new JwtBearerEvents()
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            if (!string.IsNullOrEmpty(accessToken) && context.Request.Headers["Upgrade"] == "websocket")
+                                context.Token = accessToken;
+
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
 
             // authorization
             services.AddAuthorization(options =>
@@ -45,16 +90,15 @@ namespace OneDas.DataManagement.Explorer
             });
 
             // signalr
-            services.AddSignalR()
+            services.AddSignalR(options => options.EnableDetailedErrors = true)
                 .AddMessagePackProtocol();
-
-            // authorization
 
             // custom
             services.AddHttpContextAccessor();
             services.AddScoped<AppStateViewModel>();
             services.AddScoped<SettingsViewModel>();
             services.AddScoped<DataService>();
+            services.AddScoped<JwtService<IdentityUser>>();
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton<OneDasExplorerStateManager>();
         }
@@ -101,7 +145,7 @@ namespace OneDas.DataManagement.Explorer
             {
                 app.UseExceptionHandler("/Error");
             }
-            
+
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -131,5 +175,7 @@ namespace OneDas.DataManagement.Explorer
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
+
+        #endregion
     }
 }

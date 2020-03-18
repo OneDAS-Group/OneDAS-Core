@@ -7,9 +7,9 @@ namespace OneDas.DataManagement.Database
     {
         #region "Constructors"
 
-        public CampaignElement(string name, CampaignElement parent)
+        public CampaignElement(string id, CampaignElement parent)
         {
-            this.Name = name;
+            this.Id = id;
             this.Parent = parent;
         }
 
@@ -22,7 +22,7 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
-        public string Name { get; set; }
+        public string Id { get; set; }
 
         [JsonIgnore]
         public CampaignElement Parent { get; set; }

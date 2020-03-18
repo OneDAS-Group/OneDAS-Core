@@ -193,7 +193,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             long campaignGroupId = -1;
 
-            Console.WriteLine($"\n{campaign.Name}");
+            Console.WriteLine($"\n{campaign.Id}");
 
             campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaign.GetPath()).GroupId;
 
@@ -218,9 +218,9 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             long variableGroupId = -1;
 
-            Console.WriteLine($"\t{variable.Name}");
+            Console.WriteLine($"\t{variable.Id}");
 
-            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variable.Name).GroupId;
+            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variable.Id).GroupId;
 
             try
             {
@@ -238,7 +238,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 // dataset
                 foreach (var dataset in variable.Datasets)
                 {
-                    Console.WriteLine($"\t\t{ dataset.Name }");
+                    Console.WriteLine($"\t\t{ dataset.Id }");
                     this.VdsDataset(variableGroupId, epochStart, epochEnd, dataset, campaignPath);
                 }
 
@@ -331,7 +331,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
 
                 if (createDataset) // otherwise there will be an error, if set_virtual has never been called.
-                    datasetId = H5D.create(groupId, dataset.Name, typeId, spaceId, H5P.DEFAULT, propertyId);
+                    datasetId = H5D.create(groupId, dataset.Id, typeId, spaceId, H5P.DEFAULT, propertyId);
             }
             finally
             {

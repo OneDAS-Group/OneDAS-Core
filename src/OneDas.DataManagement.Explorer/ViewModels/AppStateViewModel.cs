@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Database;
@@ -15,6 +14,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using OneDas.DataManagement.Infrastructure;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
@@ -36,7 +36,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private DataService _dataService;
         private CancellationTokenSource _cts_download;
         private PropertyChangedEventHandler _propertyChanged;
-        private UserManager<IdentityUser> _userManager;
         private AuthenticationStateProvider _authenticationStateProvider;
 
         private CampaignContainer _campaignContainer;
@@ -51,14 +50,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public AppStateViewModel(IJSRuntime jsRuntime,
                                  AuthenticationStateProvider authenticationStateProvider,
-                                 UserManager<IdentityUser> userManager,
                                  OneDasExplorerStateManager stateManager,
                                  OneDasDatabaseManager databaseManager,
                                  DataService dataService)
         {
             _jsRuntime = jsRuntime;
             _authenticationStateProvider = authenticationStateProvider;
-            _userManager = userManager;
             _dataService = dataService;
 
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
@@ -70,13 +67,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             // campaign containers and dependent init steps
             var campaignContainers = databaseManager.Database.CampaignContainers;
             var restrictedCampaigns = databaseManager.Config.RestrictedCampaigns;
-            this.CampaignContainers = GetAllowedCampainContainers(campaignContainers, restrictedCampaigns).Result.AsReadOnly();
+            this.CampaignContainers = GetAccessibleCampainContainersAsync(campaignContainers, restrictedCampaigns).Result.AsReadOnly();
 
             this.SampleRateValues = this.CampaignContainers.SelectMany(campaignContainer =>
             {
                 return campaignContainer.Campaign.Variables.SelectMany(variable =>
                 {
-                    return variable.Datasets.Select(dataset => dataset.Name.Split('_')[0]);
+                    return variable.Datasets.Select(dataset => dataset.Id.Split('_')[0]);
                 });
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
 
@@ -425,7 +422,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 if (campaignContainer != null)
                 {
                     var variables = _campaignContainerToVariablesMap[campaignContainer];
-                    var variable = variables.FirstOrDefault(current => current.ID == variableName);
+                    var variable = variables.FirstOrDefault(current => current.Id == variableName);
 
                     if (variable != null)
                     {
@@ -528,7 +525,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             this.ExportConfiguration.Variables = this.GetSelectedDatasets().Select(dataset =>
             {
-                return $"{dataset.Parent.Parent.Name}/{dataset.Parent.ID}/{dataset.Name}";
+                return $"{dataset.Parent.Parent.Id}/{dataset.Parent.Id}/{dataset.Name}";
             }).ToList();
         }
 
@@ -552,7 +549,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 _campaignContainerToVariablesMap[campaignContainer] = campaignContainer.Campaign.Variables.Select(variable =>
                 {
-                    var variableMeta = campaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Name == variable.Name);
+                    var variableMeta = campaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Name == variable.Id);
                     return new VariableInfoViewModel(variable, variableMeta);
                 }).ToList();
             }
@@ -573,38 +570,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 return new List<DatasetInfoViewModel>();
         }
 
-        private async Task<List<CampaignContainer>> GetAllowedCampainContainers(List<CampaignContainer> campaignContainers, List<string> restrictedCampaigns)
+        private async Task<List<CampaignContainer>> GetAccessibleCampainContainersAsync(List<CampaignContainer> campaignContainers, List<string> restrictedCampaigns)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var principal = authState.User;
-            var identity = principal.Identity;
+            var visibleCampaigns = new List<CampaignContainer>();
 
-            IdentityUser user = default;
-            
-            if (identity.IsAuthenticated)
-                user = await _userManager.FindByNameAsync(identity.Name);
-
-            var visibleCampaigns = campaignContainers.Where(campaignContainer =>
-            {
-                if (!restrictedCampaigns.Contains(campaignContainer.Name))
-                {
-                    return true;
-                }
-                else if (user != null)
-                {
-                    var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
-                    var canAccessCampaignContainer = principal.HasClaim(claim => claim.Type == "CanAccessCampaign"
-                                                                         && claim.Value.Split(";").Any(campaignName => campaignName == campaignContainer.Name));
-
-                    return isAdmin || canAccessCampaignContainer;
-                }
-                else
-                {
-                    return false;
-                }
-            }).ToList();
-
-            return visibleCampaigns;
+            return campaignContainers.Where(campaignContainer => Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)).ToList();
         }
 
         #endregion

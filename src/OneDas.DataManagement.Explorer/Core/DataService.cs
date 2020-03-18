@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -62,7 +63,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public Task<string> ExportDataAsync(IPAddress remoteIpAddress,
                                              DateTime begin,
                                              DateTime end,
-                                             SampleRateContainer sampleRateContainer,
+                                             SampleRateContainer sampleRate,
                                              FileFormat fileFormat,
                                              FileGranularity fileGranularity,
                                              List<DatasetInfo> datasets,
@@ -79,20 +80,20 @@ namespace OneDas.DataManagement.Explorer.Core
                     return string.Empty;
 
                 // zip file
-                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRateContainer.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
+                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
 
                 // sampleRate
-                var samplesPerDay = sampleRateContainer.SamplesPerDay;
+                var samplesPerDay = sampleRate.SamplesPerDay;
 
                 try
                 {
                     // convert datasets into campaigns
-                    var campaignNames = datasets.Select(dataset => dataset.Parent.Parent.Name).Distinct();
-                    var fullCampaigns = _databaseManager.GetCampaigns().Where(campaign => campaignNames.Contains(campaign.Name));
+                    var campaignNames = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
+                    var fullCampaigns = _databaseManager.GetCampaigns().Where(campaign => campaignNames.Contains(campaign.Id));
 
                     var campaigns = fullCampaigns.Select(fullCampaign =>
                     {
-                        var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Name == fullCampaign.Name).ToList();
+                        var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == fullCampaign.Id).ToList();
                         return fullCampaign.ToSparseCampaign(currentDatasets);
                     });
 
@@ -106,7 +107,7 @@ namespace OneDas.DataManagement.Explorer.Core
                     {
                         foreach (var campaign in campaigns)
                         {
-                            using var nativeDataReader = _databaseManager.GetNativeDataReader(campaign.Name);
+                            using var nativeDataReader = _databaseManager.GetNativeDataReader(campaign.Id);
                             using var aggregationDataReader = _databaseManager.AggregationDataReader;
 
                             var zipSettings = new ZipSettings(campaign,

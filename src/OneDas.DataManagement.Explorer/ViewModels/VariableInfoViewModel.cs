@@ -22,7 +22,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             _variableMeta = variableMeta;
 
             this.Datasets = variable.Datasets
-                .Where(dataset => !dataset.Name.EndsWith("_status"))
+                .Where(dataset => !dataset.Id.EndsWith("_status"))
                 .Select(dataset => new DatasetInfoViewModel(dataset, this)).ToList();
         }
 
@@ -30,7 +30,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties
 
-        public string ID => _variable.Name;
+        public string Id => _variable.Id;
 
         public string Name => _variable.VariableNames.Last();
 

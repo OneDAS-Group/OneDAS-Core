@@ -1,48 +1,49 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using OneDas.DataManagement.Infrastructure;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Interface
 {
     public class Downloader
     {
-        string _baseAddress;
-        Logger _logger;
-        HubConnection _connection;
+        #region Fields
+
+        private string _baseAddress;
+        private Logger _logger;
+        private HubConnection _connection;
+
+        #endregion
+
+        #region Constructors
 
         static Downloader()
         {
             AppDomain.CurrentDomain.AssemblyResolve += Downloader.CurrentDomain_AssemblyResolve;
         }
 
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            string assemblyName;
+        #endregion
 
-            assemblyName = args.Name.Split(',').First();
-
-            if (!args.Name.Contains(".resources"))
-            {
-                return Assembly.Load(assemblyName);
-            }
-
-            return null;
-        }
+        #region Methods
 
         public Downloader(string hostName, int port, Action<string> logAction)
         {
             _baseAddress = $"http://{hostName}:{port}/";
-            _connection = this.BuildHubConnection(hostName, port, "broadcaster");
+            _connection = this.BuildHubConnection(hostName, port, "datahub");
 
-            _connection.On("SendProgress", (double percent, string message) =>
+            _connection.On("Downloader.ProgressChanged", (double progress, string message) =>
             {
-                _logger?.Log($"{percent,3:0}%: {message}\n");
+                _logger?.Log($"{progress * 100,3:0}%: {message}\n");
+            });
+
+            _connection.On("Downloader.Error", (string message) =>
+            {
+                _logger?.Log($"An error occured: '{message}'.\n");
             });
 
             _logger = new Logger(logAction);
@@ -64,24 +65,16 @@ namespace OneDas.DataManagement.Interface
         {
             return Task.Run(async () =>
             {
-                string url;
-                string downloadFilePath;
-                string entryFilePath;
-                WebClient webClient;
-                ChannelReader<string> reader;
-
                 // get URL
-                url = string.Empty;
-
-                reader = await _connection.StreamAsChannelAsync<string>(
-                        "Download",
-                        settings.DateTimeBegin,
-                        settings.DateTimeEnd,
-                        "MAT73",
-                        settings.FileGranularity,
-                        settings.SampleRateDescription,
-                        settings.CampaignPath,
-                        settings.VariableNames);
+                var url = string.Empty;
+                
+                var reader = await _connection.StreamAsChannelAsync<string>(
+                                    "ExportData",
+                                    settings.DateTimeBegin,
+                                    settings.DateTimeEnd,
+                                    FileFormat.MAT73,
+                                    settings.FileGranularity,
+                                    settings.ChannelNames);
 
                 while (await reader.WaitToReadAsync())
                 {
@@ -89,18 +82,16 @@ namespace OneDas.DataManagement.Interface
                 }
 
                 if (string.IsNullOrWhiteSpace(url))
-                {
                     throw new Exception("No URL received from the server.");
-                }
 
-                downloadFilePath = Path.GetTempFileName();
+                var downloadFilePath = Path.GetTempFileName();
 
                 try
                 {
                     // download data
                     _logger.Log($"Downloading ZIP file from {_baseAddress}{url} to {downloadFilePath}.\n");
 
-                    webClient = new WebClient();
+                    var webClient = new WebClient();
                     webClient.DownloadFile($"{_baseAddress}{url}", downloadFilePath);
 
                     // unzip data
@@ -108,7 +99,7 @@ namespace OneDas.DataManagement.Interface
                     {
                         archive.Entries.ToList().ForEach(entry =>
                         {
-                            entryFilePath = Path.Combine(targetDirectoryPath, entry.FullName);
+                            var entryFilePath = Path.Combine(targetDirectoryPath, entry.FullName);
 
                             _logger.Log($"Unzipping file {entry.FullName}.\n");
 
@@ -123,9 +114,7 @@ namespace OneDas.DataManagement.Interface
                 finally
                 {
                     if (File.Exists(downloadFilePath))
-                    {
                         File.Delete(downloadFilePath);
-                    }
                 }
             });
         }
@@ -137,9 +126,7 @@ namespace OneDas.DataManagement.Interface
 
         private HubConnection BuildHubConnection(string hostName, int port, string path)
         {
-            UriBuilder uriBuilder;
-
-            uriBuilder = new UriBuilder()
+            var uriBuilder = new UriBuilder()
             {
                 Host = hostName,
                 Port = port,
@@ -150,5 +137,19 @@ namespace OneDas.DataManagement.Interface
                  .WithUrl(uriBuilder.ToString())
                  .Build();
         }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assemblyName = args.Name.Split(',').First();
+
+            if (!args.Name.Contains(".resources"))
+            {
+                return Assembly.Load(assemblyName);
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 }

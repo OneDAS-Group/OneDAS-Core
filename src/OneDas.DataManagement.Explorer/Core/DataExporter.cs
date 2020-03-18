@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.Buffers;
+using OneDas.DataManagement.Infrastructure;
 using OneDas.Extensibility;
 using OneDas.Extension.Csv;
 using OneDas.Extension.Famos;
@@ -99,7 +100,7 @@ namespace OneDas.DataManagement.Explorer.Core
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "HDF Explorer", CustomMetadataEntryLevel.File));
 
             // initialize data writer
-            var campaignName_splitted = zipSettings.Campaign.Name.Split('/');
+            var campaignName_splitted = zipSettings.Campaign.Id.Split('/');
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 

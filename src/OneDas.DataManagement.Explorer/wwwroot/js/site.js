@@ -43,7 +43,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
         // for each chart entry
         appState.invokeMethodAsync('SetVisualizeProgress', 0);
 
-        connection.on('ProgressChanged', progress => {
+        connection.on('Downloader.ProgressChanged', progress => {
             progress = (currentIndex + progress) / chartEntries.length;
             appState.invokeMethodAsync('SetVisualizeProgress', progress);
         });

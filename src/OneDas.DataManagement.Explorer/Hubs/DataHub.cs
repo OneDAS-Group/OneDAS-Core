@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using OneDas.DataManagement.Explorer.Core;
 using OneDas.Buffers;
+using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Infrastructure;
+using OneDas.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -15,17 +20,23 @@ namespace OneDas.DataManagement.Explorer.Hubs
         #region Fields
 
         private ILogger _logger;
+
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerStateManager _stateManager;
+        private DataService _dataService;
 
         #endregion
 
         #region Constructors
 
-        public DataHub(OneDasExplorerStateManager stateManager, OneDasDatabaseManager databaseManager, ILoggerFactory loggerFactory)
+        public DataHub(OneDasExplorerStateManager stateManager,
+                       OneDasDatabaseManager databaseManager,
+                       DataService dataService,
+                       ILoggerFactory loggerFactory)
         {
             _stateManager = stateManager;
             _databaseManager = databaseManager;
+            _dataService = dataService;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
 
@@ -33,29 +44,50 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         #region Methods
 
-        public ChannelReader<double[]> StreamData(
-                string channelName,
-                DateTime begin,
-                DateTime end,
-                CancellationToken cancellationToken)
+        public ChannelReader<string> ExportData(DateTime begin,
+                                                DateTime end,
+                                                FileFormat fileFormat,
+                                                FileGranularity fileGranularity,
+                                                List<string> channelNames,
+                                                CancellationToken cancellationToken)
         {
+            var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
+            var channel = Channel.CreateUnbounded<string>();
+
+            // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
+            // for all the items to be written before returning the channel back to
+            // the client.
+            _ = Task.Run(() => this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, channelNames, cancellationToken));
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<double[]> StreamData(string channelName,
+                                                  DateTime begin,
+                                                  DateTime end,
+                                                  CancellationToken cancellationToken)
+        {
+            var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<double[]>();
 
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => this.InternalStreamData(channel.Writer, channelName, begin, end, cancellationToken));
+            _ = Task.Run(() => this.InternalStreamData(channel.Writer, remoteIpAddress, channelName, begin, end, cancellationToken));
 
             return channel.Reader;
         }
 
-        public void InternalStreamData(ChannelWriter<double[]> writer, string channelName, DateTime begin, DateTime end, CancellationToken cancellationToken)
+        public void InternalStreamData(ChannelWriter<double[]> writer,
+                                       IPAddress remoteIpAddress,
+                                       string channelName,
+                                       DateTime begin,
+                                       DateTime end,
+                                       CancellationToken cancellationToken)
         {
             Exception localException = null;
 
-            var httpContext = this.Context.GetHttpContext();
-            var remoteIpAddress = httpContext.Connection.RemoteIpAddress;
-            var message = $"{remoteIpAddress} requested data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
+            var message = $"{remoteIpAddress} streamed data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
 
             _logger.LogInformation(message);
 
@@ -64,25 +96,22 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 _stateManager.CheckState();
 
                 // datasetInfo
-                var channelNameParts = channelName.Split("/");
-
-                if (channelNameParts.Length != 6)
-                    throw new Exception($"The channel name '{channelName}' is invalid.");
-
-                var campaignName = $"/{channelNameParts[1]}/{channelNameParts[2]}/{channelNameParts[3]}";
-                var variableName = channelNameParts[4];
-                var datasetName = channelNameParts[5];
-
-                if (!_databaseManager.Database.TryFindDataset(campaignName, variableName, datasetName, out var dataset))
+                if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
                     throw new Exception($"Could not find channel with name '{channelName}'.");
 
+                var campaign = (CampaignInfo)dataset.Parent.Parent;
+
+                // security check
+                if (!this.IsCampaignAccessible(campaign, _databaseManager.Config.RestrictedCampaigns))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access the channel '{channelName}'.");
+
                 // dataReader
-                var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaignName) : _databaseManager.AggregationDataReader;
+                var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.AggregationDataReader;
 
                 // progress changed event handling
                 var handler = (EventHandler<double>)((sender, e) =>
                 {
-                    this.Clients.Client(this.Context.ConnectionId).SendAsync("ProgressChanged", e, cancellationToken);
+                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e, cancellationToken);
                 });
 
                 dataReader.Progress.ProgressChanged += handler;
@@ -113,42 +142,86 @@ namespace OneDas.DataManagement.Explorer.Hubs
             writer.TryComplete(localException);
         }
 
-        //public async Task Download(ChannelWriter<string> writer, DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, string sampleRateWithUnit, string campaignName, List<string> variableNames)
-        //{
-        //    try
-        //    {
-        //        var campaign = Program.DatabaseManager.GetCampaigns().FirstOrDefault(current => current.Name == campaignName);
+        private async void InternalExportData(ChannelWriter<string> writer,
+                                              IPAddress remoteIpAddress,
+                                              DateTime begin,
+                                              DateTime end,
+                                              FileFormat fileFormat,
+                                              FileGranularity fileGranularity,
+                                              List<string> channelNames,
+                                              CancellationToken cancellationToken)
+        {
+            Exception localException = null;
 
-        //        if (campaign == null)
-        //            throw new Exception($"Could not find campaign '{campaignName}'.");
+            var message = $"{remoteIpAddress} exported data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
 
-        //        var campaigns = new Dictionary<string, Dictionary<string, List<string>>>();
-        //        campaigns[campaign.Name] = new Dictionary<string, List<string>>();
+            _logger.LogInformation(message);
 
-        //        foreach (var variableName in variableNames)
-        //        {
-        //            var variable = campaign.Variables.FirstOrDefault(current => current.VariableNames.Contains(variableName));
+            try
+            {
+                _stateManager.CheckState();
 
-        //            if (variable == null)
-        //                throw new Exception($"Could not find variable with name '{variableName}' in campaign '{campaign.Name}'.");
+                if (!channelNames.Any())
+                    throw new Exception("The list of channel names is empty.");
 
-        //            if (!variable.Datasets.Any(current => current.Name == sampleRateWithUnit))
-        //                throw new Exception($"Could not find dataset in variable with ID '{variable.Name}' ({variable.VariableNames.Last()}) in campaign '{campaign.Name}'.");
+                var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
+                {
+                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
+                });
 
-        //            campaigns[campaign.Name][variable.Name] = new List<string>() { sampleRateWithUnit };
-        //        }
+                _dataService.Progress.ProgressChanged += handler;
 
-        //        var url = await this.GetData(remoteIpAddress, dateTimeBegin, dateTimeEnd, new SampleRateContainer(sampleRateWithUnit), fileFormat, fileGranularity, campaigns);
-        //        await writer.WriteAsync(url);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        writer.TryComplete(ex);
-        //        throw;
-        //    }
+                try
+                {
+                    var datasets = channelNames.Select(channelName =>
+                    {
+                        if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
+                            throw new Exception($"Could not find the channel with name '{channelName}'.");
 
-        //    writer.TryComplete();
-        //}
+                        var campaign = (CampaignInfo)dataset.Parent.Parent;
+
+                        // security check
+                        if (!this.IsCampaignAccessible(campaign, _databaseManager.Config.RestrictedCampaigns))
+                            throw new UnauthorizedAccessException($"The current user is not authorized to access the channel '{channelName}'.");
+
+                        return dataset;
+                    }).ToList();
+
+                    var sampleRates = datasets.Select(dataset => dataset.SampleRate);
+
+                    if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
+                        throw new Exception("Channels with different sample rates have been requested.");
+
+                    var sampleRate = sampleRates.First();
+
+                    var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
+                    await writer.WriteAsync(url, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    await this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.Error", ex.Message);
+                    throw;
+                }
+                finally
+                {
+                    _dataService.Progress.ProgressChanged -= handler;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                localException = ex;
+            }
+
+            _logger.LogInformation($"{message} Done.");
+            writer.TryComplete(localException);
+        }
+
+        private bool IsCampaignAccessible(CampaignInfo campaign, List<string> restrictedCampaigns)
+        {
+            var principal = this.Context.User;
+            return Utilities.IsCampaignAccessible(principal, campaign, restrictedCampaigns);
+        }
 
         #endregion
     }

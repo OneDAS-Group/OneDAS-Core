@@ -15,9 +15,9 @@ namespace OneDas.DataManagement.Hdf
             var idx = 0UL;
 
             // read chunk dataset info
-            if (IOHelper.CheckLinkExists(campaignGroupId, campaign.ChunkDataset.Name))
+            if (IOHelper.CheckLinkExists(campaignGroupId, campaign.ChunkDataset.Id))
             {
-                datasetId = H5D.open(campaignGroupId, campaign.ChunkDataset.Name);
+                datasetId = H5D.open(campaignGroupId, campaign.ChunkDataset.Id);
 
                 try
                 {
@@ -50,7 +50,7 @@ namespace OneDas.DataManagement.Hdf
 
                     if (groupId > -1)
                     {
-                        currentVariable = campaign.Variables.FirstOrDefault(variable => variable.Name == name);
+                        currentVariable = campaign.Variables.FirstOrDefault(variable => variable.Id == name);
 
                         if (currentVariable == null)
                         {
@@ -108,7 +108,7 @@ namespace OneDas.DataManagement.Hdf
                     {
                         datasetId = H5D.open(variableGroupId2, name);
 
-                        currentDataset = variable.Datasets.FirstOrDefault(dataset => dataset.Name == name);
+                        currentDataset = variable.Datasets.FirstOrDefault(dataset => dataset.Id == name);
 
                         if (currentDataset == null)
                         {

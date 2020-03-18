@@ -19,9 +19,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public DatasetInfo Model { get; }
 
-        public string Name => Model.Name;
+        public string Name => this.Model.Id;
 
-        public OneDasDataType DataType => Model.DataType;
+        public OneDasDataType DataType => this.Model.DataType;
 
         public VariableInfoViewModel Parent { get; }
 

@@ -1,6 +1,7 @@
 ﻿using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace OneDas.DataManagement.Extensions
 
         public override CampaignInfo GetCampaign(string campaignName)
         {
-            if (campaignName == _campaign.Name)
+            if (campaignName == _campaign.Id)
                 return _campaign;
             else
                 throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
@@ -100,10 +101,10 @@ namespace OneDas.DataManagement.Extensions
             var variable2 = new VariableInfo("cf50190b-fd2a-477b-9655-48f4f41ba7bf", _campaign);
             var variable3 = new VariableInfo("f01b6a96-1de6-4caa-9205-184d8a3eb2f8", _campaign);
 
-            var dataset1 = new DatasetInfo("25 Hz", variable1) { DataType = Infrastructure.OneDasDataType.INT32 };
-            var dataset2 = new DatasetInfo("1 s_max", variable2) { DataType = Infrastructure.OneDasDataType.FLOAT64 };
-            var dataset3 = new DatasetInfo("1 s_mean", variable2) { DataType = Infrastructure.OneDasDataType.FLOAT64 };
-            var dataset4 = new DatasetInfo("25 Hz", variable3) { DataType = Infrastructure.OneDasDataType.INT32 };
+            var dataset1 = new DatasetInfo("25 Hz", variable1) { DataType = OneDasDataType.INT32 };
+            var dataset2 = new DatasetInfo("1 s_max", variable2) { DataType = OneDasDataType.FLOAT64 };
+            var dataset3 = new DatasetInfo("1 s_mean", variable2) { DataType = OneDasDataType.FLOAT64 };
+            var dataset4 = new DatasetInfo("25 Hz", variable3) { DataType = OneDasDataType.INT32 };
 
             // variable 1
             variable1.Datasets = new List<DatasetInfo>()
