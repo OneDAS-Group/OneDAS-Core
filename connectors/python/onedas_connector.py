@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import time
 from datetime import datetime, timedelta
 
 import requests
@@ -59,7 +58,7 @@ class onedas_connector():
                 self.buffer = []
                 self.channel_index = i
                 await self.connection.stream("StreamData", [channel, beginString, endString], self._on_next)
-                channelInfos[i]["data"] = self.buffer
+                channelInfos[i]["values"] = self.buffer
                 result[channel] = channelInfos[i]
 
         finally:

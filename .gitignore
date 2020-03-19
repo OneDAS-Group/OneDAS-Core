@@ -1,6 +1,8 @@
 .vs/
 artifacts/
 
+__pycache__
+
 **/node_modules
 **/OneDas.Core.WebServer/wwwroot/js/
 **/wwwroot/lib/
