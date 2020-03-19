@@ -14,7 +14,8 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Fields
 
-        private CampaignInfo _campaign;
+        private CampaignInfo _campaign_allowed;
+        private CampaignInfo _campaign_restricted;
 
         #endregion
 
@@ -22,7 +23,15 @@ namespace OneDas.DataManagement.Extensions
 
         public InMemoryDataReader(string rootPath) : base(rootPath)
         {
-            this.InitializeCampaign();
+            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
+            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
+            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
+            _campaign_allowed = this.InitializeCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13);
+
+            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
+            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
+            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
+            _campaign_restricted = this.InitializeCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23);
         }
 
         #endregion
@@ -31,13 +40,15 @@ namespace OneDas.DataManagement.Extensions
 
         public override List<string> GetCampaignNames()
         {
-            return new List<string> { "/ANY_EXTERNAL_DATABASE/TEST/TEST" };
+            return new List<string> { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
         }
 
         public override CampaignInfo GetCampaign(string campaignName)
         {
-            if (campaignName == _campaign.Id)
-                return _campaign;
+            if (campaignName == _campaign_allowed.Id)
+                return _campaign_allowed;
+            else if (campaignName == _campaign_restricted.Id)
+                return _campaign_restricted;
             else
                 throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
         }
@@ -83,8 +94,8 @@ namespace OneDas.DataManagement.Extensions
             var beginTime = begin.ToUnixTimeStamp();
             var endTime = end.ToUnixTimeStamp();
 
-            var length = (int)((end - begin).TotalSeconds * (double)dataset.SampleRate.SamplesPerSecond);
-            var dt = (double)(1 / dataset.SampleRate.SamplesPerSecond);
+            var length = (int)((end - begin).TotalSeconds * (double)dataset.GetSampleRate().SamplesPerSecond);
+            var dt = (double)(1 / dataset.GetSampleRate().SamplesPerSecond);
             var dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime);
 
             var data = dataDouble.Select(value => (T)Convert.ChangeType(value, typeof(T))).ToArray();
@@ -93,13 +104,13 @@ namespace OneDas.DataManagement.Extensions
             return (data, statusSet);
         }
 
-        private void InitializeCampaign()
+        private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3)
         {
-            _campaign = new CampaignInfo("/ANY_EXTERNAL_DATABASE/TEST/TEST");
+            var campaign = new CampaignInfo(campaignName);
 
-            var variable1 = new VariableInfo("7dec6d79-b92e-4af2-9358-21be1f3626c9", _campaign);
-            var variable2 = new VariableInfo("cf50190b-fd2a-477b-9655-48f4f41ba7bf", _campaign);
-            var variable3 = new VariableInfo("f01b6a96-1de6-4caa-9205-184d8a3eb2f8", _campaign);
+            var variable1 = new VariableInfo(id1, campaign);
+            var variable2 = new VariableInfo(id2, campaign);
+            var variable3 = new VariableInfo(id3, campaign);
 
             var dataset1 = new DatasetInfo("25 Hz", variable1) { DataType = OneDasDataType.INT32 };
             var dataset2 = new DatasetInfo("1 s_max", variable2) { DataType = OneDasDataType.FLOAT64 };
@@ -137,12 +148,14 @@ namespace OneDas.DataManagement.Extensions
             variable3.VariableGroups.Add("Group 2");
             variable3.Units.Add("°C");
 
-            _campaign.Variables = new List<VariableInfo>()
+            campaign.Variables = new List<VariableInfo>()
             {
                 variable1,
                 variable2,
                 variable3
             };
+
+            return campaign;
         }
 
         #endregion

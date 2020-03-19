@@ -28,13 +28,16 @@ namespace OneDas.DataManagement.Database
 
         public bool IsNative { get; set; } = true;
 
-#warning Encode SamplesPerDay in DatasetInfo instead of name?
-
-        public SampleRateContainer SampleRate => new SampleRateContainer(this.Id);
-
         #endregion
 
         #region "Methods"
+
+#warning Encode SamplesPerDay in DatasetInfo instead of name?
+
+        public SampleRateContainer GetSampleRate()
+        {
+            return new SampleRateContainer(this.Id);
+        }
 
         public override string GetPath()
         {

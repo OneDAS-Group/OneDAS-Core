@@ -44,6 +44,24 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         #region Methods
 
+        public Task<List<VariableInfo>> GetChannelInfos(List<string> channelNames)
+        {
+            return Task.FromResult(channelNames.Select(channelName =>
+            {
+                // dataset
+                if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
+                    throw new Exception($"Could not find channel with name '{channelName}'.");
+
+                var campaign = (CampaignInfo)dataset.Parent.Parent;
+
+                // security check
+                if (!this.IsCampaignAccessible(campaign, _databaseManager.Config.RestrictedCampaigns))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access the channel '{channelName}'.");
+
+                return (VariableInfo)dataset.Parent;
+            }).ToList());
+        }
+
         public ChannelReader<string> ExportData(DateTime begin,
                                                 DateTime end,
                                                 FileFormat fileFormat,
@@ -87,15 +105,17 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             Exception localException = null;
 
-            var message = $"{remoteIpAddress} streamed data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
-
+            var message = $"{remoteIpAddress} streamed data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
             _logger.LogInformation(message);
+
+            DateTime.SpecifyKind(begin, DateTimeKind.Utc);
+            DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
             try
             {
                 _stateManager.CheckState();
 
-                // datasetInfo
+                // dataset
                 if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
                     throw new Exception($"Could not find channel with name '{channelName}'.");
 
@@ -153,9 +173,11 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             Exception localException = null;
 
-            var message = $"{remoteIpAddress} exported data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
-
+            var message = $"{remoteIpAddress} exported data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
             _logger.LogInformation(message);
+
+            DateTime.SpecifyKind(begin, DateTimeKind.Utc);
+            DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
             try
             {
@@ -187,7 +209,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                         return dataset;
                     }).ToList();
 
-                    var sampleRates = datasets.Select(dataset => dataset.SampleRate);
+                    var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
 
                     if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
                         throw new Exception("Channels with different sample rates have been requested.");

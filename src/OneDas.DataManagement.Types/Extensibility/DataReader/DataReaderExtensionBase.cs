@@ -120,7 +120,7 @@ namespace OneDas.DataManagement.Extensibility
             var bytesPerFP = datasets.Sum(dataset =>
             {
                 var bytesPerSample = OneDasUtilities.SizeOf(dataset.DataType);
-                var samplesPerMinute = dataset.SampleRate.SamplesPerSecond * 60;
+                var samplesPerMinute = dataset.GetSampleRate().SamplesPerSecond * 60;
                 var bytesPerFP = bytesPerSample * samplesPerMinute * minutesPerFP;
 
                 return bytesPerFP;

@@ -169,7 +169,7 @@ namespace OneDas.DataManagement.Extensions
             T[] data = null;
             byte[] statusSet = null;
 
-            var samplesPerDay = dataset.SampleRate.SamplesPerDay;
+            var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
             (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
 
             this.SwitchLocation(() =>

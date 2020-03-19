@@ -267,7 +267,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
             try
             {
-                var sampleRate = dataset.SampleRate;
+                var sampleRate = dataset.GetSampleRate();
                 var vdsLength = (ulong)(epochEnd - epochStart).Days * sampleRate.SamplesPerDay;
 
                 spaceId = H5S.create_simple(1, new ulong[] { vdsLength }, new ulong[] { H5S.UNLIMITED });
