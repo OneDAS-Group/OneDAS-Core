@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
@@ -11,16 +12,14 @@ namespace OneDas.DataManagement.Explorer.Core
         #region Fields
 
         private static JwtSecurityTokenHandler _tokenHandler = new JwtSecurityTokenHandler();
-        private UserManager<TUser> _userManager;
         private SignInManager<TUser> _signInManager;
 
         #endregion
 
         #region Constructors
 
-        public JwtService(UserManager<TUser> userManager, SignInManager<TUser> signInManager)
+        public JwtService(SignInManager<TUser> signInManager)
         {
-            _userManager = userManager;
             _signInManager = signInManager;
         }
 
@@ -31,7 +30,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public async Task<string> GenerateTokenAsync(UserCredentials credentials)
         {
             var result = string.Empty;
-            var user = await _userManager.FindByNameAsync(credentials.Username);
+            var user = await _signInManager.UserManager.FindByNameAsync(credentials.Username);
 
             if (user != null)
             {
@@ -39,7 +38,10 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 if (signInResult.Succeeded)
                 {
-                    var claims = await _userManager.GetClaimsAsync(user);
+                    var claims = await _signInManager.UserManager.GetClaimsAsync(user);
+                    claims.Add(new Claim(ClaimTypes.Name, credentials.Username));
+                    claims.Add(new Claim(ClaimTypes.Email, credentials.Username));
+
                     var signingCredentials = new SigningCredentials(Startup.SecurityKey, SecurityAlgorithms.HmacSha256);
 
                     var token = new JwtSecurityToken(issuer: "OneDAS Explorer",

@@ -63,7 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{DE065826-114
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.PackageManagement", "src\OneDas.PackageManagement\OneDas.PackageManagement.csproj", "{EB86576C-D566-497E-9EC5-C4287E24A051}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Interface", "src\OneDas.DataManagement.Interface\OneDas.DataManagement.Interface.csproj", "{269F03CF-0A2A-4212-AAC7-E6CF12999114}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Connector", "src\OneDas.DataManagement.Connector\OneDas.DataManagement.Connector.csproj", "{269F03CF-0A2A-4212-AAC7-E6CF12999114}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Convert", "src\OneDas.DataManagement.Convert\OneDas.DataManagement.Convert.csproj", "{0BDF7D04-06A2-4B29-838F-55F891B9F3FB}"
 EndProject
@@ -98,6 +98,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Core", "src\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj", "{D8F9AD6E-1B43-4E9D-88C2-D46338A157C2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.DataManagement.Explorer", "src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj", "{1042FC81-FE35-402F-98A5-944032B9134E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneDas.Core.ConnectorTests", "tests\OneDas.Core.ConnectorTests\OneDas.Core.ConnectorTests.csproj", "{CB4C6ACC-B055-4128-845A-2848C044B654}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -437,6 +439,18 @@ Global
 		{1042FC81-FE35-402F-98A5-944032B9134E}.Release|x64.Build.0 = Release|Any CPU
 		{1042FC81-FE35-402F-98A5-944032B9134E}.Release|x86.ActiveCfg = Release|Any CPU
 		{1042FC81-FE35-402F-98A5-944032B9134E}.Release|x86.Build.0 = Release|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Debug|x64.Build.0 = Debug|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Debug|x86.Build.0 = Debug|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Release|x64.ActiveCfg = Release|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Release|x64.Build.0 = Release|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Release|x86.ActiveCfg = Release|Any CPU
+		{CB4C6ACC-B055-4128-845A-2848C044B654}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -474,6 +488,7 @@ Global
 		{1006997C-C7EC-4176-BA7B-9C8FCFE7F010} = {28552ECD-9437-4D06-9B4C-96A7FDB069E3}
 		{D8F9AD6E-1B43-4E9D-88C2-D46338A157C2} = {542D946C-E4D9-4A6A-99FD-6C1B940A81F1}
 		{1042FC81-FE35-402F-98A5-944032B9134E} = {28552ECD-9437-4D06-9B4C-96A7FDB069E3}
+		{CB4C6ACC-B055-4128-845A-2848C044B654} = {3DBD52E4-26F8-413F-A954-2BE86E572F3E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F998BD6D-3E2B-4AA0-A7A4-FD84100C45A4}

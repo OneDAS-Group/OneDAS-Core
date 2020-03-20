@@ -2,19 +2,19 @@
 Initialize()
 import System.*
 import OneDas.Infrastructure.*
+import OneDas.DataManagement.Connector.*
 import OneDas.DataManagement.Infrastructure.*
-import OneDas.DataManagement.Interface.*
 
 % variable definition
 hostName                = 'ID5052';
 port                    = 8080;
-dateTimeBegin           = DateTime(2019, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-dateTimeEnd             = DateTime(2019, 03, 25, 0, 0, 0, DateTimeKind.Utc);
+dateTimeBegin           = DateTime(2020, 03, 01, 0, 0, 0, DateTimeKind.Utc);
+dateTimeEnd             = DateTime(2020, 03, 02, 0, 0, 0, DateTimeKind.Utc);
 targetDirectoryPath     = 'data';
 
 channelNames = { ...
-    '/ANY_EXTERNAL_DATABASE/TEST/TEST/varB/1 s_max';
-    '/ANY_EXTERNAL_DATABASE/TEST/TEST/varB/1 s_mean';
+    '/IN_MEMORY/ALLOWED/TEST/T/1 s'
+    '/IN_MEMORY/ALLOWED/TEST/unix_time2/1 s_mean'
 };
 
 % translate variable list into .NET string array
@@ -25,8 +25,9 @@ for channel = channelNames(:).'
 end
 
 % download and extract
-settings = DownloadSettings( ...
+settings = ExportSettings( ...
     dateTimeBegin, dateTimeEnd, ...
+    FileFormat.MAT73, ...
     FileGranularity.Day, ...
     channels ...
 );

@@ -91,12 +91,37 @@ namespace OneDas.DataManagement.Extensions
 
         protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
+            double[] dataDouble;
+
             var beginTime = begin.ToUnixTimeStamp();
             var endTime = end.ToUnixTimeStamp();
 
             var length = (int)((end - begin).TotalSeconds * (double)dataset.GetSampleRate().SamplesPerSecond);
             var dt = (double)(1 / dataset.GetSampleRate().SamplesPerSecond);
-            var dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime);
+
+            if (dataset.Parent.Id.Contains("unix_time"))
+            {
+                dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime).ToArray();
+            }
+            else // temperature
+            {
+                var kernelSize = 1000;
+                var movingAverage = new double[kernelSize];
+                var random = new Random();
+                var mean = 15;
+
+                dataDouble = new double[length];
+
+                for (int i = 0; i < length; i++)
+                {
+                    movingAverage[i % kernelSize] = (random.NextDouble() - 0.5) * mean * 10 + mean;
+
+                    if (movingAverage[kernelSize-1] == 0)
+                        dataDouble[i] = mean;
+                    else
+                        dataDouble[i] = movingAverage.Sum() / kernelSize;
+                }
+            }
 
             var data = dataDouble.Select(value => (T)Convert.ChangeType(value, typeof(T))).ToArray();
             var statusSet = Enumerable.Range(0, length).Select(value => (byte)1).ToArray();
@@ -108,51 +133,52 @@ namespace OneDas.DataManagement.Extensions
         {
             var campaign = new CampaignInfo(campaignName);
 
-            var variable1 = new VariableInfo(id1, campaign);
-            var variable2 = new VariableInfo(id2, campaign);
-            var variable3 = new VariableInfo(id3, campaign);
+            var variableA = new VariableInfo(id1, campaign);
+            var variableB = new VariableInfo(id2, campaign);
+            var variableC = new VariableInfo(id3, campaign);
 
-            var dataset1 = new DatasetInfo("25 Hz", variable1) { DataType = OneDasDataType.INT32 };
-            var dataset2 = new DatasetInfo("1 s_max", variable2) { DataType = OneDasDataType.FLOAT64 };
-            var dataset3 = new DatasetInfo("1 s_mean", variable2) { DataType = OneDasDataType.FLOAT64 };
-            var dataset4 = new DatasetInfo("25 Hz", variable3) { DataType = OneDasDataType.INT32 };
+            var dataset1 = new DatasetInfo("25 Hz", variableA) { DataType = OneDasDataType.INT32 };
+            var dataset2 = new DatasetInfo("1 s_max", variableB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset3 = new DatasetInfo("1 s_mean", variableB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset4 = new DatasetInfo("1 s", variableC) { DataType = OneDasDataType.FLOAT64 };
 
             // variable 1
-            variable1.Datasets = new List<DatasetInfo>()
+            variableA.Datasets = new List<DatasetInfo>()
             {
                 dataset1
             };
 
-            variable1.VariableNames.Add("varA");
-            variable1.VariableGroups.Add("Group 1");
-            variable1.Units.Add("°C");
+            variableA.VariableNames.Add("unix_time1");
+            variableA.VariableGroups.Add("Group 1");
+            variableA.Units.Add("");
 
             // variable 2
-            variable2.Datasets = new List<DatasetInfo>()
+            variableB.Datasets = new List<DatasetInfo>()
             {
                 dataset2,
                 dataset3
             };
 
-            variable2.VariableNames.Add("varB");
-            variable2.VariableGroups.Add("Group 1");
-            variable2.Units.Add("m/s");
+            variableB.VariableNames.Add("unix_time2");
+            variableB.VariableGroups.Add("Group 1");
+            variableB.Units.Add("");
 
             // variable 3
-            variable3.Datasets = new List<DatasetInfo>()
+            variableC.Datasets = new List<DatasetInfo>()
             {
                 dataset4
             };
 
-            variable3.VariableNames.Add("varC");
-            variable3.VariableGroups.Add("Group 2");
-            variable3.Units.Add("°C");
+            variableC.VariableNames.Add("T");
+            variableC.VariableGroups.Add("Group 2");
+            variableC.Units.Add("°C");
 
+            // campaign
             campaign.Variables = new List<VariableInfo>()
             {
-                variable1,
-                variable2,
-                variable3
+                variableA,
+                variableB,
+                variableC
             };
 
             return campaign;

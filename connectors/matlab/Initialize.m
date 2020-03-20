@@ -2,7 +2,7 @@ function Initialize
 
     import System.IO.*
     
-    directoryPath   = fullfile(pwd, 'OneDas.DataManagement.Interface');
+    directoryPath   = fullfile(pwd, 'OneDas.DataManagement.Connector');
     fileNameSet     = Directory.GetFiles(directoryPath, '*.dll');
     fileNameSet     = cell(fileNameSet).';
     

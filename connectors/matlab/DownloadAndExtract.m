@@ -1,18 +1,13 @@
+%%%%%%%%%% TODO: TEST ALSO WITHOUT AUTH %%%%%%%%%%%%%
 function DownloadAndExtract(hostName, port, targetDirectoryPath, settings)
 
     import System.*
-    import OneDas.DataManagement.Interface.*
+    import OneDas.DataManagement.Connector.*
     
     % instantiate downloader, connect to server and download data
-    downloader = Downloader(hostName, port, @(message) Print(message));
-    
-    try
-        downloader.Connect();
-    catch
-        error(['Could not connect to server at ' hostName ':' num2str(port) '.'])
-    end
-    
-    task = downloader.DownloadAndExtract(settings, targetDirectoryPath);
+    connector = OneDasConnector(hostName, port, @(message) Print(message), "test@root.org", "#test0/User1");
+       
+    task = connector.ExportAsync(settings, targetDirectoryPath);
 %     try
 %         
 %     catch ex
@@ -22,7 +17,6 @@ function DownloadAndExtract(hostName, port, targetDirectoryPath, settings)
     % wait until task is completed, then return
     while (true)
         if (task.IsCompleted)
-            downloader.Disconnect();
             
             if (strcmp(task.Status, 'Faulted'))
                 fprintf('Failed. Reason: %s\n', char(task.Exception.InnerException.Message))

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Infrastructure;
@@ -20,6 +21,7 @@ namespace OneDas.DataManagement.Explorer.Core
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerStateManager _stateManager;
+        private SignInManager<IdentityUser> _signInManager;
         private OneDasExplorerOptions _options;
 
         #endregion
@@ -28,11 +30,13 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public DataService(OneDasExplorerStateManager stateManager,
                            OneDasDatabaseManager databaseManager,
+                           SignInManager<IdentityUser> signInManager,
                            ILoggerFactory loggerFactory,
                            IOptions<OneDasExplorerOptions> options)
         {
             _stateManager = stateManager;
             _databaseManager = databaseManager;
+            _signInManager = signInManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _options = options.Value;
 
@@ -61,26 +65,34 @@ namespace OneDas.DataManagement.Explorer.Core
         }
 
         public Task<string> ExportDataAsync(IPAddress remoteIpAddress,
-                                             DateTime begin,
-                                             DateTime end,
-                                             SampleRateContainer sampleRate,
-                                             FileFormat fileFormat,
-                                             FileGranularity fileGranularity,
-                                             List<DatasetInfo> datasets,
-                                             CancellationToken cancellationToken)
+                                            DateTime begin,
+                                            DateTime end,
+                                            SampleRateContainer sampleRate,
+                                            FileFormat fileFormat,
+                                            FileGranularity fileGranularity,
+                                            List<DatasetInfo> datasets,
+                                            CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 _stateManager.CheckState();
 
-                var message = $"{remoteIpAddress} requested data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
-                _logger.LogInformation(message);
-
                 if (!datasets.Any() || begin == end)
                     return string.Empty;
 
+                // log
+                string userName;
+
+                if (_signInManager.Context.User.Identity.IsAuthenticated)
+                    userName = _signInManager.Context.User.Identity.Name;
+                else
+                    userName = "anonymous";
+
+                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
+                _logger.LogInformation(message);
+
                 // zip file
-                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString()}.zip");
+                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
 
                 // sampleRate
                 var samplesPerDay = sampleRate.SamplesPerDay;
@@ -96,6 +108,13 @@ namespace OneDas.DataManagement.Explorer.Core
                         var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == fullCampaign.Id).ToList();
                         return fullCampaign.ToSparseCampaign(currentDatasets);
                     });
+
+                    // security check
+                    foreach (var campaign in campaigns)
+                    {
+                        if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                            throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
+                    }
 
                     // start
                     var blockSizeLimit = 50 * 1000 * 1000UL;

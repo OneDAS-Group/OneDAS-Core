@@ -11,7 +11,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer
@@ -44,13 +43,11 @@ namespace OneDas.DataManagement.Explorer
             var isWindowsService = args.Contains("--non-interactive");
 
             // configure logging
-            var serviceProvider = new ServiceCollection().AddLogging(builder =>
+            _loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "HdfExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
-            }).BuildServiceProvider();
-
-            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+            });
 
             // load configuration
             var configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");

@@ -46,20 +46,25 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         public Task<List<VariableInfo>> GetChannelInfos(List<string> channelNames)
         {
-            return Task.FromResult(channelNames.Select(channelName =>
+            // translate channel names
+            var variables = channelNames.Select(channelName =>
             {
-                // dataset
                 if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
                     throw new Exception($"Could not find channel with name '{channelName}'.");
 
-                var campaign = (CampaignInfo)dataset.Parent.Parent;
-
-                // security check
-                if (!this.IsCampaignAccessible(campaign, _databaseManager.Config.RestrictedCampaigns))
-                    throw new UnauthorizedAccessException($"The current user is not authorized to access the channel '{channelName}'.");
-
                 return (VariableInfo)dataset.Parent;
-            }).ToList());
+            }).ToList();
+
+            // security check
+            var campaigns = variables.Select(variable => (CampaignInfo)variable.Parent).Distinct();
+
+            foreach (var campaign in campaigns)
+            {
+                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
+            }
+
+            return Task.FromResult(variables);
         }
 
         public ChannelReader<string> ExportData(DateTime begin,
@@ -80,9 +85,9 @@ namespace OneDas.DataManagement.Explorer.Hubs
             return channel.Reader;
         }
 
-        public ChannelReader<double[]> StreamData(string channelName,
-                                                  DateTime begin,
+        public ChannelReader<double[]> StreamData(DateTime begin,
                                                   DateTime end,
+                                                  string channelName,
                                                   CancellationToken cancellationToken)
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
@@ -91,75 +96,9 @@ namespace OneDas.DataManagement.Explorer.Hubs
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => this.InternalStreamData(channel.Writer, remoteIpAddress, channelName, begin, end, cancellationToken));
+            _ = Task.Run(() => this.InternalStreamData(channel.Writer, remoteIpAddress, begin, end, channelName, cancellationToken));
 
             return channel.Reader;
-        }
-
-        public void InternalStreamData(ChannelWriter<double[]> writer,
-                                       IPAddress remoteIpAddress,
-                                       string channelName,
-                                       DateTime begin,
-                                       DateTime end,
-                                       CancellationToken cancellationToken)
-        {
-            Exception localException = null;
-
-            var message = $"{remoteIpAddress} streamed data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
-            _logger.LogInformation(message);
-
-            DateTime.SpecifyKind(begin, DateTimeKind.Utc);
-            DateTime.SpecifyKind(end, DateTimeKind.Utc);
-
-            try
-            {
-                _stateManager.CheckState();
-
-                // dataset
-                if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
-                    throw new Exception($"Could not find channel with name '{channelName}'.");
-
-                var campaign = (CampaignInfo)dataset.Parent.Parent;
-
-                // security check
-                if (!this.IsCampaignAccessible(campaign, _databaseManager.Config.RestrictedCampaigns))
-                    throw new UnauthorizedAccessException($"The current user is not authorized to access the channel '{channelName}'.");
-
-                // dataReader
-                var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.AggregationDataReader;
-
-                // progress changed event handling
-                var handler = (EventHandler<double>)((sender, e) =>
-                {
-                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e, cancellationToken);
-                });
-
-                dataReader.Progress.ProgressChanged += handler;
-
-                try
-                {
-                    // read and stream data
-                    dataReader.Read(dataset, begin, end, 5 * 1000 * 1000UL, async progressRecord =>
-                    {
-                        var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
-                        var doubleData = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
-
-                        await writer.WriteAsync(doubleData, cancellationToken);
-                    }, cancellationToken);
-                }
-                finally
-                {
-                    dataReader.Progress.ProgressChanged -= handler;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                localException = ex;
-            }
-
-            _logger.LogInformation($"{message} Done.");
-            writer.TryComplete(localException);
         }
 
         private async void InternalExportData(ChannelWriter<string> writer,
@@ -172,9 +111,6 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                               CancellationToken cancellationToken)
         {
             Exception localException = null;
-
-            var message = $"{remoteIpAddress} exported data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
-            _logger.LogInformation(message);
 
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
             DateTime.SpecifyKind(end, DateTimeKind.Utc);
@@ -200,11 +136,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                         if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
                             throw new Exception($"Could not find the channel with name '{channelName}'.");
 
-                        var campaign = (CampaignInfo)dataset.Parent.Parent;
-
-                        // security check
-                        if (!this.IsCampaignAccessible(campaign, _databaseManager.Config.RestrictedCampaigns))
-                            throw new UnauthorizedAccessException($"The current user is not authorized to access the channel '{channelName}'.");
+                        // security check comes later in DataService
 
                         return dataset;
                     }).ToList();
@@ -235,14 +167,81 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 localException = ex;
             }
 
-            _logger.LogInformation($"{message} Done.");
             writer.TryComplete(localException);
         }
 
-        private bool IsCampaignAccessible(CampaignInfo campaign, List<string> restrictedCampaigns)
+        public void InternalStreamData(ChannelWriter<double[]> writer,
+                                       IPAddress remoteIpAddress,
+                                       DateTime begin,
+                                       DateTime end,
+                                       string channelName,
+                                       CancellationToken cancellationToken)
         {
-            var principal = this.Context.User;
-            return Utilities.IsCampaignAccessible(principal, campaign, restrictedCampaigns);
+            Exception localException = null;
+
+            // log
+            string userName;
+
+            if (this.Context.User.Identity.IsAuthenticated)
+                userName = this.Context.User.Identity.Name;
+            else
+                userName = "anonymous";
+
+            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
+            _logger.LogInformation(message);
+
+            DateTime.SpecifyKind(begin, DateTimeKind.Utc);
+            DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+            try
+            {
+                _stateManager.CheckState();
+
+                // dataset
+                if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
+                    throw new Exception($"Could not find channel with name '{channelName}'.");
+
+                var campaign = (CampaignInfo)dataset.Parent.Parent;
+
+                // security check
+                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access the campaign '{campaign.Id}'.");
+
+                // dataReader
+                var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.AggregationDataReader;
+
+                // progress changed event handling
+                var handler = (EventHandler<double>)((sender, e) =>
+                {
+                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e, "Loading data ...", cancellationToken);
+                });
+
+                dataReader.Progress.ProgressChanged += handler;
+
+                try
+                {
+                    // read and stream data
+                    dataReader.Read(dataset, begin, end, 5 * 1000 * 1000UL, async progressRecord =>
+                    {
+                        var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
+                        var doubleData = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+
+                        await writer.WriteAsync(doubleData, cancellationToken);
+                    }, cancellationToken);
+                }
+                finally
+                {
+                    dataReader.Progress.ProgressChanged -= handler;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                localException = ex;
+            }
+
+            _logger.LogInformation($"{message} Done.");
+            writer.TryComplete(localException);
         }
 
         #endregion

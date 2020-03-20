@@ -1,17 +1,19 @@
-﻿using OneDas.Infrastructure;
+﻿using OneDas.DataManagement.Infrastructure;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 
-namespace OneDas.DataManagement.Interface
+namespace OneDas.DataManagement.Connector
 {
-    public class DownloadSettings
+    public class ExportSettings
     {
         #region Constructors
 
-        public DownloadSettings(DateTime dateTimeBegin, DateTime dateTimeEnd, FileGranularity fileGranularity, List<string> channelNames)
+        public ExportSettings(DateTime dateTimeBegin, DateTime dateTimeEnd, FileFormat fileFormat, FileGranularity fileGranularity, List<string> channelNames)
         {
             this.DateTimeBegin = dateTimeBegin;
             this.DateTimeEnd = dateTimeEnd;
+            this.FileFormat = fileFormat;
             this.FileGranularity = fileGranularity;
             this.ChannelNames = channelNames;
         }
@@ -23,6 +25,8 @@ namespace OneDas.DataManagement.Interface
         public DateTime DateTimeBegin { get; private set; }
 
         public DateTime DateTimeEnd { get; private set; }
+
+        public FileFormat FileFormat { get; private set; }
 
         public FileGranularity FileGranularity { get; private set; }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OneDas.DataManagement.Interface
+namespace OneDas.DataManagement.Connector
 {
     public class Logger
     {

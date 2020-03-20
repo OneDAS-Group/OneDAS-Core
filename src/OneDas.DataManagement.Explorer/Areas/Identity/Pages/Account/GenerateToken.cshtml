@@ -16,6 +16,9 @@
         var credentials = JsonSerializer.Deserialize<UserCredentials>(jsonString);
         var token = await jwtService.GenerateTokenAsync(credentials);
 
-        return new JsonResult(token);
+        if (!string.IsNullOrWhiteSpace(token))
+            return new JsonResult(token);
+        else
+            return this.Unauthorized();       
     }
 }

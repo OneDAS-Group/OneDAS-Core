@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -53,9 +54,7 @@ namespace OneDas.DataManagement.Explorer
             services.AddAuthentication(options =>
             {
                 // Identity made Cookie authentication the default.
-                // However, we want JWT Bearer Auth to be the default.
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                // Custom authentication needed (see app.Use(...) below).
             })
                 .AddJwtBearer(options =>
                 {
@@ -158,6 +157,7 @@ namespace OneDas.DataManagement.Explorer
                 app.UseExceptionHandler("/Error");
             }
 
+            // static files
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -175,11 +175,30 @@ namespace OneDas.DataManagement.Explorer
                 RequestPath = "/export"
             });
 
+            // routing
             app.UseRouting();
 
+            // default authentication
             app.UseAuthentication();
+
+            // custom authentication (to also authenticate via JWT bearer)
+            app.Use(async (context, next) =>
+            {
+                if (!context.User.Identity.IsAuthenticated)
+                {
+                    var principal = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+
+                    if (principal.Succeeded)
+                        context.User = principal.Principal;
+                }
+
+                await next();
+            });
+
+            // authorization
             app.UseAuthorization();
 
+            // endpoints
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
