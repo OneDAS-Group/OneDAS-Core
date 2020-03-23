@@ -59,7 +59,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
 
                 var promise = new Promise(function (resolve, reject) {
 
-                    connection.stream("StreamData", chartEntry.path, beginDate, endDate)
+                    connection.stream("StreamData", beginDate, endDate, chartEntry.path)
                         .subscribe({
                             next: (item) => {
                                 for (var i = 0; i < item.length; i++) {
