@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.DataManagement.Interface\OneDas.DataManagement.Connector.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.DataManagement.Connector\OneDas.DataManagement.Connector.csproj" />
   </ItemGroup>
 
 </Project>
