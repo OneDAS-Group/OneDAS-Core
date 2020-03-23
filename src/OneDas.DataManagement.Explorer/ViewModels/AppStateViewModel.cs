@@ -576,7 +576,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             var principal = authState.User;
             var visibleCampaigns = new List<CampaignContainer>();
 
-            return campaignContainers.Where(campaignContainer => Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)).ToList();
+            return campaignContainers.Where(campaignContainer =>
+            {
+                return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)
+                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
+            }).ToList();
         }
 
         #endregion

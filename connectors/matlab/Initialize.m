@@ -8,8 +8,10 @@ function Initialize
     
     for fileName = fileNameSet.'
         try
+            state = warning('off','all');
             NET.addAssembly(char(fileName));
         catch
+            warning(state)
 %             warning('Could not load ''%s\''.\n', char(fileName))
         end
     end

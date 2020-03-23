@@ -9,6 +9,11 @@ from OneDasConnector import OneDasConnector, SampleRateConverter
 async def main():
 
     # settings
+    host = "localhost"
+    port = 8080
+    username = "test@root.org"
+    password = "#test0/User1" # password = input("Please enter you password: ")
+
     begin = datetime.now(timezone.utc) + timedelta(days=-2)
     end = datetime.now(timezone.utc) + timedelta(days=-1)
 
@@ -16,9 +21,9 @@ async def main():
         "/IN_MEMORY/ALLOWED/TEST/T/1 s",
         "/IN_MEMORY/ALLOWED/TEST/unix_time2/1 s_mean"
     ]
-
+  
     # load data
-    connector = OneDasConnector("localhost", 8080, "test@root.org", "#test0/User1") # or without authentication: ... = OneDasConnector("localhost", 8080)
+    connector = OneDasConnector(host, port, username, password) # or without authentication: ... = OneDasConnector(host, port)
     data = await connector.load(begin, end, channels)
 
     # prepare plot

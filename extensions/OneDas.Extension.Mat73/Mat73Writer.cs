@@ -79,7 +79,8 @@ namespace OneDas.Extension.Mat73
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z.mat");
+            var campaignDescription = this.DataWriterContext.CampaignDescription;
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{campaignDescription.PrimaryGroupName}_{campaignDescription.SecondaryGroupName}_{campaignDescription.CampaignName}_V{campaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.mat");
 
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
@@ -175,7 +176,7 @@ namespace OneDas.Extension.Mat73
                 }
 
                 // info
-                groupId = this.OpenOrCreateStruct(_fileId, "info").GroupId;
+                groupId = this.OpenOrCreateStruct(_fileId, "/info").GroupId;
 
                 (datasetId, isNew) = this.OpenOrCreateVariable(groupId, "last_completed_chunk", 1, 1);
 

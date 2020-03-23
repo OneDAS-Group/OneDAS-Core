@@ -11,14 +11,15 @@ from zipfile import ZipFile
 
 import requests
 from signalrcore_async.hub_connection_builder import HubConnectionBuilder
+from signalrcore_async.protocol.msgpack import MessagePackHubProtocol
 
 
 class ChannelInfo():
     def __init__(self, dict, channel, data):
-        self.name = dict["variableNames"][-1]
-        self.group = dict["variableGroups"][-1]
-        self.unit = dict["units"][-1]
-        self.transfer_functions = dict["transferFunctions"]
+        self.name = dict["VariableNames"][-1]
+        self.group = dict["VariableGroups"][-1]
+        self.unit = dict["Units"][-1]
+        self.transfer_functions = dict["TransferFunctions"]
         self.dataset_name = channel.split('/')[-1]
         self.values = data
 
@@ -57,9 +58,9 @@ class OneDasConnector():
 
     url = None
     buffer = None
-    channel_count = None
-    channel_index = None
-    is_stream = None
+    _channel_count = None
+    _channel_index = None
+    _is_stream = None
 
     def __init__(self, host, port, username="default", password="default", secure=False):
         
@@ -81,11 +82,11 @@ class OneDasConnector():
     
     async def load(self, begin, end, channels) -> List[ChannelInfo]:
 
-        self.is_stream = True
-        self.channel_count = len(channels)
+        self._is_stream = True
+        self._channel_count = len(channels)
 
-        beginString = begin.replace(second=0).replace(microsecond=0).isoformat()
-        endString = end.replace(second=0).replace(microsecond=0).isoformat()
+        begin = begin.replace(second=0, microsecond=0)
+        end = end.replace(second=0, microsecond=0)
         result = {}
 
         try:
@@ -94,8 +95,8 @@ class OneDasConnector():
 
             for i, channel in enumerate(channels):
                 self.buffer = []
-                self.channel_index = i
-                await self.connection.stream("StreamData", [beginString, endString, channel], self._on_next)
+                self._channel_index = i
+                await self.connection.stream("StreamData", [begin, end, channel], self._on_next)
                 result[channel] = ChannelInfo(rawChannelInfos[i], channel, self.buffer)
 
         finally:
@@ -105,16 +106,17 @@ class OneDasConnector():
 
     async def export(self, begin, end, format, granularity, channels, target_folder):
 
-        self.is_stream = False
-        self.channel_count = len(channels)
+        self._is_stream = False
+        self._channel_index = 0
+        self._channel_count = len(channels)
 
-        beginString = begin.replace(second=0).replace(microsecond=0).isoformat()
-        endString = end.replace(second=0).replace(microsecond=0).isoformat()
+        begin = begin.replace(second=0, microsecond=0)
+        end = end.replace(second=0, microsecond=0)
         result = {}
 
         try:
             await self.connection.start()
-            await self.connection.stream("ExportData", [beginString, endString, format.value, granularity.value, channels], self._on_next)
+            await self.connection.stream("ExportData", [begin, end, format, granularity, channels], self._on_next)
 
             # download and extract zip file
             with NamedTemporaryFile() as target_file:
@@ -145,7 +147,7 @@ class OneDasConnector():
         return result
 
     def _on_next(self, data):
-        if self.is_stream:
+        if self._is_stream:
             self.buffer.extend(data)
         else:
             self.url = data
@@ -154,8 +156,8 @@ class OneDasConnector():
         message = args[1]
         progress = args[0]
 
-        if (self.is_stream):
-            progress = (self.channel_index + progress) / self.channel_count
+        if (self._is_stream):
+            progress = (self._channel_index + progress) / self._channel_count
 
         self.logger.info(f"{progress * 100:3.0f}%: {message}")
 
@@ -181,10 +183,12 @@ class OneDasConnector():
         if username == "default":
             return HubConnectionBuilder()\
                 .with_url(hub_url)\
+                .with_hub_protocol(MessagePackHubProtocol())\
                 .build()
         else:
             return HubConnectionBuilder()\
                 .with_url(hub_url, options={
                     "access_token_factory": lambda: self._get_jwt_token(login_url, username, password)
                 })\
+                .with_hub_protocol(MessagePackHubProtocol())\
                 .build()

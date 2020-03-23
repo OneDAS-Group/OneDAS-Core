@@ -90,7 +90,7 @@ namespace OneDas.DataManagement.Extensions
 
             this.SwitchLocation(() =>
             {
-                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
+                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
 
                 if (totalDays <= 365)
                 {
@@ -175,10 +175,10 @@ namespace OneDas.DataManagement.Extensions
             this.SwitchLocation(() =>
             {
                 var datasetPath = dataset.GetPath();
-                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start: start, block: block);
+                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
 
                 if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, block, 1).Cast<byte>().ToArray();
+                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
             });
 
             return (data, statusSet);

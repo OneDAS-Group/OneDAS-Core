@@ -10,6 +10,11 @@ from OneDasConnector import (FileFormat, FileGranularity, OneDasConnector,
 async def main():
 
     # settings
+    host = "localhost"
+    port = 8080
+    username = "test@root.org"
+    password = "#test0/User1" # password = input("Please enter you password: ")
+
     begin = datetime.now(timezone.utc) + timedelta(days=-2)
     end = datetime.now(timezone.utc) + timedelta(days=-1)
 
@@ -21,7 +26,7 @@ async def main():
     target_folder = "data"
 
     # export data
-    connector = OneDasConnector("localhost", 8080, "test@root.org", "#test0/User1") # or without authentication: ... = OneDasConnector("localhost", 8080)
+    connector = OneDasConnector(host, port, username, password) # or without authentication: ... = OneDasConnector(host, port)
     await connector.export(begin, end, FileFormat.MAT73, FileGranularity.Day, channels, target_folder)   
 
 asyncio.run(main())

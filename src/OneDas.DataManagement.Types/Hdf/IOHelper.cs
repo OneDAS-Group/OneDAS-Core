@@ -140,7 +140,7 @@ namespace OneDas.DataManagement.Hdf
             return result;
         }
 
-        public static T[] ReadDataset<T>(long locationId, string datasetPath, ulong start = 0, ulong stride = 1, ulong block = 0, ulong count = 1)
+        public static T[] ReadDataset<T>(long locationId, string datasetPath, ulong start = 0, ulong block = 0)
         {
             long datasetId = -1;
             long dataspaceId = -1;
@@ -154,7 +154,7 @@ namespace OneDas.DataManagement.Hdf
                 if (H5I.is_valid(datasetId) <= 0)
                     throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
 
-                if (start == 0 && stride == 0 && block == 0 && count == 0)
+                if (start == 0 && block == 0)
                 {
                     result = IOHelper.Read<T>(datasetId, DataContainerType.Dataset);
                 }
@@ -162,7 +162,7 @@ namespace OneDas.DataManagement.Hdf
                 {
                     dataspaceId = H5D.get_space(datasetId);
 
-                    if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { block }, new ulong[] { count }) < 0)
+                    if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { 1 }, new ulong[] { block }, new ulong[] { 1 }) < 0)
                         throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
 
                     result = IOHelper.Read<T>(datasetId, DataContainerType.Dataset, dataspaceId);
@@ -177,7 +177,7 @@ namespace OneDas.DataManagement.Hdf
             return result;
         }
 
-        public static Array ReadDataset(long locationId, string datasetPath, ulong start = 0, ulong stride = 0, ulong block = 0, ulong count = 0)
+        public static Array ReadDataset(long locationId, string datasetPath, ulong start = 0, ulong block = 0)
         {
             long datasetId = -1;
             long dataspaceId = -1;
@@ -194,7 +194,7 @@ namespace OneDas.DataManagement.Hdf
 
                 typeId = H5D.get_type(datasetId);
 
-                if (start == 0 && stride == 0 && block == 0 && count == 0)
+                if (start == 0 && block == 0)
                 {
                     result = (Array)OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
                                                                        BindingFlags.Public | BindingFlags.Static,
@@ -205,7 +205,7 @@ namespace OneDas.DataManagement.Hdf
                 {
                     dataspaceId = H5D.get_space(datasetId);
 
-                    if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block }) < 0)
+                    if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { 1 }, new ulong[] { 1 }, new ulong[] { block }) < 0)
                         throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
 
                     result = (Array)OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),

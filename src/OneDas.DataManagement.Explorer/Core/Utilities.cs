@@ -28,6 +28,23 @@ namespace OneDas.DataManagement.Explorer.Core
             return false;
         }
 
+        public static bool IsCampaignVisible(ClaimsPrincipal principal, CampaignInfo campaign, List<string> hiddenCampaigns)
+        {
+            var identitiy = principal.Identity;
+
+            if (!hiddenCampaigns.Contains(campaign.Id))
+            {
+                return true;
+            }
+            else if (identitiy.IsAuthenticated)
+            {
+                var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
+                return isAdmin;
+            }
+
+            return false;
+        }
+
         public static string GetEnumLocalization(Enum enumValue)
         {
             return EnumerationDescription.ResourceManager.GetString(enumValue.GetType().Name + "_" + enumValue.ToString());
