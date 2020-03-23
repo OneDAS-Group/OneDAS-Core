@@ -10,6 +10,7 @@ namespace OneDas.DataManagement.Database
         {
             this.RootPathToDataReaderIdMap = new Dictionary<string, string>();
             this.AggregationConfigs = new List<AggregationConfig>();
+            this.RestrictedCampaigns = new List<string>();
         }
 
         #endregion
@@ -17,7 +18,10 @@ namespace OneDas.DataManagement.Database
         #region Properties
 
         public Dictionary<string, string> RootPathToDataReaderIdMap { get; set; }
+
         public List<AggregationConfig> AggregationConfigs { get; set; }
+
+        public List<string> RestrictedCampaigns { get; set; }
 
         #endregion
     }

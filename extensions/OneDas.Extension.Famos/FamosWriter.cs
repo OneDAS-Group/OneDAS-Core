@@ -1,6 +1,5 @@
 ﻿using ImcFamosFile;
 using Microsoft.Extensions.Logging;
-using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using System;
@@ -46,24 +45,22 @@ namespace OneDas.Extension.Famos
             this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet);
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
-            IList<ISimpleDataStorage> simpleDataStorageSet;
-
             if (length <= 0)
                 throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
 
-            simpleDataStorageSet = contextGroup.VariableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
+            var simpleBuffers = contextGroup.VariableContextSet.Select(variableContext => variableContext.Buffer.ToSimpleBuffer()).ToList();
 
             var fieldIndex = _spdToFieldIndexMap[contextGroup.SampleRate.SamplesPerDay];
             var field = _famosFile.Fields[fieldIndex];
 
             _famosFile.Edit(writer =>
             {
-                for (int i = 0; i < simpleDataStorageSet.Count; i++)
+                for (int i = 0; i < simpleBuffers.Count; i++)
                 {
                     var component = field.Components[i];
-                    var data = simpleDataStorageSet[i].DataBuffer.Slice((int)dataStorageOffset, (int)length);
+                    var data = simpleBuffers[i].Buffer.Slice((int)bufferOffset, (int)length);
 
                     _famosFile.WriteSingle(writer, component, (int)fileOffset, data);
                 }

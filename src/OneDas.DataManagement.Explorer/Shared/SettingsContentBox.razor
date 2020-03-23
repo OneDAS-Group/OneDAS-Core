@@ -1,0 +1,53 @@
+﻿@inherits AppStateComponentBase
+
+@inject SettingsViewModel settings
+
+<div class="settings-content-box">
+    <MatList>
+        @foreach (var user in settings.Users)
+        {
+            <MatListItem @onclick="() => settings.User = user">
+                @user.UserName
+            </MatListItem>
+        }
+    </MatList>
+
+    @if (settings.Claims != null)
+    {
+        <div class="flex-column">
+            @foreach (var claim in settings.Claims)
+            {
+                <MatTextField @bind-Value="@claim.Type" Label="Claim type"></MatTextField>
+                <MatTextField @bind-Value="@claim.Value" Label="Claim value"></MatTextField>
+                @if (!string.IsNullOrWhiteSpace(claim.Type))
+                {
+                    <MatButton @onclick="() => settings.RemoveClaim(claim)">
+                        <i class="fa fa-minus" aria-hidden="true"></i> &nbsp; Delete
+                    </MatButton>
+                }
+            }
+        </div>
+
+        <MatButton @onclick="settings.SaveChanges">
+            <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
+        </MatButton>
+    }
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        settings.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(SettingsViewModel.Claims))
+            {
+                this.InvokeAsync(() =>
+                {
+                    this.StateHasChanged();
+                });
+            }
+        };
+    }
+
+}

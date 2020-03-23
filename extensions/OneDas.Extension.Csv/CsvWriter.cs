@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OneDas.DataStorage;
 using OneDas.Extensibility;
 using System;
 using System.Collections.Generic;
@@ -104,17 +103,15 @@ namespace OneDas.Extension.Csv
             }
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
-            string dataFilePath;
-            IList<ISimpleDataStorage> simpleDataStorageSet;
-
-            dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version }_{_lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
+            var campaignDescription = this.DataWriterContext.CampaignDescription;
+            var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{campaignDescription.PrimaryGroupName}_{campaignDescription.SecondaryGroupName}_{campaignDescription.CampaignName}_V{campaignDescription.Version }_{_lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
 
             if (length <= 0)
                 throw new Exception(ErrorMessage.CsvWriter_SampleRateTooLow);
 
-            simpleDataStorageSet = contextGroup.VariableContextSet.Select(variableContext => variableContext.DataStorage.ToSimpleDataStorage()).ToList();
+            var simpleBuffers = contextGroup.VariableContextSet.Select(variableContext => variableContext.Buffer.ToSimpleBuffer()).ToList();
 
             using (StreamWriter streamWriter = new StreamWriter(File.Open(dataFilePath, FileMode.Append, FileAccess.Write)))
             {
@@ -132,9 +129,9 @@ namespace OneDas.Extension.Csv
                             throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
                     }
 
-                    for (int i = 0; i < simpleDataStorageSet.Count; i++)
+                    for (int i = 0; i < simpleBuffers.Count; i++)
                     {
-                        var value = simpleDataStorageSet[i].DataBuffer[(int)(dataStorageOffset + rowIndex)];
+                        var value = simpleBuffers[i].Buffer[(int)(bufferOffset + rowIndex)];
                         streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, $"{{0:G{_settings.SignificantPlaces}}}", value) };");
                     }
 

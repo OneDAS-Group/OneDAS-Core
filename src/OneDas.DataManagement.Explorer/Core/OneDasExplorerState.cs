@@ -3,8 +3,6 @@
     public enum OneDasExplorerState
     {
         Inactive = 1,
-        Idle = 2,
-        Updating = 3,
-        Loading = 4
+        Ready = 2
     }
 }

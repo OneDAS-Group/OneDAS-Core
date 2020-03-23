@@ -6,39 +6,36 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public class ZipSettings
     {
-        public ZipSettings(DateTime dateTimeBegin,
-                           CampaignInfo campaign,
+        public ZipSettings(CampaignInfo campaign,
                            DataReaderExtensionBase nativeDataReader,
                            DataReaderExtensionBase aggregationDataReader,
-                           double sampleRate,
-                           ulong start,
-                           ulong block,
-                           ulong segmentLength)
+                           DateTime begin,
+                           DateTime end,
+                           ulong samplesPerDay,
+                           ulong blockSizeLimit)
         {
-            this.DateTimeBegin = dateTimeBegin;
             this.Campaign = campaign;
             this.NativeDataReader = nativeDataReader;
             this.AggregationDataReader = aggregationDataReader;
-            this.SampleRate = sampleRate;
-            this.Start = start;
-            this.Block = block;
-            this.SegmentLength = segmentLength;
+            this.Begin = begin;
+            this.End = end;
+            this.SamplesPerDay = samplesPerDay;
+            this.BlockSizeLimit = blockSizeLimit;
         }
 
-        public DateTime DateTimeBegin { get; private set; }
 
-        public CampaignInfo Campaign { get; private set; }
+        public CampaignInfo Campaign { get; }
 
-        public DataReaderExtensionBase NativeDataReader { get; private set; }
+        public DataReaderExtensionBase NativeDataReader { get; }
 
-        public DataReaderExtensionBase AggregationDataReader { get; private set; }
+        public DataReaderExtensionBase AggregationDataReader { get; }
 
-        public double SampleRate { get; private set; }
+        public DateTime Begin { get; }
 
-        public ulong Start { get; private set; }
-        
-        public ulong Block { get; private set; }
+        public DateTime End { get; }
 
-        public ulong SegmentLength { get; private set; }
+        public ulong SamplesPerDay { get; }
+
+        public ulong BlockSizeLimit { get; }
     }
 }

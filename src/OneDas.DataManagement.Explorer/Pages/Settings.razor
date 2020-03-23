@@ -1,0 +1,14 @@
+﻿@page "/settings"
+
+@attribute [Authorize(policy: "RequireAdmin")]
+@inherits AppStateComponentBase
+
+<div class="left-column">
+    <SettingsNavBox />
+</div>
+<div class="center-column">
+    <SettingsContentBox />
+</div>
+<div class="right-column">
+    
+</div>

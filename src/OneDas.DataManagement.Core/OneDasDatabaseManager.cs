@@ -55,6 +55,10 @@ namespace OneDas.DataManagement
                 this.Config = JsonSerializer.Deserialize<OneDasDatabaseConfig>(jsonString);
             }
 
+            // add default test campaign
+            this.Config.RootPathToDataReaderIdMap[":memory:"] = "OneDas.InMemory";
+
+            // instantiate data reader
             _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
 
             this.Update();

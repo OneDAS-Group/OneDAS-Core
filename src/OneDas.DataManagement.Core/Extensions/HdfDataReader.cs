@@ -48,12 +48,12 @@ namespace OneDas.DataManagement.Extensions
                 }
             });
 
-            return _campaigns.Select(campaign => campaign.Name).ToList();
+            return _campaigns.Select(campaign => campaign.Id).ToList();
         }
 
         public override CampaignInfo GetCampaign(string campaignName)
         {
-            return _campaigns.First(campaign => campaign.Name == campaignName);
+            return _campaigns.First(campaign => campaign.Id == campaignName);
         }
 
         public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
@@ -162,20 +162,23 @@ namespace OneDas.DataManagement.Extensions
                 _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
-        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
+        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             this.EnsureOpened();
 
             T[] data = null;
             byte[] statusSet = null;
 
+            var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
+            (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
+
             this.SwitchLocation(() =>
             {
                 var datasetPath = dataset.GetPath();
-                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, 1, length, 1);
+                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start: start, block: block);
 
                 if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, length, 1).Cast<byte>().ToArray();
+                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, block, 1).Cast<byte>().ToArray();
             });
 
             return (data, statusSet);

@@ -5,12 +5,12 @@ using System.Diagnostics;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Name,nq}")]
+    [DebuggerDisplay("{Id,nq}")]
     public class DatasetInfo : CampaignElement
     {
         #region "Constructors"
 
-        public DatasetInfo(string name, CampaignElement parent) : base(name, parent)
+        public DatasetInfo(string id, CampaignElement parent) : base(id, parent)
         {
             //
         }
@@ -28,15 +28,20 @@ namespace OneDas.DataManagement.Database
 
         public bool IsNative { get; set; } = true;
 
-#warning Encode SamplesPerDay in DatasetInfo instead of name?
-
         #endregion
 
         #region "Methods"
 
+#warning Encode SamplesPerDay in DatasetInfo instead of name?
+
+        public SampleRateContainer GetSampleRate()
+        {
+            return new SampleRateContainer(this.Id);
+        }
+
         public override string GetPath()
         {
-            return $"{ this.Parent.GetPath() }/{ this.Name }";
+            return $"{this.Parent.GetPath()}/{this.Id}";
         }
 
         public override IEnumerable<CampaignElement> GetChilds()
@@ -46,7 +51,7 @@ namespace OneDas.DataManagement.Database
 
         public void Merge(DatasetInfo dataset)
         {
-            if (this.Parent.Name != dataset.Parent.Name
+            if (this.Parent.Id != dataset.Parent.Id
                 || this.DataType != dataset.DataType
                 || this.IsNative != dataset.IsNative)
                 throw new Exception("The datasets to be merged are not equal.");

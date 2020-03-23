@@ -12,6 +12,22 @@ namespace OneDas.DataManagement.Hdf
 {
     public static class GeneralHelper
     {
+        private static object campaignInfo;
+
+        public static (ulong start, ulong block) GetStartAndBlock(DateTime begin, DateTime end, ulong samplesPerDay)
+        {
+            var epochStart = new DateTime(2000, 01, 01);
+            var epochEnd = new DateTime(2030, 01, 01);
+
+            if (!(epochStart <= begin && begin <= end && end <= epochEnd))
+                throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
+
+            var start = (ulong)Math.Floor((begin - epochStart).TotalDays * samplesPerDay);
+            var block = (ulong)Math.Ceiling((end - begin).TotalDays * samplesPerDay);
+
+            return (start, block);
+        }
+
         public static void UpdateCampaigns(long fileId, List<CampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             GeneralHelper.InternalUpdateCampaigns(fileId, campaigns, null, updateSourceFileMap);
@@ -115,7 +131,7 @@ namespace OneDas.DataManagement.Hdf
                                 if (!string.IsNullOrWhiteSpace(campaignGroupPath) && fullName != campaignGroupPath)
                                     return 0;
 
-                                var currentCampaign = campaigns.FirstOrDefault(campaignInfo => campaignInfo.Name == fullName);
+                                var currentCampaign = campaigns.FirstOrDefault(campaign => campaign.Id == fullName);
 
                                 if (currentCampaign == null)
                                 {
@@ -260,7 +276,7 @@ namespace OneDas.DataManagement.Hdf
             long dcpl2 = -1;
 
             var length = 255;
-            var campaignName = variable.Parent.Name;
+            var campaignName = variable.Parent.Id;
 
             mappingDate = DateTime.MinValue;
 
@@ -280,8 +296,8 @@ namespace OneDas.DataManagement.Hdf
                 var index1 = IntPtr.Zero;
                 var stringBuilder1 = new StringBuilder(length);
 
-                groupId1 = H5G.open(fileId, GeneralHelper.CombinePath(campaignName, variable.Name));
-                datasetId1 = H5D.open(groupId1, dataset.Name);
+                groupId1 = H5G.open(fileId, GeneralHelper.CombinePath(campaignName, variable.Id));
+                datasetId1 = H5D.open(groupId1, dataset.Id);
                 dcpl1 = H5D.get_create_plist(datasetId1);
 
                 if (!first)
@@ -298,8 +314,8 @@ namespace OneDas.DataManagement.Hdf
                     var stringBuilder2 = new StringBuilder(length);
 
                     fileId2 = H5F.open(stringBuilder1.ToString(), H5F.ACC_RDONLY);
-                    groupId2 = H5G.open(fileId2, GeneralHelper.CombinePath(campaignName, variable.Name));
-                    datasetId2 = H5D.open(groupId2, dataset.Name);
+                    groupId2 = H5G.open(fileId2, GeneralHelper.CombinePath(campaignName, variable.Id));
+                    datasetId2 = H5D.open(groupId2, dataset.Id);
                     dcpl2 = H5D.get_create_plist(datasetId2);
 
                     if (!first)

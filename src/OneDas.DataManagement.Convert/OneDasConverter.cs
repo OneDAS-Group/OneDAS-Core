@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using OneDas.DataStorage;
 using OneDas.Extensibility;
 using OneDas.Extension.Hdf;
 using OneDas.Infrastructure;
+using OneDas.Buffers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,23 +116,23 @@ namespace OneDas.DataManagement.Convert
                 {
                     _logger.LogInformation(message);
 
-                    var dataStorageSet = _dataReader.GetData(sourceFilePath, variableDescriptionSet);
+                    var buffers = _dataReader.GetData(sourceFilePath, variableDescriptionSet);
 
                     // check actual file size
                     for (int i = 0; i < variableDescriptionSet.Count(); i++)
                     {
-                        var elementCount = dataStorageSet[i].DataBuffer.Length / dataStorageSet[i].ElementSize;
+                        var elementCount = buffers[i].RawBuffer.Length / buffers[i].ElementSize;
                         var period = (double)(elementCount * variableDescriptionSet[i].SampleRate.Period);
 
                         if (TimeSpan.FromSeconds(period) != periodPerFile)
                             throw new Exception("The file is not complete.");
                     }
 
-                    dataWriter.Write(currentDateTimeBegin, periodPerFile, dataStorageSet);
+                    dataWriter.Write(currentDateTimeBegin, periodPerFile, buffers);
 
-                    foreach (DataStorageBase dataStorage in dataStorageSet)
+                    foreach (IBuffer buffer in buffers)
                     {
-                        dataStorage.Dispose();
+                        buffer.Dispose();
                     }
 
                     convertContext.ProcessedPeriods.Add(currentDateTimeBegin);

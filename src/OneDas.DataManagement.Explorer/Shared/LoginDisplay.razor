@@ -1,0 +1,47 @@
+﻿<div class="login-display">
+    <AuthorizeView>
+        <Authorized>
+
+            @*<a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>*@
+
+            <a href="Identity/Account/Manage">
+                <div class="mdc-button">
+                    <i class="fas fa-user" aria-hidden="true"></i> &nbsp; Manage
+                </div>
+            </a>
+
+            <AuthorizeView Policy="RequireAdmin" Context="_">
+                <Authorized>
+                    <NavLink href="/settings">
+                        <div class="mdc-button">
+                            <i class="fas fa-cogs" aria-hidden="true"></i> &nbsp; Settings
+                        </div>
+                    </NavLink>
+                </Authorized>
+            </AuthorizeView>          
+
+            <form method="post" action="Identity/Account/LogOut">
+                <button type="submit" class="submit-button">
+                    <div class="mdc-button">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> &nbsp; Log out
+                    </div>
+                </button>
+            </form>
+        </Authorized>
+        <NotAuthorized>
+
+            <a href="Identity/Account/Register">
+                <div class="mdc-button">
+                    <i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Register
+                </div>
+            </a>
+
+            <a href="Identity/Account/Login">
+                <div class="mdc-button">
+                    <i class="fa fa-sign-in-alt" aria-hidden="true"></i> &nbsp; Log in
+                </div>
+            </a>
+
+        </NotAuthorized>
+    </AuthorizeView>
+</div>

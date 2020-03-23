@@ -189,10 +189,10 @@
   <data name="OneDasUtilities_NameEmpty" xml:space="preserve">
     <value>The name must not be empty.</value>
   </data>
-  <data name="VariableContext_DataStorageTypeInvalid" xml:space="preserve">
-    <value>The data storage type is invalid.</value>
+  <data name="VariableContext_BufferTypeInvalid" xml:space="preserve">
+    <value>The buffer type is invalid.</value>
   </data>
-  <data name="VariableDescription_DataStorageTypeInvalid" xml:space="preserve">
-    <value>The provided type must be assignable to IDataStorage.</value>
+  <data name="VariableDescription_BufferTypeInvalid" xml:space="preserve">
+    <value>The provided type must be assignable to IBuffer.</value>
   </data>
 </root>

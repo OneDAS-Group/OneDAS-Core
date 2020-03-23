@@ -1,9 +1,9 @@
 ﻿using OneDas.DataManagement.Database;
-using OneDas.DataStorage;
-using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace OneDas.DataManagement.Extensibility
 {
@@ -13,10 +13,8 @@ namespace OneDas.DataManagement.Extensibility
 
         public DataReaderExtensionBase(string rootPath)
         {
-            if (rootPath == ":root:")
-                rootPath = Environment.CurrentDirectory;
-
             this.RootPath = rootPath;
+            this.Progress = new Progress<double>();
         }
 
         #endregion
@@ -25,68 +23,158 @@ namespace OneDas.DataManagement.Extensibility
 
         public string RootPath { get; }
 
+        public Progress<double> Progress { get; }
+
         #endregion
 
         #region Methods
 
-        public void ReadFullDay<T>(DatasetInfo dataset, DateTime dateTimeBegin, TimeSpan fundamentalPeriod, ulong samplesPerFundamentalPeriod, ulong maxSamplesPerReadOperation, Action<T[], byte[]> processData) where T : unmanaged
+        public void Read(DatasetInfo dataset,
+                         DateTime begin,
+                         DateTime end,
+                         ulong upperBlockSize,
+                         Action<DataReaderProgressRecord> dataAvailable,
+                         CancellationToken cancellationToken)
         {
-            // max period
-            var maxPeriod = TimeSpan.FromDays(1);
-
-            if (maxPeriod < fundamentalPeriod)
-                throw new Exception("The fundamental period must be less than or equal to the maximum period.");
-
-            var tmp = maxPeriod.Ticks / (double)fundamentalPeriod.Ticks;
-
-            if (tmp % 1 != 0)
-                throw new Exception("The provided fundamental period is not an integer fraction of the maximum period.");
-
-            var totalFpCount = (ulong)tmp;
-
-            // max fundamental periods count
-            var maxFpCount = maxSamplesPerReadOperation / samplesPerFundamentalPeriod;
-
-            if (maxFpCount == 0)
-                throw new Exception("The provided 'maximum samples per read operation' parameter is too small to provide data for at least a single fundamental period.");
-
-#warning begin: this is not pretty, remove
-            var samplesPerDay = new SampleRateContainer(dataset.Name).SamplesPerDay;
-            var start = (ulong)Math.Floor((dateTimeBegin - new DateTime(2000, 1, 1)).TotalDays * samplesPerDay);
-#warning end
-
-            // load data
-            var timeOffset = TimeSpan.Zero;
-
-            while (timeOffset < maxPeriod)
-            {
-                var remainingFpCount = (ulong)((maxPeriod - timeOffset).Ticks / fundamentalPeriod.Ticks);
-                var currentFpCount = Math.Min(remainingFpCount, maxFpCount);
-                var length = currentFpCount * samplesPerFundamentalPeriod;
-                var offset = start + (totalFpCount - remainingFpCount) * samplesPerFundamentalPeriod;
-
-                (T[] data, byte[] status) = this.Read<T>(dataset, offset, length);
-                processData?.Invoke(data, status);
-
-                timeOffset += fundamentalPeriod * currentFpCount;
-            }
+            this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), dataAvailable, cancellationToken);
         }
 
-        public ISimpleDataStorage LoadDataset<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged
+        public void Read(List<DatasetInfo> datasets,
+                         DateTime begin,
+                         DateTime end,
+                         ulong upperBlockSize,
+                         Action<DataReaderProgressRecord> dataAvailable,
+                         CancellationToken cancellationToken)
         {
-            (var data, var statusSet) = this.Read<T>(dataset, start, length);
+            this.Read(datasets, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), dataAvailable, cancellationToken);
+        }
 
-            // apply status (only if native dataset)
-            if (statusSet != null)
-            {
-                using var extendedDataStorage = new ExtendedDataStorage<T>(data, statusSet);
-                var simpleDataStorage = extendedDataStorage.ToSimpleDataStorage();
+        public void Read(DatasetInfo dataset,
+                         DateTime begin,
+                         DateTime end,
+                         ulong upperBlockSize,
+                         TimeSpan fundamentalPeriod,
+                         Action<DataReaderProgressRecord> dataAvailable,
+                         CancellationToken cancellationToken)
+        {
+            this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, fundamentalPeriod, dataAvailable, cancellationToken);
+        }
 
-                return simpleDataStorage;
-            }
-            else
+        public void Read(List<DatasetInfo> datasets,
+                         DateTime begin,
+                         DateTime end,
+                         ulong blockSizeLimit,
+                         TimeSpan fundamentalPeriod,
+                         Action<DataReaderProgressRecord> dataAvailable,
+                         CancellationToken cancellationToken)
+        {
+            /* 
+             * |....................|
+             * |
+             * |
+             * |....................
+             * |
+             * |
+             * |....................
+             * |
+             * |====================
+             * |....................
+             * |
+             * |
+             * |....................|
+             * 
+             * |     = base period (1 minute)
+             *  ...  = fundamental period (e.g. 10 minutes)
+             * |...| = begin & end markers
+             *  ===  = block period
+             */
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            if (!datasets.Any() || begin == end)
+                return;
+
+            var minute = TimeSpan.FromMinutes(1);
+            var period = end - begin;
+
+            // sanity checks
+            if (begin.Ticks % minute.Ticks != 0)
+                throw new Exception("The begin parameter must be a multiple of 1 minute.");
+
+            if (end.Ticks % minute.Ticks != 0)
+                throw new Exception("The end parameter must be a multiple of 1 minute.");
+
+            if (fundamentalPeriod.Ticks % minute.Ticks != 0)
+                throw new Exception("The fundamental period parameter must be a multiple of 1 minute.");
+
+            if (period.Ticks % fundamentalPeriod.Ticks != 0)
+                throw new Exception("The request period must be a multiple of the fundamental period.");
+
+            if (blockSizeLimit == 0)
+                throw new Exception("The upper block size must be > 0 bytes.");
+
+            // calculation
+            var minutesPerFP = fundamentalPeriod.Ticks / minute.Ticks;
+
+            var bytesPerFP = datasets.Sum(dataset =>
             {
-                return new SimpleDataStorage(data.Cast<double>().ToArray());
+                var bytesPerSample = OneDasUtilities.SizeOf(dataset.DataType);
+                var samplesPerMinute = dataset.GetSampleRate().SamplesPerSecond * 60;
+                var bytesPerFP = bytesPerSample * samplesPerMinute * minutesPerFP;
+
+                return bytesPerFP;
+            });
+
+            var FPCountPerBlock = blockSizeLimit / bytesPerFP;
+            var roundedFPCount = (long)Math.Floor(FPCountPerBlock);
+
+            if (roundedFPCount < 1)
+                throw new Exception("The block size limit is too small.");
+
+            var maxPeriodPerRequest = TimeSpan.FromTicks(fundamentalPeriod.Ticks * roundedFPCount);
+
+            // load data
+            var currentBegin = begin;
+            var remainingPeriod = end - currentBegin;
+
+            while (remainingPeriod > TimeSpan.Zero)
+            {
+                var datasetToRecordMap = new Dictionary<DatasetInfo, DataRecord>();
+                var currentPeriod = TimeSpan.FromTicks(Math.Min(remainingPeriod.Ticks, maxPeriodPerRequest.Ticks));
+                var currentEnd = currentBegin + currentPeriod;
+                var index = 1;
+                var count = datasets.Count;
+
+                foreach (var dataset in datasets)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
+                    // invoke generic method
+                    var type = typeof(DataReaderExtensionBase);
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    var genericType = OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType);
+                    var parameters = new object[] { dataset, currentBegin, currentEnd };
+                    var result = OneDasUtilities.InvokeGenericMethod(type, this, nameof(this.InternalReadSingle), flags, genericType, parameters);
+                    (var data, var statusSet) = ((Array data, byte[] statusSet))result;
+
+                    datasetToRecordMap[dataset] = new DataRecord(data, statusSet);
+
+                    // update progress
+                    var localProgress = TimeSpan.FromTicks(currentPeriod.Ticks * index / count);
+                    var currentProgress = (currentBegin + localProgress - begin).Ticks / (double)period.Ticks;
+
+                    ((IProgress<double>)this.Progress).Report(currentProgress);
+                    index++;
+                }
+
+                // notify about new data
+                dataAvailable?.Invoke(new DataReaderProgressRecord(datasetToRecordMap, currentBegin, currentEnd));
+
+                // continue in time
+                currentBegin += currentPeriod;
+                remainingPeriod = end - currentBegin;
             }
         }
 
@@ -100,7 +188,13 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract void Dispose();
 
-        protected abstract (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length) where T : unmanaged;
+        protected abstract (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
+
+        private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
+        {
+            (T[] data, byte[] statusSet) = this.ReadSingle<T>(dataset, begin, end);
+            return (data, statusSet);
+        }
 
         #endregion
     }

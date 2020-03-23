@@ -1,0 +1,31 @@
+﻿<div class="variable-expander" @onclick="this.OnClick" @onmouseover="() => _showSampleRates = true" @onmouseout="() => _showSampleRates = false">
+    <div class="variable-name">
+        @this.Variable.Name
+        <div class="variable-sample-rates">
+            @if (_showSampleRates)
+            {
+                @foreach (var sampleRate in this.GetSampleRates())
+                {
+                    <div class="variable-sample-rate" @onclick="() => this.AppState.SampleRate = sampleRate">
+                        @sampleRate
+                    </div>
+                }
+            }
+        </div>
+        <div class="variable-datasets ml-auto">
+            @if (_filteredDatasets.Any())
+            {
+                @foreach (var dataset in _filteredDatasets)
+                {
+                    <div class="variable-dataset @(this.AppState.IsDatasetSeleced(dataset) ? "selected" : "")"
+                         @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
+                        @dataset.Name
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <span class="variable-description">
+        @this.Variable.Description
+    </span>
+</div>

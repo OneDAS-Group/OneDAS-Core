@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using OneDas.DataStorage;
+using OneDas.Buffers;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -58,7 +58,7 @@ namespace OneDas.Extensibility
             this.OnConfigure();
         }
 
-        public void Write(DateTime dateTime, TimeSpan dataStoragePeriod, IList<IDataStorage> dataStorageSet)
+        public void Write(DateTime dateTime, TimeSpan bufferPeriod, IList<IBuffer> buffers)
         {
             if (dateTime < _lastWrittenDateTime)
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeAlreadyWritten);
@@ -66,26 +66,26 @@ namespace OneDas.Extensibility
             if (dateTime != dateTime.RoundDown(this.ChunkPeriod))
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
 
-            if (dataStoragePeriod.Seconds > 0 || dataStoragePeriod.Milliseconds > 0)
+            if (bufferPeriod.Seconds > 0 || bufferPeriod.Milliseconds > 0)
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
 
-            var dataStorageOffset = TimeSpan.Zero;
+            var bufferOffset = TimeSpan.Zero;
             var filePeriod = TimeSpan.FromSeconds((int)this.Settings.FileGranularity);
-            var variableContextSet = _variableDescriptionSet.Zip(dataStorageSet, (variableDescription, dataStorage) => new VariableContext(variableDescription, dataStorage)).ToList();
+            var variableContextSet = _variableDescriptionSet.Zip(buffers, (variableDescription, buffer) => new VariableContext(variableDescription, buffer)).ToList();
             var variableContextGroupSet = variableContextSet
                             .GroupBy(variableContext => variableContext.VariableDescription.SampleRate.SamplesPerDay)
                             .Select(group => new VariableContextGroup(new SampleRateContainer(group.Key), group.ToList())).ToList();
 
-            while (dataStorageOffset < dataStoragePeriod)
+            while (bufferOffset < bufferPeriod)
             {
-                var currentDateTime = dateTime + dataStorageOffset;
+                var currentDateTime = dateTime + bufferOffset;
                 var fileStartDateTime = currentDateTime.RoundDown(filePeriod);
                 var fileOffset = currentDateTime - fileStartDateTime;
 
                 var remainingFilePeriod = filePeriod - fileOffset;
-                var remainingDataStoragePeriod = dataStoragePeriod - dataStorageOffset;
+                var remainingBufferPeriod = bufferPeriod - bufferOffset;
 
-                var period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingDataStoragePeriod.Ticks));
+                var period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingBufferPeriod.Ticks));
 
                 // check if file must be created or updated
                 if (fileStartDateTime != _lastFileStartDateTime)
@@ -101,13 +101,13 @@ namespace OneDas.Extensibility
                     var sampleRate = contextGroup.SampleRate;
 
                     var actualFileOffset = this.TimeSpanToIndex(fileOffset, sampleRate);
-                    var actualDataStorageOffset = this.TimeSpanToIndex(dataStorageOffset, sampleRate);
+                    var actualBufferOffset = this.TimeSpanToIndex(bufferOffset, sampleRate);
                     var actualPeriod = this.TimeSpanToIndex(period, sampleRate);
 
                     this.OnWrite(
                         contextGroup,
                         actualFileOffset,
-                        actualDataStorageOffset,
+                        actualBufferOffset,
                         actualPeriod
                     );
 
@@ -121,10 +121,10 @@ namespace OneDas.Extensibility
                         this.Logger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
                 }
 
-                dataStorageOffset += period;
+                bufferOffset += period;
             }
 
-            _lastWrittenDateTime = dateTime + dataStoragePeriod;
+            _lastWrittenDateTime = dateTime + bufferPeriod;
         }
 
         protected ulong TimeSpanToIndex(TimeSpan timeSpan, SampleRateContainer samplesRate)
@@ -150,7 +150,7 @@ namespace OneDas.Extensibility
 
         protected abstract void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet);
 
-        protected abstract void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length);
+        protected abstract void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length);
 
         #endregion
     }

@@ -87,7 +87,7 @@ namespace OneDas.Extension.Mat73
             this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong dataStorageOffset, ulong length)
+        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
             long groupId = -1;
 
@@ -106,7 +106,7 @@ namespace OneDas.Extension.Mat73
                 // write data
                 for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
                 {
-                    this.WriteData(fileOffset, dataStorageOffset, length, contextGroup.VariableContextSet[i]);
+                    this.WriteData(fileOffset, bufferOffset, length, contextGroup.VariableContextSet[i]);
                 }
 
                 // write last_completed_chunk
@@ -207,14 +207,14 @@ namespace OneDas.Extension.Mat73
             _fileId = H5F.open(filePath, H5F.ACC_RDWR);
         }
 
-        private void WriteData(ulong fileOffset, ulong dataStorageOffset, ulong length, VariableContext variableContext)
+        private unsafe void WriteData(ulong fileOffset, ulong bufferOffset, ulong length, VariableContext variableContext)
         {
             Contract.Requires(variableContext != null, nameof(variableContext));
 
             long groupId = -1;
             long datasetId = -1;
             long dataspaceId = -1;
-            long dataspaceId_Memory = -1;
+            long dataspaceId_Buffer = -1;
 
             try
             {
@@ -223,9 +223,9 @@ namespace OneDas.Extension.Mat73
                 var datasetName = $"dataset_{ variableContext.VariableDescription.DatasetName.Replace(" ", "_") }";
                 datasetId = H5D.open(groupId, datasetName);
                 dataspaceId = H5D.get_space(datasetId);
-                dataspaceId_Memory = H5S.create_simple(1, new ulong[] { length }, null);
+                dataspaceId_Buffer = H5S.create_simple(1, new ulong[] { length }, null);
 
-                var simpleDataStorage = variableContext.DataStorage.ToSimpleDataStorage();
+                var simpleBuffers = variableContext.Buffer.ToSimpleBuffer();
 
                 // dataset
                 H5S.select_hyperslab(dataspaceId,
@@ -235,9 +235,13 @@ namespace OneDas.Extension.Mat73
                                     new ulong[] { 1 },
                                     new ulong[] { length });
 
-                if (H5D.write(datasetId, H5T.NATIVE_DOUBLE, dataspaceId_Memory, dataspaceId, H5P.DEFAULT, simpleDataStorage.DataBufferPtr + (int)dataStorageOffset * simpleDataStorage.ElementSize) < 0)
+                var offset = (int)bufferOffset * simpleBuffers.ElementSize;
+                var buffer = simpleBuffers.RawBuffer[offset..];
+
+                fixed (byte* bufferPtr = buffer)
                 {
-                    throw new Exception(ErrorMessage.Mat73Writer_CouldNotWriteChunk_Dataset);
+                    if (H5D.write(datasetId, H5T.NATIVE_DOUBLE, dataspaceId_Buffer, dataspaceId, H5P.DEFAULT, new IntPtr(bufferPtr)) < 0)
+                        throw new Exception(ErrorMessage.Mat73Writer_CouldNotWriteChunk_Dataset);
                 }
             }
             finally
@@ -245,7 +249,7 @@ namespace OneDas.Extension.Mat73
                 if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
-                if (H5I.is_valid(dataspaceId_Memory) > 0) { H5S.close(dataspaceId_Memory); }
+                if (H5I.is_valid(dataspaceId_Buffer) > 0) { H5S.close(dataspaceId_Buffer); }
             }
         }
 

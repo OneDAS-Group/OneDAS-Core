@@ -1,4 +1,4 @@
-﻿using HDF.PInvoke;
+using HDF.PInvoke;
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -227,7 +227,7 @@ namespace OneDas.DataManagement.Hdf
         public static T[] Read<T>(long dataPortId, DataContainerType dataContainerType, long dataspaceId = -1)
         {
             long dataspaceId_file = -1;
-            long dataspaceId_memory = -1;
+            long dataspaceId_buffer = -1;
             long typeId = -1;
 
             long elementCount;
@@ -295,9 +295,9 @@ namespace OneDas.DataManagement.Hdf
 
                     case DataContainerType.Dataset:
 
-                        dataspaceId_memory = H5S.create_simple(1, new ulong[] { (ulong)elementCount }, new ulong[] { (ulong)elementCount });
+                        dataspaceId_buffer = H5S.create_simple(1, new ulong[] { (ulong)elementCount }, new ulong[] { (ulong)elementCount });
 
-                        if (H5D.read(dataPortId, typeId, dataspaceId_memory, dataspaceId_file, H5P.DEFAULT, bufferPtr) < 0)
+                        if (H5D.read(dataPortId, typeId, dataspaceId_buffer, dataspaceId_file, H5P.DEFAULT, bufferPtr) < 0)
                             throw new Exception(ErrorMessage.IOHelper_CouldNotReadDataset);
  
                         break;
@@ -364,7 +364,7 @@ namespace OneDas.DataManagement.Hdf
                 Marshal.FreeHGlobal(bufferPtr);
 
                 if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
-                if (H5I.is_valid(dataspaceId_memory) > 0) { H5S.close(dataspaceId_memory); }
+                if (H5I.is_valid(dataspaceId_buffer) > 0) { H5S.close(dataspaceId_buffer); }
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
             }
 

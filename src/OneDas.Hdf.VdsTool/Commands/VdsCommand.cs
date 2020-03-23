@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Hdf;
-using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -194,7 +193,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             long campaignGroupId = -1;
 
-            Console.WriteLine($"\n{campaign.Name}");
+            Console.WriteLine($"\n{campaign.Id}");
 
             campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaign.GetPath()).GroupId;
 
@@ -219,9 +218,9 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             long variableGroupId = -1;
 
-            Console.WriteLine($"\t{variable.Name}");
+            Console.WriteLine($"\t{variable.Id}");
 
-            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variable.Name).GroupId;
+            variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variable.Id).GroupId;
 
             try
             {
@@ -239,7 +238,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 // dataset
                 foreach (var dataset in variable.Datasets)
                 {
-                    Console.WriteLine($"\t\t{ dataset.Name }");
+                    Console.WriteLine($"\t\t{ dataset.Id }");
                     this.VdsDataset(variableGroupId, epochStart, epochEnd, dataset, campaignPath);
                 }
 
@@ -252,7 +251,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo datasetInfo, string campaignPath)
+        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo dataset, string campaignPath)
         {
             long datasetId = -1;
             long spaceId = -1;
@@ -261,21 +260,20 @@ namespace OneDas.Hdf.VdsTool.Commands
             var createDataset = false;
 
             // the averages database has no "is_chunk_completed_set"
-            if (!_datasetToTypeIdMap.ContainsKey(datasetInfo))
+            if (!_datasetToTypeIdMap.ContainsKey(dataset))
                 return;
                 
-            var typeId = _datasetToTypeIdMap[datasetInfo];
+            var typeId = _datasetToTypeIdMap[dataset];
 
             try
             {
-                var datasetName = datasetInfo.Name;
-                var sampleRate = new SampleRateContainer(datasetName);
+                var sampleRate = dataset.GetSampleRate();
                 var vdsLength = (ulong)(epochEnd - epochStart).Days * sampleRate.SamplesPerDay;
 
                 spaceId = H5S.create_simple(1, new ulong[] { vdsLength }, new ulong[] { H5S.UNLIMITED });
                 propertyId = H5P.create(H5P.DATASET_CREATE);
 
-                foreach (SourceFileInfo sourceFileInfo in _datasetToSourceFilesMap[datasetInfo])
+                foreach (SourceFileInfo sourceFileInfo in _datasetToSourceFilesMap[dataset])
                 {
                     long sourceSpaceId = -1;
 
@@ -314,7 +312,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                             H5S.select_hyperslab(spaceId, H5S.seloper_t.SET, new ulong[] { offset + start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
                             H5S.select_hyperslab(sourceSpaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { stride }, new ulong[] { count }, new ulong[] { block });
-                            H5P.set_virtual(propertyId, spaceId, relativeFilePath, datasetInfo.GetPath(), sourceSpaceId);
+                            H5P.set_virtual(propertyId, spaceId, relativeFilePath, dataset.GetPath(), sourceSpaceId);
                         }
                         finally
                         {
@@ -333,7 +331,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
 
                 if (createDataset) // otherwise there will be an error, if set_virtual has never been called.
-                    datasetId = H5D.create(groupId, datasetName, typeId, spaceId, H5P.DEFAULT, propertyId);
+                    datasetId = H5D.create(groupId, dataset.Id, typeId, spaceId, H5P.DEFAULT, propertyId);
             }
             finally
             {

@@ -12,7 +12,7 @@ namespace OneDas.DataManagement.Database
 #warning Ensure the properties are never zero (right now they may be set from outside)
         #region "Constructors"
 
-        public VariableInfo(string name, CampaignElement parent) : base(name, parent)
+        public VariableInfo(string id, CampaignElement parent) : base(id, parent)
         {
             this.VariableNames = new List<string>();
             this.VariableGroups = new List<string>();
@@ -47,7 +47,7 @@ namespace OneDas.DataManagement.Database
 
         public void Merge(VariableInfo variable)
         {
-            if (this.Parent.Name != variable.Parent.Name)
+            if (this.Parent.Id != variable.Parent.Id)
                 throw new Exception("The variable to be merged has a different parent.");
 
             // merge datasets
@@ -55,7 +55,7 @@ namespace OneDas.DataManagement.Database
 
             foreach (var dataset in variable.Datasets)
             {
-                var referenceDataset = this.Datasets.FirstOrDefault(current => current.Name == dataset.Name);
+                var referenceDataset = this.Datasets.FirstOrDefault(current => current.Id == dataset.Id);
 
                 if (referenceDataset != null)
                     referenceDataset.Merge(dataset);
@@ -81,7 +81,7 @@ namespace OneDas.DataManagement.Database
 
         public override string GetPath()
         {
-            return $"{this.Parent.GetPath()}/{this.Name}";
+            return $"{this.Parent.GetPath()}/{this.Id}";
         }
 
         public override IEnumerable<CampaignElement> GetChilds()

@@ -1,4 +1,4 @@
-﻿using OneDas.DataStorage;
+﻿using OneDas.Buffers;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,15 @@ namespace OneDas.Extensibility
     {
         #region "Constructors"
 
-        public VariableDescription(Guid guid, string variableName, string datasetName, string group, OneDasDataType dataType, SampleRateContainer sampleRate, string unit, List<TransferFunction> transferFunctionSet, DataStorageType dataStorageType)
+        public VariableDescription(Guid guid,
+                                   string variableName,
+                                   string datasetName,
+                                   string group,
+                                   OneDasDataType dataType,
+                                   SampleRateContainer sampleRate,
+                                   string unit,
+                                   List<TransferFunction> transferFunctionSet,
+                                   BufferType bufferType)
         {
             this.Guid = guid;
             this.VariableName = variableName;
@@ -19,7 +27,7 @@ namespace OneDas.Extensibility
             this.SampleRate = sampleRate;
             this.Unit = unit;
             this.TransferFunctionSet = transferFunctionSet;
-            this.DataStorageType = dataStorageType;
+            this.BufferType = bufferType;
         }
 
         #endregion
@@ -42,7 +50,7 @@ namespace OneDas.Extensibility
 
         public List<TransferFunction> TransferFunctionSet { get; private set; }
 
-        public DataStorageType DataStorageType { get; set; }
+        public BufferType BufferType { get; set; }
 
         #endregion
     }

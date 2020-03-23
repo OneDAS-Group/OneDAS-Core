@@ -1,6 +1,5 @@
-﻿using OneDas.DataStorage;
+﻿using OneDas.Buffers;
 using OneDas.Extensibility;
-using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,12 +7,12 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Name,nq}")]
+    [DebuggerDisplay("{Id,nq}")]
     public class CampaignInfo : CampaignElement
     {
         #region "Constructors"
 
-        public CampaignInfo(string name) : base(name, null)
+        public CampaignInfo(string id) : base(id, null)
         {
 #warning Remove "is_chunk_completed_set"
             this.ChunkDataset = new DatasetInfo("is_chunk_completed_set", this);
@@ -47,28 +46,28 @@ namespace OneDas.DataManagement.Database
             {
                 return variable.Datasets.Select(dataset =>
                 {
-                    var guid = new Guid(variable.Name);
+                    var guid = new Guid(variable.Id);
                     var displayName = variable.VariableNames.Last();
-                    var datasetName = dataset.Name;
+                    var datasetName = dataset.Id;
                     var groupName = variable.VariableGroups.Any() ? variable.VariableGroups.Last() : string.Empty;
                     var dataType = dataset.DataType;
-                    var sampleRate = new SampleRateContainer(dataset.Name);
+                    var sampleRate = dataset.GetSampleRate();
                     var unit = variable.Units.Any() ? variable.Units.Last() : string.Empty;
                     var transferFunctions = variable.TransferFunctions;
 
-                    return new VariableDescription(guid, displayName, datasetName, groupName, dataType, sampleRate, unit, transferFunctions, DataStorageType.Simple);
+                    return new VariableDescription(guid, displayName, datasetName, groupName, dataType, sampleRate, unit, transferFunctions, BufferType.Simple);
                 });
             }).ToList();
         }
 
         public CampaignInfo ToSparseCampaign(List<DatasetInfo> datasets)
         {
-            var campaign = new CampaignInfo(this.Name);
+            var campaign = new CampaignInfo(this.Id);
             var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
 
             campaign.Variables = variables.Select(referenceVariable =>
             {
-                var variable = new VariableInfo(referenceVariable.Name, campaign)
+                var variable = new VariableInfo(referenceVariable.Id, campaign)
                 {
                     TransferFunctions = referenceVariable.TransferFunctions,
                     Units = referenceVariable.Units,
@@ -80,7 +79,7 @@ namespace OneDas.DataManagement.Database
 
                 variable.Datasets = referenceDatasets.Select(referenceDataset =>
                 {
-                    return new DatasetInfo(referenceDataset.Name, variable)
+                    return new DatasetInfo(referenceDataset.Id, variable)
                     {
                         DataType = referenceDataset.DataType,
                         IsNative = referenceDataset.IsNative
@@ -95,15 +94,15 @@ namespace OneDas.DataManagement.Database
 
         public void Merge(CampaignInfo campaign)
         {
-            if (this.Name != campaign.Name)
-                throw new Exception("The campaign to be merged has a different name.");
+            if (this.Id != campaign.Id)
+                throw new Exception("The campaign to be merged has a different ID.");
 
             // merge variables
             List<VariableInfo> newVariables = new List<VariableInfo>();
 
             foreach (var variable in campaign.Variables)
             {
-                var referenceVariable = this.Variables.FirstOrDefault(current => current.Name == variable.Name);
+                var referenceVariable = this.Variables.FirstOrDefault(current => current.Id == variable.Id);
 
                 if (referenceVariable != null)
                     referenceVariable.Merge(variable);
@@ -129,7 +128,7 @@ namespace OneDas.DataManagement.Database
 
         public override string GetPath()
         {
-            return this.Name;
+            return this.Id;
         }
 
         public override IEnumerable<CampaignElement> GetChilds()

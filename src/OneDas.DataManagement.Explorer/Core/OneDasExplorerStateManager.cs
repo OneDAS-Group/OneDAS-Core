@@ -1,105 +1,53 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
-using OneDas.DataManagement.Explorer.Web;
+﻿using Microsoft.Extensions.Options;
+using Prism.Mvvm;
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public class OneDasExplorerStateManager
+#warning: stop all running downloads when state changes to inactive
+
+    public class OneDasExplorerStateManager : BindableBase
     {
-        #region "Fields"
+        #region Fields
 
         private bool _isActive;
         private System.Timers.Timer _activityTimer;
+        private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
-        private ConcurrentDictionary<string, OneDasExplorerState> _stateSet;
-        private ConcurrentDictionary<string, CancellationTokenSource> _ctsSet;
-        private IHubContext<Broadcaster> _hubContext;
+        private OneDasExplorerState _state;
 
         #endregion
 
-        #region "Constructors"
+        #region Constructors
 
-        public OneDasExplorerStateManager(IHubContext<Broadcaster> hubContext, IOptions<OneDasExplorerOptions> options)
+        public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager, IOptions<OneDasExplorerOptions> options)
         {
-            _hubContext = hubContext;
+            _databaseManager = databaseManager;
             _options = options.Value;
 
-            _stateSet = new ConcurrentDictionary<string, OneDasExplorerState>();
-            _ctsSet = new ConcurrentDictionary<string, CancellationTokenSource>();
-
-            this.HandleInactivity();
+            this.OnActivityTimerElapsed();
         }
 
         #endregion
 
-        #region "Properties"
+        #region Properties
 
-        public int UserCount { get; private set; }
+        public OneDasExplorerState State
+        {
+            get { return _state; }
+            private set { this.SetProperty(ref _state, value); }
+        }
 
         #endregion
 
-        #region "Methods"
+        #region Methods
 
-        public void Register(string connectionId)
+        public void CheckState()
         {
-            _stateSet[connectionId] = _isActive ? OneDasExplorerState.Idle : OneDasExplorerState.Inactive;
-            _ctsSet[connectionId] = new CancellationTokenSource();
-
-            this.UserCount += 1;
-        }
-
-        public void Unregister(string connectionId)
-        {
-            _stateSet.TryRemove(connectionId, out _);
-
-            _ctsSet[connectionId].Cancel();
-            _ctsSet.TryRemove(connectionId, out _);
-
-            this.UserCount -= 1;
-        }
-
-        public void SetState(string connectionId, OneDasExplorerState state)
-        {
-            _stateSet[connectionId] = state;
-            this.GetClient(connectionId).SendAsync("SendState", state);
-        }
-
-        public OneDasExplorerState GetState(string connectionId)
-        {
-            return _stateSet[connectionId];
-        }
-
-        public void Cancel(string connectionId)
-        {
-            if (_ctsSet.ContainsKey(connectionId))
-            {
-                _ctsSet[connectionId].Cancel();
-            }
-
-            _ctsSet[connectionId] = new CancellationTokenSource();
-        }
-
-        public CancellationToken GetToken(string connectionId)
-        {
-            return _ctsSet[connectionId].Token;
-        }
-
-        public void CheckState(string connectionId)
-        {
-            switch (this.GetState(connectionId))
+            switch (this.State)
             {
                 case OneDasExplorerState.Inactive:
                     throw new Exception("HDF Explorer is in scheduled inactivity mode.");
-
-                case OneDasExplorerState.Updating:
-                    throw new Exception("The database is currently being updated.");
-
-                case OneDasExplorerState.Loading:
-                    throw new Exception("Data request is already in progress.");
 
                 default:
                     break;
@@ -108,25 +56,18 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private void HandleInactivity()
         {
-            TimeSpan startRemaining;
-            TimeSpan stopRemaining;
-
             _isActive = true; // in case InactivityPeriod is == TimeSpan.Zero
 
             if (_options.InactivityPeriod > TimeSpan.Zero)
             {
-                startRemaining = DateTime.UtcNow.Date.Add(_options.InactiveOn) - DateTime.UtcNow;
-                stopRemaining = startRemaining.Add(_options.InactivityPeriod);
+                var startRemaining = DateTime.UtcNow.Date.Add(_options.InactiveOn) - DateTime.UtcNow;
+                var stopRemaining = startRemaining.Add(_options.InactivityPeriod);
 
                 if (startRemaining < TimeSpan.Zero)
-                {
                     startRemaining = startRemaining.Add(TimeSpan.FromDays(1));
-                }
 
                 if (stopRemaining < TimeSpan.Zero)
-                {
                     stopRemaining = stopRemaining.Add(TimeSpan.FromDays(1));
-                }
 
                 if (startRemaining < stopRemaining)
                 {
@@ -137,11 +78,6 @@ namespace OneDas.DataManagement.Explorer.Core
                 {
                     _activityTimer = new System.Timers.Timer() { AutoReset = false, Enabled = true, Interval = stopRemaining.TotalMilliseconds };
                     _isActive = false;
-
-                    _ctsSet.ToList().ForEach(entry =>
-                    {
-                        this.Cancel(entry.Key);
-                    });
                 }
 
                 _activityTimer.Elapsed += (sender, e) => this.OnActivityTimerElapsed();
@@ -154,19 +90,13 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (_isActive)
             {
-                Program.DatabaseManager.Update();
-
-                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, OneDasExplorerState.Idle));
+                _databaseManager.Update();
+                this.State = OneDasExplorerState.Ready;
             }
             else
             {
-                _stateSet.ToList().ForEach(entry => this.SetState(entry.Key, OneDasExplorerState.Inactive));
+                this.State = OneDasExplorerState.Inactive;
             }
-        }
-
-        private IClientProxy GetClient(string connectionId)
-        {
-            return _hubContext.Clients.Client(connectionId);
         }
 
         #endregion

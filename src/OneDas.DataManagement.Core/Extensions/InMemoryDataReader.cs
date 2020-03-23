@@ -1,6 +1,7 @@
 ﻿using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,8 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Fields
 
-        private CampaignInfo _campaign;
+        private CampaignInfo _campaign_allowed;
+        private CampaignInfo _campaign_restricted;
 
         #endregion
 
@@ -21,7 +23,15 @@ namespace OneDas.DataManagement.Extensions
 
         public InMemoryDataReader(string rootPath) : base(rootPath)
         {
-            this.InitializeCampaign();
+            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
+            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
+            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
+            _campaign_allowed = this.InitializeCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13);
+
+            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
+            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
+            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
+            _campaign_restricted = this.InitializeCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23);
         }
 
         #endregion
@@ -30,13 +40,15 @@ namespace OneDas.DataManagement.Extensions
 
         public override List<string> GetCampaignNames()
         {
-            return new List<string> { "/ANY_EXTERNAL_DATABASE/TEST/TEST" };
+            return new List<string> { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
         }
 
         public override CampaignInfo GetCampaign(string campaignName)
         {
-            if (campaignName == _campaign.Name)
-                return _campaign;
+            if (campaignName == _campaign_allowed.Id)
+                return _campaign_allowed;
+            else if (campaignName == _campaign_restricted.Id)
+                return _campaign_restricted;
             else
                 throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
         }
@@ -77,99 +89,101 @@ namespace OneDas.DataManagement.Extensions
             //
         }
 
-        protected override (T[] dataset, byte[] statusSet) Read<T>(DatasetInfo dataset, ulong start, ulong length)
+        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
-            var random = new Random();
-            var movingAverage = new MovingAverage();
-            var dataDouble = new double[length];
+            double[] dataDouble;
 
-            for (int i = 0; i < (int)length; i++)
+            var beginTime = begin.ToUnixTimeStamp();
+            var endTime = end.ToUnixTimeStamp();
+
+            var length = (int)((end - begin).TotalSeconds * (double)dataset.GetSampleRate().SamplesPerSecond);
+            var dt = (double)(1 / dataset.GetSampleRate().SamplesPerSecond);
+
+            if (dataset.Parent.Id.Contains("unix_time"))
             {
-                var value = random.Next(0, 1000);
-                movingAverage.ComputeAverage(value);
-                dataDouble[i] = (double)movingAverage.Average;
+                dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime).ToArray();
+            }
+            else // temperature
+            {
+                var kernelSize = 1000;
+                var movingAverage = new double[kernelSize];
+                var random = new Random();
+                var mean = 15;
+
+                dataDouble = new double[length];
+
+                for (int i = 0; i < length; i++)
+                {
+                    movingAverage[i % kernelSize] = (random.NextDouble() - 0.5) * mean * 10 + mean;
+
+                    if (movingAverage[kernelSize-1] == 0)
+                        dataDouble[i] = mean;
+                    else
+                        dataDouble[i] = movingAverage.Sum() / kernelSize;
+                }
             }
 
             var data = dataDouble.Select(value => (T)Convert.ChangeType(value, typeof(T))).ToArray();
-            var statusSet = Enumerable.Range((int)start, (int)length).Select(value => (byte)1).ToArray();
+            var statusSet = Enumerable.Range(0, length).Select(value => (byte)1).ToArray();
 
             return (data, statusSet);
         }
 
-        private void InitializeCampaign()
+        private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3)
         {
-            _campaign = new CampaignInfo("/ANY_EXTERNAL_DATABASE/TEST/TEST");
+            var campaign = new CampaignInfo(campaignName);
 
-            var variable1 = new VariableInfo("7dec6d79-b92e-4af2-9358-21be1f3626c9", _campaign);
-            var variable2 = new VariableInfo("cf50190b-fd2a-477b-9655-48f4f41ba7bf", _campaign);
-            var variable3 = new VariableInfo("f01b6a96-1de6-4caa-9205-184d8a3eb2f8", _campaign);
+            var variableA = new VariableInfo(id1, campaign);
+            var variableB = new VariableInfo(id2, campaign);
+            var variableC = new VariableInfo(id3, campaign);
 
-            var dataset1 = new DatasetInfo("25 Hz", variable1) { DataType = Infrastructure.OneDasDataType.INT32 };
-            var dataset2 = new DatasetInfo("1 s_max", variable2) { DataType = Infrastructure.OneDasDataType.INT32 };
-            var dataset3 = new DatasetInfo("1 s_mean", variable2) { DataType = Infrastructure.OneDasDataType.INT32 };
-            var dataset4 = new DatasetInfo("25 Hz", variable3) { DataType = Infrastructure.OneDasDataType.INT32 };
+            var dataset1 = new DatasetInfo("25 Hz", variableA) { DataType = OneDasDataType.INT32 };
+            var dataset2 = new DatasetInfo("1 s_max", variableB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset3 = new DatasetInfo("1 s_mean", variableB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset4 = new DatasetInfo("1 s", variableC) { DataType = OneDasDataType.FLOAT64 };
 
             // variable 1
-            variable1.Datasets = new List<DatasetInfo>()
+            variableA.Datasets = new List<DatasetInfo>()
             {
                 dataset1
             };
 
-            variable1.VariableNames.Add("varA");
-            variable1.VariableGroups.Add("Group 1");
-            variable1.Units.Add("°C");
+            variableA.VariableNames.Add("unix_time1");
+            variableA.VariableGroups.Add("Group 1");
+            variableA.Units.Add("");
 
             // variable 2
-            variable2.Datasets = new List<DatasetInfo>()
+            variableB.Datasets = new List<DatasetInfo>()
             {
                 dataset2,
                 dataset3
             };
 
-            variable2.VariableNames.Add("varB");
-            variable2.VariableGroups.Add("Group 1");
-            variable2.Units.Add("m/s");
+            variableB.VariableNames.Add("unix_time2");
+            variableB.VariableGroups.Add("Group 1");
+            variableB.Units.Add("");
 
             // variable 3
-            variable3.Datasets = new List<DatasetInfo>()
+            variableC.Datasets = new List<DatasetInfo>()
             {
                 dataset4
             };
 
-            variable3.VariableNames.Add("varC");
-            variable3.VariableGroups.Add("Group 2");
-            variable3.Units.Add("°C");
+            variableC.VariableNames.Add("T");
+            variableC.VariableGroups.Add("Group 2");
+            variableC.Units.Add("°C");
 
-            _campaign.Variables = new List<VariableInfo>()
+            // campaign
+            campaign.Variables = new List<VariableInfo>()
             {
-                variable1,
-                variable2,
-                variable3
+                variableA,
+                variableB,
+                variableC
             };
+
+            return campaign;
         }
 
         #endregion
-
-        public class MovingAverage
-        {
-            private Queue<Decimal> _samples = new Queue<Decimal>();
-            private int _windowSize = 60;
-            private Decimal _sampleAccumulator;
-
-            public Decimal Average { get; private set; }
-
-            public void ComputeAverage(Decimal newSample)
-            {
-                _sampleAccumulator += newSample;
-                _samples.Enqueue(newSample);
-
-                if (_samples.Count > _windowSize)
-                {
-                    _sampleAccumulator -= _samples.Dequeue();
-                }
-
-                this.Average = _sampleAccumulator / _samples.Count;
-            }
-        }
     }
 }
