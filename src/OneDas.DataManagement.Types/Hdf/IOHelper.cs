@@ -140,7 +140,7 @@ namespace OneDas.DataManagement.Hdf
             return result;
         }
 
-        public static T[] ReadDataset<T>(long locationId, string datasetPath, ulong start = 0, ulong stride = 0, ulong block = 0, ulong count = 0)
+        public static T[] ReadDataset<T>(long locationId, string datasetPath, ulong start = 0, ulong stride = 1, ulong block = 0, ulong count = 1)
         {
             long datasetId = -1;
             long dataspaceId = -1;

@@ -223,8 +223,13 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     // read and stream data
                     dataReader.Read(dataset, begin, end, 5 * 1000 * 1000UL, async progressRecord =>
                     {
+                        double[] doubleData = default;
                         var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
-                        var doubleData = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+
+                        if (dataset.IsNative)
+                            doubleData = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+                        else
+                            doubleData = (double[])dataRecord.Dataset;
 
                         await writer.WriteAsync(doubleData, cancellationToken);
                     }, cancellationToken);
