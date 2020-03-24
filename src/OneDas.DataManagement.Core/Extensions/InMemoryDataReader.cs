@@ -26,12 +26,14 @@ namespace OneDas.DataManagement.Extensions
             var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
             var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
             var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
-            _campaign_allowed = this.InitializeCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13);
+            var id14 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
+            _campaign_allowed = this.InitializeCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13, id14);
 
             var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
             var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
             var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
-            _campaign_restricted = this.InitializeCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23);
+            var id24 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
+            _campaign_restricted = this.InitializeCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23, id24);
         }
 
         #endregion
@@ -103,7 +105,7 @@ namespace OneDas.DataManagement.Extensions
             {
                 dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime).ToArray();
             }
-            else // temperature
+            else // temperature or wind speed
             {
                 var kernelSize = 1000;
                 var movingAverage = new double[kernelSize];
@@ -129,20 +131,22 @@ namespace OneDas.DataManagement.Extensions
             return (data, statusSet);
         }
 
-        private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3)
+        private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3, string id4)
         {
             var campaign = new CampaignInfo(campaignName);
 
             var variableA = new VariableInfo(id1, campaign);
             var variableB = new VariableInfo(id2, campaign);
             var variableC = new VariableInfo(id3, campaign);
+            var variableD = new VariableInfo(id4, campaign);
 
             var dataset1 = new DatasetInfo("25 Hz", variableA) { DataType = OneDasDataType.INT32 };
             var dataset2 = new DatasetInfo("1 s_max", variableB) { DataType = OneDasDataType.FLOAT64 };
             var dataset3 = new DatasetInfo("1 s_mean", variableB) { DataType = OneDasDataType.FLOAT64 };
-            var dataset4 = new DatasetInfo("1 s", variableC) { DataType = OneDasDataType.FLOAT64 };
+            var dataset4 = new DatasetInfo("1 s_mean", variableC) { DataType = OneDasDataType.FLOAT64 };
+            var dataset5 = new DatasetInfo("1 s_mean", variableD) { DataType = OneDasDataType.FLOAT64 };
 
-            // variable 1
+            // variable A
             variableA.Datasets = new List<DatasetInfo>()
             {
                 dataset1
@@ -152,7 +156,7 @@ namespace OneDas.DataManagement.Extensions
             variableA.VariableGroups.Add("Group 1");
             variableA.Units.Add("");
 
-            // variable 2
+            // variable B
             variableB.Datasets = new List<DatasetInfo>()
             {
                 dataset2,
@@ -163,22 +167,33 @@ namespace OneDas.DataManagement.Extensions
             variableB.VariableGroups.Add("Group 1");
             variableB.Units.Add("");
 
-            // variable 3
+            // variable C
             variableC.Datasets = new List<DatasetInfo>()
             {
                 dataset4
             };
 
-            variableC.VariableNames.Add("T");
+            variableC.VariableNames.Add("T1");
             variableC.VariableGroups.Add("Group 2");
             variableC.Units.Add("°C");
+
+            // variable D
+            variableD.Datasets = new List<DatasetInfo>()
+            {
+                dataset5
+            };
+
+            variableD.VariableNames.Add("V1");
+            variableD.VariableGroups.Add("Group 2");
+            variableD.Units.Add("m/s");
 
             // campaign
             campaign.Variables = new List<VariableInfo>()
             {
                 variableA,
                 variableB,
-                variableC
+                variableC,
+                variableD
             };
 
             return campaign;

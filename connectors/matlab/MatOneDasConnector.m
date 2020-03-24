@@ -20,6 +20,9 @@ classdef MatOneDasConnector
         
         function Export(self, dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, channels, targetDirectoryPath)
             
+            dateTimeBegin   = self.ToNetDateTime(dateTimeBegin);
+            dateTimeEnd     = self.ToNetDateTime(dateTimeEnd);
+            
             % translate variable list into .NET string array
             netChannels = NET.createGeneric('System.Collections.Generic.List', {'System.String'});
 
@@ -28,11 +31,14 @@ classdef MatOneDasConnector
             end
             
             % export
-            task = self.Connector.ExportAsync(dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, channels, targetDirectoryPath);
+            task = self.Connector.ExportAsync(dateTimeBegin, dateTimeEnd, fileFormat, fileGranularity, netChannels, targetDirectoryPath);
             self.AwaitTask(task)
         end
         
         function result = Load(self, dateTimeBegin, dateTimeEnd, channels)
+            
+            dateTimeBegin   = self.ToNetDateTime(dateTimeBegin);
+            dateTimeEnd     = self.ToNetDateTime(dateTimeEnd);
             
             % translate variable list into .NET string array
             netChannels = NET.createGeneric('System.Collections.Generic.List', {'System.String'});
@@ -81,12 +87,13 @@ classdef MatOneDasConnector
             end
         end
         
-        function AwaitTask(~, task)
-            while (true)
-                if (task.IsCompleted)
+        function AwaitTask(self, task)
+            
+            while true
+                if task.IsCompleted
 
-                    if (strcmp(task.Status, 'Faulted'))
-                        fprintf('Failed. Reason: %s\n', char(task.Exception.InnerException.Message))
+                    if strcmp(task.Status, 'Faulted')
+                        error(self.GetExceptionMessage(task.Exception))
                     else
                         fprintf('Done.\n')
                     end
@@ -94,7 +101,16 @@ classdef MatOneDasConnector
                     return
                 else
                     pause(1)
-                end
+                end                
+            end
+            
+        end
+        
+        function message = GetExceptionMessage(self, ex)
+            if isempty(ex.InnerException)
+                message = char(ex.Message);
+            else
+                message = [char(ex.Message) newline self.GetExceptionMessage(ex.InnerException)]; 
             end
         end
         
@@ -102,6 +118,20 @@ classdef MatOneDasConnector
             message = strrep(char(message), '%', '%%');
             message = strrep(char(message), '\', '\\');
             fprintf(message)
+        end
+        
+        function netDateTime = ToNetDateTime(self, dateTime)
+            import System.*
+            import System.Globalization.*
+            
+            dateString = datestr(dateTime, 'yyyy-mm-ddTHH:MM:ssZ');
+            
+            netDateTime = DateTime.ParseExact( ...
+                dateString, ...
+                'yyyy-MM-ddTHH:mm:ssZ', ...
+                CultureInfo.InvariantCulture);
+            
+            netDateTime = DateTime.SpecifyKind(netDateTime, DateTimeKind.Utc);
         end
     end
 end

@@ -41,7 +41,7 @@ namespace OneDas.DataManagement.Connector
 
         #region Methods
 
-        public OneDasConnector(string hostName, int port, Action<string> logAction, string userName = "default", string password = "default", bool secure = false)
+        public OneDasConnector(string hostName, int port, Action<string> logAction, string userName = "", string password = "", bool secure = false)
         {
             // base url
             var scheme = secure ? "https" : "http";
@@ -71,11 +71,6 @@ namespace OneDas.DataManagement.Connector
                     progress = (_channelIndex + progress) / _channelCount;
 
                 _logger?.Log($"{progress * 100,3:0}%: {message}\n");
-            });
-
-            _connection.On("Downloader.Error", (string message) =>
-            {
-                _logger?.Log($"An error occured: '{message}'.\n");
             });
         }
 
@@ -188,14 +183,6 @@ namespace OneDas.DataManagement.Connector
         {
             var scheme = secure ? "https" : "http";
 
-            var loginUrlBuilder = new UriBuilder()
-            {
-                Scheme = scheme,
-                Host = hostName,
-                Port = port,
-                Path = "identity/account/generatetoken"
-            };
-
             var hubUrlBuilder = new UriBuilder()
             {
                 Scheme = scheme,
@@ -204,13 +191,31 @@ namespace OneDas.DataManagement.Connector
                 Path = hubName
             };
 
-            return new HubConnectionBuilder()
-                 .WithUrl(hubUrlBuilder.ToString(), options =>
-                 {
-                     options.AccessTokenProvider = async () => await this.GetJwtToken(loginUrlBuilder.ToString(), username, password);
-                 })
-                 .AddMessagePackProtocol()
-                 .Build();
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return new HubConnectionBuilder()
+                     .WithUrl(hubUrlBuilder.ToString())
+                     .AddMessagePackProtocol()
+                     .Build();
+            }
+            else
+            {
+                var loginUrlBuilder = new UriBuilder()
+                {
+                    Scheme = scheme,
+                    Host = hostName,
+                    Port = port,
+                    Path = "identity/account/generatetoken"
+                };
+
+                return new HubConnectionBuilder()
+                     .WithUrl(hubUrlBuilder.ToString(), options =>
+                     {
+                         options.AccessTokenProvider = async () => await this.GetJwtToken(loginUrlBuilder.ToString(), username, password);
+                     })
+                     .AddMessagePackProtocol()
+                     .Build();
+            }
         }
 
         private async Task<string> GetJwtToken(string url, string username, string password)

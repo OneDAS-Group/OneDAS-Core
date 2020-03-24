@@ -15,12 +15,12 @@ async def main():
     username = "test@root.org"
     password = "#test0/User1" # password = input("Please enter you password: ")
 
-    begin = datetime.now(timezone.utc) + timedelta(days=-2)
-    end = datetime.now(timezone.utc) + timedelta(days=-1)
+    begin = datetime(2020, 2, 1, 0, 0, tzinfo=timezone.utc)
+    end   = datetime(2020, 2, 3, 0, 0, tzinfo=timezone.utc)
 
     channels = [
-        "/IN_MEMORY/ALLOWED/TEST/T/1 s",
-        "/IN_MEMORY/ALLOWED/TEST/unix_time2/1 s_mean"
+        "/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean",
+        "/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean"
     ]
 
     target_folder = "data"

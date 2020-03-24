@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import re
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -35,25 +34,6 @@ class FileGranularity(Enum):
     Hour = 3600
     Day = 86400
 
-class SampleRateConverter():
-
-    def convert(self, sampleRate: str):
-
-            # Hz
-            matchHz = re.match(r"([0-9|\.]+)\sHz", sampleRate)
-
-            if matchHz:
-                return int(matchHz.group(1))
-
-            # s
-            matchT = re.match(r"([0-9|\.]+)\ss", sampleRate)
-
-            if matchT:
-                return 1 / int(matchT.group(1))
-
-            # else
-            raise Exception("Unknown sample rate string.")
-
 class OneDasConnector():
 
     url = None
@@ -62,7 +42,7 @@ class OneDasConnector():
     _channel_index = None
     _is_stream = None
 
-    def __init__(self, host, port, username="default", password="default", secure=False):
+    def __init__(self, host, port, username="", password="", secure=False):
         
         self.host = host
         self.port = port
@@ -178,14 +158,15 @@ class OneDasConnector():
             http_protocol = "http"
 
         hub_url = f"{ws_protocol}://{host}:{port}/datahub"
-        login_url = f"{http_protocol}://{host}:{port}/identity/account/generatetoken"
 
-        if username == "default":
+        if username == "":
             return HubConnectionBuilder()\
                 .with_url(hub_url)\
                 .with_hub_protocol(MessagePackHubProtocol())\
                 .build()
         else:
+            login_url = f"{http_protocol}://{host}:{port}/identity/account/generatetoken"
+
             return HubConnectionBuilder()\
                 .with_url(hub_url, options={
                     "access_token_factory": lambda: self._get_jwt_token(login_url, username, password)

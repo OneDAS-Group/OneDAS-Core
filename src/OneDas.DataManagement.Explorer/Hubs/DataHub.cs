@@ -151,11 +151,6 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
                     await writer.WriteAsync(url, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    await this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.Error", ex.Message);
-                    throw;
-                }
                 finally
                 {
                     _dataService.Progress.ProgressChanged -= handler;
