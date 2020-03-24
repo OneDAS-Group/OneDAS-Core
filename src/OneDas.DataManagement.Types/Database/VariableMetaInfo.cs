@@ -4,14 +4,14 @@ using System.Diagnostics;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Name,nq}")]
+    [DebuggerDisplay("{Id,nq}")]
     public class VariableMetaInfo
     {
         #region "Constructors"
 
-        public VariableMetaInfo(string name)
+        public VariableMetaInfo(string id)
         {
-            this.Name = name;
+            this.Id = id;
             this.Description = string.Empty;
             this.Unit = string.Empty;
             this.TransferFunctions = new List<TransferFunction>();
@@ -26,7 +26,7 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
-        public string Name { get; set; }
+        public string Id { get; set; }
 
         public string Description { get; set; }
 

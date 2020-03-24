@@ -17,6 +17,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             // preset, mutable
             this.AspBaseUrl = "http://0.0.0.0:32769";
+            this.Language = "en";
         }
 
         // unset, mutable
@@ -32,6 +33,9 @@ namespace OneDas.DataManagement.Explorer.Core
         // preset, mutable
         [DataMember]
         public string AspBaseUrl { get; set; }
+
+        [DataMember]
+        public string Language { get; set; }
 
         // preset, immutable
         public string SupportDirectoryPath { get => Path.Combine(this.DataBaseFolderPath, "SUPPORT"); }

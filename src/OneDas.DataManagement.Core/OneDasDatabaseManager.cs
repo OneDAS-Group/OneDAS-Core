@@ -45,22 +45,23 @@ namespace OneDas.DataManagement
             // config
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
 
-            if (!File.Exists(filePath))
-            {
-                this.Config = new OneDasDatabaseConfig();
-            }
-            else
+            if (File.Exists(filePath))
             {
                 var jsonString = File.ReadAllText(filePath);
                 this.Config = JsonSerializer.Deserialize<OneDasDatabaseConfig>(jsonString);
             }
+            else
+            {
+                this.Config = new OneDasDatabaseConfig();
+            }
 
-            // add default test campaign
-            this.Config.RootPathToDataReaderIdMap[":memory:"] = "OneDas.InMemory";
+            // initalize
+            this.Config.Initialize();
 
-            // instantiate data reader
-            _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
+            // save config to disk
+            this.SaveConfig(this.Config);
 
+            // update database
             this.Update();
         }
 
@@ -80,6 +81,9 @@ namespace OneDas.DataManagement
 
         public void Update()
         {
+            // instantiate data reader
+            _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
+
             var dataReaders = _rootPathToDataReaderMap
                                 .Select(entry => entry.Value)
                                 .Concat(new DataReaderExtensionBase[] { this.AggregationDataReader })
@@ -103,7 +107,7 @@ namespace OneDas.DataManagement
                             this.Database.CampaignContainers.Add(container);
 
                             // try to load campaign meta data
-                            var filePath = Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+                            var filePath = this.GetCampaignMetaPath(campaignName);
 
                             CampaignMetaInfo campaignMeta;
 
@@ -115,15 +119,7 @@ namespace OneDas.DataManagement
                             else
                             {
                                 campaignMeta = new CampaignMetaInfo(campaignName);
-                                var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
-                                File.WriteAllText(filePath, jsonString);
                             }
-
-                            if (string.IsNullOrWhiteSpace(campaignMeta.ShortDescription))
-                                campaignMeta.ShortDescription = "<no description available>";
-
-                            if (string.IsNullOrWhiteSpace(campaignMeta.LongDescription))
-                                campaignMeta.LongDescription = "<no description available>";
 
                             container.CampaignMeta = campaignMeta;
                         }
@@ -138,7 +134,7 @@ namespace OneDas.DataManagement
                         // get up-to-date campaign from data reader
                         var campaign = dataReader.GetCampaign(campaignName);
 
-                        // if data reader is for aggregation data, update the dataset`s flag
+                        // if data reader is for aggregation data, update dataset`s flag
                         if (!isNativeDataReader)
                         {
                             var datasets = campaign.Variables.SelectMany(variable => variable.Datasets).ToList();
@@ -153,7 +149,6 @@ namespace OneDas.DataManagement
 
                         //
                         container.Campaign.Merge(campaign);
-                        container.CampaignMeta.Purge();
                     }
                 }
                 finally
@@ -162,7 +157,16 @@ namespace OneDas.DataManagement
                 }
             }
 
-            this.Save(this.Config);
+            // the purpose of this block is to initalize empty properties 
+            // and add missing variables to speed up hand-editing of the meta file
+            foreach (var campaignContainer in this.Database.CampaignContainers)
+            {
+                // initalize campaign meta
+                campaignContainer.CampaignMeta.Initialize(campaignContainer.Campaign);
+
+                // save campaign meta to disk
+                this.SaveCampaignMeta(campaignContainer.CampaignMeta);
+            }
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)
@@ -183,11 +187,23 @@ namespace OneDas.DataManagement
             return this.Database.CampaignContainers.Select(container => container.Campaign).ToList();
         }
 
-        private void Save(OneDasDatabaseConfig config)
+        private void SaveConfig(OneDasDatabaseConfig config)
         {
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
             var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true });
 
+            File.WriteAllText(filePath, jsonString);
+        }
+
+        private string GetCampaignMetaPath(string campaignName)
+        {
+            return Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+        }
+
+        private void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
+        {
+            var filePath = this.GetCampaignMetaPath(campaignMeta.Id);
+            var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
             File.WriteAllText(filePath, jsonString);
         }
 

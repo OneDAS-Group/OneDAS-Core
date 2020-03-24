@@ -7,9 +7,9 @@ namespace OneDas.DataManagement.Database
     {
         #region Constructors
 
-        public CampaignMetaInfo(string name)
+        public CampaignMetaInfo(string id)
         {
-            this.Name = name;
+            this.Id = id;
             this.ShortDescription = string.Empty;
             this.LongDescription = string.Empty;
             this.Variables = new List<VariableMetaInfo>();
@@ -24,7 +24,7 @@ namespace OneDas.DataManagement.Database
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Id { get; set; }
 
         public string ShortDescription { get; set; }
 
@@ -36,17 +36,26 @@ namespace OneDas.DataManagement.Database
 
         #region Methods
 
-        public void Purge()
+        public void Initialize(CampaignInfo campaign)
         {
-            var variablesToDelete = this.Variables.Where(variable =>
-                string.IsNullOrWhiteSpace(variable.Description) &&
-                string.IsNullOrWhiteSpace(variable.Unit) &&
-                !variable.TransferFunctions.Any());
+            if (string.IsNullOrWhiteSpace(this.ShortDescription))
+                this.ShortDescription = "<no description available>";
 
-            foreach (var variable in variablesToDelete)
+            if (string.IsNullOrWhiteSpace(this.LongDescription))
+                this.LongDescription = "<no description available>";
+
+            var variablesToAdd = new List<VariableMetaInfo>();
+
+            foreach (var referenceVariable in campaign.Variables)
             {
-                this.Variables.Remove(variable);
+                var exists = this.Variables.Any(variable => variable.Id == referenceVariable.Id);
+
+                if (!exists)
+                    variablesToAdd.Add(new VariableMetaInfo(referenceVariable.Id));
             }
+
+            this.Variables.AddRange(variablesToAdd);
+            this.Variables = this.Variables.OrderBy(variable => variable.Id).ToList();
         }
 
         #endregion

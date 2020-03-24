@@ -24,5 +24,14 @@ namespace OneDas.DataManagement.Database
         public List<string> RestrictedCampaigns { get; set; }
 
         #endregion
+
+        #region Methods
+
+        public void Initialize()
+        {
+            this.RootPathToDataReaderIdMap[":memory:"] = "OneDas.InMemory";
+        }
+
+        #endregion
     }
 }

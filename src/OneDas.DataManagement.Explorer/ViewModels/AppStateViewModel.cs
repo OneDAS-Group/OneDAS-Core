@@ -475,7 +475,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             if (this.CampaignContainer != null)
             {
-                var folderPath = Path.Combine(Environment.CurrentDirectory, "META", this.CampaignContainer.PhysicalName);
+                var folderPath = Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS", this.CampaignContainer.PhysicalName);
 
                 if (Directory.Exists(folderPath))
                     this.Attachments = Directory.GetFiles(folderPath, "*").ToList();
@@ -549,7 +549,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 _campaignContainerToVariablesMap[campaignContainer] = campaignContainer.Campaign.Variables.Select(variable =>
                 {
-                    var variableMeta = campaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Name == variable.Id);
+                    var variableMeta = campaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Id == variable.Id);
                     return new VariableInfoViewModel(variable, variableMeta);
                 }).ToList();
             }
