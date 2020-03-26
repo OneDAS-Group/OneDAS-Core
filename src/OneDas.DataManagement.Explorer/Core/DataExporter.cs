@@ -208,7 +208,13 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             var buffers = progressRecord.DatasetToRecordMap.Values.Select(dataRecord =>
             {
-                var data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+                double[] data;
+
+                if (progressRecord.DatasetToRecordMap.Keys.First().IsNative)
+                    data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+                else
+                    data = (double[])dataRecord.Dataset;
+
                 return (IBuffer)BufferUtilities.CreateSimpleBuffer(data);
             }).ToList();
 

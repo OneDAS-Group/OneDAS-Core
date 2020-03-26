@@ -1,53 +1,72 @@
 ﻿@inherits AppStateComponentBase
 
-@inject SettingsViewModel settings
-
 <div class="settings-content-box">
     <MatList>
-        @foreach (var user in settings.Users)
+        @foreach (var user in this.Settings.Users)
         {
-            <MatListItem @onclick="() => settings.User = user">
+            <MatListItem @onclick="() => this.Settings.User = user">
                 @user.UserName
             </MatListItem>
         }
     </MatList>
 
-    @if (settings.Claims != null)
+    @if (this.Settings.Claims != null)
     {
         <div class="flex-column">
-            @foreach (var claim in settings.Claims)
+            @foreach (var claim in this.Settings.Claims)
             {
                 <MatTextField @bind-Value="@claim.Type" Label="Claim type"></MatTextField>
                 <MatTextField @bind-Value="@claim.Value" Label="Claim value"></MatTextField>
                 @if (!string.IsNullOrWhiteSpace(claim.Type))
                 {
-                    <MatButton @onclick="() => settings.RemoveClaim(claim)">
+                    <MatButton @onclick="() => this.Settings.RemoveClaim(claim)">
                         <i class="fa fa-minus" aria-hidden="true"></i> &nbsp; Delete
                     </MatButton>
                 }
             }
         </div>
 
-        <MatButton @onclick="settings.SaveChanges">
+        <MatButton @onclick="this.Settings.SaveClaimChanges">
+            <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
+        </MatButton>
+    }
+
+    <MatList>
+        @foreach (var campaignContainer in this.Settings.DatabaseManager.Database.CampaignContainers)
+        {
+            <MatListItem @onclick="() => this.Settings.AppState.CampaignContainer = campaignContainer">
+                @campaignContainer.Name
+            </MatListItem>
+        }
+    </MatList>
+
+    @if (this.AppState.GroupedVariables != null)
+    {
+        @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key))
+        {
+            <div @onclick="() => this.AppState.VariableGroup = entry.Value"
+                    class="group-entry @(this.AppState.VariableGroup == entry.Value? "selected" : "")">
+                <span class="group-entry-name">@entry.Key</span>
+            </div>
+        }
+    }
+
+    @if (this.Settings.AppState.VariableGroup != null)
+    {
+        <div class="flex-column">
+            @foreach (var variable in this.Settings.AppState.VariableGroup.Skip(this.Settings.VariableMetaPage * this.Settings.VariableMetaPageSize).Take(this.Settings.VariableMetaPageSize))
+            {
+                <div class="flex-row">
+                    <MatTextField Value="@variable.Name" Label="Name" ReadOnly="true"></MatTextField>
+                    <MatTextField @bind-Value="@variable.Description" Label="Description"></MatTextField>
+                </div>
+            }
+        </div>
+
+        <Paginator Length="this.Settings.AppState.VariableGroup.Count" PageSize="this.Settings.VariableMetaPageSize" @bind-Page="this.Settings.VariableMetaPage"></Paginator>
+
+        <MatButton @onclick="this.Settings.SaveCampaignMetaChanges">
             <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
         </MatButton>
     }
 </div>
-
-@code {
-
-    protected override void OnInitialized()
-    {
-        settings.PropertyChanged += (sender, e) =>
-        {
-            if (e.PropertyName == nameof(SettingsViewModel.Claims))
-            {
-                this.InvokeAsync(() =>
-                {
-                    this.StateHasChanged();
-                });
-            }
-        };
-    }
-
-}

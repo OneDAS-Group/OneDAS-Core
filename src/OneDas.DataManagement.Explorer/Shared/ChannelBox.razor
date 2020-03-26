@@ -15,7 +15,7 @@
         <div class="available-groups-list">
             @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key).Skip(this.GroupPage * this.GroupPageSize).Take(this.GroupPageSize))
             {
-                <div @onclick="() => this.OnVariableGroupSelected(entry.Value)"
+                <div @onclick="() => this.AppState.VariableGroup = entry.Value"
                      class="group-entry @(this.AppState.VariableGroup == entry.Value? "selected" : "")">
                     <span class="group-entry-name">@entry.Key</span>
                     <span class="group-entry-count">@entry.Value.Count</span>

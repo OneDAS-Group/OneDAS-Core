@@ -54,14 +54,5 @@ namespace OneDas.DataManagement.Explorer.Shared
 		public int VariablePage { get; set; } = 0;
 
 		#endregion
-
-		#region Methods
-
-		public void OnVariableGroupSelected(List<VariableInfoViewModel> variableGroup)
-		{
-			this.AppState.VariableGroup = variableGroup;
-		}
-
-		#endregion
     }
 }

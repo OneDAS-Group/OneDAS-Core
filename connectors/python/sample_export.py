@@ -3,8 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import matplotlib.pyplot as plt
 
-from OneDasConnector import (FileFormat, FileGranularity, OneDasConnector,
-                             SampleRateConverter)
+from OneDasConnector import FileFormat, FileGranularity, OneDasConnector
 
 
 async def main():

@@ -187,7 +187,14 @@ namespace OneDas.DataManagement
             return this.Database.CampaignContainers.Select(container => container.Campaign).ToList();
         }
 
-        private void SaveConfig(OneDasDatabaseConfig config)
+        public void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
+        {
+            var filePath = this.GetCampaignMetaPath(campaignMeta.Id);
+            var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
+            File.WriteAllText(filePath, jsonString);
+        }
+
+        public void SaveConfig(OneDasDatabaseConfig config)
         {
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
             var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true });
@@ -198,13 +205,6 @@ namespace OneDas.DataManagement
         private string GetCampaignMetaPath(string campaignName)
         {
             return Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
-        }
-
-        private void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
-        {
-            var filePath = this.GetCampaignMetaPath(campaignMeta.Id);
-            var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
-            File.WriteAllText(filePath, jsonString);
         }
 
         private Dictionary<string, DataReaderExtensionBase> LoadDataReader(Dictionary<string, string> rootPathToDataReaderIdMap)

@@ -252,6 +252,12 @@ function getMinMax(data, _i0, _i1) {
         }
     }
 
+    if (_min === Infinity)
+        _min = 0;
+
+    if (_max === -Infinity)
+        _max = 0;
+
     return [_min, _max];
 }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using Prism.Mvvm;
 using System.Collections.Generic;
@@ -13,21 +14,28 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Fields
 
         private IdentityUser _user;
-        private List<ClaimViewModel> _claims;
         private UserManager<IdentityUser> _userManager;
 
         #endregion
 
         #region Constructors
 
-        public SettingsViewModel(UserManager<IdentityUser> userManager)
+        public SettingsViewModel(AppStateViewModel appState, OneDasDatabaseManager databaseManager, UserManager<IdentityUser> userManager)
         {
+            this.AppState = appState;
+            this.DatabaseManager = databaseManager;
             _userManager = userManager;
+
+            this.VariableMetaPageSize = 5;
         }
 
         #endregion
 
         #region Properties - General
+
+        public AppStateViewModel AppState { get; }
+
+        public OneDasDatabaseManager DatabaseManager { get; }
 
         public IdentityUser User
         {
@@ -44,12 +52,14 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public List<IdentityUser> Users => _userManager.Users.ToList();
 
-        public List<ClaimViewModel> Claims
-        {
-            get { return _claims; }
-            set { base.SetProperty(ref _claims, value); }
-        }
+        public List<ClaimViewModel> Claims { get; set; }
 
+        public Dictionary<VariableInfo, VariableMetaInfo> VariableToVariableMetaSet { get; private set; }
+
+        public int VariableMetaPage { get; set; }
+
+        public int VariableMetaPageSize { get; set; }
+        
         #endregion
 
         #region Methods
@@ -60,13 +70,18 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.RaisePropertyChanged(nameof(SettingsViewModel.Claims));
         }
 
-        public async void SaveChanges()
+        public async void SaveClaimChanges()
         {
             var claimsToRemove = await _userManager.GetClaimsAsync(this.User);
             var claimsToAdd = this.Claims.Where(claim => !string.IsNullOrWhiteSpace(claim.Type)).Select(claim => claim.ToClaim());
 
             await _userManager.RemoveClaimsAsync(this.User, claimsToRemove);
             await _userManager.AddClaimsAsync(this.User, claimsToAdd);
+        }
+
+        public void SaveCampaignMetaChanges()
+        {
+            this.DatabaseManager.SaveCampaignMeta(this.AppState.CampaignContainer.CampaignMeta);
         }
 
         private void UpdateClaims(IdentityUser user)

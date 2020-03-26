@@ -36,9 +36,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public string Group => _variable.VariableGroups.Last();
 
-        public string Unit => _variableMeta == null ? _variable.Units.Last() : _variableMeta.Unit;
+        public string Unit => string.IsNullOrWhiteSpace(_variableMeta.Unit) ? _variable.Units.Last() : _variableMeta.Unit;
 
-        public string Description => _variableMeta == null ? "<no description available>" : _variableMeta.Description;
+        public string Description
+        {
+            get { return _variableMeta.Description; }
+            set { _variableMeta.Description = value; }
+        }
 
         public CampaignInfo Parent => (CampaignInfo)_variable.Parent;
 
