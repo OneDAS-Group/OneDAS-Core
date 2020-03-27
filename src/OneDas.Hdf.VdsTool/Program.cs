@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.Hdf.VdsTool.Commands;
 using System;
@@ -25,10 +25,14 @@ namespace OneDas.Hdf.VdsTool
 
         private static async Task<int> Main(string[] args)
         {
-            if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+            #warning How to handle other, non-HDF databases?
+            if (!args.Contains("pwsh"))
             {
-                Console.WriteLine(message);
-                return 1;
+                if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+                {
+                    Console.WriteLine(message);
+                    return 1;
+                }
             }
 
             Console.Title = "VdsTool";

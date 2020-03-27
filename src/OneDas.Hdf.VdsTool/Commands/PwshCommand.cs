@@ -1,5 +1,6 @@
 ﻿using FluentFTP;
 using Microsoft.Extensions.Logging;
+using Renci.SshNet;
 using System;
 using System.IO;
 using System.Management.Automation;
@@ -27,6 +28,9 @@ namespace OneDas.Hdf.VdsTool.Commands
             {
                 // ensure FluentFTP lib is loaded
                 _ = new FtpClient();
+
+                // ensure SSH.NET is loaded
+                _ = new PasswordAuthenticationMethod("Test", "User");
 
                 var vdsToolLogger = new PwshLogger(_logger);
                 _logger.LogInformation($"Executing script '{_scriptFilePath}'.");

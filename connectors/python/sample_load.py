@@ -1,3 +1,8 @@
+# Requires:
+# pip install asyncio
+# pip install signalrcore-async
+# pip install matplotlib
+
 import asyncio
 from datetime import datetime, timedelta, timezone
 
@@ -9,7 +14,7 @@ async def main():
 
     # settings
     host = "localhost"
-    port = 8080
+    port = 80
     username = "test@root.org"
     password = "#test0/User1" # password = input("Please enter you password: ")
 

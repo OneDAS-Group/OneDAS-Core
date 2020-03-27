@@ -263,6 +263,9 @@ function getMinMax(data, _i0, _i1) {
 
 function formatNumber(value, unit) {
 
+    if (!value)
+        return "NaN";
+
     formattedValue = value.toPrecision(3);
 
     if (unit)

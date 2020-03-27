@@ -3,7 +3,7 @@ Initialize()
 
 %% settings
 host            = 'localhost';
-port         	= 8080;
+port         	= 80;
 username        = 'test@root.org';
 password        = '#test0/User1'; % password = input('Please enter you password: ')
 
