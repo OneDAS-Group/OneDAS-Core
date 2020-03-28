@@ -182,8 +182,10 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract CampaignInfo GetCampaign(string campaignName);
 
+#warning Necessary? this.GetDataCoverage(day) > 0; works also (GetDataAvailabilityStatistics -> GetDataCoverage ... hmmm)
         public abstract bool IsDataOfDayAvailable(string campaignName, DateTime date);
 
+#warning Maybe its enough to simply call GetDataCoverage(day) and then implement DataAvailaibility statistics logic in this base class
         public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end);
 
         public abstract void Dispose();

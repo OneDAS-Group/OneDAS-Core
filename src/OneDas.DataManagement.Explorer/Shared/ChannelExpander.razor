@@ -1,6 +1,14 @@
 ﻿<div class="variable-expander" @onclick="this.OnClick" @onmouseover="() => _showSampleRates = true" @onmouseout="() => _showSampleRates = false">
     <div class="variable-name">
-        @this.Variable.Name
+        @if (string.IsNullOrWhiteSpace(this.Variable.Unit))
+        {
+            @this.Variable.Name
+        }
+        else
+        {
+            <span>@this.Variable.Name / @this.Variable.Unit</span>
+        }
+
         <div class="variable-sample-rates">
             @if (_showSampleRates)
             {
@@ -26,6 +34,13 @@
         </div>
     </div>
     <span class="variable-description">
-        @this.Variable.Description
+        @if (this.AppState.IsEditEnabled)
+        {
+            <input type="text" @bind-value="this.Variable.Description" />
+        }
+        else
+        {
+            @this.Variable.Description
+        }
     </span>
 </div>

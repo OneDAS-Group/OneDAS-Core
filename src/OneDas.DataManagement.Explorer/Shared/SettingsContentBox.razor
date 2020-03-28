@@ -30,43 +30,4 @@
             <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
         </MatButton>
     }
-
-    <MatList>
-        @foreach (var campaignContainer in this.Settings.DatabaseManager.Database.CampaignContainers)
-        {
-            <MatListItem @onclick="() => this.Settings.AppState.CampaignContainer = campaignContainer">
-                @campaignContainer.Name
-            </MatListItem>
-        }
-    </MatList>
-
-    @if (this.AppState.GroupedVariables != null)
-    {
-        @foreach (var entry in this.AppState.GroupedVariables.OrderBy(entry => entry.Key))
-        {
-            <div @onclick="() => this.AppState.VariableGroup = entry.Value"
-                    class="group-entry @(this.AppState.VariableGroup == entry.Value? "selected" : "")">
-                <span class="group-entry-name">@entry.Key</span>
-            </div>
-        }
-    }
-
-    @if (this.Settings.AppState.VariableGroup != null)
-    {
-        <div class="flex-column">
-            @foreach (var variable in this.Settings.AppState.VariableGroup.Skip(this.Settings.VariableMetaPage * this.Settings.VariableMetaPageSize).Take(this.Settings.VariableMetaPageSize))
-            {
-                <div class="flex-row">
-                    <MatTextField Value="@variable.Name" Label="Name" ReadOnly="true"></MatTextField>
-                    <MatTextField @bind-Value="@variable.Description" Label="Description"></MatTextField>
-                </div>
-            }
-        </div>
-
-        <Paginator Length="this.Settings.AppState.VariableGroup.Count" PageSize="this.Settings.VariableMetaPageSize" @bind-Page="this.Settings.VariableMetaPage"></Paginator>
-
-        <MatButton @onclick="this.Settings.SaveCampaignMetaChanges">
-            <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
-        </MatButton>
-    }
 </div>

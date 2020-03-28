@@ -28,19 +28,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private double _downloadProgress;
         private double _visualizeProgress;
 
+        private bool _isEditEnabled;
         private bool _visualizeBeginAtZero;
 
         private ClientState _clientState;
         private IJSRuntime _jsRuntime;
 
         private DataService _dataService;
+        private CampaignContainer _campaignContainer;
+        private OneDasDatabaseManager _databaseManager;
         private CancellationTokenSource _cts_download;
         private PropertyChangedEventHandler _propertyChanged;
         private AuthenticationStateProvider _authenticationStateProvider;
 
-        private CampaignContainer _campaignContainer;
         private List<VariableInfoViewModel> _variableGroup;
-
         private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
         private Dictionary<CampaignContainer, List<VariableInfoViewModel>> _campaignContainerToVariablesMap;
 
@@ -56,6 +57,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             _jsRuntime = jsRuntime;
             _authenticationStateProvider = authenticationStateProvider;
+            _databaseManager = databaseManager;
             _dataService = dataService;
 
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
@@ -101,6 +103,24 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Properties - General
 
         public string Version { get; }
+
+        public bool IsEditEnabled
+        {
+            get { return _isEditEnabled; }
+            set
+            {
+#warning Make this more efficient. Maybe by tracking changes.
+                if (_isEditEnabled && !value)
+                {
+                    _databaseManager.Database.CampaignContainers.ForEach(campaignContainer =>
+                    {
+                        _databaseManager.SaveCampaignMeta(campaignContainer.CampaignMeta);
+                    });
+                }
+
+                this.SetProperty(ref _isEditEnabled, value);
+            }
+        }
 
         public ClientState ClientState
         {

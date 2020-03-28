@@ -20,13 +20,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Constructors
 
-        public SettingsViewModel(AppStateViewModel appState, OneDasDatabaseManager databaseManager, UserManager<IdentityUser> userManager)
+        public SettingsViewModel(AppStateViewModel appState, UserManager<IdentityUser> userManager)
         {
             this.AppState = appState;
-            this.DatabaseManager = databaseManager;
             _userManager = userManager;
-
-            this.VariableMetaPageSize = 5;
         }
 
         #endregion
@@ -34,8 +31,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Properties - General
 
         public AppStateViewModel AppState { get; }
-
-        public OneDasDatabaseManager DatabaseManager { get; }
 
         public IdentityUser User
         {
@@ -53,12 +48,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         public List<IdentityUser> Users => _userManager.Users.ToList();
 
         public List<ClaimViewModel> Claims { get; set; }
-
-        public Dictionary<VariableInfo, VariableMetaInfo> VariableToVariableMetaSet { get; private set; }
-
-        public int VariableMetaPage { get; set; }
-
-        public int VariableMetaPageSize { get; set; }
         
         #endregion
 
@@ -77,11 +66,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             await _userManager.RemoveClaimsAsync(this.User, claimsToRemove);
             await _userManager.AddClaimsAsync(this.User, claimsToAdd);
-        }
-
-        public void SaveCampaignMetaChanges()
-        {
-            this.DatabaseManager.SaveCampaignMeta(this.AppState.CampaignContainer.CampaignMeta);
         }
 
         private void UpdateClaims(IdentityUser user)

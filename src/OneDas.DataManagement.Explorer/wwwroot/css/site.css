@@ -86,6 +86,10 @@ app {
         margin-left: 15px;
     }
 
+        .login-display .mdc-button.active {
+            border-bottom: 1px solid var(--active-color);
+        }
+
     .login-display .submit-button {
         border: none;
         outline: none;
@@ -515,6 +519,10 @@ app {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+    .variable-description > input {
+        width: 98%;
+    }
 
 .right-column {
     display: flex;
