@@ -14,6 +14,7 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Fields
 
+        private Random _random;
         private CampaignInfo _campaign_allowed;
         private CampaignInfo _campaign_restricted;
 
@@ -23,6 +24,8 @@ namespace OneDas.DataManagement.Extensions
 
         public InMemoryDataReader(string rootPath) : base(rootPath)
         {
+            _random = new Random();
+
             var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
             var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
             var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
@@ -55,40 +58,17 @@ namespace OneDas.DataManagement.Extensions
                 throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
         }
 
-        public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
-        {
-            return true;
-        }
-
-        public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
-        {
-            int[] aggregatedData = default;
-            DataAvailabilityGranularity granularity = default;
-
-            var random = new Random();
-            var totalDays = (int)Math.Round((end - begin).TotalDays);
-
-            if (totalDays <= 365)
-            {
-                granularity = DataAvailabilityGranularity.DayLevel;
-                aggregatedData = Enumerable.Range(0, totalDays).Select(value => random.Next(90, 100)).ToArray();
-            }
-            else
-            {
-                var totalMonths = (end.Month - begin.Month) + 1 + 12 * (end.Year - begin.Year);
-
-                granularity = DataAvailabilityGranularity.MonthLevel;
-                aggregatedData = Enumerable.Range(0, totalMonths).Select(value => random.Next(90, 100)).ToArray();
-            }
-
-            Thread.Sleep(TimeSpan.FromMilliseconds(totalDays*2));
-
-            return new DataAvailabilityStatistics(granularity, aggregatedData);
-        }
-
         public override void Dispose()
         {
             //
+        }
+
+        protected override double GetDataAvailability(string campaignName, DateTime Day)
+        {
+            if (campaignName != _campaign_allowed.Id && campaignName != _campaign_restricted.Id)
+                throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
+
+            return _random.NextDouble() / 10 + 0.9;
         }
 
         protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)

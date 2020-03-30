@@ -33,11 +33,6 @@ namespace OneDas.DataManagement.Explorer.Shared
 			this.AttachmentsDialogIsOpen = true;
 		}
 
-		private void OnCampaignContainerSelected(CampaignContainer campaignContainer)
-		{
-			this.AppState.CampaignContainer = campaignContainer;
-		}
-
 		#endregion
 	}
 }

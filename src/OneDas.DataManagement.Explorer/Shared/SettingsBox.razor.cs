@@ -34,11 +34,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-		public IJSRuntime JsRuntime { get; set; }
-
-        #endregion
-
-        #region Properties
+        public IJSRuntime JsRuntime { get; set; }
 
         public bool PresetsDialogIsOpen { get; set; }
 

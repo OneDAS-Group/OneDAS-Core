@@ -2,18 +2,17 @@
 
 <div class="campaign-box-available">
     <MatHeadline5>Available Campaigns</MatHeadline5>
-
-    <MatList SingleSelection="true" TwoLine="true">
+    <ul>
         @foreach (var campaignContainer in this.AppState.CampaignContainers)
         {
-            <MatListItem OnClick="() => this.OnCampaignContainerSelected(campaignContainer)">
-                <MatListItemText>
-                    <MatListItemPrimaryText>@campaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatListItemPrimaryText>
-                    <MatListItemSecondaryText>@campaignContainer.CampaignMeta.ShortDescription</MatListItemSecondaryText>
-                </MatListItemText>
-            </MatListItem>
+            <li @onclick="() => this.AppState.CampaignContainer = campaignContainer">
+                <div class="campaign-item @(this.AppState.CampaignContainer == campaignContainer ? "active" : "")">
+                    <div class="campaign-item-name">@campaignContainer.Name.TrimStart('/').Replace("/", " / ")</div>
+                    <div class="small-text">&nbsp;&nbsp;&nbsp;@campaignContainer.CampaignMeta.ShortDescription</div>
+                </div>
+            </li>
         }
-    </MatList>
+    </ul>
 </div>
 <div class="campaign-box-selected">
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Extensibility
 {
@@ -178,17 +179,69 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
+        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
+        {
+            var dateBegin = begin.Date;
+            var dateEnd = end.Date;
+
+            int[] aggregatedData = default;
+            var granularity = DataAvailabilityGranularity.DayLevel;
+            var totalDays = (int)((dateEnd - dateBegin).TotalDays) + 1;
+
+            if (totalDays <= 365)
+            {
+                aggregatedData = new int[totalDays];
+
+                Parallel.For(0, totalDays, day =>
+                {
+                    var date = dateBegin.AddDays(day);
+                    aggregatedData[day] = (int)(this.GetDataAvailability(campaignName, date) * 100);
+                });
+            }
+            else
+            {
+                granularity = DataAvailabilityGranularity.MonthLevel;
+
+                var months = new DateTime[totalDays];
+                var datasets = new int[totalDays];
+
+                Parallel.For(0, totalDays, day =>
+                {
+                    var date = dateBegin.AddDays(day);
+                    var month = new DateTime(date.Year, date.Month, 1);
+
+                    months[day] = month;
+                    datasets[day] = (int)(this.GetDataAvailability(campaignName, date) * 100);
+                });
+
+                var uniqueMonths = months.Distinct().OrderBy(month => month).ToList();
+                var zipData = months.Zip(datasets, (month, dataset) => (month, dataset)).ToList();
+
+                aggregatedData = new int[uniqueMonths.Count];
+
+                for (int i = 0; i < uniqueMonths.Count; i++)
+                {
+                    aggregatedData[i] = (int)zipData
+                        .Where(current => current.month == uniqueMonths[i])
+                        .Average(current => current.dataset);
+                }
+            }
+
+            return new DataAvailabilityStatistics(granularity, aggregatedData);
+        }
+
+        public bool IsDataOfDayAvailable(string campaignName, DateTime day)
+        {
+            return this.GetDataAvailability(campaignName, day) > 0;
+        }
+
         public abstract List<string> GetCampaignNames();
 
         public abstract CampaignInfo GetCampaign(string campaignName);
 
-#warning Necessary? this.GetDataCoverage(day) > 0; works also (GetDataAvailabilityStatistics -> GetDataCoverage ... hmmm)
-        public abstract bool IsDataOfDayAvailable(string campaignName, DateTime date);
-
-#warning Maybe its enough to simply call GetDataCoverage(day) and then implement DataAvailaibility statistics logic in this base class
-        public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end);
-
         public abstract void Dispose();
+
+        protected abstract double GetDataAvailability(string campaignName, DateTime Day);
 
         protected abstract (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 

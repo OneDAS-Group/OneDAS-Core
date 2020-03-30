@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
-using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
 using Prism.Mvvm;
 using System;
@@ -14,7 +15,6 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using OneDas.DataManagement.Infrastructure;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
@@ -158,6 +158,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                 else
                     this.DateTimeBegin = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+
+                if (this.DateTimeBegin >= this.DateTimeEnd)
+                    this.DateTimeEnd = this.DateTimeBegin;
             }
         }
 
@@ -170,12 +173,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     this.DateTimeEnd = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                 else
                     this.DateTimeEnd = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+
+                if (this.DateTimeEnd <= this.DateTimeBegin)
+                    this.DateTimeBegin = this.DateTimeEnd;
             }
         }
-
-        public DateTime DateTimeBeginMaximum { get; private set; }
-
-        public DateTime DateTimeEndMinimum { get; private set; }
 
         public List<string> SampleRateValues { get; set; }
 
@@ -267,8 +269,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 this.ExportConfiguration.DateTimeBegin = value;
                 this.RaisePropertyChanged();
-
-                this.DateTimeEndMinimum = value;
             }
         }
 
@@ -279,8 +279,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 this.ExportConfiguration.DateTimeEnd = value;
                 this.RaisePropertyChanged();
-
-                this.DateTimeBeginMaximum = value;
             }
         }
 
@@ -423,8 +421,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public void SetExportConfiguration(ExportConfiguration exportConfiguration)
         {
-            this.DateTimeBeginMaximum = exportConfiguration.DateTimeEnd;
-            this.DateTimeEndMinimum = exportConfiguration.DateTimeBegin;
             this.InitializeSampleRateToDatasetsMap();
 
             this.ExportConfiguration = exportConfiguration;
@@ -536,7 +532,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }
 
             if (this.GroupedVariables.Any())
-                this.VariableGroup = this.GroupedVariables.First().Value;
+                this.VariableGroup = this.GroupedVariables.OrderBy(entry => entry.Key).First().Value;
             else
                 this.VariableGroup = null;
         }
@@ -600,7 +596,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)
                     && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
-            }).ToList();
+            }).OrderBy(campaignContainer => campaignContainer.Name).ToList();
         }
 
         #endregion

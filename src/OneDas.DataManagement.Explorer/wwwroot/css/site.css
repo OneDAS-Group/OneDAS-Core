@@ -274,6 +274,23 @@ app {
         scrollbar-width: thin;
     }
 
+.campaign-item .small-text {
+    font-size: 0.875rem;
+}
+
+.campaign-item {
+    cursor: pointer;
+    padding: 5px 15px 5px 15px;
+}
+
+.campaign-item:hover {
+    background-color: var(--hover-bg-color);
+}
+
+.campaign-item.active {
+    color: var(--active-color);
+}
+
 .campaign-box-selected {
     display: flex;
     flex-direction: column;
