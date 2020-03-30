@@ -58,20 +58,7 @@ namespace OneDas.DataManagement.Extensions
                 throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
         }
 
-        public override void Dispose()
-        {
-            //
-        }
-
-        protected override double GetDataAvailability(string campaignName, DateTime Day)
-        {
-            if (campaignName != _campaign_allowed.Id && campaignName != _campaign_restricted.Id)
-                throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
-
-            return _random.NextDouble() / 10 + 0.9;
-        }
-
-        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             double[] dataDouble;
 
@@ -98,7 +85,7 @@ namespace OneDas.DataManagement.Extensions
                 {
                     movingAverage[i % kernelSize] = (random.NextDouble() - 0.5) * mean * 10 + mean;
 
-                    if (movingAverage[kernelSize-1] == 0)
+                    if (movingAverage[kernelSize - 1] == 0)
                         dataDouble[i] = mean;
                     else
                         dataDouble[i] = movingAverage.Sum() / kernelSize;
@@ -109,6 +96,19 @@ namespace OneDas.DataManagement.Extensions
             var statusSet = Enumerable.Range(0, length).Select(value => (byte)1).ToArray();
 
             return (data, statusSet);
+        }
+
+        public override void Dispose()
+        {
+            //
+        }
+
+        protected override double GetDataAvailability(string campaignName, DateTime Day)
+        {
+            if (campaignName != _campaign_allowed.Id && campaignName != _campaign_restricted.Id)
+                throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
+
+            return _random.NextDouble() / 10 + 0.9;
         }
 
         private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3, string id4)
@@ -127,45 +127,33 @@ namespace OneDas.DataManagement.Extensions
             var dataset5 = new DatasetInfo("1 s_mean", variableD) { DataType = OneDasDataType.FLOAT64 };
 
             // variable A
-            variableA.Datasets = new List<DatasetInfo>()
-            {
-                dataset1
-            };
+            variableA.Name = "unix_time1";
+            variableA.Group = "Group 1";
+            variableA.Unit = "";
 
-            variableA.VariableNames.Add("unix_time1");
-            variableA.VariableGroups.Add("Group 1");
-            variableA.Units.Add("");
+            variableA.Datasets.Add(dataset1);
 
             // variable B
-            variableB.Datasets = new List<DatasetInfo>()
-            {
-                dataset2,
-                dataset3
-            };
+            variableB.Name = "unix_time2";
+            variableB.Group = "Group 1";
+            variableB.Unit = string.Empty;
 
-            variableB.VariableNames.Add("unix_time2");
-            variableB.VariableGroups.Add("Group 1");
-            variableB.Units.Add("");
+            variableB.Datasets.Add(dataset2);
+            variableB.Datasets.Add(dataset3);
 
             // variable C
-            variableC.Datasets = new List<DatasetInfo>()
-            {
-                dataset4
-            };
+            variableC.Name = "T1";
+            variableC.Group = "Group 2";
+            variableC.Unit = "°C";
 
-            variableC.VariableNames.Add("T1");
-            variableC.VariableGroups.Add("Group 2");
-            variableC.Units.Add("°C");
+            variableC.Datasets.Add(dataset4);
 
             // variable D
-            variableD.Datasets = new List<DatasetInfo>()
-            {
-                dataset5
-            };
+            variableD.Name = "V1";
+            variableD.Group = "Group 2";
+            variableD.Unit = "m/s";
 
-            variableD.VariableNames.Add("V1");
-            variableD.VariableGroups.Add("Group 2");
-            variableD.Units.Add("m/s");
+            variableD.Datasets.Add(dataset5);
 
             // campaign
             campaign.Variables = new List<VariableInfo>()

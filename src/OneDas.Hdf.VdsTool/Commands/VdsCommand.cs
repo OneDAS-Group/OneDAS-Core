@@ -18,8 +18,8 @@ namespace OneDas.Hdf.VdsTool.Commands
         private ILogger _logger;
 
         private Dictionary<string, List<byte>> _isChunkCompletedMap;
-        private Dictionary<DatasetInfo, List<SourceFileInfo>> _datasetToSourceFilesMap;
-        private Dictionary<DatasetInfo, long> _datasetToTypeIdMap;
+        private Dictionary<HdfDatasetInfo, List<SourceFileInfo>> _datasetToSourceFilesMap;
+        private Dictionary<HdfDatasetInfo, long> _datasetToTypeIdMap;
 
         #endregion
 
@@ -41,8 +41,8 @@ namespace OneDas.Hdf.VdsTool.Commands
             DateTime epochEnd;
 
             _isChunkCompletedMap = new Dictionary<string, List<byte>>();
-            _datasetToSourceFilesMap = new Dictionary<DatasetInfo, List<SourceFileInfo>>();
-            _datasetToTypeIdMap = new Dictionary<DatasetInfo, long>();
+            _datasetToSourceFilesMap = new Dictionary<HdfDatasetInfo, List<SourceFileInfo>>();
+            _datasetToTypeIdMap = new Dictionary<HdfDatasetInfo, long>();
 
             var sourceDirectoryPathSet = new List<string>();
 
@@ -76,7 +76,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             var lastVariablePath = String.Empty;
             var tempFilePath = Path.GetTempFileName();
 
-            var campaigns = new List<CampaignInfo>();
+            var campaigns = new List<HdfCampaignInfo>();
             var sourceFilePathSet = new List<string>();
 
             // fill sourceFilePathSet
@@ -146,7 +146,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsSourceFile(string sourceFilePath, List<CampaignInfo> campaigns, ILogger logger)
+        private void VdsSourceFile(string sourceFilePath, List<HdfCampaignInfo> campaigns, ILogger logger)
         {
             long sourceFileId = -1;
 
@@ -189,7 +189,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsCampaign(long vdsFileId, CampaignInfo campaign, DateTime epochStart, DateTime epochEnd)
+        private void VdsCampaign(long vdsFileId, HdfCampaignInfo campaign, DateTime epochStart, DateTime epochEnd)
         {
             long campaignGroupId = -1;
 
@@ -214,7 +214,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsVariable(long vdsFileId, long vdsCampaignGroupId, VariableInfo variable, DateTime epochStart, DateTime epochEnd, string campaignPath)
+        private void VdsVariable(long vdsFileId, long vdsCampaignGroupId, HdfVariableInfo variable, DateTime epochStart, DateTime epochEnd, string campaignPath)
         {
             long variableGroupId = -1;
 
@@ -251,7 +251,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, DatasetInfo dataset, string campaignPath)
+        private void VdsDataset(long groupId, DateTime epochStart, DateTime epochEnd, HdfDatasetInfo dataset, string campaignPath)
         {
             long datasetId = -1;
             long spaceId = -1;
@@ -342,7 +342,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private void UpdateSourceFileMap(long datasetId, DatasetInfo dataset, SourceFileInfo sourceFileInfo)
+        private void UpdateSourceFileMap(long datasetId, HdfDatasetInfo dataset, SourceFileInfo sourceFileInfo)
         {
             if (!_datasetToSourceFilesMap.ContainsKey(dataset))
             {

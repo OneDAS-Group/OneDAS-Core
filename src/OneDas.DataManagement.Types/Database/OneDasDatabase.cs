@@ -48,7 +48,7 @@ namespace OneDas.DataManagement.Database
                 var variable = campaignContainer.Campaign.Variables.FirstOrDefault(variable => variable.Id == variableName);
 
                 if (variable == null)
-                    variable = campaignContainer.Campaign.Variables.FirstOrDefault(variable => variable.VariableNames.Last() == variableName);
+                    variable = campaignContainer.Campaign.Variables.FirstOrDefault(variable => variable.Name == variableName);
 
                 if (variable != null)
                 {

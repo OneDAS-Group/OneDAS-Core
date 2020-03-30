@@ -521,60 +521,37 @@ namespace OneDas.Hdf.VdsTool.Commands
 
             // channel
             if (filters.ContainsKey("--include-channel"))
-            {
-                if (variable.VariableNames.Any())
-                    result &= Regex.IsMatch(variable.VariableNames.Last(), filters["--include-channel"]);
-                else
-                    result &= false;
-            }
+                result &= Regex.IsMatch(variable.Name, filters["--include-channel"]);
 
             if (filters.ContainsKey("--exclude-channel"))
-            {
-                if (variable.VariableNames.Any())
-                    result &= !Regex.IsMatch(variable.VariableNames.Last(), filters["--exclude-channel"]);
-                else
-                    result &= true;
-            }
+                result &= !Regex.IsMatch(variable.Name, filters["--exclude-channel"]);
 
             // group
             if (filters.ContainsKey("--include-group"))
-            {
-                if (variable.VariableGroups.Any())
-                    result &= variable.VariableGroups.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
-                else
-                    result &= false;
-            }
+                result &= variable.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
 
             if (filters.ContainsKey("--exclude-group"))
-            {
-                if (variable.VariableGroups.Any())
-                    result &= !variable.VariableGroups.Last().Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
-                else
-                    result &= true;
-            }
+                result &= !variable.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
 
             // unit
             if (filters.ContainsKey("--include-unit"))
             {
 #warning Remove this special case check.
-                if (variable.Units.Last() == null)
+                if (variable.Unit == null)
                 {
                     _logger.LogWarning("Unit 'null' value detected.");
                     result &= false;
                 }
                 else
                 {
-                    if (variable.Units.Any())
-                        result &= Regex.IsMatch(variable.Units.Last(), filters["--include-unit"]);
-                    else
-                        result &= false;
+                    result &= Regex.IsMatch(variable.Unit, filters["--include-unit"]);
                 }
             }
 
             if (filters.ContainsKey("--exclude-unit"))
             {
 #warning Remove this special case check.
-                if (variable.Units.Last() == null)
+                if (variable.Unit == null)
                 {
                     _logger.LogWarning("Unit 'null' value detected.");
                     result &= true;
@@ -582,10 +559,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
                 else
                 {
-                    if (variable.Units.Any())
-                        result &= !Regex.IsMatch(variable.Units.Last(), filters["--exclude-unit"]);
-                    else
-                        result &= true;
+                    result &= !Regex.IsMatch(variable.Unit, filters["--exclude-unit"]);
                 }
             }
 

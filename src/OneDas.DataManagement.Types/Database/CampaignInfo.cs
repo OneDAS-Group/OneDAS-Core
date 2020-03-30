@@ -14,8 +14,6 @@ namespace OneDas.DataManagement.Database
 
         public CampaignInfo(string id) : base(id, null)
         {
-#warning Remove "is_chunk_completed_set"
-            this.ChunkDataset = new DatasetInfo("is_chunk_completed_set", this);
             this.Variables = new List<VariableInfo>();
         }
 
@@ -32,8 +30,6 @@ namespace OneDas.DataManagement.Database
 
         public DateTime CampaignEnd { get; set; }
 
-        public DatasetInfo ChunkDataset { get; set; }
-
         public List<VariableInfo> Variables { get; set; }
 
         #endregion
@@ -47,15 +43,23 @@ namespace OneDas.DataManagement.Database
                 return variable.Datasets.Select(dataset =>
                 {
                     var guid = new Guid(variable.Id);
-                    var displayName = variable.VariableNames.Last();
+                    var displayName = variable.Name;
                     var datasetName = dataset.Id;
-                    var groupName = variable.VariableGroups.Any() ? variable.VariableGroups.Last() : string.Empty;
+                    var groupName = variable.Group;
                     var dataType = dataset.DataType;
                     var sampleRate = dataset.GetSampleRate();
-                    var unit = variable.Units.Any() ? variable.Units.Last() : string.Empty;
+                    var unit = variable.Unit;
                     var transferFunctions = variable.TransferFunctions;
 
-                    return new VariableDescription(guid, displayName, datasetName, groupName, dataType, sampleRate, unit, transferFunctions, BufferType.Simple);
+                    return new VariableDescription(guid,
+                                                   displayName,
+                                                   datasetName,
+                                                   groupName,
+                                                   dataType,
+                                                   sampleRate,
+                                                   unit,
+                                                   transferFunctions,
+                                                   BufferType.Simple);
                 });
             }).ToList();
         }
@@ -65,17 +69,17 @@ namespace OneDas.DataManagement.Database
             var campaign = new CampaignInfo(this.Id);
             var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
 
-            campaign.Variables = variables.Select(referenceVariable =>
+            campaign.Variables = variables.Select(reference =>
             {
-                var variable = new VariableInfo(referenceVariable.Id, campaign)
+                var variable = new VariableInfo(reference.Id, campaign)
                 {
-                    TransferFunctions = referenceVariable.TransferFunctions,
-                    Units = referenceVariable.Units,
-                    VariableGroups = referenceVariable.VariableGroups,
-                    VariableNames = referenceVariable.VariableNames
+                    Name = reference.Name,
+                    Group = reference.Group,
+                    Unit = reference.Unit,
+                    TransferFunctions = reference.TransferFunctions,
                 };
 
-                var referenceDatasets = datasets.Where(dataset => (VariableInfo)dataset.Parent == referenceVariable);
+                var referenceDatasets = datasets.Where(dataset => (VariableInfo)dataset.Parent == reference);
 
                 variable.Datasets = referenceDatasets.Select(referenceDataset =>
                 {
@@ -139,8 +143,6 @@ namespace OneDas.DataManagement.Database
         public override void Initialize()
         {
             base.Initialize();
-
-            this.ChunkDataset.Parent = this;
 
             foreach (var variable in this.Variables)
             {

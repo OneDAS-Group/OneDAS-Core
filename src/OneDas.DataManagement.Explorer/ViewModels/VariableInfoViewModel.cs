@@ -32,11 +32,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public string Id => _variable.Id;
 
-        public string Name => _variable.VariableNames.Last();
+        public string Name => _variable.Name;
 
-        public string Group => _variable.VariableGroups.Last();
+        public string Group => _variable.Group;
 
-        public string Unit => string.IsNullOrWhiteSpace(_variableMeta.Unit) ? _variable.Units.Last() : _variableMeta.Unit;
+        public string Unit => string.IsNullOrWhiteSpace(_variableMeta.Unit) ? _variable.Unit : _variableMeta.Unit;
 
         public string Description
         {

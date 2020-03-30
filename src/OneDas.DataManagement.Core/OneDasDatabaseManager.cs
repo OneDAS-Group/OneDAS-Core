@@ -143,8 +143,6 @@ namespace OneDas.DataManagement
                             {
                                 dataset.IsNative = false;
                             }
-
-                            campaign.ChunkDataset.IsNative = false;
                         }
 
                         //

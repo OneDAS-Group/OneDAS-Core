@@ -186,7 +186,7 @@ namespace OneDas.DataManagement.Extensibility
 
             int[] aggregatedData = default;
             var granularity = DataAvailabilityGranularity.DayLevel;
-            var totalDays = (int)((dateEnd - dateBegin).TotalDays) + 1;
+            var totalDays = (int)(dateEnd - dateBegin).TotalDays;
 
             if (totalDays <= 365)
             {
@@ -235,6 +235,8 @@ namespace OneDas.DataManagement.Extensibility
             return this.GetDataAvailability(campaignName, day) > 0;
         }
 
+        public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
+
         public abstract List<string> GetCampaignNames();
 
         public abstract CampaignInfo GetCampaign(string campaignName);
@@ -242,8 +244,6 @@ namespace OneDas.DataManagement.Extensibility
         public abstract void Dispose();
 
         protected abstract double GetDataAvailability(string campaignName, DateTime Day);
-
-        protected abstract (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 
         private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
         {

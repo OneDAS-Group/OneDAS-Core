@@ -6,19 +6,17 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{GetDisplayName(),nq}")]
+    [DebuggerDisplay("{Name,nq}")]
     public class VariableInfo : CampaignElement
     {
-#warning Ensure the properties are never zero (right now they may be set from outside)
         #region "Constructors"
 
         public VariableInfo(string id, CampaignElement parent) : base(id, parent)
         {
-            this.VariableNames = new List<string>();
-            this.VariableGroups = new List<string>();
-            this.Units = new List<string>();
+            this.Name = string.Empty;
+            this.Group = string.Empty;
+            this.Unit = string.Empty;
             this.TransferFunctions = new List<TransferFunction>();
-
             this.Datasets = new List<DatasetInfo>();
         }
 
@@ -31,11 +29,11 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
-        public List<string> VariableNames { get; set; }
+        public string Name { get; set; }
 
-        public List<string> VariableGroups { get; set; }
+        public string Group { get; set; }
 
-        public List<string> Units { get; set; }
+        public string Unit { get; set; }
 
         public List<TransferFunction> TransferFunctions { get; set; }
 
@@ -49,6 +47,19 @@ namespace OneDas.DataManagement.Database
         {
             if (this.Parent.Id != variable.Parent.Id)
                 throw new Exception("The variable to be merged has a different parent.");
+
+            // merge properties
+            if (string.IsNullOrWhiteSpace(this.Name))
+                this.Name = variable.Name;
+
+            if (string.IsNullOrWhiteSpace(this.Group))
+                this.Group = variable.Group;
+
+            if (string.IsNullOrWhiteSpace(this.Unit))
+                this.Unit = variable.Unit;
+
+            if (!this.TransferFunctions.Any())
+                this.TransferFunctions = variable.TransferFunctions;
 
             // merge datasets
             List<DatasetInfo> newDatasets = new List<DatasetInfo>();
@@ -66,17 +77,6 @@ namespace OneDas.DataManagement.Database
             }
 
             this.Datasets.AddRange(newDatasets);
-
-            // merge other properties
-            this.VariableNames = this.MergeLists(this.VariableNames, variable.VariableNames);
-            this.VariableGroups = this.MergeLists(this.VariableGroups, variable.VariableGroups);
-            this.Units = this.MergeLists(this.Units, variable.Units);
-            this.TransferFunctions = this.MergeLists(this.TransferFunctions, variable.TransferFunctions);
-        }
-
-        public string GetDisplayName()
-        {
-            return this.VariableNames.Last();
         }
 
         public override string GetPath()
@@ -98,14 +98,6 @@ namespace OneDas.DataManagement.Database
                 dataset.Parent = this;
                 dataset.Initialize();
             }
-        }
-
-        private List<T> MergeLists<T>(List<T> a, List<T> b)
-        {
-            if (b.Count() == 0 || !Enumerable.SequenceEqual(b, a.Skip(Math.Max(0, a.Count() - b.Count()))))
-                a = a.Concat(b).ToList();
-
-            return a;
         }
 
         #endregion

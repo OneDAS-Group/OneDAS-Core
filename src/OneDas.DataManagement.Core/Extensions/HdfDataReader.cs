@@ -38,7 +38,7 @@ namespace OneDas.DataManagement.Extensions
         {
             this.EnsureOpened();
 
-            _campaigns = GeneralHelper.GetCampaigns(_fileId).ToList();
+            _campaigns = GeneralHelper.GetCampaigns(_fileId).Select(hdfCampaign => hdfCampaign.ToCampaign()).ToList();
 
             this.SwitchLocation(() =>
             {
@@ -54,6 +54,28 @@ namespace OneDas.DataManagement.Extensions
         public override CampaignInfo GetCampaign(string campaignName)
         {
             return _campaigns.First(campaign => campaign.Id == campaignName);
+        }
+
+        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        {
+            this.EnsureOpened();
+
+            T[] data = null;
+            byte[] statusSet = null;
+
+            var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
+            (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
+
+            this.SwitchLocation(() =>
+            {
+                var datasetPath = dataset.GetPath();
+                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
+
+                if (H5L.exists(_fileId, datasetPath + "_status") > 0)
+                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
+            });
+
+            return (data, statusSet);
         }
 
         public override void Dispose()
@@ -90,28 +112,6 @@ namespace OneDas.DataManagement.Extensions
             });
 
             return result;
-        }
-
-        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
-        {
-            this.EnsureOpened();
-
-            T[] data = null;
-            byte[] statusSet = null;
-
-            var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
-            (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
-
-            this.SwitchLocation(() =>
-            {
-                var datasetPath = dataset.GetPath();
-                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
-
-                if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
-            });
-
-            return (data, statusSet);
         }
 
         private void EnsureOpened()
