@@ -31,6 +31,14 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
+        public CampaignInfo ToCampaign()
+        {
+            var campaign = new CampaignInfo(this.Id);
+
+            campaign.Variables = this.Variables.Select(variable => variable.ToVariable(campaign)).ToList();
+            return campaign;
+        }
+
         public void Update(long campaignGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             long datasetId = -1;

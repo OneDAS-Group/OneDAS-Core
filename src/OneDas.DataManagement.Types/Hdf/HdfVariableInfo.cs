@@ -46,6 +46,21 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
+        public VariableInfo ToVariable(CampaignInfo parent)
+        {
+            var variable = new VariableInfo(this.Id, parent)
+            {
+                Name = this.VariableNames.LastOrDefault(),
+                Group = this.VariableGroups.LastOrDefault(),
+                Unit = this.Units.LastOrDefault(),
+                TransferFunctions = this.TransferFunctions
+            };
+
+            variable.Datasets = this.Datasets.Select(dataset => dataset.ToDataset(variable)).ToList();
+
+            return variable;
+        }
+
         public void Update(long variableGroupId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             var idx = 0UL;

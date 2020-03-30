@@ -37,6 +37,16 @@ namespace OneDas.DataManagement.Database
             return new SampleRateContainer(this.Id);
         }
 
+        public DatasetInfo ToDataset(VariableInfo parent)
+        {
+            var dataset = new DatasetInfo(this.Id, parent)
+            {
+                DataType = this.DataType
+            };
+
+            return dataset;
+        }
+
         public void Update(long datasetId, FileContext fileContext, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             long dataspaceId = -1;
