@@ -2,22 +2,15 @@
 using OneDas.DataManagement.Hdf;
 using OneDas.Infrastructure;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Id,nq}")]
     public class HdfDatasetInfo : CampaignElement
     {
         #region "Constructors"
 
         public HdfDatasetInfo(string id, CampaignElement parent) : base(id, parent)
-        {
-            //
-        }
-
-        private HdfDatasetInfo()
         {
             //
         }

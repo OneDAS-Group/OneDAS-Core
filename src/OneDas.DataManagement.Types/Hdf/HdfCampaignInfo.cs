@@ -1,14 +1,12 @@
-﻿using HDF.PInvoke;
+using HDF.PInvoke;
 using OneDas.DataManagement.Hdf;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Id,nq}")]
     public class HdfCampaignInfo : CampaignElement
     {
         #region "Constructors"

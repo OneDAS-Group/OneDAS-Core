@@ -7,8 +7,7 @@ using System.Linq;
 
 namespace OneDas.Extensibility
 {
-#warning Add "CheckFileSize" method.
-#warning Write variable description instead of comment?
+#warning Add "CheckFileSize" method (e.g. for Famos).
     public abstract class DataWriterExtensionLogicBase : ExtensionLogicBase
     {
         #region "Fields"

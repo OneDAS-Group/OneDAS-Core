@@ -1,15 +1,13 @@
-﻿using HDF.PInvoke;
+using HDF.PInvoke;
 using OneDas.DataManagement.Hdf;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Name,nq}")]
     public class HdfVariableInfo : CampaignElement
     {
         #region "Constructors"
@@ -21,11 +19,6 @@ namespace OneDas.DataManagement.Database
             this.Units = new List<string>();
             this.TransferFunctions = new List<TransferFunction>();
             this.Datasets = new List<HdfDatasetInfo>();
-        }
-
-        private HdfVariableInfo()
-        {
-            //
         }
 
         #endregion
