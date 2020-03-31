@@ -127,7 +127,10 @@
     <value>The requested period has already been written before.</value>
   </data>
   <data name="DataWriterExtensionLogicBase_DateTimeGranularityTooHigh" xml:space="preserve">
-    <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute.</value>
+    <value>DateTime and TimeSpan arguments must have a granularity &gt;= 1 s.</value>
+  </data>
+  <data name="DataWriterExtensionLogicBase_FileGranularityTooHigh" xml:space="preserve">
+    <value>The file granularity is higher than the sample period.</value>
   </data>
   <data name="DataWriterExtensionSettingsBase_FileGranularityInvalid" xml:space="preserve">
     <value>The file granularity value is invalid.</value>

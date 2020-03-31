@@ -1,6 +1,5 @@
 ﻿using MatBlazor;
 using OneDas.DataManagement.Explorer.ViewModels;
-using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {

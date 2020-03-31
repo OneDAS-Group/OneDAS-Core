@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -97,8 +96,7 @@ namespace OneDas.DataManagement.Extensions
             if (!(epochStart <= day && day <= epochEnd))
                 throw new Exception("requirement >> epochStart <= day && day <= epochEnd << is not matched");
 
-            var samplesPerDay = new SampleRateContainer("is_chunk_completed_set").SamplesPerDay;
-
+            var samplesPerDay = 1440UL;
             var start = (ulong)Math.Floor((day - epochStart).TotalDays * samplesPerDay);
             var block = samplesPerDay;
 

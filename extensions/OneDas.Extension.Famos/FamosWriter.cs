@@ -109,13 +109,7 @@ namespace OneDas.Extension.Famos
             // for each context group
             foreach (var contextGroup in variableContextGroupSet)
             {
-                // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SampleRate);
-
-                if (chunkLength <= 0)
-                    throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
-
-                var totalLength = chunkLength * this.ChunkCount;
+                var totalLength = (int)((int)_settings.FileGranularity * contextGroup.SampleRate.SamplesPerSecond);
 
                 if (totalLength * (double)OneDasUtilities.SizeOf(OneDasDataType.FLOAT64) > 2 * Math.Pow(10, 9))
                     throw new Exception(ErrorMessage.FamosWriter_DataSizeExceedsLimit);
@@ -125,8 +119,8 @@ namespace OneDas.Extension.Famos
 
                 foreach (VariableContext variableContext in contextGroup.VariableContextSet)
                 {
-                    var dx = contextGroup.SampleRate.Period;
-                    var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, (double)dx);
+                    var dx = contextGroup.SampleRate.Period.TotalSeconds;
+                    var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
 
                     campaignGroup.Channels.Add(variable);
                 }

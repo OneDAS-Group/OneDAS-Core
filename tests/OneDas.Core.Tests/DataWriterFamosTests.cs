@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.Buffers;
 using OneDas.Extensibility;
 using OneDas.Extension.Famos;
+using OneDas.Extension.Hdf;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace OneDas.Core.Tests
             ConfigureServices(services);
 
             var provider = services.BuildServiceProvider();
-            var dataWriter = provider.GetRequiredService<FamosWriter>();
+            var dataWriter = provider.GetRequiredService<HdfWriter>();
 
             var campaignGuid = Guid.NewGuid();
             var dataDirectoryPath = Path.Combine(Path.GetTempPath(), campaignGuid.ToString());
@@ -36,32 +37,24 @@ namespace OneDas.Core.Tests
 
             var variableDescriptionSet = new List<VariableDescription>()
             {
-                this.CreateVariableDescription("Var1", "Group1", OneDasDataType.FLOAT64, new SampleRateContainer(8640000), "Unit1"),
-                this.CreateVariableDescription("Var2", "Group2", OneDasDataType.FLOAT64, new SampleRateContainer(8640000), "Unit2"),
-                this.CreateVariableDescription("Var3", "Group1", OneDasDataType.FLOAT64, new SampleRateContainer(86400), "Unit2"),
+                this.CreateVariableDescription("Var3", "Group1", OneDasDataType.FLOAT64, new SampleRateContainer(144), "Unit2"),
             };
 
             var currentDate = new DateTime(2019, 1, 1, 15, 0, 0);
-            var period = TimeSpan.FromMinutes(1);
+            var period = TimeSpan.FromMinutes(12);
 
             // Act
             dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 
-            for (int i = 0; i < 9; i++)
+            var buffers = variableDescriptionSet.Select(current =>
             {
-                var buffers = variableDescriptionSet.Select(current =>
-                {
-                    var length = (int)current.SampleRate.SamplesPerDay / 1440;
-                    var offset = length * i;
-                    var data = Enumerable.Range(offset, length).Select(value => value * 0 + (double)i + 1).ToArray();
+                var length = (int)current.SampleRate.SamplesPerDay;
+                var data = Enumerable.Range(0, length).Select(value => (double)value + 1).ToArray();
 
-                    return BufferUtilities.CreateSimpleBuffer(data);
-                }).ToList();
+                return BufferUtilities.CreateSimpleBuffer(data);
+            }).ToList();
 
-                dataWriter.Write(currentDate, period, buffers.Cast<IBuffer>().ToList());
-                currentDate += period;
-            }
-
+            dataWriter.Write(currentDate, period, buffers.Cast<IBuffer>().ToList());
             dataWriter.Dispose();
 
             // Assert
@@ -78,7 +71,7 @@ namespace OneDas.Core.Tests
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(current => new FamosWriter(new FamosSettings() { FileGranularity = FileGranularity.Minute_10 }, NullLogger.Instance));
+            services.AddSingleton(current => new HdfWriter(new HdfSettings() { FileGranularity = FileGranularity.Minute_10 }, NullLogger.Instance));
         }
     }
 }

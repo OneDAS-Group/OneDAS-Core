@@ -34,7 +34,11 @@ namespace OneDas.DataManagement.Database
 
         public SampleRateContainer GetSampleRate()
         {
-            return new SampleRateContainer(this.Id);
+            // is_chunk_completed_set
+            if (this.Id.StartsWith("is_chunk_completed_set"))
+                return new SampleRateContainer(86400UL / 60, ensureNonZeroIntegerHz: true);
+            else
+                return new SampleRateContainer(this.Id);
         }
 
         public DatasetInfo ToDataset(VariableInfo parent)

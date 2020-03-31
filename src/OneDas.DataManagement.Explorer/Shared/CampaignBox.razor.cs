@@ -1,9 +1,8 @@
 ﻿using OneDas.DataManagement.Explorer.ViewModels;
-using OneDas.DataManagement.Database;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-	public partial class CampaignBox
+    public partial class CampaignBox
     {
 		#region Constructors
 

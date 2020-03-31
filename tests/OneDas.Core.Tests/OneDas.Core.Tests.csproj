@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Famos\OneDas.Extension.Famos.csproj" />
+    <ProjectReference Include="..\..\extensions\OneDas.Extension.Hdf\OneDas.Extension.Hdf.csproj" />
     <ProjectReference Include="..\..\src\OneDas.Core\OneDas.Core.csproj" />
   </ItemGroup>
 

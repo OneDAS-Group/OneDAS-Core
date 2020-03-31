@@ -327,11 +327,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public bool CanDownload()
         {
-            return this.DateTimeBegin < this.DateTimeEnd &&
-                   this.SelectedDatasets.Count > 0 &&
-                   (ulong)this.FileGranularity >= 86400 / new SampleRateContainer(this.SampleRate).SamplesPerDay &&
-                   this.State == OneDasExplorerState.Ready &&
-                   !this.SampleRate.Contains("600 s");
+            if (this.SampleRate != null)
+            {
+                var samplePeriod = new SampleRateContainer(this.SampleRate).Period.TotalSeconds;
+
+
+                return this.DateTimeBegin < this.DateTimeEnd &&
+                       this.SelectedDatasets.Count > 0 &&
+                       (ulong)this.FileGranularity >= samplePeriod &&
+                       this.State == OneDasExplorerState.Ready;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public async Task DownloadAsync(IPAddress remoteIpAdress)
