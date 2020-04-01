@@ -266,8 +266,6 @@ namespace OneDas.Extension.Mat73
 
         private void PrepareVariable(long locationId, VariableDescription variableDescription, ulong chunkLength, ulong chunkCount)
         {
-            Contract.Requires(variableDescription != null, nameof(variableDescription));
-
             long groupId = -1;
             long datasetId = -1;
 

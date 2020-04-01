@@ -425,7 +425,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
         {
-            return await _dataService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Name, this.DateTimeBegin, this.DateTimeEnd);
+            return await _dataService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
         }
 
         public void SetExportConfiguration(ExportConfiguration exportConfiguration)
@@ -442,7 +442,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 var variableName = pathParts[4];
                 var datasetName = pathParts[5];
 
-                var campaignContainer = this.CampaignContainers.FirstOrDefault(current => current.Name == campaignName);
+                var campaignContainer = this.CampaignContainers.FirstOrDefault(current => current.Id == campaignName);
 
                 if (campaignContainer != null)
                 {
@@ -574,7 +574,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 _campaignContainerToVariablesMap[campaignContainer] = campaignContainer.Campaign.Variables.Select(variable =>
                 {
-                    var variableMeta = campaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Id == variable.Id);
+                    var variableMeta = campaignContainer.CampaignMeta.Variables.First(variableMeta => variableMeta.Id == variable.Id);
                     return new VariableInfoViewModel(variable, variableMeta);
                 }).ToList();
             }
@@ -605,7 +605,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)
                     && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
-            }).OrderBy(campaignContainer => campaignContainer.Name).ToList();
+            }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
         }
 
         #endregion

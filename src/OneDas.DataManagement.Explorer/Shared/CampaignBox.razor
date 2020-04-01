@@ -7,7 +7,7 @@
         {
             <li @onclick="() => this.AppState.CampaignContainer = campaignContainer">
                 <div class="campaign-item @(this.AppState.CampaignContainer == campaignContainer ? "active" : "")">
-                    <div class="campaign-item-name">@campaignContainer.Name.TrimStart('/').Replace("/", " / ")</div>
+                    <div class="campaign-item-name">@campaignContainer.Id.TrimStart('/').Replace("/", " / ")</div>
                     <div class="small-text">&nbsp;&nbsp;&nbsp;@campaignContainer.CampaignMeta.ShortDescription</div>
                 </div>
             </li>
@@ -18,7 +18,7 @@
 
     @if (this.AppState.CampaignContainer != null)
     {
-        <MatHeadline5>@this.AppState.CampaignContainer.Name.TrimStart('/').Replace("/", " / ")</MatHeadline5>
+        <MatHeadline5>@this.AppState.CampaignContainer.Id.TrimStart('/').Replace("/", " / ")</MatHeadline5>
         <p class="long-description small-text">
             @this.AppState.CampaignContainer.CampaignMeta.LongDescription
         </p>

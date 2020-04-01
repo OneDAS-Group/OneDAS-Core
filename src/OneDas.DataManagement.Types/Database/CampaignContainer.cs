@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using OneDas.Infrastructure;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
@@ -7,11 +10,11 @@ namespace OneDas.DataManagement.Database
     {
         #region "Constructors"
 
-        public CampaignContainer(string campaignName, string rootPath)
+        public CampaignContainer(string id, string rootPath)
         {
-            this.Name = campaignName;
+            this.Id = id;
             this.RootPath = rootPath;
-            this.Campaign = new CampaignInfo(campaignName);
+            this.Campaign = new CampaignInfo(id);
         }
 
         private CampaignContainer()
@@ -23,9 +26,9 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
-        public string Name { get; set; }
+        public string Id { get; set; }
 
-        public string PhysicalName => this.Name.TrimStart('/').Replace('/', '_');
+        public string PhysicalName => this.Id.TrimStart('/').Replace('/', '_');
 
         public string RootPath { get; set; }
 
@@ -40,6 +43,46 @@ namespace OneDas.DataManagement.Database
         public void Initialize()
         {
             this.Campaign.Initialize();
+        }
+
+        public SparseCampaignInfo ToSparseCampaign(List<DatasetInfo> datasets)
+        {
+            var campaign = new SparseCampaignInfo(this.Id);
+            var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
+
+            campaign.Variables = variables.Select(reference =>
+            {
+                var variableMeta = this.CampaignMeta.Variables.First(variableMeta => variableMeta.Id == reference.Id);
+
+                var variable = new VariableInfo(reference.Id, campaign)
+                {
+                    Name = reference.Name,
+                    Group = reference.Group,
+
+                    Unit = !string.IsNullOrWhiteSpace(variableMeta.Unit) 
+                        ? variableMeta.Unit
+                        : reference.Unit,
+
+                    TransferFunctions = variableMeta.TransferFunctions.Any()
+                        ? variableMeta.TransferFunctions
+                        : reference.TransferFunctions
+                };
+
+                var referenceDatasets = datasets.Where(dataset => (VariableInfo)dataset.Parent == reference);
+
+                variable.Datasets = referenceDatasets.Select(referenceDataset =>
+                {
+                    return new DatasetInfo(referenceDataset.Id, variable)
+                    {
+                        DataType = referenceDataset.DataType,
+                        IsNative = referenceDataset.IsNative
+                    };
+                }).ToList();
+
+                return variable;
+            }).ToList();
+
+            return campaign;
         }
 
         #endregion

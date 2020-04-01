@@ -1,6 +1,4 @@
-﻿using OneDas.Buffers;
-using OneDas.Extensibility;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,66 +33,6 @@ namespace OneDas.DataManagement.Database
         #endregion
 
         #region "Methods"
-
-        public List<VariableDescription> ToVariableDescriptions()
-        {
-            return this.Variables.SelectMany(variable =>
-            {
-                return variable.Datasets.Select(dataset =>
-                {
-                    var guid = new Guid(variable.Id);
-                    var displayName = variable.Name;
-                    var datasetName = dataset.Id;
-                    var groupName = variable.Group;
-                    var dataType = dataset.DataType;
-                    var sampleRate = dataset.GetSampleRate();
-                    var unit = variable.Unit;
-                    var transferFunctions = variable.TransferFunctions;
-
-                    return new VariableDescription(guid,
-                                                   displayName,
-                                                   datasetName,
-                                                   groupName,
-                                                   dataType,
-                                                   sampleRate,
-                                                   unit,
-                                                   transferFunctions,
-                                                   BufferType.Simple);
-                });
-            }).ToList();
-        }
-
-        public CampaignInfo ToSparseCampaign(List<DatasetInfo> datasets)
-        {
-            var campaign = new CampaignInfo(this.Id);
-            var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
-
-            campaign.Variables = variables.Select(reference =>
-            {
-                var variable = new VariableInfo(reference.Id, campaign)
-                {
-                    Name = reference.Name,
-                    Group = reference.Group,
-                    Unit = reference.Unit,
-                    TransferFunctions = reference.TransferFunctions,
-                };
-
-                var referenceDatasets = datasets.Where(dataset => (VariableInfo)dataset.Parent == reference);
-
-                variable.Datasets = referenceDatasets.Select(referenceDataset =>
-                {
-                    return new DatasetInfo(referenceDataset.Id, variable)
-                    {
-                        DataType = referenceDataset.DataType,
-                        IsNative = referenceDataset.IsNative
-                    };
-                }).ToList();
-
-                return variable;
-            }).ToList();
-
-            return campaign;
-        }
 
         public void Merge(CampaignInfo campaign)
         {

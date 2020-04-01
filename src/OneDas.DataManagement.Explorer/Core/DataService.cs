@@ -101,12 +101,13 @@ namespace OneDas.DataManagement.Explorer.Core
                 {
                     // convert datasets into campaigns
                     var campaignNames = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
-                    var fullCampaigns = _databaseManager.GetCampaigns().Where(campaign => campaignNames.Contains(campaign.Id));
+                    var campaignContainers = _databaseManager.Database.CampaignContainers
+                        .Where(campaignContainer => campaignNames.Contains(campaignContainer.Id));
 
-                    var campaigns = fullCampaigns.Select(fullCampaign =>
+                    var campaigns = campaignContainers.Select(campaignContainer =>
                     {
-                        var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == fullCampaign.Id).ToList();
-                        return fullCampaign.ToSparseCampaign(currentDatasets);
+                        var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == campaignContainer.Id).ToList();
+                        return campaignContainer.ToSparseCampaign(currentDatasets);
                     });
 
                     // security check

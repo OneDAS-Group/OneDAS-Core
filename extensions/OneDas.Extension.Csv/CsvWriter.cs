@@ -37,14 +37,12 @@ namespace OneDas.Extension.Csv
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            string dataFilePath;
-
             _lastFileStartDateTime = startDateTime;
             _unixStart = (startDateTime - _unixEpoch).TotalSeconds;
 
             foreach (var contextGroup in variableContextGroupSet)
             {
-                dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
+                var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
 
                 if (!File.Exists(dataFilePath))
                 {
@@ -71,7 +69,7 @@ namespace OneDas.Extension.Csv
                             streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
                         }
 
-                        // header
+                        /* variable name */
                         switch (_settings.RowIndexFormat)
                         {
                             case CsvRowIndexFormat.Index:
@@ -84,17 +82,29 @@ namespace OneDas.Extension.Csv
                                 throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
                         }
 
-                        foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                        foreach (var variableContext in contextGroup.VariableContextSet)
                         {
                             streamWriter.Write($"{ variableContext.VariableDescription.VariableName };");
                         }
 
                         streamWriter.WriteLine();
+
+                        /* dataset name */
                         streamWriter.Write("-;");
 
-                        foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                        foreach (var variableContext in contextGroup.VariableContextSet)
                         {
                             streamWriter.Write($"{ variableContext.VariableDescription.DatasetName };");
+                        }
+
+                        streamWriter.WriteLine();
+
+                        /* unit */
+                        streamWriter.Write("-;");
+
+                        foreach (var variableContext in contextGroup.VariableContextSet)
+                        {
+                            streamWriter.Write($"{ variableContext.VariableDescription.Unit };");
                         }
 
                         streamWriter.WriteLine();

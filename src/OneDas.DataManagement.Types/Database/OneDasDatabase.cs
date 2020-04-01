@@ -23,6 +23,11 @@ namespace OneDas.DataManagement.Database
 
         #region Methods
 
+        public List<CampaignInfo> GetCampaigns()
+        {
+            return this.CampaignContainers.Select(container => container.Campaign).ToList();
+        }
+
         public bool TryFindDataset(string channelName, out DatasetInfo dataset)
         {
             var channelNameParts = channelName.Split("/");
@@ -41,7 +46,7 @@ namespace OneDas.DataManagement.Database
         {
             dataset = default;
 
-            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Name == campaignName);
+            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Id == campaignName);
 
             if (campaignContainer != null)
             {

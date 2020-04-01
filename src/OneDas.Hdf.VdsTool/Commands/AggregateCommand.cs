@@ -160,12 +160,12 @@ namespace OneDas.Hdf.VdsTool.Commands
             var groupPath = dataset.Parent.GetPath();
             var setupToDataMap = new Dictionary<AggregationSetup, AggregationPeriodData>();
             var setupToBufferDataMap = new Dictionary<AggregationSetup, AggregationBufferData>();
-            var actualPeriods = new HashSet<Period>();
+            var actualPeriods = new HashSet<AggregationPeriod>();
 
             var setups = aggregationConfigs.SelectMany(config =>
             {
-                return Enum.GetValues(typeof(Period))
-                    .Cast<Period>()
+                return Enum.GetValues(typeof(AggregationPeriod))
+                    .Cast<AggregationPeriod>()
                     .Select(period => new AggregationSetup(config, period));
             }).ToList();
 

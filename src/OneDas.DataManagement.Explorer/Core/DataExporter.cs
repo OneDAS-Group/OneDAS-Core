@@ -125,6 +125,9 @@ namespace OneDas.DataManagement.Explorer.Core
 
             foreach (string filePath in filePathSet)
             {
+                if (_cancellationToken.IsCancellationRequested)
+                    return false;
+
                 var zipArchiveEntry = _zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
 
                 this.OnProgressUpdated(new ProgressUpdatedEventArgs(currentFile / (double)fileCount, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));

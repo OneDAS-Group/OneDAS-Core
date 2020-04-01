@@ -1,6 +1,6 @@
-﻿namespace OneDas.Infrastructure
+﻿namespace OneDas.DataManagement.Database
 { 
-    public enum Period
+    public enum AggregationPeriod
     {
         /// <summary>
         /// 1 s

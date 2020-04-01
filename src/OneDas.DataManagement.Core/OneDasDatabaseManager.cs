@@ -99,7 +99,7 @@ namespace OneDas.DataManagement
                     foreach (var campaignName in campaignNames)
                     {
                         // find campaign container or create a new one
-                        var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Name == campaignName);
+                        var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
 
                         if (container == null)
                         {
@@ -156,9 +156,18 @@ namespace OneDas.DataManagement
             }
 
             // the purpose of this block is to initalize empty properties 
-            // and add missing variables to speed up hand-editing of the meta file
+            // add missing variables and clean up empty variables
             foreach (var campaignContainer in this.Database.CampaignContainers)
             {
+                // remove all variables where no native datasets are available
+                // because only these provide metadata like name and group
+                var variables = campaignContainer.Campaign.Variables;
+
+                variables
+                    .Where(variable => string.IsNullOrWhiteSpace(variable.Name))
+                    .ToList()
+                    .ForEach(variable => variables.Remove(variable));
+
                 // initalize campaign meta
                 campaignContainer.CampaignMeta.Initialize(campaignContainer.Campaign);
 
@@ -169,7 +178,7 @@ namespace OneDas.DataManagement
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)
         {
-            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Name == campaignName);
+            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
 
             if (container == null)
                 throw new KeyNotFoundException("The requested campaign could not be found.");
@@ -178,11 +187,6 @@ namespace OneDas.DataManagement
                 throw new KeyNotFoundException("The requested data reader could not be found.");
 
             return dataReader;
-        }
-
-        public List<CampaignInfo> GetCampaigns()
-        {
-            return this.Database.CampaignContainers.Select(container => container.Campaign).ToList();
         }
 
         public void SaveCampaignMeta(CampaignMetaInfo campaignMeta)

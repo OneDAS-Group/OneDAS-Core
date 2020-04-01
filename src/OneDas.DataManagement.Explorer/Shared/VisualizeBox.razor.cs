@@ -28,7 +28,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 				if (this.AppState.IsSizeLimitExceeded())
 				{
 					_showWarning = true;
-					await this.InvokeAsync(() => { this.StateHasChanged(); });
+					await this.InvokeAsync(this.StateHasChanged);
 				}
 				else if (!this.AppState.CanVisualize())
 				{
@@ -58,7 +58,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 					}
 					else if (e.PropertyName == nameof(AppStateViewModel.VisualizeProgress))
 					{
-						await this.InvokeAsync(() => { this.StateHasChanged(); });
+						await this.InvokeAsync(this.StateHasChanged);
 					}
 				}
 			};
@@ -121,7 +121,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 			var count = (int)((end - begin).TotalSeconds * sampleRate);
 
-			await this.InvokeAsync(() => { this.StateHasChanged(); });
+			await this.InvokeAsync(this.StateHasChanged);
 			await JsInterop.UpdateChartAsync(this.JsRuntime, this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
 		}
 

@@ -182,7 +182,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
+            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ...";
             _logger.LogInformation(message);
 
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
@@ -226,7 +226,16 @@ namespace OneDas.DataManagement.Explorer.Hubs
                         else
                             doubleData = (double[])dataRecord.Dataset;
 
-                        await writer.WriteAsync(doubleData, cancellationToken);
+                        // avoid throwing an uncatched exception here because this would crash the app
+                        // the task in cancelled anyway
+                        try
+                        {
+                           await writer.WriteAsync(doubleData, cancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogWarning($"{message} Cancelled.");
+                        }
                     }, cancellationToken);
                 }
                 finally
@@ -236,7 +245,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError($"{message} {ex.Message}");
                 localException = ex;
             }
 

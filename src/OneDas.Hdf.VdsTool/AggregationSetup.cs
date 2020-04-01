@@ -5,7 +5,7 @@ namespace OneDas.Hdf.VdsTool
 {
     public class AggregationSetup
     {
-        public AggregationSetup(AggregationConfig config, Period period)
+        public AggregationSetup(AggregationConfig config, AggregationPeriod period)
         {
             this.Config = config;
             this.Period = period;
@@ -13,6 +13,6 @@ namespace OneDas.Hdf.VdsTool
 
         public AggregationConfig Config { get; }
 
-        public Period Period { get; }
+        public AggregationPeriod Period { get; }
     }
 }

@@ -36,7 +36,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public string Group => _variable.Group;
 
-        public string Unit => string.IsNullOrWhiteSpace(_variableMeta.Unit) ? _variable.Unit : _variableMeta.Unit;
+        public string Unit => !string.IsNullOrWhiteSpace(_variableMeta.Unit) 
+            ? _variableMeta.Unit 
+            : _variable.Unit;
 
         public string Description
         {
@@ -46,7 +48,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public CampaignInfo Parent => (CampaignInfo)_variable.Parent;
 
-        public List<TransferFunction> TransferFunctions => _variableMeta == null ? new List<TransferFunction>() : _variableMeta.TransferFunctions;
+        public List<TransferFunction> TransferFunctions => _variableMeta.TransferFunctions.Any() 
+            ? _variableMeta.TransferFunctions
+            : _variable.TransferFunctions;
 
         public List<DatasetInfoViewModel> Datasets { get; private set; }
 

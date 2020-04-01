@@ -44,6 +44,7 @@ namespace OneDas.DataManagement.Database
             if (string.IsNullOrWhiteSpace(this.LongDescription))
                 this.LongDescription = "<no description available>";
 
+            // create missing variable meta instances
             var variablesToAdd = new List<VariableMetaInfo>();
 
             foreach (var referenceVariable in campaign.Variables)
