@@ -77,7 +77,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 var targetFileId = -1L;
 
                 // campaign
-                var campaign = _databaseManager.GetCampaigns().FirstOrDefault(campaign => campaign.Id == campaignName);
+                var campaign = _databaseManager.Database.GetCampaigns().FirstOrDefault(campaign => campaign.Id == campaignName);
 
                 if (campaign is null)
                     throw new Exception($"The requested campaign '{campaignName}' could not be found.");
