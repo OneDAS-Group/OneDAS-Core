@@ -162,7 +162,8 @@ namespace OneDas.DataManagement.Explorer
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS")),
-                RequestPath = "/attachments"
+                RequestPath = "/attachments",
+                ServeUnknownFileTypes = true
             });
             app.UseStaticFiles(new StaticFileOptions
             {
