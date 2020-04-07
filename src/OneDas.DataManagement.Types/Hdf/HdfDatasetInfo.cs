@@ -29,7 +29,7 @@ namespace OneDas.DataManagement.Database
         {
             // is_chunk_completed_set
             if (this.Id.StartsWith("is_chunk_completed_set"))
-                return new SampleRateContainer(86400UL / 60, ensureNonZeroIntegerHz: true);
+                return new SampleRateContainer(1440, ensureNonZeroIntegerHz: false);
             else
                 return new SampleRateContainer(this.Id);
         }
