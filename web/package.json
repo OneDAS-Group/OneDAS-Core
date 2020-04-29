@@ -9,7 +9,7 @@
     "bootstrap": "4.0.0",
     "chart.js": "2.7.2",
     "font-awesome": "4.7.0",
-    "jquery": "3.4.1",
+    "jquery": "3.5.0",
     "knockout": "3.5.1",
     "mathjs": "4.2.2",
     "moment": "2.24.0",
