@@ -1,5 +1,4 @@
-﻿using OneDas.DataManagement.Database;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -8,11 +7,11 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public static class Utilities
     {
-        public static bool IsCampaignAccessible(ClaimsPrincipal principal, CampaignInfo campaign, List<string> restrictedCampaigns)
+        public static bool IsCampaignAccessible(ClaimsPrincipal principal, string campaignId, List<string> restrictedCampaigns)
         {
             var identitiy = principal.Identity;
 
-            if (!restrictedCampaigns.Contains(campaign.Id))
+            if (!restrictedCampaigns.Contains(campaignId))
             {
                 return true;
             }
@@ -20,7 +19,7 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
                 var canAccessCampaignContainer = principal.HasClaim(claim => claim.Type == "CanAccessCampaign"
-                                                                 && claim.Value.Split(";").Any(campaignName => campaignName == campaign.Id));
+                                                                 && claim.Value.Split(";").Any(current => current == campaignId));
 
                 return isAdmin || canAccessCampaignContainer;
             }
@@ -28,11 +27,11 @@ namespace OneDas.DataManagement.Explorer.Core
             return false;
         }
 
-        public static bool IsCampaignVisible(ClaimsPrincipal principal, CampaignInfo campaign, List<string> hiddenCampaigns)
+        public static bool IsCampaignVisible(ClaimsPrincipal principal, string campaignId, List<string> hiddenCampaigns)
         {
             var identitiy = principal.Identity;
 
-            if (!hiddenCampaigns.Contains(campaign.Id))
+            if (!hiddenCampaigns.Contains(campaignId))
             {
                 return true;
             }
@@ -65,11 +64,6 @@ namespace OneDas.DataManagement.Explorer.Core
                 return $"{(double)byteCount / 1000:G3} kB";
             else
                 return $"{(double)byteCount:F0} B";
-        }
-
-        internal static bool IsCampaignAccessible(ClaimsPrincipal principal, object campaign, List<string> restrictedCampaigns)
-        {
-            throw new NotImplementedException();
         }
     }
 }

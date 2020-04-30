@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
@@ -53,14 +53,17 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync(string campaignName, DateTime dateTimeBegin, DateTime dateTimeEnd)
+        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync(string campaignId, DateTime begin, DateTime end)
         {
             return Task.Run(() =>
             {
                 _stateManager.CheckState();
 
-                using var dataReader = _databaseManager.GetNativeDataReader(campaignName);
-                return dataReader.GetDataAvailabilityStatistics(campaignName, dateTimeBegin, dateTimeEnd);
+                if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, campaignId, _databaseManager.Config.RestrictedCampaigns))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaignId}'.");
+
+                using var dataReader = _databaseManager.GetNativeDataReader(campaignId);
+                return dataReader.GetDataAvailabilityStatistics(campaignId, begin, end);
             });
         }
 
@@ -113,7 +116,7 @@ namespace OneDas.DataManagement.Explorer.Core
                     // security check
                     foreach (var campaign in campaigns)
                     {
-                        if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                        if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
                             throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
                     }
 

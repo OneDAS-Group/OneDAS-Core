@@ -49,9 +49,9 @@ namespace OneDas.DataManagement.Extensions
             return _campaigns.Select(campaign => campaign.Id).ToList();
         }
 
-        public override CampaignInfo GetCampaign(string campaignName)
+        public override CampaignInfo GetCampaign(string campaignId)
         {
-            return _campaigns.First(campaign => campaign.Id == campaignName);
+            return _campaigns.First(campaign => campaign.Id == campaignId);
         }
 
         public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
@@ -81,10 +81,10 @@ namespace OneDas.DataManagement.Extensions
             if (H5I.is_valid(_fileId) > 0) { H5F.close(_fileId); }
         }
 
-        protected override double GetDataAvailability(string campaignName, DateTime day)
+        protected override double GetDataAvailability(string campaignId, DateTime day)
         {
-            if (!_campaigns.Any(campaign => campaign.Id == campaignName))
-                throw new Exception($"The campaign '{campaignName}' could not be found.");
+            if (!_campaigns.Any(campaign => campaign.Id == campaignId))
+                throw new Exception($"The campaign '{campaignId}' could not be found.");
 
             this.EnsureOpened();
 
@@ -104,7 +104,7 @@ namespace OneDas.DataManagement.Extensions
 
             this.SwitchLocation(() =>
             {
-                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
+                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignId}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
                 result = data.Sum() / 1440.0;
             });
 

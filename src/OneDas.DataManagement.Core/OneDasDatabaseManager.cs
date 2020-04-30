@@ -39,9 +39,6 @@ namespace OneDas.DataManagement
 
         public OneDasDatabaseManager()
         {
-            // database
-            this.Database = new OneDasDatabase();
-
             // config
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
 
@@ -61,15 +58,15 @@ namespace OneDas.DataManagement
             // save config to disk
             this.SaveConfig(this.Config);
 
-            // update database
-            this.Update();
+            // create empty database
+            this.Database = new OneDasDatabase();
         }
 
         #endregion
 
         #region Properties
 
-        public OneDasDatabase Database { get; }
+        public OneDasDatabase Database { get; private set; }
 
         public OneDasDatabaseConfig Config { get; }
 
@@ -81,6 +78,8 @@ namespace OneDas.DataManagement
 
         public void Update()
         {
+            var database = new OneDasDatabase();
+
             // instantiate data reader
             _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
 
@@ -99,12 +98,12 @@ namespace OneDas.DataManagement
                     foreach (var campaignName in campaignNames)
                     {
                         // find campaign container or create a new one
-                        var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
+                        var container = database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
 
                         if (container == null)
                         {
                             container = new CampaignContainer(campaignName, dataReader.RootPath);
-                            this.Database.CampaignContainers.Add(container);
+                            database.CampaignContainers.Add(container);
 
                             // try to load campaign meta data
                             var filePath = this.GetCampaignMetaPath(campaignName);
@@ -157,7 +156,7 @@ namespace OneDas.DataManagement
 
             // the purpose of this block is to initalize empty properties 
             // add missing variables and clean up empty variables
-            foreach (var campaignContainer in this.Database.CampaignContainers)
+            foreach (var campaignContainer in database.CampaignContainers)
             {
                 // remove all variables where no native datasets are available
                 // because only these provide metadata like name and group
@@ -174,6 +173,8 @@ namespace OneDas.DataManagement
                 // save campaign meta to disk
                 this.SaveCampaignMeta(campaignContainer.CampaignMeta);
             }
+
+            this.Database = database;
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)

@@ -47,14 +47,14 @@ namespace OneDas.DataManagement.Extensions
             return new List<string> { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
         }
 
-        public override CampaignInfo GetCampaign(string campaignName)
+        public override CampaignInfo GetCampaign(string campaignId)
         {
-            if (campaignName == _campaign_allowed.Id)
+            if (campaignId == _campaign_allowed.Id)
                 return _campaign_allowed;
-            else if (campaignName == _campaign_restricted.Id)
+            else if (campaignId == _campaign_restricted.Id)
                 return _campaign_restricted;
             else
-                throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
+                throw new Exception($"The requested campaign with name '{campaignId}' could not be found.");
         }
 
         public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
@@ -102,17 +102,17 @@ namespace OneDas.DataManagement.Extensions
             //
         }
 
-        protected override double GetDataAvailability(string campaignName, DateTime Day)
+        protected override double GetDataAvailability(string campaignId, DateTime Day)
         {
-            if (campaignName != _campaign_allowed.Id && campaignName != _campaign_restricted.Id)
-                throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
+            if (campaignId != _campaign_allowed.Id && campaignId != _campaign_restricted.Id)
+                throw new Exception($"The requested campaign with name '{campaignId}' could not be found.");
 
             return _random.NextDouble() / 10 + 0.9;
         }
 
-        private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3, string id4)
+        private CampaignInfo InitializeCampaign(string campaignId, string id1, string id2, string id3, string id4)
         {
-            var campaign = new CampaignInfo(campaignName);
+            var campaign = new CampaignInfo(campaignId);
 
             var variableA = new VariableInfo(id1, campaign);
             var variableB = new VariableInfo(id2, campaign);

@@ -603,8 +603,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             return campaignContainers.Where(campaignContainer =>
             {
-                return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)
-                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
+                return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign.Id, restrictedCampaigns)
+                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
             }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
         }
 

@@ -179,7 +179,7 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
+        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
         {
             var dateBegin = begin.Date;
             var dateEnd = end.Date;
@@ -195,7 +195,7 @@ namespace OneDas.DataManagement.Extensibility
                 Parallel.For(0, totalDays, day =>
                 {
                     var date = dateBegin.AddDays(day);
-                    aggregatedData[day] = (int)(this.GetDataAvailability(campaignName, date) * 100);
+                    aggregatedData[day] = (int)(this.GetDataAvailability(campaignId, date) * 100);
                 });
             }
             else
@@ -211,7 +211,7 @@ namespace OneDas.DataManagement.Extensibility
                     var month = new DateTime(date.Year, date.Month, 1);
 
                     months[day] = month;
-                    datasets[day] = (int)(this.GetDataAvailability(campaignName, date) * 100);
+                    datasets[day] = (int)(this.GetDataAvailability(campaignId, date) * 100);
                 });
 
                 var uniqueMonths = months.Distinct().OrderBy(month => month).ToList();
@@ -230,20 +230,20 @@ namespace OneDas.DataManagement.Extensibility
             return new DataAvailabilityStatistics(granularity, aggregatedData);
         }
 
-        public bool IsDataOfDayAvailable(string campaignName, DateTime day)
+        public bool IsDataOfDayAvailable(string campaignId, DateTime day)
         {
-            return this.GetDataAvailability(campaignName, day) > 0;
+            return this.GetDataAvailability(campaignId, day) > 0;
         }
 
         public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 
         public abstract List<string> GetCampaignNames();
 
-        public abstract CampaignInfo GetCampaign(string campaignName);
+        public abstract CampaignInfo GetCampaign(string campaignId);
 
         public abstract void Dispose();
 
-        protected abstract double GetDataAvailability(string campaignName, DateTime Day);
+        protected abstract double GetDataAvailability(string campaignId, DateTime Day);
 
         private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
         {

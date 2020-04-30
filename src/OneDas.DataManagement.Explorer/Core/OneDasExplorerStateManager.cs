@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prism.Mvvm;
 using System;
 
@@ -11,6 +12,7 @@ namespace OneDas.DataManagement.Explorer.Core
         #region Fields
 
         private bool _isActive;
+        private ILogger _logger;
         private System.Timers.Timer _activityTimer;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
@@ -20,9 +22,12 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Constructors
 
-        public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager, IOptions<OneDasExplorerOptions> options)
+        public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager,
+                                          ILoggerFactory loggerFactory,
+                                          IOptions<OneDasExplorerOptions> options)
         {
             _databaseManager = databaseManager;
+            _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _options = options.Value;
 
             this.OnActivityTimerElapsed();
@@ -47,7 +52,7 @@ namespace OneDas.DataManagement.Explorer.Core
             switch (this.State)
             {
                 case OneDasExplorerState.Inactive:
-                    throw new Exception("HDF Explorer is in scheduled inactivity mode.");
+                    throw new Exception("OneDAS Explorer is in scheduled inactivity mode.");
 
                 default:
                     break;
@@ -60,7 +65,8 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (_options.InactivityPeriod > TimeSpan.Zero)
             {
-                var startRemaining = DateTime.UtcNow.Date.Add(_options.InactiveOn) - DateTime.UtcNow;
+                var now = DateTime.Now;
+                var startRemaining = now.Date.Add(_options.InactiveOn) - now;
                 var stopRemaining = startRemaining.Add(_options.InactivityPeriod);
 
                 if (startRemaining < TimeSpan.Zero)
@@ -90,12 +96,28 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (_isActive)
             {
-                _databaseManager.Update();
-                this.State = OneDasExplorerState.Ready;
+                var message = "Updating database ...";
+
+                try
+                {
+                    _logger.LogInformation(message);
+                    _databaseManager.Update();
+                    _logger.LogInformation($"{message} Done.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"{message} Error: {ex.Message}");
+                }
+                finally
+                {
+                    this.State = OneDasExplorerState.Ready;
+                    _logger.LogInformation($"Entered active mode.");
+                }
             }
             else
             {
                 this.State = OneDasExplorerState.Inactive;
+                _logger.LogInformation($"Entered inactive mode.");
             }
         }
 

@@ -106,16 +106,19 @@ namespace OneDas.DataManagement.Explorer
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               ApplicationDbContext userDB,
+                              OneDasExplorerStateManager stateManager,
                               UserManager<IdentityUser> userManager,
                               IOptions<OneDasExplorerOptions> options)
         {
+            // stateManager is requested to create an instance and let the timers start
+
             // logger
             var logger = loggerFactory.CreateLogger("OneDAS Explorer");
             logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
 
             // database
             if (userDB.Database.EnsureCreated())
-                logger.LogInformation($"Database initialized.");
+                logger.LogInformation($"SQLite database initialized.");
 
             // ensure there is a root user
             if (userManager.FindByNameAsync("root@root.org").Result == null)
