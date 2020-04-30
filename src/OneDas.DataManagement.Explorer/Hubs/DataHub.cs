@@ -60,7 +60,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
             foreach (var campaign in campaigns)
             {
-                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
                     throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
             }
 
@@ -199,7 +199,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 var campaign = (CampaignInfo)dataset.Parent.Parent;
 
                 // security check
-                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
                     throw new UnauthorizedAccessException($"The current user is not authorized to access the campaign '{campaign.Id}'.");
 
                 // dataReader
