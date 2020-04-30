@@ -18,6 +18,7 @@ namespace OneDas.DataManagement.Extensions
         private List<CampaignInfo> _campaigns;
         private string _filePath;
         private long _fileId = -1;
+        private object _lock;
 
         #endregion
 
@@ -26,6 +27,7 @@ namespace OneDas.DataManagement.Extensions
         public HdfDataReader(string rootPath) : base(rootPath)
         {
             _filePath = Path.Combine(this.RootPath, "VDS.h5");
+            _lock = new object();
         }
 
         #endregion
@@ -102,11 +104,15 @@ namespace OneDas.DataManagement.Extensions
             // get data
             var result = 0.0;
 
-            this.SwitchLocation(() =>
+#warning Switching the location is no good idea. It breaks the webserver. Locks is required since this method is called with Parallel.For() which causes the current location to be set incorrectly.
+            lock (_lock)
             {
-                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignId}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
-                result = data.Sum() / 1440.0;
-            });
+                this.SwitchLocation(() =>
+                {
+                    var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignId}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
+                    result = data.Sum() / 1440.0;
+                });
+            }
 
             return result;
         }
