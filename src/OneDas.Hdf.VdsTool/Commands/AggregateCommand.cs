@@ -24,6 +24,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         private uint _days;
         private uint _aggregationChunkSizeMb;
+        private bool _force;
         private ILogger _logger;
 
         private OneDasDatabaseManager _databaseManager;
@@ -32,10 +33,11 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Constructors
 
-        public AggregateCommand(uint days, uint aggregationChunkSizeMb, ILogger logger)
+        public AggregateCommand(uint days, uint aggregationChunkSizeMb, bool force, ILogger logger)
         {
             _days = days;
             _aggregationChunkSizeMb = aggregationChunkSizeMb;
+            _force = force;
             _logger = logger;
         }
 
@@ -190,7 +192,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     var targetDatasetPath = $"{groupPath}/{(int)setup.Period} s_{methodIdentifier}";
 
-                    if (!IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                    if (_force || !IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
                     {
                         // buffer data
                         var bufferData = new AggregationBufferData(setup.Period);

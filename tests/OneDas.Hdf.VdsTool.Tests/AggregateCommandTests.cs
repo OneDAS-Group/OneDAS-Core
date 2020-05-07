@@ -24,7 +24,7 @@ namespace OneDas.Core.Tests
         public void CanAggregate1(AggregationMethod method, double nanLimit, double[] data, double expected)
         {
             // Arrange
-            var command = new AggregateCommand(1, 1, NullLogger.Instance);
+            var command = new AggregateCommand(1, 1, false, NullLogger.Instance);
             var kernelSize = data.Length;
             var config = new AggregationConfig() { Method = method, Argument = "360" };
 
@@ -45,7 +45,7 @@ namespace OneDas.Core.Tests
         public void CanAggregate2(AggregationMethod method, double nanLimit, int[] data, byte[] statusSet, double expected)
         {
             // Arrange
-            var command = new AggregateCommand(1, 1, NullLogger.Instance);
+            var command = new AggregateCommand(1, 1, false, NullLogger.Instance);
             var kernelSize = data.Length;
             var config = new AggregationConfig() { Method = method, Argument = "360" };
 

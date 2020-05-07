@@ -212,22 +212,27 @@ namespace OneDas.Hdf.VdsTool
                 new Option("--chunk-size", "The aggregation chunk size in MB.")
                 {
                     Argument = new Argument<uint>(() => 200),
-                    Required = true
+                    Required = false
                 },
                 new Option("--days", "The number of days in the past to look for files to calculate aggregations for.")
                 {
                     Argument = new Argument<uint>(),
                     Required = true
+                },
+                new Option("--force", "Force recalculation of existing aggregations.")
+                {
+                    Argument = new Argument<bool>(() => false),
+                    Required = false
                 }
             };
 
-            command.Handler = CommandHandler.Create((uint chunkSize, uint days) =>
+            command.Handler = CommandHandler.Create((uint chunkSize, uint days, bool force) =>
             {
                 var logger = _loggerFactory.CreateLogger("AGGREGATE");
                 
                 try
                 {
-                    new AggregateCommand(days, chunkSize, logger).Run();
+                    new AggregateCommand(days, chunkSize, force, logger).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)
