@@ -229,7 +229,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
 
                     // aggregate data
-                    var setupToPartialBufferMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, setupToDataMap);
+                    var setupToPartialBufferMap = this.ApplyAggregationFunction((T[])dataRecord.Dataset, dataRecord.Status, setupToDataMap);
 
                     foreach (var entry in setupToDataMap)
                     {
@@ -270,11 +270,11 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
         }
 
-        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset,
-                                                                                   T[] data,
+        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(T[] data,
                                                                                    byte[] statusSet,
                                                                                    Dictionary<AggregationSetup, AggregationPeriodData> setupToDataMap) where T : unmanaged
         {
+            var nanLimit = 0.99;
             var dataset_double = default(double[]);
             var setupToPartialBufferMap = new Dictionary<AggregationSetup, double[]>();
 
@@ -297,14 +297,14 @@ namespace OneDas.Hdf.VdsTool.Commands
                         if (dataset_double == null)
                             dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
 
-                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, _logger);
+                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, nanLimit, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, data, statusSet, _logger);
+                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, data, statusSet, nanLimit, _logger);
 
                         break;
 
@@ -319,7 +319,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             return setupToPartialBufferMap;
         }
 
-        private double[] ApplyAggregationFunction(AggregationConfig aggregationConfig, int kernelSize, double[] data, ILogger logger)
+        internal double[] ApplyAggregationFunction(AggregationConfig aggregationConfig, int kernelSize, double[] data, double nanLimit, ILogger logger)
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
@@ -332,12 +332,13 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
-                        var chunkData = new double[kernelSize];
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
 
-                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
-
-                        result[x] = ArrayStatistics.Mean(chunkData);
+                        if (isHighQuality)
+                            result[x] = ArrayStatistics.Mean(chunkData);
+                        else
+                            result[x] = double.NaN;
                     });
 
                     break;
@@ -357,18 +358,27 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var length = chunkData.Length;
+                        var isHighQuality = (length / (double)data.Length) >= nanLimit;
 
-                        for (int i = 0; i < kernelSize; i++)
+                        if (isHighQuality)
                         {
-                            sin[x] += Math.Sin(data[baseIndex + i] * factor);
-                            cos[x] += Math.Cos(data[baseIndex + i] * factor);
+                            for (int i = 0; i < chunkData.Length; i++)
+                            {
+                                sin[x] += Math.Sin(chunkData[i] * factor);
+                                cos[x] += Math.Cos(chunkData[i] * factor);
+                            }
+
+                            result[x] = Math.Atan2(sin[x], cos[x]) / factor;
+
+                            if (result[x] < 0)
+                                result[x] += limit;
                         }
-
-                        result[x] = Math.Atan2(sin[x], cos[x]) / factor;
-
-                        if (result[x] < 0)
-                            result[x] += limit;
+                        else
+                        {
+                            result[x] = double.NaN;
+                        }
                     });
 
                     break;
@@ -377,12 +387,13 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
-                        var chunkData = new double[kernelSize];
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
 
-                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
-
-                        result[x] = ArrayStatistics.Minimum(chunkData);
+                        if (isHighQuality)
+                            result[x] = ArrayStatistics.Minimum(chunkData);
+                        else
+                            result[x] = double.NaN;
                     });
 
                     break;
@@ -391,12 +402,13 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
-                        var chunkData = new double[kernelSize];
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
 
-                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
-
-                        result[x] = ArrayStatistics.Maximum(chunkData);
+                        if (isHighQuality)
+                            result[x] = ArrayStatistics.Maximum(chunkData);
+                        else
+                            result[x] = double.NaN;
                     });
 
                     break;
@@ -405,12 +417,13 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
-                        var chunkData = new double[kernelSize];
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
 
-                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
-
-                        result[x] = ArrayStatistics.StandardDeviation(chunkData);
+                        if (isHighQuality)
+                            result[x] = ArrayStatistics.StandardDeviation(chunkData);
+                        else
+                            result[x] = double.NaN;
                     });
 
                     break;
@@ -419,12 +432,13 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
-                        var chunkData = new double[kernelSize];
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
 
-                        Array.Copy(data, baseIndex, chunkData, 0, kernelSize);
-
-                        result[x] = ArrayStatistics.RootMeanSquare(chunkData);
+                        if (isHighQuality)
+                            result[x] = ArrayStatistics.RootMeanSquare(chunkData);
+                        else
+                            result[x] = double.NaN;
                     });
 
                     break;
@@ -440,7 +454,7 @@ namespace OneDas.Hdf.VdsTool.Commands
             return result;
         }
 
-        private double[] ApplyAggregationFunction<T>(AggregationConfig aggregationConfig, int kernelSize, T[] data, byte[] statusSet, ILogger logger)
+        internal double[] ApplyAggregationFunction<T>(AggregationConfig aggregationConfig, int kernelSize, T[] data, byte[] statusSet, double nanLimit, ILogger logger) where T : unmanaged
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
@@ -455,26 +469,26 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
+                        var chunkData = this.GetNaNFreeData(data, statusSet, x, kernelSize);
+                        var length = chunkData.Length;
+                        var isHighQuality = (length / (double)data.Length) >= nanLimit;
 
-                        for (int i = 0; i < kernelSize; i++)
+                        if (isHighQuality)
                         {
-                            if (statusSet[baseIndex + i] != 1)
-                            {
-                                result[x] = Double.NaN;
-                                return;
-                            }
-                            else
+                            for (int i = 0; i < length; i++)
                             {
                                 if (i == 0)
-                                    bitField_and[x] = GenericBitOr<T>.BitOr(bitField_and[x], data[baseIndex + i]);
+                                    bitField_and[x] = GenericBitOr<T>.BitOr(bitField_and[x], chunkData[i]);
                                 else
-                                    bitField_and[x] = GenericBitAnd<T>.BitAnd(bitField_and[x], data[baseIndex + i]);
+                                    bitField_and[x] = GenericBitAnd<T>.BitAnd(bitField_and[x], chunkData[i]);
                             }
-                        }
 
-                        // all OK
-                        result[x] = Convert.ToDouble(bitField_and[x]);
+                            result[x] = Convert.ToDouble(bitField_and[x]);
+                        }
+                        else
+                        {
+                            result[x] = double.NaN;
+                        }
                     });
 
                     break;
@@ -485,23 +499,23 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var baseIndex = x * kernelSize;
+                        var chunkData = this.GetNaNFreeData(data, statusSet, x, kernelSize);
+                        var length = chunkData.Length;
+                        var isHighQuality = (length / (double)data.Length) >= nanLimit;
 
-                        for (int i = 0; i < kernelSize; i++)
+                        if (isHighQuality)
                         {
-                            if (statusSet[baseIndex + i] != 1)
+                            for (int i = 0; i < length; i++)
                             {
-                                result[x] = Double.NaN;
-                                return;
+                                bitField_or[x] = GenericBitOr<T>.BitOr(bitField_or[x], chunkData[i]);
                             }
-                            else
-                            {
-                                bitField_or[x] = GenericBitOr<T>.BitOr(bitField_or[x], data[baseIndex + i]);
-                            }
-                        }
 
-                        // all OK
-                        result[x] = Convert.ToDouble(bitField_or[x]);
+                            result[x] = Convert.ToDouble(bitField_or[x]);
+                        }
+                        else
+                        {
+                            result[x] = double.NaN;
+                        }
                     });
 
                     break;
@@ -513,6 +527,32 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
 
             return result;
+        }
+
+        private unsafe T[] GetNaNFreeData<T>(T[] data, byte[] statusSet, int index, int kernelSize) where T : unmanaged
+        {
+            var sourceIndex = index * kernelSize;
+            var length = data.Length;
+            var chunkData = new List<T>();
+
+            for (int i = 0; i < length; i++)
+            {
+                if (statusSet[sourceIndex + i] == 1)
+                    chunkData.Add(data[sourceIndex + i]);
+            }
+
+            return chunkData.ToArray();
+        }
+
+        private double[] GetNaNFreeData(IEnumerable<double> data, int index, int kernelSize)
+        {
+            var sourceIndex = index * kernelSize;
+
+            return data
+                .Skip(sourceIndex)
+                .Take(kernelSize)
+                .Where(value => !double.IsNaN(value))
+                .ToArray();
         }
 
         private bool ApplyAggregationFilter(VariableInfo variable, Dictionary<string, string> filters)

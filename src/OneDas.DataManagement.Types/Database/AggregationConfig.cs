@@ -6,7 +6,7 @@ namespace OneDas.DataManagement.Database
     {
         #region Constructors
 
-        private AggregationConfig()
+        public AggregationConfig()
         {
             this.CampaignName = string.Empty;
             this.Method = AggregationMethod.Mean;
@@ -19,8 +19,11 @@ namespace OneDas.DataManagement.Database
         #region Properties
 
         public string CampaignName { get; set; }
+
         public AggregationMethod Method { get; set; }
+
         public string Argument { get; set; }
+
         public Dictionary<string, string> Filters { get; set; }
 
         #endregion

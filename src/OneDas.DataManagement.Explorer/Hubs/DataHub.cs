@@ -44,6 +44,11 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         #region Methods
 
+        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
+        {
+            return _dataService.GetDataAvailabilityStatisticsAsync(campaignId, begin, end);
+        }
+
         public Task<List<VariableInfo>> GetChannelInfos(List<string> channelNames)
         {
             // translate channel names
