@@ -4,17 +4,18 @@ from typing import Dict
 
 from signalrcore_async.hub_connection_builder import HubConnectionBuilder
 
-from BaseTypes import Checker, CheckResult
+from ..BaseTypes import Checker, CheckResult
 
 
 class OneDasAvailabilityCheck(Checker):
-    Id: str = "onedas-availability"
+    Type: str = "onedas-availability"
     Address: str
     Port: int
     CampaignName: str
     LimitDays: int
 
     def __init__(self, settings: Dict[str, str]):
+        super().__init__(settings)
         self.Address = settings["address"]
         self.Port = int(settings["port"])
         self.CampaignName = settings["campaign"]
@@ -43,11 +44,11 @@ class OneDasAvailabilityCheck(Checker):
             availability = await connection.invoke("GetDataAvailabilityStatistics", [campaignName, begin, end])
             value = statistics.mean(availability["data"])
 
-            return CheckResult(name, False, f"Availability: {value:.0f} %")
+            return self.Success(name, f"Availability: {value:.0f} %")
 
         except Exception as ex:
             print(ex)
-            return CheckResult(name, True, "Could not communicate to OneDAS.")
+            return self.Error(name, "Could not communicate to OneDAS.")
 
         finally:
             await connection.stop()
