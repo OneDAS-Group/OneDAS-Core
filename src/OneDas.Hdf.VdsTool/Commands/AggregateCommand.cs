@@ -48,6 +48,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         public void Run()
         {
             _databaseManager = new OneDasDatabaseManager();
+            _databaseManager.Update();
 
             var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();
             var epochEnd = DateTime.UtcNow.Date;
@@ -218,7 +219,10 @@ namespace OneDas.Hdf.VdsTool.Commands
                 }
 
                 if (!setupToDataMap.Any())
+                {
+                    _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... Skipped.");
                     return;
+                }
 
                 // process data
                 var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions gets data with a multiple length of 10 minutes
@@ -335,7 +339,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     Parallel.For(0, targetDatasetLength, x =>
                     {
                         var chunkData = this.GetNaNFreeData(data, x, kernelSize);
-                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                             result[x] = ArrayStatistics.Mean(chunkData);
@@ -362,7 +366,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     {
                         var chunkData = this.GetNaNFreeData(data, x, kernelSize);
                         var length = chunkData.Length;
-                        var isHighQuality = (length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                         {
@@ -390,7 +394,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     Parallel.For(0, targetDatasetLength, x =>
                     {
                         var chunkData = this.GetNaNFreeData(data, x, kernelSize);
-                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                             result[x] = ArrayStatistics.Minimum(chunkData);
@@ -405,7 +409,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     Parallel.For(0, targetDatasetLength, x =>
                     {
                         var chunkData = this.GetNaNFreeData(data, x, kernelSize);
-                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                             result[x] = ArrayStatistics.Maximum(chunkData);
@@ -420,7 +424,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     Parallel.For(0, targetDatasetLength, x =>
                     {
                         var chunkData = this.GetNaNFreeData(data, x, kernelSize);
-                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                             result[x] = ArrayStatistics.StandardDeviation(chunkData);
@@ -435,7 +439,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     Parallel.For(0, targetDatasetLength, x =>
                     {
                         var chunkData = this.GetNaNFreeData(data, x, kernelSize);
-                        var isHighQuality = (chunkData.Length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                             result[x] = ArrayStatistics.RootMeanSquare(chunkData);
@@ -473,7 +477,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     {
                         var chunkData = this.GetNaNFreeData(data, statusSet, x, kernelSize);
                         var length = chunkData.Length;
-                        var isHighQuality = (length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                         {
@@ -503,7 +507,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     {
                         var chunkData = this.GetNaNFreeData(data, statusSet, x, kernelSize);
                         var length = chunkData.Length;
-                        var isHighQuality = (length / (double)data.Length) >= nanLimit;
+                        var isHighQuality = (length / (double)kernelSize) >= nanLimit;
 
                         if (isHighQuality)
                         {
