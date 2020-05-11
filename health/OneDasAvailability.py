@@ -1,5 +1,5 @@
 import statistics
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Dict
 
 from signalrcore_async.hub_connection_builder import HubConnectionBuilder
@@ -19,7 +19,11 @@ class OneDasAvailabilityCheck(Checker):
         self.Address = settings["address"]
         self.Port = int(settings["port"])
         self.CampaignName = settings["campaign"]
-        self.LimitDays = int(settings["limit_days"])
+        self.LimitDays = int(settings["past-days"])
+        self.LimitPercent = int(settings["limit-percent"])
+
+    def GetName(self) -> str:
+        return f"{self.CampaignName}"
 
     async def DoCheckAsync(self) -> CheckResult:
 
@@ -33,22 +37,29 @@ class OneDasAvailabilityCheck(Checker):
             .with_url(hub_url)\
             .build()
 
-        name = f"{self.CampaignName}"
-
         try:
             await connection.start()
 
             campaignName = self.CampaignName
-            begin = datetime(2020, 3, 1, 0, 0, 0, tzinfo=timezone.utc)
-            end = datetime(2020, 4, 1, 0, 0, 0, tzinfo=timezone.utc)
-            availability = await connection.invoke("GetDataAvailabilityStatistics", [campaignName, begin, end])
-            value = statistics.mean(availability["data"])
+            date = datetime.utcnow().date()
+            begin = date - timedelta(days=1)
+            end = date - timedelta(days=self.LimitDays)
+            availabilityStatistics = await connection.invoke("GetDataAvailabilityStatistics", [campaignName, begin, end])
+            availability = statistics.mean(availabilityStatistics["data"])
+            message = f"Availability: {availability:.0f} % (last {self.LimitDays} days)"
 
-            return self.Success(name, f"Availability: {value:.0f} %")
+            if availability > self.LimitPercent:
+                return self.Success(message)
+            else:
+                return self.Error(message)
 
         except Exception as ex:
-            print(ex)
-            return self.Error(name, "Could not communicate to OneDAS.")
+
+            if "maintenance" in str(ex):
+                return self.Success("OneDAS is in maintenance mode.")
+            else:
+                print(ex)
+                return self.Error("Could not communicate to OneDAS.")
 
         finally:
             await connection.stop()
