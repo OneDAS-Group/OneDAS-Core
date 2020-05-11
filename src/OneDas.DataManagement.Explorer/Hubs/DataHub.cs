@@ -46,6 +46,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
         {
+#warning Always check that begin comes before end (applies also to other hub methods). Otherwise this could cause an overflow exception.
             return _dataService.GetDataAvailabilityStatisticsAsync(campaignId, begin, end);
         }
 
