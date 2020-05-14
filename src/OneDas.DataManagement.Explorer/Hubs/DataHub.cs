@@ -86,7 +86,75 @@ namespace OneDas.DataManagement.Explorer.Hubs
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, channelNames, cancellationToken));
+            _ = Task.Run(() => 
+            {
+                Exception localException = null;
+
+                try
+                {
+                    _stateManager.CheckState();
+
+                    var datasets = channelNames.Select(channelName =>
+                    {
+                        if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
+                            throw new Exception($"Could not find the channel with name '{channelName}'.");
+
+                        // security check comes later in DataService
+
+                        return dataset;
+                    }).ToList();
+
+                    if (!datasets.Any())
+                        throw new Exception("The list of channel names is empty.");
+
+                    this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, datasets, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    localException = ex;
+                }
+
+                channel.Writer.TryComplete(localException);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<string> ExportDataByGroup(DateTime begin,
+                                                DateTime end,
+                                                FileFormat fileFormat,
+                                                FileGranularity fileGranularity,
+                                                string groupPath,
+                                                CancellationToken cancellationToken)
+        {
+            var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
+            var channel = Channel.CreateUnbounded<string>();
+
+            // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
+            // for all the items to be written before returning the channel back to
+            // the client.
+            _ = Task.Run(() =>
+            {
+                Exception localException = null;
+
+                try
+                {
+                    _stateManager.CheckState();
+
+                    if (!_databaseManager.Database.TryFindDatasetsByGroup(groupPath, out var datasets))
+                        throw new Exception($"Could not find any channels for group path '{groupPath}'.");                     
+
+                    this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, datasets, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    localException = ex;
+                }
+
+                channel.Writer.TryComplete(localException);
+            });
 
             return channel.Reader;
         }
@@ -113,62 +181,35 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                               DateTime end,
                                               FileFormat fileFormat,
                                               FileGranularity fileGranularity,
-                                              List<string> channelNames,
+                                              List<DatasetInfo> datasets,
                                               CancellationToken cancellationToken)
         {
-            Exception localException = null;
-
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
             DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
+            var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
+            {
+                this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
+            });
+
+            _dataService.Progress.ProgressChanged += handler;
+
             try
             {
-                _stateManager.CheckState();
+                var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
 
-                if (!channelNames.Any())
-                    throw new Exception("The list of channel names is empty.");
+                if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
+                    throw new Exception("Channels with different sample rates have been requested.");
 
-                var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
-                {
-                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
-                });
+                var sampleRate = sampleRates.First();
 
-                _dataService.Progress.ProgressChanged += handler;
-
-                try
-                {
-                    var datasets = channelNames.Select(channelName =>
-                    {
-                        if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
-                            throw new Exception($"Could not find the channel with name '{channelName}'.");
-
-                        // security check comes later in DataService
-
-                        return dataset;
-                    }).ToList();
-
-                    var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
-
-                    if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
-                        throw new Exception("Channels with different sample rates have been requested.");
-
-                    var sampleRate = sampleRates.First();
-
-                    var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
-                    await writer.WriteAsync(url, cancellationToken);
-                }
-                finally
-                {
-                    _dataService.Progress.ProgressChanged -= handler;
-                }
+                var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
+                await writer.WriteAsync(url, cancellationToken);
             }
-            catch (Exception ex)
+            finally
             {
-                _logger.LogError(ex.Message);
-                localException = ex;
+                _dataService.Progress.ProgressChanged -= handler;
             }
-
-            writer.TryComplete(localException);
         }
 
         public void InternalStreamData(ChannelWriter<double[]> writer,

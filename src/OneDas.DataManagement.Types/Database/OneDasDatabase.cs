@@ -42,7 +42,21 @@ namespace OneDas.DataManagement.Database
             return this.TryFindDataset(campaignName, variableName, datasetName, out dataset);
         }
 
-        public bool TryFindDataset(string campaignName, string variableName, string datasetName, out DatasetInfo dataset)
+        public bool TryFindDatasetsByGroup(string groupPath, out List<DatasetInfo> datasets)
+        {
+            var groupPathParts = groupPath.Split("/");
+
+            if (groupPathParts.Length != 6)
+                throw new Exception($"The group path '{groupPath}' is invalid.");
+
+            var campaignName = $"/{groupPathParts[1]}/{groupPathParts[2]}/{groupPathParts[3]}";
+            var groupName = groupPathParts[4];
+            var datasetName = groupPathParts[5];
+
+            return this.TryFindDatasetsByGroup(campaignName, groupName, datasetName, out datasets);
+        }
+
+        private bool TryFindDataset(string campaignName, string variableName, string datasetName, out DatasetInfo dataset)
         {
             dataset = default;
 
@@ -62,6 +76,28 @@ namespace OneDas.DataManagement.Database
                     if (dataset != null)
                         return true;
                 }
+            }
+
+            return false;
+        }
+
+        private bool TryFindDatasetsByGroup(string campaignName, string groupName, string datasetName, out List<DatasetInfo> datasets)
+        {
+            datasets = new List<DatasetInfo>();
+
+            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Id == campaignName);
+
+            if (campaignContainer != null)
+            {
+                var variables = campaignContainer.Campaign.Variables.Where(variable => variable.Group == groupName);
+
+                datasets
+                    .AddRange(variables
+                    .SelectMany(variable => variable.Datasets
+                    .Where(dataset => dataset.Id == datasetName)));
+
+                if (!datasets.Any())
+                    return false;
             }
 
             return false;
