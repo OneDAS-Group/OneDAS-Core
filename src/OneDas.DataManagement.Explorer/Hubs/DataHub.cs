@@ -82,11 +82,12 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<string>();
+            var client = this.Clients.Client(this.Context.ConnectionId);
 
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => 
+            _ = Task.Run(async () => 
             {
                 Exception localException = null;
 
@@ -107,7 +108,15 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     if (!datasets.Any())
                         throw new Exception("The list of channel names is empty.");
 
-                    this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, datasets, cancellationToken);
+                    await this.InternalExportData(channel.Writer,
+                                            remoteIpAddress,
+                                            begin,
+                                            end,
+                                            fileFormat,
+                                            fileGranularity,
+                                            datasets,
+                                            cancellationToken,
+                                            client);
                 }
                 catch (Exception ex)
                 {
@@ -130,11 +139,12 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<string>();
+            var client = this.Clients.Client(this.Context.ConnectionId);
 
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() =>
+            _ = Task.Run(async () =>
             {
                 Exception localException = null;
 
@@ -145,7 +155,15 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     if (!_databaseManager.Database.TryFindDatasetsByGroup(groupPath, out var datasets))
                         throw new Exception($"Could not find any channels for group path '{groupPath}'.");                     
 
-                    this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, datasets, cancellationToken);
+                    await this.InternalExportData(channel.Writer,
+                                            remoteIpAddress,
+                                            begin,
+                                            end,
+                                            fileFormat,
+                                            fileGranularity,
+                                            datasets,
+                                            cancellationToken,
+                                            client);
                 }
                 catch (Exception ex)
                 {
@@ -166,30 +184,41 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<double[]>();
+            var client = this.Clients.Client(this.Context.ConnectionId);
 
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => this.InternalStreamData(channel.Writer, remoteIpAddress, begin, end, channelName, cancellationToken));
+            _ = Task.Run(() =>
+            {
+                this.InternalStreamData(channel.Writer,
+                                        remoteIpAddress,
+                                        begin,
+                                        end,
+                                        channelName,
+                                        cancellationToken,
+                                        client);
+            });
 
             return channel.Reader;
         }
 
-        private async void InternalExportData(ChannelWriter<string> writer,
+        private async Task InternalExportData(ChannelWriter<string> writer,
                                               IPAddress remoteIpAddress,
                                               DateTime begin,
                                               DateTime end,
                                               FileFormat fileFormat,
                                               FileGranularity fileGranularity,
                                               List<DatasetInfo> datasets,
-                                              CancellationToken cancellationToken)
+                                              CancellationToken cancellationToken,
+                                              IClientProxy client)
         {
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
             DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
             var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
             {
-                this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
+                client.SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
             });
 
             _dataService.Progress.ProgressChanged += handler;
@@ -217,7 +246,8 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                        DateTime begin,
                                        DateTime end,
                                        string channelName,
-                                       CancellationToken cancellationToken)
+                                       CancellationToken cancellationToken,
+                                       IClientProxy client)
         {
             Exception localException = null;
 
@@ -255,7 +285,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 // progress changed event handling
                 var handler = (EventHandler<double>)((sender, e) =>
                 {
-                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e, "Loading data ...", cancellationToken);
+                    client.SendAsync("Downloader.ProgressChanged", e, "Loading data ...", cancellationToken);
                 });
 
                 dataReader.Progress.ProgressChanged += handler;

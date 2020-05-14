@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    [DebuggerDisplay("{Name,nq}")]
+    [DebuggerDisplay("{Id,nq}")]
     public class CampaignContainer
     {
         #region "Constructors"

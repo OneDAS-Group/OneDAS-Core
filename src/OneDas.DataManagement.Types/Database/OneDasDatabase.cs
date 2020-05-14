@@ -89,15 +89,18 @@ namespace OneDas.DataManagement.Database
 
             if (campaignContainer != null)
             {
-                var variables = campaignContainer.Campaign.Variables.Where(variable => variable.Group == groupName);
+                var variables = campaignContainer.Campaign.Variables
+                    .Where(variable => variable.Group.Split('\n')
+                    .Contains(groupName))
+                    .ToList();
 
                 datasets
                     .AddRange(variables
                     .SelectMany(variable => variable.Datasets
                     .Where(dataset => dataset.Id == datasetName)));
 
-                if (!datasets.Any())
-                    return false;
+                if (datasets.Any())
+                    return true;
             }
 
             return false;
