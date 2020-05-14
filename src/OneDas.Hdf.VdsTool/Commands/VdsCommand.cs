@@ -193,7 +193,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             long campaignGroupId = -1;
 
-            Console.WriteLine($"\n{campaign.Id}");
+            //Console.WriteLine($"\n{campaign.Id}");
 
             campaignGroupId = IOHelper.OpenOrCreateGroup(vdsFileId, campaign.GetPath()).GroupId;
 
@@ -218,7 +218,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         {
             long variableGroupId = -1;
 
-            Console.WriteLine($"\t{variable.Id}");
+            //Console.WriteLine($"\t{variable.Id}");
 
             variableGroupId = IOHelper.OpenOrCreateGroup(vdsCampaignGroupId, variable.Id).GroupId;
 
@@ -238,7 +238,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                 // dataset
                 foreach (var dataset in variable.Datasets)
                 {
-                    Console.WriteLine($"\t\t{ dataset.Id }");
+                    //Console.WriteLine($"\t\t{dataset.Id}");
                     this.VdsDataset(variableGroupId, epochStart, epochEnd, dataset, campaignPath);
                 }
 
