@@ -16,7 +16,7 @@ async def main():
     host = "localhost"
     port = 80
     username = "test@root.org"
-    password = "#test0/User1" # password = input("Please enter you password: ")
+    password = "#test0/User1" # password = input("Please enter your password: ")
 
     begin = datetime(2020, 2, 1, 0, 0, tzinfo=timezone.utc)
     end   = datetime(2020, 2, 3, 0, 0, tzinfo=timezone.utc)

@@ -7,7 +7,7 @@ import OneDas.DataManagement.Infrastructure.*
 host            = 'localhost';
 port         	= 80;
 username        = 'test@root.org';
-password        = '#test0/User1'; % password = input('Please enter you password: ')
+password        = '#test0/User1'; % password = input('Please enter your password: ')
 targetDir       = 'data';
 
 dateTimeBegin 	= datetime(2020, 02, 01, 0, 0, 0, 'TimeZone', 'UTC');

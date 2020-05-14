@@ -5,7 +5,7 @@ Initialize()
 host            = 'localhost';
 port         	= 80;
 username        = 'test@root.org';
-password        = '#test0/User1'; % password = input('Please enter you password: ')
+password        = '#test0/User1'; % password = input('Please enter your password: ')
 
 dateTimeBegin 	= datetime(2020, 02, 01, 0, 0, 0, 'TimeZone', 'UTC');
 dateTimeEnd 	= datetime(2020, 02, 03, 0, 0, 0, 'TimeZone', 'UTC');
