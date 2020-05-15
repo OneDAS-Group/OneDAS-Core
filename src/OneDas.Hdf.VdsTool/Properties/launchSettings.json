@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "OneDas.Hdf.VdsTool": {
-      "commandName": "Project",
-      "commandLineArgs": "aggregate --days 10",
-      "workingDirectory": "Y:\\DATABASE"
-    }
-  }
-}

@@ -163,7 +163,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (nativeDatasets.Any())
             {
-                var reader = zipSettings.NativeDataReader;
+                using var reader = zipSettings.NativeDataReader;
                 reader.Progress.ProgressChanged += progressHandler;
 
                 try
@@ -184,7 +184,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (aggregatedDatasets.Any())
             {
-                var reader = zipSettings.AggregationDataReader;
+                using var reader = zipSettings.AggregationDataReader;
                 reader.Progress.ProgressChanged += progressHandler;
 
                 try

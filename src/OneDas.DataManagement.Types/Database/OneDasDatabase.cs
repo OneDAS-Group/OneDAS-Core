@@ -92,6 +92,7 @@ namespace OneDas.DataManagement.Database
                 var variables = campaignContainer.Campaign.Variables
                     .Where(variable => variable.Group.Split('\n')
                     .Contains(groupName))
+                    .OrderBy(variable => variable.Name)
                     .ToList();
 
                 datasets
