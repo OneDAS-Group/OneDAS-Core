@@ -20,7 +20,8 @@ class OneDasAvailabilityCheck(Checker):
         self.Port = int(settings["port"])
         self.CampaignName = settings["campaign"]
         self.LimitDays = int(settings["past-days"])
-        self.LimitPercent = int(settings["limit-percent"])
+        self.LimitPercentWarning = int(settings["limit-percent-warning"])
+        self.LimitPercentError = int(settings["limit-percent-error"])
 
     def GetName(self) -> str:
         return f"{self.CampaignName}"
@@ -48,17 +49,18 @@ class OneDasAvailabilityCheck(Checker):
             availability = statistics.mean(availabilityStatistics["data"])
             message = f"Availability: {availability:.0f} % (last {self.LimitDays} days)"
 
-            if availability > self.LimitPercent:
-                return self.Success(message)
-            else:
+            if availability < self.LimitPercentError:
                 return self.Error(message)
+            elif availability < self.LimitPercentWarning:
+                return self.Warning(message)
+            else:
+                return self.Success(message)
 
         except Exception as ex:
 
             if "maintenance" in str(ex):
                 return self.Success("OneDAS is in maintenance mode.")
             else:
-                print(ex)
                 return self.Error("Could not communicate to OneDAS.")
 
         finally:
