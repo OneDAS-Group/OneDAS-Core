@@ -43,7 +43,7 @@ class OneDasAvailabilityCheck(Checker):
 
             campaignName = self.CampaignName
             date = datetime.utcnow().date()
-            begin = date - timedelta(days=max(self.LimitDays, 2))
+            begin = date - timedelta(days=max(self.LimitDays + 1, 2))
             end = date - timedelta(days=1)
             availabilityStatistics = await connection.invoke("GetDataAvailabilityStatistics", [campaignName, begin, end])
             availability = statistics.mean(availabilityStatistics["data"])
