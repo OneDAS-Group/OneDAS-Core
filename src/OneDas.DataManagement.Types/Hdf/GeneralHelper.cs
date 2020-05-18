@@ -255,13 +255,13 @@ namespace OneDas.DataManagement.Hdf
 
             foreach (var variable in campaign.Variables.Take(probingCount))
             {
-                if (GeneralHelper.TryGetMappingDate(fileId, variable, first: true, out var firstDate))
+                if (GeneralHelper.TryGetHdfMappingDate(fileId, variable, first: true, out var firstDate))
                 {
                     if (firstDate < minDate)
                         minDate = firstDate;
                 }
 
-                if (GeneralHelper.TryGetMappingDate(fileId, variable, first: false, out var lastDate))
+                if (GeneralHelper.TryGetHdfMappingDate(fileId, variable, first: false, out var lastDate))
                 {
                     if (lastDate > maxDate)
                         maxDate = lastDate;
@@ -272,7 +272,7 @@ namespace OneDas.DataManagement.Hdf
             campaign.CampaignEnd = maxDate;
         }
 
-        private static bool TryGetMappingDate(long fileId, VariableInfo variable, bool first, out DateTime mappingDate)
+        private static bool TryGetHdfMappingDate(long fileId, VariableInfo variable, bool first, out DateTime mappingDate)
         {
             long groupId1 = -1;
             long datasetId1 = -1;

@@ -131,7 +131,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         foreach (var campaign in campaigns)
                         {
                             using var nativeDataReader = _databaseManager.GetNativeDataReader(campaign.Id);
-                            using var aggregationDataReader = _databaseManager.AggregationDataReader;
+                            using var aggregationDataReader = _databaseManager.GetAggregationDataReader();
 
                             var zipSettings = new ZipSettings(campaign,
                                                               nativeDataReader, aggregationDataReader,

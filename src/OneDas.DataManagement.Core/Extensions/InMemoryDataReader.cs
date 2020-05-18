@@ -14,8 +14,6 @@ namespace OneDas.DataManagement.Extensions
         #region Fields
 
         private Random _random;
-        private CampaignInfo _campaign_allowed;
-        private CampaignInfo _campaign_restricted;
 
         #endregion
 
@@ -24,38 +22,11 @@ namespace OneDas.DataManagement.Extensions
         public InMemoryDataReader(string rootPath) : base(rootPath)
         {
             _random = new Random();
-
-            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
-            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
-            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
-            var id14 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
-            _campaign_allowed = this.InitializeCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13, id14);
-
-            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
-            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
-            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
-            var id24 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
-            _campaign_restricted = this.InitializeCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23, id24);
         }
 
         #endregion
 
         #region Methods
-
-        public override List<string> GetCampaignNames()
-        {
-            return new List<string> { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
-        }
-
-        public override CampaignInfo GetCampaign(string campaignId)
-        {
-            if (campaignId == _campaign_allowed.Id)
-                return _campaign_allowed;
-            else if (campaignId == _campaign_restricted.Id)
-                return _campaign_restricted;
-            else
-                throw new Exception($"The requested campaign with name '{campaignId}' could not be found.");
-        }
 
         public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
@@ -102,15 +73,32 @@ namespace OneDas.DataManagement.Extensions
             //
         }
 
+        protected override List<CampaignInfo> LoadCampaigns()
+        {
+            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
+            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
+            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
+            var id14 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
+            var campaign_allowed = this.LoadCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13, id14);
+
+            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
+            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
+            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
+            var id24 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
+            var campaign_restricted = this.LoadCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23, id24);
+
+            return new List<CampaignInfo>() { campaign_allowed, campaign_restricted };
+        }
+
         protected override double GetDataAvailability(string campaignId, DateTime Day)
         {
-            if (campaignId != _campaign_allowed.Id && campaignId != _campaign_restricted.Id)
+            if (!this.Campaigns.Any(campaign => campaign.Id == campaignId))
                 throw new Exception($"The requested campaign with name '{campaignId}' could not be found.");
 
             return _random.NextDouble() / 10 + 0.9;
         }
 
-        private CampaignInfo InitializeCampaign(string campaignId, string id1, string id2, string id3, string id4)
+        private CampaignInfo LoadCampaign(string campaignId, string id1, string id2, string id3, string id4)
         {
             var campaign = new CampaignInfo(campaignId);
 

@@ -15,50 +15,31 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Fields
 
-        private List<CampaignInfo> _campaigns;
         private string _filePath;
         private long _fileId = -1;
-        private object _lock;
+        private static object _lock;
 
         #endregion
 
         #region Constructors
 
+        static HdfDataReader()
+        {
+            _lock = new object();
+        }
+
         public HdfDataReader(string rootPath) : base(rootPath)
         {
             _filePath = Path.Combine(this.RootPath, "VDS.h5");
-            _lock = new object();
+            _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
         #endregion
 
         #region Methods
 
-        public override List<string> GetCampaignNames()
-        {
-            this.EnsureOpened();
-
-            _campaigns = GeneralHelper.GetCampaigns(_fileId).Select(hdfCampaign => hdfCampaign.ToCampaign()).ToList();
-
-            this.SwitchLocation(() =>
-            {
-                foreach (var campaign in _campaigns)
-                {
-                    GeneralHelper.UpdateCampaignStartAndEnd(_fileId, campaign, maxProbingCount: 20);
-                }
-            });
-
-            return _campaigns.Select(campaign => campaign.Id).ToList();
-        }
-
-        public override CampaignInfo GetCampaign(string campaignId)
-        {
-            return _campaigns.First(campaign => campaign.Id == campaignId);
-        }
-
         public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
-            this.EnsureOpened();
 
             T[] data = null;
             byte[] statusSet = null;
@@ -66,14 +47,17 @@ namespace OneDas.DataManagement.Extensions
             var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
             (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
 
-            this.SwitchLocation(() =>
+            lock (_lock)
             {
-                var datasetPath = dataset.GetPath();
-                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
+                this.SwitchLocation(() =>
+                {
+                    var datasetPath = dataset.GetPath();
+                    data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
 
-                if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
-            });
+                    if (H5L.exists(_fileId, datasetPath + "_status") > 0)
+                        statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
+                });
+            }
 
             return (data, statusSet);
         }
@@ -83,12 +67,28 @@ namespace OneDas.DataManagement.Extensions
             if (H5I.is_valid(_fileId) > 0) { H5F.close(_fileId); }
         }
 
+        protected override List<CampaignInfo> LoadCampaigns()
+        {
+            var campaigns = GeneralHelper.GetCampaigns(_fileId).Select(hdfCampaign => hdfCampaign.ToCampaign()).ToList();
+
+            lock (_lock)
+            {
+                this.SwitchLocation(() =>
+                {
+                    foreach (var campaign in campaigns)
+                    {
+                        GeneralHelper.UpdateCampaignStartAndEnd(_fileId, campaign, maxProbingCount: 20);
+                    }
+                });
+            }            
+
+            return campaigns;
+        }
+
         protected override double GetDataAvailability(string campaignId, DateTime day)
         {
-            if (!_campaigns.Any(campaign => campaign.Id == campaignId))
+            if (!this.Campaigns.Any(campaign => campaign.Id == campaignId))
                 throw new Exception($"The campaign '{campaignId}' could not be found.");
-
-            this.EnsureOpened();
 
             // epoch & hyperslab
             var epochStart = new DateTime(2000, 01, 01);
@@ -115,12 +115,6 @@ namespace OneDas.DataManagement.Extensions
             }
 
             return result;
-        }
-
-        private void EnsureOpened()
-        {
-            if (!(H5I.is_valid(_fileId) > 0))
-                _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
         private void SwitchLocation(Action action)

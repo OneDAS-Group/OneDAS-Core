@@ -10,7 +10,18 @@ namespace OneDas.DataManagement.Extensibility
 {
     public abstract class DataReaderExtensionBase : IDisposable
     {
+        #region Fields
+
+        private static Dictionary<string, List<CampaignInfo>> _rootPathToCampaignsMap;
+
+        #endregion
+
         #region Constructors
+
+        static DataReaderExtensionBase()
+        {
+            _rootPathToCampaignsMap = new Dictionary<string, List<CampaignInfo>>();
+        }
 
         public DataReaderExtensionBase(string rootPath)
         {
@@ -21,6 +32,17 @@ namespace OneDas.DataManagement.Extensibility
         #endregion
 
         #region Properties
+
+        protected List<CampaignInfo> Campaigns
+        {
+            get
+            {
+                if (!_rootPathToCampaignsMap.ContainsKey(this.RootPath))
+                    _rootPathToCampaignsMap[this.RootPath] = this.LoadCampaigns();
+
+                return _rootPathToCampaignsMap[this.RootPath];
+            }
+        }
 
         public string RootPath { get; }
 
@@ -230,6 +252,17 @@ namespace OneDas.DataManagement.Extensibility
             return new DataAvailabilityStatistics(granularity, aggregatedData);
         }
 
+
+        public List<string> GetCampaignNames()
+        {
+            return this.Campaigns.Select(campaign => campaign.Id).ToList();
+        }
+
+        public CampaignInfo GetCampaign(string campaignId)
+        {
+            return this.Campaigns.First(campaign => campaign.Id == campaignId);
+        }
+
         public bool IsDataOfDayAvailable(string campaignId, DateTime day)
         {
             return this.GetDataAvailability(campaignId, day) > 0;
@@ -237,11 +270,9 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 
-        public abstract List<string> GetCampaignNames();
-
-        public abstract CampaignInfo GetCampaign(string campaignId);
-
         public abstract void Dispose();
+
+        protected abstract List<CampaignInfo> LoadCampaigns();
 
         protected abstract double GetDataAvailability(string campaignId, DateTime Day);
 

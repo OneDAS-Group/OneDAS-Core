@@ -280,7 +280,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     throw new UnauthorizedAccessException($"The current user is not authorized to access the campaign '{campaign.Id}'.");
 
                 // dataReader
-                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.AggregationDataReader;
+                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.GetAggregationDataReader();
 
                 // progress changed event handling
                 var handler = (EventHandler<double>)((sender, e) =>

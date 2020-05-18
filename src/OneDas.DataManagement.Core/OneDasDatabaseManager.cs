@@ -31,7 +31,7 @@ namespace OneDas.DataManagement
     {
         #region Fields
 
-        private Dictionary<string, DataReaderExtensionBase> _rootPathToDataReaderMap;
+        private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
 
         #endregion
 
@@ -70,8 +70,6 @@ namespace OneDas.DataManagement
 
         public OneDasDatabaseConfig Config { get; }
 
-        public DataReaderExtensionBase AggregationDataReader { get; private set; }
-
         #endregion
 
         #region Methods
@@ -80,19 +78,22 @@ namespace OneDas.DataManagement
         {
             var database = new OneDasDatabase();
 
-            // instantiate data reader
-            _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
+            // load data readers
+            _rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
 
-            var dataReaders = _rootPathToDataReaderMap
-                                .Select(entry => entry.Value)
-                                .Concat(new DataReaderExtensionBase[] { this.AggregationDataReader })
+            // instantiate data reaers
+            using var aggregationDataReader = new HdfDataReader(Environment.CurrentDirectory);
+
+            var dataReaders = _rootPathToDataReaderTypeMap
+                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value))
+                                .Concat(new DataReaderExtensionBase[] { aggregationDataReader })
                                 .ToList();
 
             foreach (var dataReader in dataReaders)
             {
                 try
                 {
-                    var isNativeDataReader = dataReader != this.AggregationDataReader;
+                    var isNativeDataReader = dataReader != aggregationDataReader;
                     var campaignNames = dataReader.GetCampaignNames();
 
                     foreach (var campaignName in campaignNames)
@@ -177,6 +178,11 @@ namespace OneDas.DataManagement
             this.Database = database;
         }
 
+        public DataReaderExtensionBase GetAggregationDataReader()
+        {
+            return new HdfDataReader(Environment.CurrentDirectory);
+        }
+
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)
         {
             var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
@@ -184,10 +190,10 @@ namespace OneDas.DataManagement
             if (container == null)
                 throw new KeyNotFoundException("The requested campaign could not be found.");
 
-            if (!_rootPathToDataReaderMap.TryGetValue(container.RootPath, out var dataReader))
+            if (!_rootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
                 throw new KeyNotFoundException("The requested data reader could not be found.");
 
-            return dataReader;
+            return this.InstantiateDataReader(container.RootPath, dataReaderType);
         }
 
         public void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
@@ -205,12 +211,17 @@ namespace OneDas.DataManagement
             File.WriteAllText(filePath, jsonString);
         }
 
+        private DataReaderExtensionBase InstantiateDataReader(string rootPath, Type type)
+        {
+            return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath);
+        }
+
         private string GetCampaignMetaPath(string campaignName)
         {
             return Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
         }
 
-        private Dictionary<string, DataReaderExtensionBase> LoadDataReader(Dictionary<string, string> rootPathToDataReaderIdMap)
+        private Dictionary<string, Type> LoadDataReaders(Dictionary<string, string> rootPathToDataReaderIdMap)
         {
             var extensionDirectoryPath = Path.Combine(Environment.CurrentDirectory, "EXTENSION");
 
@@ -242,10 +253,7 @@ namespace OneDas.DataManagement
                 idToDataReaderTypeMap[attribute.Id] = type;
             }
 
-            // instantiate aggregation data reader
-            this.AggregationDataReader = new HdfDataReader(Environment.CurrentDirectory);
-
-            // instantiate extensions
+            // return root path to type map
             return rootPathToDataReaderIdMap.ToDictionary(entry => entry.Key, entry =>
             {
                 var rootPath = entry.Key;
@@ -254,7 +262,7 @@ namespace OneDas.DataManagement
                 if (!idToDataReaderTypeMap.TryGetValue(dataReaderId, out var type))
                     throw new Exception($"No data reader extension with ID '{dataReaderId}' could be found.");
 
-                return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath);
+                return type;
             });
         }
 
