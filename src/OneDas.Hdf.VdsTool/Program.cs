@@ -39,14 +39,19 @@ namespace OneDas.Hdf.VdsTool
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
+            // paths
+            var appdataFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");
+            Directory.CreateDirectory(appdataFolderPath);
+
+            var logFolderPath = Path.Combine(appdataFolderPath, "LOGS");
+            Directory.CreateDirectory(logFolderPath);
+
             // configure logging
-            var serviceProvider = new ServiceCollection().AddLogging(builder =>
+            _loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
-            }).BuildServiceProvider();
-
-            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                builder.AddFile(Path.Combine(logFolderPath, "VdsTool-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+            });
 
             // configure CLI
             var rootCommand = new RootCommand("Virtual dataset tool");
