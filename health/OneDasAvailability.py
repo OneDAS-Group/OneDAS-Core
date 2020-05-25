@@ -58,8 +58,8 @@ class OneDasAvailabilityCheck(Checker):
 
         except Exception as ex:
 
-            if "maintenance" in str(ex):
-                return self.Success("OneDAS is in maintenance mode.")
+            if "inactivity" in str(ex):
+                return self.Success("OneDAS is in inactivity mode.")
             else:
                 return self.Error("Could not communicate to OneDAS.")
 
