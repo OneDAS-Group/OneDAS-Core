@@ -13,6 +13,7 @@ namespace OneDas.DataManagement.Database
         {
             this.Id = id;
             this.Description = string.Empty;
+            this.SpecialInfo = string.Empty;
             this.Unit = string.Empty;
             this.TransferFunctions = new List<TransferFunction>();
         }
@@ -29,6 +30,8 @@ namespace OneDas.DataManagement.Database
         public string Id { get; set; }
 
         public string Description { get; set; }
+
+        public string SpecialInfo { get; set; }
 
         public string Unit { get; set; }
 

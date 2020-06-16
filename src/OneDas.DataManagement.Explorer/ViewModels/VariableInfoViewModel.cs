@@ -46,6 +46,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { _variableMeta.Description = value; }
         }
 
+        public string SpecialInfo
+        {
+            get { return _variableMeta.SpecialInfo; }
+            set { _variableMeta.SpecialInfo = value; }
+        }
+
         public CampaignInfo Parent => (CampaignInfo)_variable.Parent;
 
         public List<TransferFunction> TransferFunctions => _variableMeta.TransferFunctions.Any() 

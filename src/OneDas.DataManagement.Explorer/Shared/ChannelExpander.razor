@@ -9,6 +9,21 @@
             <span>@this.Variable.Name / @this.Variable.Unit</span>
         }
 
+        <div class="variable-special-info">
+            @if (this.AppState.IsEditEnabled)
+            {
+                <input type="text" @bind-value="this.Variable.SpecialInfo" />
+            }
+            else
+            {
+                @if (!string.IsNullOrWhiteSpace(this.Variable.SpecialInfo))
+                {
+                    <span><i class="fas fa-exclamation-triangle"></i></span>
+                    @this.Variable.SpecialInfo
+                }
+            }
+        </div>
+
         <div class="variable-sample-rates">
             @if (_showSampleRates)
             {
@@ -20,6 +35,7 @@
                 }
             }
         </div>
+
         <div class="variable-datasets ml-auto">
             @if (_filteredDatasets.Any())
             {
