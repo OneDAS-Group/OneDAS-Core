@@ -1,3 +1,8 @@
+@font-face {
+    font-family: Roboto;
+    src: url(../fonts/Roboto-Regular.ttf)
+}
+
 :root {
     --nav-bg-color: #0d343e;
     --main-bg-color: #215d6a;
