@@ -300,6 +300,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     case AggregationMethod.Max:
                     case AggregationMethod.Std:
                     case AggregationMethod.Rms:
+                    case AggregationMethod.SampleAndHold:
 
                         if (dataset_double == null)
                             dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
