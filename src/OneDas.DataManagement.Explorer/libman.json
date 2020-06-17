@@ -48,6 +48,11 @@
         "webfonts/fa-solid-900.woff",
         "webfonts/fa-solid-900.woff2"
       ]
+    },
+    {
+      "provider": "unpkg",
+      "library": "material-design-icons-iconfont@5.0.1",
+      "destination": "wwwroot/lib/material-design-icons-iconfont/"
     }
   ]
 }
