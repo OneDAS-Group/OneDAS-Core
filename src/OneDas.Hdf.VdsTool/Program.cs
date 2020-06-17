@@ -59,7 +59,6 @@ namespace OneDas.Hdf.VdsTool
             rootCommand.AddCommand(Program.PrepareAutoVdsCommand());
             rootCommand.AddCommand(Program.PrepareVdsCommand());
             rootCommand.AddCommand(Program.PrepareInitCommand());
-            rootCommand.AddCommand(Program.PreparePwshCommand());
             rootCommand.AddCommand(Program.PrepareAggregateCommand());
 
             return await rootCommand.InvokeAsync(args);
@@ -164,43 +163,6 @@ namespace OneDas.Hdf.VdsTool
                 catch (Exception ex)
                 {
                     logger.LogError($"Execution of the 'init' command failed. Error message: '{ex.Message}'.");
-                    return 1;
-                }
-
-                return 0;
-            });
-
-            return command;
-        }
-
-        private static Command PreparePwshCommand()
-        {
-            var command = new Command("pwsh", "Runs the provided Powershell script")
-            {
-                new Option("--script-path", "The location of the powershell script")
-                {
-                    Argument = new Argument<string>(),
-                    Required = true
-                },
-                new Option("--transaction-id", "Log messages are tagged with the transaction identifier")
-                {
-                    Argument = new Argument<string>(),
-                    Required = true
-                }
-            };
-
-            command.Handler = CommandHandler.Create((string scriptPath, string transactionId) =>
-            {
-                var logger = _loggerFactory.CreateLogger($"PWSH ({transactionId})");
-
-                try
-                {
-                    new PwshCommand(scriptPath, logger).Run();
-                    logger.LogInformation($"Execution of the 'pwsh' command finished successfully (path: '{scriptPath}').");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Execution of the 'pwsh' command failed (path: '{scriptPath}'). Error message: '{ex.Message}'.");
                     return 1;
                 }
 
