@@ -188,6 +188,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                         AggregationMethod.Rms => "rms",
                         AggregationMethod.MinBitwise => "min_bitwise",
                         AggregationMethod.MaxBitwise => "max_bitwise",
+                        AggregationMethod.SampleAndHold => "sample_and_hold",
                         _ => throw new Exception($"The aggregation method '{setup.Config.Method}' is unknown.")
                     };
 
@@ -443,6 +444,21 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                         if (isHighQuality)
                             result[x] = ArrayStatistics.RootMeanSquare(chunkData);
+                        else
+                            result[x] = double.NaN;
+                    });
+
+                    break;
+
+                case AggregationMethod.SampleAndHold:
+
+                    Parallel.For(0, targetDatasetLength, x =>
+                    {
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
+
+                        if (isHighQuality)
+                            result[x] = chunkData.First();
                         else
                             result[x] = double.NaN;
                     });

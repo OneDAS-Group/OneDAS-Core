@@ -9,6 +9,7 @@
         Std = 4,
         Rms = 5,
         MinBitwise = 6,
-        MaxBitwise = 7
+        MaxBitwise = 7,
+        SampleAndHold = 8
     }
 }
