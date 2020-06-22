@@ -1,4 +1,5 @@
-﻿using OneDas.DataManagement.Database;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +24,22 @@ namespace OneDas.DataManagement.Extensibility
             _rootPathToCampaignsMap = new Dictionary<string, List<CampaignInfo>>();
         }
 
-        public DataReaderExtensionBase(string rootPath)
+        public DataReaderExtensionBase(string rootPath, ILogger logger)
         {
             this.RootPath = rootPath;
+            this.Logger = logger;
             this.Progress = new Progress<double>();
         }
 
         #endregion
 
         #region Properties
+
+        public string RootPath { get; }
+
+        public ILogger Logger { get; }
+
+        public Progress<double> Progress { get; }
 
         protected List<CampaignInfo> Campaigns
         {
@@ -43,10 +51,6 @@ namespace OneDas.DataManagement.Extensibility
                 return _rootPathToCampaignsMap[this.RootPath];
             }
         }
-
-        public string RootPath { get; }
-
-        public Progress<double> Progress { get; }
 
         #endregion
 

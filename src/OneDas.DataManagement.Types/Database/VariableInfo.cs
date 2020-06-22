@@ -62,7 +62,7 @@ namespace OneDas.DataManagement.Database
                 this.TransferFunctions = variable.TransferFunctions;
 
             // merge datasets
-            List<DatasetInfo> newDatasets = new List<DatasetInfo>();
+            var newDatasets = new List<DatasetInfo>();
 
             foreach (var dataset in variable.Datasets)
             {

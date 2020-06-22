@@ -1,4 +1,5 @@
 ﻿using HDF.PInvoke;
+using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
@@ -28,7 +29,7 @@ namespace OneDas.DataManagement.Extensions
             _lock = new object();
         }
 
-        public HdfDataReader(string rootPath) : base(rootPath)
+        public HdfDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
         {
             _filePath = Path.Combine(this.RootPath, "VDS.h5");
             _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);

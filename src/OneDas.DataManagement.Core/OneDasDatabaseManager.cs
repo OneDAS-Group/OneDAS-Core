@@ -1,4 +1,6 @@
-﻿using OneDas.DataManagement.Database;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
 using OneDas.Extensibility;
@@ -32,13 +34,16 @@ namespace OneDas.DataManagement
         #region Fields
 
         private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
+        private ILoggerFactory _loggerFactory;
 
         #endregion
 
         #region Constructors
 
-        public OneDasDatabaseManager()
+        public OneDasDatabaseManager(ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
+
             // config
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
 
@@ -81,8 +86,8 @@ namespace OneDas.DataManagement
             // load data readers
             _rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
 
-            // instantiate data reaers
-            using var aggregationDataReader = new HdfDataReader(Environment.CurrentDirectory);
+            // instantiate data readers
+            using var aggregationDataReader = this.GetAggregationDataReader();
 
             var dataReaders = _rootPathToDataReaderTypeMap
                                 .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value))
@@ -180,7 +185,7 @@ namespace OneDas.DataManagement
 
         public DataReaderExtensionBase GetAggregationDataReader()
         {
-            return new HdfDataReader(Environment.CurrentDirectory);
+            return new HdfDataReader(Environment.CurrentDirectory, _loggerFactory.CreateLogger("aggregation"));
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)
@@ -213,7 +218,8 @@ namespace OneDas.DataManagement
 
         private DataReaderExtensionBase InstantiateDataReader(string rootPath, Type type)
         {
-            return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath);
+            var logger = _loggerFactory.CreateLogger(rootPath);
+            return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
         }
 
         private string GetCampaignMetaPath(string campaignName)

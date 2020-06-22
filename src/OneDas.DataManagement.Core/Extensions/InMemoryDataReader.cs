@@ -1,4 +1,5 @@
-﻿using OneDas.DataManagement.Database;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
@@ -19,7 +20,7 @@ namespace OneDas.DataManagement.Extensions
 
         #region Constructors
 
-        public InMemoryDataReader(string rootPath) : base(rootPath)
+        public InMemoryDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
         {
             _random = new Random();
         }

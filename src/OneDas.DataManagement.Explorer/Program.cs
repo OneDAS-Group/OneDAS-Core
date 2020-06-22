@@ -84,7 +84,7 @@ namespace OneDas.DataManagement.Explorer
             }
 
             // load and update database
-            Program.DatabaseManager = new OneDasDatabaseManager();
+            Program.DatabaseManager = new OneDasDatabaseManager(_loggerFactory);
 
             // service vs. interactive
             if (isWindowsService)
