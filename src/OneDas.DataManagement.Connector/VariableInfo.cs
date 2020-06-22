@@ -7,11 +7,11 @@ namespace OneDas.DataManagement.Connector
     {
         #region Properties
 
-        public List<string> VariableNames { get; set; }
+        public string Name { get; set; }
 
-        public List<string> VariableGroups { get; set; }
+        public string Group { get; set; }
 
-        public List<string> Units { get; set; }
+        public string Unit { get; set; }
 
         public List<TransferFunction> TransferFunctions { get; set; }
 

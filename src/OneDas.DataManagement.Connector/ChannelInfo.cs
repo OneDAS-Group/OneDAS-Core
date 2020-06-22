@@ -10,9 +10,9 @@ namespace OneDas.DataManagement.Connector
 
         public ChannelInfo(VariableInfo variable, string channelName, double[] data)
         {
-            this.Name = variable.VariableNames.Last();
-            this.Group = variable.VariableGroups.Last();
-            this.Unit = variable.Units.Last();
+            this.Name = variable.Name;
+            this.Group = variable.Group;
+            this.Unit = variable.Unit;
             this.TransferFunctions = variable.TransferFunctions;
             this.DatasetName = channelName.Split('/').Last();
             this.Values = data;

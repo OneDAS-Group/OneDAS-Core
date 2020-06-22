@@ -15,9 +15,9 @@ from signalrcore_async.protocol.msgpack import MessagePackHubProtocol
 
 class ChannelInfo():
     def __init__(self, dict, channel, data):
-        self.name = dict["VariableNames"][-1]
-        self.group = dict["VariableGroups"][-1]
-        self.unit = dict["Units"][-1]
+        self.name = dict["Name"]
+        self.group = dict["Group"]
+        self.unit = dict["Unit"]
         self.transfer_functions = dict["TransferFunctions"]
         self.dataset_name = channel.split('/')[-1]
         self.values = data
