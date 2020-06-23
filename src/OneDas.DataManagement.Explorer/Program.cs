@@ -89,14 +89,14 @@ namespace OneDas.DataManagement.Explorer
 
             // service vs. interactive
             if (isWindowsService)
-                await Program.CreateHostBuilder(currentDirectory).UseWindowsService().Build().RunAsync();
+                await Program.CreateHostBuilder(currentDirectory, logFolderPath).UseWindowsService().Build().RunAsync();
             else
-                await Program.CreateHostBuilder(currentDirectory).Build().RunAsync();
+                await Program.CreateHostBuilder(currentDirectory, logFolderPath).Build().RunAsync();
 
             return 0;
         }
 
-        public static IHostBuilder CreateHostBuilder(string currentDirectory) => 
+        public static IHostBuilder CreateHostBuilder(string currentDirectory, string logFolderPath) => 
             Host.CreateDefaultBuilder()
                 .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
                 .ConfigureLogging(logging =>
@@ -106,7 +106,7 @@ namespace OneDas.DataManagement.Explorer
                     logging.AddConsole();
                     logging.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
 
-                    logging.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+                    logging.AddFile(Path.Combine(logFolderPath, "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
                     logging.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
