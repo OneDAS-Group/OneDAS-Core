@@ -106,7 +106,12 @@ namespace OneDas.DataManagement.Explorer.Core
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"{message} Error: {ex.Message}");
+                    string exceptionMessage = ex.Message;
+
+                    if (ex.InnerException != null)
+                        exceptionMessage += $" Inner exception: {ex.InnerException.Message}";
+
+                    _logger.LogError($"{message} Error: {exceptionMessage}");
                 }
                 finally
                 {

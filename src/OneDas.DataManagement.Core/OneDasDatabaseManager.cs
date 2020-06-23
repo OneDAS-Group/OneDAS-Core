@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
@@ -33,15 +32,17 @@ namespace OneDas.DataManagement
     {
         #region Fields
 
-        private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
+        private ILogger _logger;
         private ILoggerFactory _loggerFactory;
+        private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
 
         #endregion
 
         #region Constructors
 
-        public OneDasDatabaseManager(ILoggerFactory loggerFactory)
+        public OneDasDatabaseManager(ILogger logger, ILoggerFactory loggerFactory)
         {
+            _logger = logger;
             _loggerFactory = loggerFactory;
 
             // config
@@ -96,6 +97,8 @@ namespace OneDas.DataManagement
 
             foreach (var dataReader in dataReaders)
             {
+                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
+
                 try
                 {
                     var isNativeDataReader = dataReader != aggregationDataReader;

@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace OneDas.Hdf.VdsTool.Commands
 {
@@ -26,6 +27,7 @@ namespace OneDas.Hdf.VdsTool.Commands
         private uint _aggregationChunkSizeMb;
         private bool _force;
         private ILogger _logger;
+        private ILoggerFactory _loggerFactory;
 
         private OneDasDatabaseManager _databaseManager;
 
@@ -33,12 +35,13 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Constructors
 
-        public AggregateCommand(uint days, uint aggregationChunkSizeMb, bool force, ILogger logger)
+        public AggregateCommand(uint days, uint aggregationChunkSizeMb, bool force, ILogger logger, ILoggerFactory loggerFactory)
         {
             _days = days;
             _aggregationChunkSizeMb = aggregationChunkSizeMb;
             _force = force;
             _logger = logger;
+            _loggerFactory = loggerFactory;
         }
 
         #endregion
@@ -47,7 +50,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         public void Run()
         {
-            _databaseManager = new OneDasDatabaseManager();
+            _databaseManager = new OneDasDatabaseManager(NullLogger.Instance, _loggerFactory);
             _databaseManager.Update();
 
             var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();

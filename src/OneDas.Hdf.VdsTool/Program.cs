@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.Hdf.VdsTool.Commands;
 using System;
@@ -199,7 +198,7 @@ namespace OneDas.Hdf.VdsTool
                 
                 try
                 {
-                    new AggregateCommand(days, chunkSize, force, logger).Run();
+                    new AggregateCommand(days, chunkSize, force, logger, _loggerFactory).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)
