@@ -1,4 +1,4 @@
-﻿using OneDas.Infrastructure;
+using OneDas.Infrastructure;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ namespace OneDas.Buffers
 
             fixed (T* dataPtr = dataset)
             {
-                InternalToDouble(dataPtr, doubleData);
+                BufferUtilities.InternalToDouble(dataPtr, doubleData);
             }
 
             return doubleData;
