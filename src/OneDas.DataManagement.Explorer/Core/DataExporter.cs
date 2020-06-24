@@ -125,6 +125,9 @@ namespace OneDas.DataManagement.Explorer.Core
 
             foreach (string filePath in filePathSet)
             {
+                if (_cancellationToken.IsCancellationRequested)
+                    return false;
+
                 var zipArchiveEntry = _zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
 
                 this.OnProgressUpdated(new ProgressUpdatedEventArgs(currentFile / (double)fileCount, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));
@@ -208,7 +211,13 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             var buffers = progressRecord.DatasetToRecordMap.Values.Select(dataRecord =>
             {
-                var data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+                double[] data;
+
+                if (progressRecord.DatasetToRecordMap.Keys.First().IsNative)
+                    data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
+                else
+                    data = (double[])dataRecord.Dataset;
+
                 return (IBuffer)BufferUtilities.CreateSimpleBuffer(data);
             }).ToList();
 

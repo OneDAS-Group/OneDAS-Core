@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace OneDas.Infrastructure
 {
+#warning Replace everything with TimeSpan ("SamplePeriod")? Timespan bases on 100 ns = 10 MHz. Better would be a wrapper, which would allow to lower this limit.
+
     public class SampleRateContainer
     {
         #region Fields
@@ -29,15 +31,6 @@ namespace OneDas.Infrastructure
 
         public SampleRateContainer(string sampleRateWithUnit, bool ensureNonZeroIntegerHz = false)
         {
-            // is_chunk_completed_set
-            if (sampleRateWithUnit.StartsWith("is_chunk_completed_set"))
-            {
-                this.SamplesPerDay = 86400UL / 60;
-                this.IsNonZeroIntegerHz = true;
-
-                return;
-            }
-
             // Hz
             var matchHz = Regex.Match(sampleRateWithUnit, @"([0-9|\.]+)\sHz");
 
@@ -100,7 +93,7 @@ namespace OneDas.Infrastructure
             }
         }
 
-        public decimal Period => 86400m / _samplesPerDay;
+        public TimeSpan Period => TimeSpan.FromSeconds((double)(1/this.SamplesPerSecond));
 
         public ulong NativeSampleRateFactor => 100 / (ulong)this.SamplesPerSecond;
 
@@ -117,7 +110,7 @@ namespace OneDas.Infrastructure
 
             if (!this.IsNonZeroIntegerHz)
             {
-
+                throw new Exception("The provided sample rate is not a non-zero integer frequency.");
             }
         }
 
@@ -133,14 +126,7 @@ namespace OneDas.Infrastructure
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hash = 17;
-
-                hash = hash * 23 + this.SamplesPerDay.GetHashCode();
-
-                return hash;
-            }
+            return this.SamplesPerDay.GetHashCode();
         }
 
         public string ToUnitString(bool underscore = false)

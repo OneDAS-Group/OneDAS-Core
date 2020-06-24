@@ -1,11 +1,11 @@
-﻿using OneDas.DataManagement.Database;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -14,82 +14,22 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Fields
 
-        private CampaignInfo _campaign_allowed;
-        private CampaignInfo _campaign_restricted;
+        private Random _random;
 
         #endregion
 
         #region Constructors
 
-        public InMemoryDataReader(string rootPath) : base(rootPath)
+        public InMemoryDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
         {
-            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
-            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
-            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
-            _campaign_allowed = this.InitializeCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13);
-
-            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
-            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
-            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
-            _campaign_restricted = this.InitializeCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23);
+            _random = new Random();
         }
 
         #endregion
 
         #region Methods
 
-        public override List<string> GetCampaignNames()
-        {
-            return new List<string> { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
-        }
-
-        public override CampaignInfo GetCampaign(string campaignName)
-        {
-            if (campaignName == _campaign_allowed.Id)
-                return _campaign_allowed;
-            else if (campaignName == _campaign_restricted.Id)
-                return _campaign_restricted;
-            else
-                throw new Exception($"The requested campaign with name '{campaignName}' could not be found.");
-        }
-
-        public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
-        {
-            return true;
-        }
-
-        public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
-        {
-            int[] aggregatedData = default;
-            DataAvailabilityGranularity granularity = default;
-
-            var random = new Random();
-            var totalDays = (int)Math.Round((end - begin).TotalDays);
-
-            if (totalDays <= 365)
-            {
-                granularity = DataAvailabilityGranularity.DayLevel;
-                aggregatedData = Enumerable.Range(0, totalDays).Select(value => random.Next(90, 100)).ToArray();
-            }
-            else
-            {
-                var totalMonths = (end.Month - begin.Month) + 1 + 12 * (end.Year - begin.Year);
-
-                granularity = DataAvailabilityGranularity.MonthLevel;
-                aggregatedData = Enumerable.Range(0, totalMonths).Select(value => random.Next(90, 100)).ToArray();
-            }
-
-            Thread.Sleep(TimeSpan.FromMilliseconds(totalDays*2));
-
-            return new DataAvailabilityStatistics(granularity, aggregatedData);
-        }
-
-        public override void Dispose()
-        {
-            //
-        }
-
-        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             double[] dataDouble;
 
@@ -103,7 +43,7 @@ namespace OneDas.DataManagement.Extensions
             {
                 dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime).ToArray();
             }
-            else // temperature
+            else // temperature or wind speed
             {
                 var kernelSize = 1000;
                 var movingAverage = new double[kernelSize];
@@ -116,7 +56,7 @@ namespace OneDas.DataManagement.Extensions
                 {
                     movingAverage[i % kernelSize] = (random.NextDouble() - 0.5) * mean * 10 + mean;
 
-                    if (movingAverage[kernelSize-1] == 0)
+                    if (movingAverage[kernelSize - 1] == 0)
                         dataDouble[i] = mean;
                     else
                         dataDouble[i] = movingAverage.Sum() / kernelSize;
@@ -129,56 +69,87 @@ namespace OneDas.DataManagement.Extensions
             return (data, statusSet);
         }
 
-        private CampaignInfo InitializeCampaign(string campaignName, string id1, string id2, string id3)
+        public override void Dispose()
         {
-            var campaign = new CampaignInfo(campaignName);
+            //
+        }
+
+        protected override List<CampaignInfo> LoadCampaigns()
+        {
+            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
+            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
+            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
+            var id14 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
+            var campaign_allowed = this.LoadCampaign("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13, id14);
+
+            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
+            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
+            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
+            var id24 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
+            var campaign_restricted = this.LoadCampaign("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23, id24);
+
+            return new List<CampaignInfo>() { campaign_allowed, campaign_restricted };
+        }
+
+        protected override double GetDataAvailability(string campaignId, DateTime Day)
+        {
+            if (!this.Campaigns.Any(campaign => campaign.Id == campaignId))
+                throw new Exception($"The requested campaign with name '{campaignId}' could not be found.");
+
+            return _random.NextDouble() / 10 + 0.9;
+        }
+
+        private CampaignInfo LoadCampaign(string campaignId, string id1, string id2, string id3, string id4)
+        {
+            var campaign = new CampaignInfo(campaignId);
 
             var variableA = new VariableInfo(id1, campaign);
             var variableB = new VariableInfo(id2, campaign);
             var variableC = new VariableInfo(id3, campaign);
+            var variableD = new VariableInfo(id4, campaign);
 
             var dataset1 = new DatasetInfo("25 Hz", variableA) { DataType = OneDasDataType.INT32 };
             var dataset2 = new DatasetInfo("1 s_max", variableB) { DataType = OneDasDataType.FLOAT64 };
             var dataset3 = new DatasetInfo("1 s_mean", variableB) { DataType = OneDasDataType.FLOAT64 };
-            var dataset4 = new DatasetInfo("1 s", variableC) { DataType = OneDasDataType.FLOAT64 };
+            var dataset4 = new DatasetInfo("1 s_mean", variableC) { DataType = OneDasDataType.FLOAT64 };
+            var dataset5 = new DatasetInfo("1 s_mean", variableD) { DataType = OneDasDataType.FLOAT64 };
 
-            // variable 1
-            variableA.Datasets = new List<DatasetInfo>()
-            {
-                dataset1
-            };
+            // variable A
+            variableA.Name = "unix_time1";
+            variableA.Group = "Group 1";
+            variableA.Unit = "";
 
-            variableA.VariableNames.Add("unix_time1");
-            variableA.VariableGroups.Add("Group 1");
-            variableA.Units.Add("");
+            variableA.Datasets.Add(dataset1);
 
-            // variable 2
-            variableB.Datasets = new List<DatasetInfo>()
-            {
-                dataset2,
-                dataset3
-            };
+            // variable B
+            variableB.Name = "unix_time2";
+            variableB.Group = "Group 1";
+            variableB.Unit = string.Empty;
 
-            variableB.VariableNames.Add("unix_time2");
-            variableB.VariableGroups.Add("Group 1");
-            variableB.Units.Add("");
+            variableB.Datasets.Add(dataset2);
+            variableB.Datasets.Add(dataset3);
 
-            // variable 3
-            variableC.Datasets = new List<DatasetInfo>()
-            {
-                dataset4
-            };
+            // variable C
+            variableC.Name = "T1";
+            variableC.Group = "Group 2";
+            variableC.Unit = "°C";
 
-            variableC.VariableNames.Add("T");
-            variableC.VariableGroups.Add("Group 2");
-            variableC.Units.Add("°C");
+            variableC.Datasets.Add(dataset4);
+
+            // variable D
+            variableD.Name = "V1";
+            variableD.Group = "Group 2";
+            variableD.Unit = "m/s";
+
+            variableD.Datasets.Add(dataset5);
 
             // campaign
             campaign.Variables = new List<VariableInfo>()
             {
                 variableA,
                 variableB,
-                variableC
+                variableC,
+                variableD
             };
 
             return campaign;

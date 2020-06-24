@@ -19,6 +19,7 @@ namespace OneDas.Extension.Csv
         private double _unixStart;
         private DateTime _unixEpoch;
         private DateTime _lastFileStartDateTime;
+        private NumberFormatInfo _nfi;
 
         #endregion
 
@@ -29,6 +30,12 @@ namespace OneDas.Extension.Csv
             _settings = settings;
 
             _unixEpoch = new DateTime(1970, 01, 01);
+
+            _nfi = new NumberFormatInfo()
+            {
+                NumberDecimalSeparator = ".",
+                NumberGroupSeparator = string.Empty
+            };
         }
         
         #endregion
@@ -37,14 +44,12 @@ namespace OneDas.Extension.Csv
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            string dataFilePath;
-
             _lastFileStartDateTime = startDateTime;
             _unixStart = (startDateTime - _unixEpoch).TotalSeconds;
 
             foreach (var contextGroup in variableContextGroupSet)
             {
-                dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
+                var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
 
                 if (!File.Exists(dataFilePath))
                 {
@@ -71,7 +76,7 @@ namespace OneDas.Extension.Csv
                             streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
                         }
 
-                        // header
+                        /* variable name */
                         switch (_settings.RowIndexFormat)
                         {
                             case CsvRowIndexFormat.Index:
@@ -84,17 +89,29 @@ namespace OneDas.Extension.Csv
                                 throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
                         }
 
-                        foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                        foreach (var variableContext in contextGroup.VariableContextSet)
                         {
                             streamWriter.Write($"{ variableContext.VariableDescription.VariableName };");
                         }
 
                         streamWriter.WriteLine();
+
+                        /* dataset name */
                         streamWriter.Write("-;");
 
-                        foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                        foreach (var variableContext in contextGroup.VariableContextSet)
                         {
                             streamWriter.Write($"{ variableContext.VariableDescription.DatasetName };");
+                        }
+
+                        streamWriter.WriteLine();
+
+                        /* unit */
+                        streamWriter.Write("-;");
+
+                        foreach (var variableContext in contextGroup.VariableContextSet)
+                        {
+                            streamWriter.Write($"{ variableContext.VariableDescription.Unit };");
                         }
 
                         streamWriter.WriteLine();
@@ -120,10 +137,10 @@ namespace OneDas.Extension.Csv
                     switch (_settings.RowIndexFormat)
                     {
                         case CsvRowIndexFormat.Index:
-                            streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, "{0:N0}", fileOffset + rowIndex) };");
+                            streamWriter.Write($"{string.Format(_nfi, "{0:N0}", fileOffset + rowIndex)};");
                             break;
                         case CsvRowIndexFormat.Unix:
-                            streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, "{0:N5}", _unixStart + (double)((fileOffset + rowIndex) / contextGroup.SampleRate.SamplesPerSecond)) };");
+                            streamWriter.Write($"{string.Format(_nfi, "{0:N5}", _unixStart + (double)((fileOffset + rowIndex) / contextGroup.SampleRate.SamplesPerSecond))};");
                             break;
                         default:
                             throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
@@ -132,7 +149,7 @@ namespace OneDas.Extension.Csv
                     for (int i = 0; i < simpleBuffers.Count; i++)
                     {
                         var value = simpleBuffers[i].Buffer[(int)(bufferOffset + rowIndex)];
-                        streamWriter.Write($"{ string.Format(CultureInfo.InvariantCulture, $"{{0:G{_settings.SignificantPlaces}}}", value) };");
+                        streamWriter.Write($"{string.Format(_nfi, $"{{0:G{_settings.SignificantPlaces}}}", value)};");
                     }
 
                     streamWriter.WriteLine();

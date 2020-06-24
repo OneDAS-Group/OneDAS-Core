@@ -42,21 +42,24 @@ namespace OneDas.DataManagement.Explorer
             // check interactivity
             var isWindowsService = args.Contains("--non-interactive");
 
+            // paths
+            var appdataFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");
+            Directory.CreateDirectory(appdataFolderPath);
+
+            var logFolderPath = Path.Combine(appdataFolderPath, "LOGS");
+            Directory.CreateDirectory(logFolderPath);
+
             // configure logging
             _loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+                builder.AddFile(Path.Combine(logFolderPath, "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
             });
 
             // load configuration
-            var configurationDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");
             var configurationFileName = "settings.json";
-
-            Directory.CreateDirectory(configurationDirectoryPath);
-
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(new PhysicalFileProvider(configurationDirectoryPath), path: configurationFileName, optional: true, reloadOnChange: true);
+            configurationBuilder.AddJsonFile(new PhysicalFileProvider(appdataFolderPath), path: configurationFileName, optional: true, reloadOnChange: true);
 
             _configuration = configurationBuilder.Build();
             _options = _configuration.Get<OneDasExplorerOptions>();
@@ -65,7 +68,7 @@ namespace OneDas.DataManagement.Explorer
             {
                 _options = new OneDasExplorerOptions();
                 _configuration.Bind(_options);
-                _options.Save(configurationDirectoryPath);
+                _options.Save(appdataFolderPath);
             }
 
             // change current directory to database location
@@ -81,18 +84,19 @@ namespace OneDas.DataManagement.Explorer
             }
 
             // load and update database
-            Program.DatabaseManager = new OneDasDatabaseManager();
+            var logger = _loggerFactory.CreateLogger("OneDAS Explorer");
+            Program.DatabaseManager = new OneDasDatabaseManager(logger, _loggerFactory);
 
             // service vs. interactive
             if (isWindowsService)
-                await Program.CreateHostBuilder(currentDirectory).UseWindowsService().Build().RunAsync();
+                await Program.CreateHostBuilder(currentDirectory, logFolderPath).UseWindowsService().Build().RunAsync();
             else
-                await Program.CreateHostBuilder(currentDirectory).Build().RunAsync();
+                await Program.CreateHostBuilder(currentDirectory, logFolderPath).Build().RunAsync();
 
             return 0;
         }
 
-        public static IHostBuilder CreateHostBuilder(string currentDirectory) => 
+        public static IHostBuilder CreateHostBuilder(string currentDirectory, string logFolderPath) => 
             Host.CreateDefaultBuilder()
                 .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
                 .ConfigureLogging(logging =>
@@ -102,7 +106,7 @@ namespace OneDas.DataManagement.Explorer
                     logging.AddConsole();
                     logging.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
 
-                    logging.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+                    logging.AddFile(Path.Combine(logFolderPath, "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
                     logging.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

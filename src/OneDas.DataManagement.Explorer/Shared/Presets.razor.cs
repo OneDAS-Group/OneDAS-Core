@@ -38,9 +38,10 @@ namespace OneDas.DataManagement.Explorer.Shared
             var dt = exportConfiguration.DateTimeEnd;
             var now = DateTime.UtcNow.AddDays(-1);
 
-            exportConfiguration.DateTimeEnd = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second); ;
+            exportConfiguration.DateTimeEnd = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
             exportConfiguration.DateTimeBegin = exportConfiguration.DateTimeEnd - timeSpan;
 
+            this.OnIsOpenChanged(false);
             this.AppState.SetExportConfiguration(exportConfiguration);
         }
 

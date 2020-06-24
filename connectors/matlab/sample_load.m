@@ -1,33 +1,57 @@
-% init
+%% init
 Initialize()
-import System.*
-import OneDas.Infrastructure.*
-import OneDas.DataManagement.Connector.*
-import OneDas.DataManagement.Infrastructure.*
 
-% variable definition
-hostName                = 'ID5052';
-port                    = 8080;
-dateTimeBegin           = DateTime(2020, 03, 01, 0, 0, 0, DateTimeKind.Utc);
-dateTimeEnd             = DateTime(2020, 03, 02, 0, 0, 0, DateTimeKind.Utc);
-targetDirectoryPath     = 'data';
+%% settings
+host            = 'localhost';
+port         	= 80;
+username        = 'test@root.org';
+password        = '#test0/User1'; % password = input('Please enter your password: ')
 
-channelNames = { ...
-    '/IN_MEMORY/ALLOWED/TEST/T/1 s'
-    '/IN_MEMORY/ALLOWED/TEST/unix_time2/1 s_mean'
+dateTimeBegin 	= datetime(2020, 02, 01, 0, 0, 0, 'TimeZone', 'UTC');
+dateTimeEnd 	= datetime(2020, 02, 03, 0, 0, 0, 'TimeZone', 'UTC');
+
+% channels (must all be of the same sample rate)
+channels = { ...
+    '/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean'
+    '/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean'
 };
 
-% translate variable list into .NET string array
-channels = NET.createGeneric('System.Collections.Generic.List', {'System.String'});
+%% load data
+connector = MatOneDasConnector(host, port, username, password); % or without authentication: ... = MatOneDasConnector(host, port)
 
-for channel = channelNames(:).'
-    channels.Add(char(channel));
-end
-
-% download and extract
-settings = LoadSettings( ...
-    dateTimeBegin, dateTimeEnd, ...
+data = connector.Load( ...
+    dateTimeBegin, ...
+    dateTimeEnd, ...
     channels ...
 );
 
-DownloadAndExtract(hostName, port, targetDirectoryPath, settings)
+%% prepare plot
+y1          = data('/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean');
+y2          = data('/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean');
+
+sampleRate  = 1; % 1 Hz (adapt to your needs)
+dt          = 1 / sampleRate / 86400;
+time        = (datenum(dateTimeBegin) : dt : datenum(dateTimeEnd) - dt).';
+
+%% plot
+yyaxis left
+plot(time, y1.Values)
+ylabel([y1.Name ' / ' y1.Unit])
+ylim([0 30])
+
+yyaxis right
+plot(time, y2.Values)
+ylabel([y2.Name ' / ' y2.Unit])
+ylim([0 30])
+
+axis    = gca;
+r1      = axis.YAxis(1);
+r2      = axis.YAxis(2);
+linkprop([r1 r2], 'Limits');
+
+xlabel('Time')
+xlim([time(1), time(end)])
+
+title('OneDAS Connector Sample')
+datetick('x', 'dd.mm HH:MM')
+grid('on')

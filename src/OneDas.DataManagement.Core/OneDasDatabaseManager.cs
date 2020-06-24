@@ -1,4 +1,5 @@
-﻿using OneDas.DataManagement.Database;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
 using OneDas.Extensibility;
@@ -31,48 +32,49 @@ namespace OneDas.DataManagement
     {
         #region Fields
 
-        private Dictionary<string, DataReaderExtensionBase> _rootPathToDataReaderMap;
+        private ILogger _logger;
+        private ILoggerFactory _loggerFactory;
+        private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
 
         #endregion
 
         #region Constructors
 
-        public OneDasDatabaseManager()
+        public OneDasDatabaseManager(ILogger logger, ILoggerFactory loggerFactory)
         {
-            // database
-            this.Database = new OneDasDatabase();
+            _logger = logger;
+            _loggerFactory = loggerFactory;
 
             // config
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
 
-            if (!File.Exists(filePath))
-            {
-                this.Config = new OneDasDatabaseConfig();
-            }
-            else
+            if (File.Exists(filePath))
             {
                 var jsonString = File.ReadAllText(filePath);
                 this.Config = JsonSerializer.Deserialize<OneDasDatabaseConfig>(jsonString);
             }
+            else
+            {
+                this.Config = new OneDasDatabaseConfig();
+            }
 
-            // add default test campaign
-            this.Config.RootPathToDataReaderIdMap[":memory:"] = "OneDas.InMemory";
+            // initalize
+            this.Config.Initialize();
 
-            // instantiate data reader
-            _rootPathToDataReaderMap = this.LoadDataReader(this.Config.RootPathToDataReaderIdMap);
+            // save config to disk
+            this.SaveConfig(this.Config);
 
-            this.Update();
+            // create empty database
+            this.Database = new OneDasDatabase();
         }
 
         #endregion
 
         #region Properties
 
-        public OneDasDatabase Database { get; }
+        public OneDasDatabase Database { get; private set; }
 
         public OneDasDatabaseConfig Config { get; }
-
-        public DataReaderExtensionBase AggregationDataReader { get; private set; }
 
         #endregion
 
@@ -80,30 +82,40 @@ namespace OneDas.DataManagement
 
         public void Update()
         {
-            var dataReaders = _rootPathToDataReaderMap
-                                .Select(entry => entry.Value)
-                                .Concat(new DataReaderExtensionBase[] { this.AggregationDataReader })
+            var database = new OneDasDatabase();
+
+            // load data readers
+            _rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
+
+            // instantiate data readers
+            using var aggregationDataReader = this.GetAggregationDataReader();
+
+            var dataReaders = _rootPathToDataReaderTypeMap
+                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value))
+                                .Concat(new DataReaderExtensionBase[] { aggregationDataReader })
                                 .ToList();
 
             foreach (var dataReader in dataReaders)
             {
+                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
+
                 try
                 {
-                    var isNativeDataReader = dataReader != this.AggregationDataReader;
+                    var isNativeDataReader = dataReader != aggregationDataReader;
                     var campaignNames = dataReader.GetCampaignNames();
 
                     foreach (var campaignName in campaignNames)
                     {
                         // find campaign container or create a new one
-                        var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Name == campaignName);
+                        var container = database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
 
                         if (container == null)
                         {
                             container = new CampaignContainer(campaignName, dataReader.RootPath);
-                            this.Database.CampaignContainers.Add(container);
+                            database.CampaignContainers.Add(container);
 
                             // try to load campaign meta data
-                            var filePath = Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+                            var filePath = this.GetCampaignMetaPath(campaignName);
 
                             CampaignMetaInfo campaignMeta;
 
@@ -115,15 +127,7 @@ namespace OneDas.DataManagement
                             else
                             {
                                 campaignMeta = new CampaignMetaInfo(campaignName);
-                                var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
-                                File.WriteAllText(filePath, jsonString);
                             }
-
-                            if (string.IsNullOrWhiteSpace(campaignMeta.ShortDescription))
-                                campaignMeta.ShortDescription = "<no description available>";
-
-                            if (string.IsNullOrWhiteSpace(campaignMeta.LongDescription))
-                                campaignMeta.LongDescription = "<no description available>";
 
                             container.CampaignMeta = campaignMeta;
                         }
@@ -138,7 +142,7 @@ namespace OneDas.DataManagement
                         // get up-to-date campaign from data reader
                         var campaign = dataReader.GetCampaign(campaignName);
 
-                        // if data reader is for aggregation data, update the dataset`s flag
+                        // if data reader is for aggregation data, update dataset`s flag
                         if (!isNativeDataReader)
                         {
                             var datasets = campaign.Variables.SelectMany(variable => variable.Datasets).ToList();
@@ -147,13 +151,10 @@ namespace OneDas.DataManagement
                             {
                                 dataset.IsNative = false;
                             }
-
-                            campaign.ChunkDataset.IsNative = false;
                         }
 
                         //
                         container.Campaign.Merge(campaign);
-                        container.CampaignMeta.Purge();
                     }
                 }
                 finally
@@ -162,28 +163,55 @@ namespace OneDas.DataManagement
                 }
             }
 
-            this.Save(this.Config);
+            // the purpose of this block is to initalize empty properties 
+            // add missing variables and clean up empty variables
+            foreach (var campaignContainer in database.CampaignContainers)
+            {
+                // remove all variables where no native datasets are available
+                // because only these provide metadata like name and group
+                var variables = campaignContainer.Campaign.Variables;
+
+                variables
+                    .Where(variable => string.IsNullOrWhiteSpace(variable.Name))
+                    .ToList()
+                    .ForEach(variable => variables.Remove(variable));
+
+                // initalize campaign meta
+                campaignContainer.CampaignMeta.Initialize(campaignContainer.Campaign);
+
+                // save campaign meta to disk
+                this.SaveCampaignMeta(campaignContainer.CampaignMeta);
+            }
+
+            this.Database = database;
+        }
+
+        public DataReaderExtensionBase GetAggregationDataReader()
+        {
+            return new HdfDataReader(Environment.CurrentDirectory, _loggerFactory.CreateLogger("aggregation"));
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignName)
         {
-            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Name == campaignName);
+            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
 
             if (container == null)
                 throw new KeyNotFoundException("The requested campaign could not be found.");
 
-            if (!_rootPathToDataReaderMap.TryGetValue(container.RootPath, out var dataReader))
+            if (!_rootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
                 throw new KeyNotFoundException("The requested data reader could not be found.");
 
-            return dataReader;
+            return this.InstantiateDataReader(container.RootPath, dataReaderType);
         }
 
-        public List<CampaignInfo> GetCampaigns()
+        public void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
         {
-            return this.Database.CampaignContainers.Select(container => container.Campaign).ToList();
+            var filePath = this.GetCampaignMetaPath(campaignMeta.Id);
+            var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
+            File.WriteAllText(filePath, jsonString);
         }
 
-        private void Save(OneDasDatabaseConfig config)
+        public void SaveConfig(OneDasDatabaseConfig config)
         {
             var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
             var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true });
@@ -191,7 +219,18 @@ namespace OneDas.DataManagement
             File.WriteAllText(filePath, jsonString);
         }
 
-        private Dictionary<string, DataReaderExtensionBase> LoadDataReader(Dictionary<string, string> rootPathToDataReaderIdMap)
+        private DataReaderExtensionBase InstantiateDataReader(string rootPath, Type type)
+        {
+            var logger = _loggerFactory.CreateLogger(rootPath);
+            return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
+        }
+
+        private string GetCampaignMetaPath(string campaignName)
+        {
+            return Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+        }
+
+        private Dictionary<string, Type> LoadDataReaders(Dictionary<string, string> rootPathToDataReaderIdMap)
         {
             var extensionDirectoryPath = Path.Combine(Environment.CurrentDirectory, "EXTENSION");
 
@@ -223,10 +262,7 @@ namespace OneDas.DataManagement
                 idToDataReaderTypeMap[attribute.Id] = type;
             }
 
-            // instantiate aggregation data reader
-            this.AggregationDataReader = new HdfDataReader(Environment.CurrentDirectory);
-
-            // instantiate extensions
+            // return root path to type map
             return rootPathToDataReaderIdMap.ToDictionary(entry => entry.Key, entry =>
             {
                 var rootPath = entry.Key;
@@ -235,7 +271,7 @@ namespace OneDas.DataManagement
                 if (!idToDataReaderTypeMap.TryGetValue(dataReaderId, out var type))
                     throw new Exception($"No data reader extension with ID '{dataReaderId}' could be found.");
 
-                return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath);
+                return type;
             });
         }
 

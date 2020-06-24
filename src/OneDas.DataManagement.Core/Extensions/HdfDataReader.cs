@@ -1,14 +1,13 @@
 ﻿using HDF.PInvoke;
+using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
-using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -17,154 +16,31 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Fields
 
-        private List<CampaignInfo> _campaigns;
         private string _filePath;
         private long _fileId = -1;
+        private static object _lock;
 
         #endregion
 
         #region Constructors
 
-        public HdfDataReader(string rootPath) : base(rootPath)
+        static HdfDataReader()
+        {
+            _lock = new object();
+        }
+
+        public HdfDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
         {
             _filePath = Path.Combine(this.RootPath, "VDS.h5");
+            _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
         }
 
         #endregion
 
         #region Methods
 
-        public override List<string> GetCampaignNames()
+        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
-            this.EnsureOpened();
-
-            _campaigns = GeneralHelper.GetCampaigns(_fileId).ToList();
-
-            this.SwitchLocation(() =>
-            {
-                foreach (var campaign in _campaigns)
-                {
-                    GeneralHelper.UpdateCampaignStartAndEnd(_fileId, campaign, maxProbingCount: 20);
-                }
-            });
-
-            return _campaigns.Select(campaign => campaign.Id).ToList();
-        }
-
-        public override CampaignInfo GetCampaign(string campaignName)
-        {
-            return _campaigns.First(campaign => campaign.Id == campaignName);
-        }
-
-        public override bool IsDataOfDayAvailable(string campaignName, DateTime dateTime)
-        {
-            var folderPath = Path.Combine(this.RootPath, "DATA", dateTime.ToString("yyyy-MM"));
-            var campaignNameFile = campaignName.TrimStart('/').Replace('/', '_');
-            var fileNamePattern = $"{campaignNameFile}_V*_{dateTime.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
-
-            return Directory.EnumerateFiles(folderPath, fileNamePattern).Any();
-        }
-
-        public override DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end)
-        {
-            this.EnsureOpened();
-
-            ulong offset;
-            int[] aggregatedData = default;
-            DataAvailabilityGranularity granularity = default;
-
-            // epoch & hyperslab
-            var epochStart = new DateTime(2000, 01, 01);
-            var epochEnd = new DateTime(2030, 01, 01);
-
-            if (!(epochStart <= begin && begin <= end && end <= epochEnd))
-                throw new Exception("requirement >> epochStart <= dateTimeBegin && dateTimeBegin <= dateTimeEnd && dateTimeBegin <= epochEnd << is not matched");
-
-            var samplesPerDay = new SampleRateContainer("is_chunk_completed_set").SamplesPerDay;
-
-            var start = (ulong)Math.Floor((begin - epochStart).TotalDays * samplesPerDay);
-            var block = (ulong)Math.Ceiling((end - begin).TotalDays * samplesPerDay);
-
-            // get data
-            var totalDays = (int)Math.Ceiling((end - begin).TotalDays);
-
-            this.SwitchLocation(() =>
-            {
-                var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignName}/is_chunk_completed_set", start, 1UL, block, 1UL).Select(value => (int)value).ToArray();
-
-                if (totalDays <= 365)
-                {
-                    granularity = DataAvailabilityGranularity.DayLevel;
-                    offset = (ulong)begin.TimeOfDay.TotalMinutes;
-                    aggregatedData = new int[totalDays];
-
-                    Parallel.For(0, totalDays, day =>
-                    {
-                        var startIndex = (ulong)day * samplesPerDay; // inclusive
-                        var endIndex = startIndex + samplesPerDay; // exclusive
-
-                        if ((int)startIndex - (int)offset < 0)
-                            startIndex = 0;
-                        else
-                            startIndex = startIndex - offset;
-
-                        if (endIndex - offset >= (ulong)data.Length)
-                            endIndex = (ulong)data.Length;
-                        else
-                            endIndex = endIndex - offset;
-
-                        aggregatedData[day] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
-                    });
-                }
-                else
-                {
-                    var totalMonths = (end.Month - begin.Month) + 1 + 12 * (end.Year - begin.Year);
-                    var totalDateTimeBegin = new DateTime(begin.Year, begin.Month, 1);
-
-                    granularity = DataAvailabilityGranularity.MonthLevel;
-                    offset = (ulong)(begin - totalDateTimeBegin).TotalMinutes;
-                    aggregatedData = new int[totalMonths];
-
-                    Parallel.For(0, totalMonths, month =>
-                    {
-                        ulong startIndex; // inclusive
-                        ulong endIndex; // exclusive
-
-                        var currentDateTimeBegin = totalDateTimeBegin.AddMonths(month);
-                        var currentDateTimeEnd = currentDateTimeBegin.AddMonths(1);
-
-                        if ((currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset < 0)
-                            startIndex = 0;
-                        else
-                            startIndex = (ulong)(currentDateTimeBegin - totalDateTimeBegin).TotalMinutes - offset;
-
-                        if ((currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset >= data.Length)
-                            endIndex = (ulong)data.Length;
-                        else
-                            endIndex = (ulong)(currentDateTimeEnd - totalDateTimeBegin).TotalMinutes - offset;
-
-                        aggregatedData[month] = (int)((double)data.Skip((int)startIndex).Take((int)(endIndex - startIndex)).Sum() / (endIndex - startIndex) * 100);
-                    });
-                }
-            });
-
-            return new DataAvailabilityStatistics(granularity, aggregatedData);
-        }
-
-        public override void Dispose()
-        {
-            if (H5I.is_valid(_fileId) > 0) { H5F.close(_fileId); }
-        }
-
-        private void EnsureOpened()
-        {
-            if (!(H5I.is_valid(_fileId) > 0))
-                _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
-        }
-
-        protected override (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
-        {
-            this.EnsureOpened();
 
             T[] data = null;
             byte[] statusSet = null;
@@ -172,16 +48,74 @@ namespace OneDas.DataManagement.Extensions
             var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
             (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
 
-            this.SwitchLocation(() =>
+            lock (_lock)
             {
-                var datasetPath = dataset.GetPath();
-                data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start: start, block: block);
+                this.SwitchLocation(() =>
+                {
+                    var datasetPath = dataset.GetPath();
+                    data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
 
-                if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, 1, block, 1).Cast<byte>().ToArray();
-            });
+                    if (H5L.exists(_fileId, datasetPath + "_status") > 0)
+                        statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
+                });
+            }
 
             return (data, statusSet);
+        }
+
+        public override void Dispose()
+        {
+            if (H5I.is_valid(_fileId) > 0) { H5F.close(_fileId); }
+        }
+
+        protected override List<CampaignInfo> LoadCampaigns()
+        {
+            var campaigns = GeneralHelper.GetCampaigns(_fileId).Select(hdfCampaign => hdfCampaign.ToCampaign()).ToList();
+
+            lock (_lock)
+            {
+                this.SwitchLocation(() =>
+                {
+                    foreach (var campaign in campaigns)
+                    {
+                        GeneralHelper.UpdateCampaignStartAndEnd(_fileId, campaign, maxProbingCount: 20);
+                    }
+                });
+            }            
+
+            return campaigns;
+        }
+
+        protected override double GetDataAvailability(string campaignId, DateTime day)
+        {
+            if (!this.Campaigns.Any(campaign => campaign.Id == campaignId))
+                throw new Exception($"The campaign '{campaignId}' could not be found.");
+
+            // epoch & hyperslab
+            var epochStart = new DateTime(2000, 01, 01);
+            var epochEnd = new DateTime(2030, 01, 01);
+
+            if (!(epochStart <= day && day <= epochEnd))
+                throw new Exception("requirement >> epochStart <= day && day <= epochEnd << is not matched");
+
+            var samplesPerDay = 1440UL;
+            var start = (ulong)Math.Floor((day - epochStart).TotalDays * samplesPerDay);
+            var block = samplesPerDay;
+
+            // get data
+            var result = 0.0;
+
+#warning Switching the location is no good idea. It breaks the webserver. Locks is required since this method is called with Parallel.For() which causes the current location to be set incorrectly.
+            lock (_lock)
+            {
+                this.SwitchLocation(() =>
+                {
+                    var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignId}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
+                    result = data.Sum() / 1440.0;
+                });
+            }
+
+            return result;
         }
 
         private void SwitchLocation(Action action)

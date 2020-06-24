@@ -1,12 +1,19 @@
 ﻿@page "/"
+
+@using Microsoft.Extensions.Options
+@using OneDas.DataManagement.Explorer.Core
+
 @namespace OneDas.DataManagement.Explorer.Pages
+
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     Layout = null;
 }
 
+@inject IOptions<OneDasExplorerOptions> options
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@options.Value.Language">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,8 +23,8 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/lib/uplot/uPlot.css" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/fontawesome.min.css" />
-    <link rel="stylesheet" href="~/lib/font-awesome/css/solid.min.css" />
-    <link rel="stylesheet" href="~/lib/font-awesome/css/regular.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/material-design-icons-iconfont/dist/material-design-icons.css">
 
     <!-- Some styling -->
     <link rel="stylesheet" href="_content/ChartJs.Blazor/ChartJSBlazor.css" />
@@ -45,8 +52,7 @@
     <script src="~/js/charting.js"></script>
     <script src="~/lib/uplot/uPlot.iife.js"></script>
     <script src="~/lib/font-awesome/js/fontawesome.min.js"></script>
-    <script src="~/lib/font-awesome/js/solid.min.js"></script>
-    <script src="~/lib/font-awesome/js/regular.min.js"></script>
+    <script src="~/lib/font-awesome/js/all.min.js"></script>
 
     <!-- ChartJs -->
     <script src="_content/ChartJs.Blazor/moment-with-locales.min.js" type="text/javascript" language="javascript"></script>

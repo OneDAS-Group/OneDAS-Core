@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -25,9 +26,9 @@ namespace OneDas.Extension.Mat73
 
         private string _dataFilePath;
         private double _lastCompletedChunk;
-
         private long _fileId = -1;
 
+        private TimeSpan _chunkPeriod;
         private IList<TextEntry> _textEntrySet;
 
         #endregion
@@ -37,6 +38,8 @@ namespace OneDas.Extension.Mat73
         public Mat73Writer(Mat73Settings settings, ILogger logger) : base(settings, logger)
         {
             _settings = settings;
+
+            _chunkPeriod = TimeSpan.FromMinutes(1);
 
             // check thread safety
             var isLibraryThreadSafe = 0U;
@@ -79,7 +82,8 @@ namespace OneDas.Extension.Mat73
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{ this.DataWriterContext.CampaignDescription.PrimaryGroupName }_{ this.DataWriterContext.CampaignDescription.SecondaryGroupName }_{ this.DataWriterContext.CampaignDescription.CampaignName }_V{ this.DataWriterContext.CampaignDescription.Version }_{ startDateTime.ToString("yyyy-MM-ddTHH-mm-ss") }Z.mat");
+            var campaignDescription = this.DataWriterContext.CampaignDescription;
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{campaignDescription.PrimaryGroupName}_{campaignDescription.SecondaryGroupName}_{campaignDescription.CampaignName}_V{campaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.mat");
 
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
@@ -93,15 +97,18 @@ namespace OneDas.Extension.Mat73
 
             try
             {
-                var firstChunk = (long)(fileOffset / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SampleRate));
-                var lastChunk = (long)((fileOffset + length) / this.TimeSpanToIndex(this.ChunkPeriod, contextGroup.SampleRate)) - 1;
+                var firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SampleRate);
+                var lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SampleRate) - 1;
 
                 groupId = H5G.open(_fileId, $"/info");
 
                 _lastCompletedChunk = IOHelper.ReadDataset<double>(groupId, "last_completed_chunk").FirstOrDefault();
 
+                // this does not work in conjunction with multiple context groups
                 if (firstChunk <= _lastCompletedChunk)
-                    throw new Exception(ErrorMessage.Mat73Writer_ChunkAlreadyWritten);
+                {
+                    // throw new Exception(ErrorMessage.Mat73Writer_ChunkAlreadyWritten);
+                }
 
                 // write data
                 for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
@@ -171,11 +178,15 @@ namespace OneDas.Extension.Mat73
                 // prepare channels
                 foreach (VariableContext variableContext in variableContextSet)
                 {
-                    this.PrepareVariable(_fileId, variableContext.VariableDescription);
+                    var periodInSeconds = (ulong)_settings.FileGranularity;
+                    var samplesPerSecond = variableContext.VariableDescription.SampleRate.SamplesPerSecond;
+                    (var chunkLength, var chunkCount) = GeneralHelper.CalculateChunkParameters(periodInSeconds, samplesPerSecond);
+
+                    this.PrepareVariable(_fileId, variableContext.VariableDescription, chunkLength, chunkCount);
                 }
 
                 // info
-                groupId = this.OpenOrCreateStruct(_fileId, "info").GroupId;
+                groupId = this.OpenOrCreateStruct(_fileId, "/info").GroupId;
 
                 (datasetId, isNew) = this.OpenOrCreateVariable(groupId, "last_completed_chunk", 1, 1);
 
@@ -253,31 +264,32 @@ namespace OneDas.Extension.Mat73
             }
         }
 
-        private void PrepareVariable(long locationId, VariableDescription variableDescription)
+        private void PrepareVariable(long locationId, VariableDescription variableDescription, ulong chunkLength, ulong chunkCount)
         {
-            Contract.Requires(variableDescription != null, nameof(variableDescription));
-
             long groupId = -1;
             long datasetId = -1;
 
             try
             {
-                // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SampleRate);
-
                 if (chunkLength <= 0)
                     throw new Exception(ErrorMessage.Mat73Writer_SampleRateTooLow);
 
                 // struct
                 groupId = this.OpenOrCreateStruct(locationId, variableDescription.VariableName).GroupId;
 
-                datasetId = this.OpenOrCreateVariable(groupId, $"dataset_{ variableDescription.DatasetName.Replace(" ", "_") }", chunkLength, this.ChunkCount).DatasetId;
+                datasetId = this.OpenOrCreateVariable(groupId, $"dataset_{ variableDescription.DatasetName.Replace(" ", "_") }", chunkLength, chunkCount).DatasetId;
             }
             finally
             {
                 if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
             }
+        }
+
+        private ulong ToChunkIndex(ulong offset, SampleRateContainer sampleRate)
+        {
+            var length = _chunkPeriod.TotalSeconds * (double)sampleRate.SamplesPerSecond;
+            return (ulong)(offset / length);
         }
 
         private void CloseHdfFile(long fileId)

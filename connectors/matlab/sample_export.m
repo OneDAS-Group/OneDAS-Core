@@ -1,35 +1,32 @@
-% init
+%% init
 Initialize()
-import System.*
 import OneDas.Infrastructure.*
-import OneDas.DataManagement.Connector.*
 import OneDas.DataManagement.Infrastructure.*
 
-% variable definition
-hostName                = 'ID5052';
-port                    = 8080;
-dateTimeBegin           = DateTime(2020, 03, 01, 0, 0, 0, DateTimeKind.Utc);
-dateTimeEnd             = DateTime(2020, 03, 02, 0, 0, 0, DateTimeKind.Utc);
-targetDirectoryPath     = 'data';
+%% settings
+host            = 'localhost';
+port         	= 80;
+username        = 'test@root.org';
+password        = '#test0/User1'; % password = input('Please enter your password: ')
+targetDir       = 'data';
 
-channelNames = { ...
-    '/IN_MEMORY/ALLOWED/TEST/T/1 s'
-    '/IN_MEMORY/ALLOWED/TEST/unix_time2/1 s_mean'
+dateTimeBegin 	= datetime(2020, 02, 01, 0, 0, 0, 'TimeZone', 'UTC');
+dateTimeEnd 	= datetime(2020, 02, 03, 0, 0, 0, 'TimeZone', 'UTC');
+
+% channels (must all be of the same sample rate)
+channels = { ...
+    '/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean'
+    '/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean'
 };
 
-% translate variable list into .NET string array
-channels = NET.createGeneric('System.Collections.Generic.List', {'System.String'});
+%% export data
+connector = MatOneDasConnector(host, port, username, password); % or without authentication: ... = MatOneDasConnector(host, port)
 
-for channel = channelNames(:).'
-    channels.Add(char(channel));
-end
-
-% download and extract
-settings = ExportSettings( ...
-    dateTimeBegin, dateTimeEnd, ...
+connector.Export( ...
+    dateTimeBegin, ...
+    dateTimeEnd, ...
     FileFormat.MAT73, ...
     FileGranularity.Day, ...
-    channels ...
+    channels, ...
+    targetDir ...
 );
-
-DownloadAndExtract(hostName, port, targetDirectoryPath, settings)

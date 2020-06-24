@@ -7,16 +7,15 @@ using System.Linq;
 
 namespace OneDas.Extensibility
 {
-#warning Add "CheckFileSize" method.
-#warning Write variable description instead of comment?
+#warning Add "CheckFileSize" method (e.g. for Famos).
     public abstract class DataWriterExtensionLogicBase : ExtensionLogicBase
     {
         #region "Fields"
 
-        private DateTime _lastFileStartDateTime;
-        private DateTime _lastWrittenDateTime;
+        private DateTime _lastFileBegin;
+        private DateTime _lastWrite;
 
-        private IList<VariableDescription> _variableDescriptionSet;
+        private IList<VariableDescription> _variableDescriptions;
 
         #endregion
 
@@ -26,8 +25,7 @@ namespace OneDas.Extensibility
             : base(settings, logger)
         {
             this.Settings = settings;
-            this.ChunkPeriod = TimeSpan.FromMinutes(1);
-            this.ChunkCount = (ulong)((int)settings.FileGranularity / this.ChunkPeriod.TotalSeconds);
+            this.BasePeriod = TimeSpan.FromSeconds(1);
             this.FormatVersion = this.GetType().GetFirstAttribute<DataWriterFormatVersionAttribute>().FormatVersion;
         }
 
@@ -41,62 +39,74 @@ namespace OneDas.Extensibility
 
         protected DataWriterContext DataWriterContext { get; private set; }
 
-        protected TimeSpan ChunkPeriod { get; }
-
-        protected ulong ChunkCount { get; }
+        protected TimeSpan BasePeriod { get; }
 
         #endregion
 
         #region "Methods"
 
-        public void Configure(DataWriterContext dataWriterContext, IList<VariableDescription> variableDescriptionSet)
+        public void Configure(DataWriterContext dataWriterContext, IList<VariableDescription> variableDescriptions)
         {
             this.DataWriterContext = dataWriterContext;
-
-            _variableDescriptionSet = variableDescriptionSet;
+            _variableDescriptions = variableDescriptions;
 
             this.OnConfigure();
         }
 
-        public void Write(DateTime dateTime, TimeSpan bufferPeriod, IList<IBuffer> buffers)
+        public void Write(DateTime begin, TimeSpan bufferPeriod, IList<IBuffer> buffers)
         {
-            if (dateTime < _lastWrittenDateTime)
+            if (begin < _lastWrite)
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeAlreadyWritten);
 
-            if (dateTime != dateTime.RoundDown(this.ChunkPeriod))
+            if (begin != begin.RoundDown(this.BasePeriod))
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
 
-            if (bufferPeriod.Seconds > 0 || bufferPeriod.Milliseconds > 0)
+            if (bufferPeriod.Milliseconds > 0)
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
 
             var bufferOffset = TimeSpan.Zero;
             var filePeriod = TimeSpan.FromSeconds((int)this.Settings.FileGranularity);
-            var variableContextSet = _variableDescriptionSet.Zip(buffers, (variableDescription, buffer) => new VariableContext(variableDescription, buffer)).ToList();
-            var variableContextGroupSet = variableContextSet
-                            .GroupBy(variableContext => variableContext.VariableDescription.SampleRate.SamplesPerDay)
-                            .Select(group => new VariableContextGroup(new SampleRateContainer(group.Key), group.ToList())).ToList();
+
+            var variableContexts = _variableDescriptions
+                .Zip(buffers, (variableDescription, buffer) => new VariableContext(variableDescription, buffer))
+                .ToList();
+
+            var variableContextGroups = variableContexts
+                .GroupBy(variableContext => variableContext.VariableDescription.SampleRate)
+                .Select(group => new VariableContextGroup(group.Key, group.ToList()))
+                .ToList();
 
             while (bufferOffset < bufferPeriod)
             {
-                var currentDateTime = dateTime + bufferOffset;
-                var fileStartDateTime = currentDateTime.RoundDown(filePeriod);
-                var fileOffset = currentDateTime - fileStartDateTime;
+                var currentBegin = begin + bufferOffset;
+                var fileBegin = currentBegin.RoundDown(filePeriod);
+                var fileOffset = currentBegin - fileBegin;
 
                 var remainingFilePeriod = filePeriod - fileOffset;
                 var remainingBufferPeriod = bufferPeriod - bufferOffset;
 
                 var period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingBufferPeriod.Ticks));
 
-                // check if file must be created or updated
-                if (fileStartDateTime != _lastFileStartDateTime)
+                // ensure that file granularity is low enough for all sample rates
+                foreach (var contextGroup in variableContextGroups)
                 {
-                    this.OnPrepareFile(fileStartDateTime, variableContextGroupSet);
+                    var sampleRate = contextGroup.SampleRate;
+                    var length = (decimal)this.Settings.FileGranularity * sampleRate.SamplesPerSecond;
 
-                    _lastFileStartDateTime = fileStartDateTime;
+                    if (length < 1)
+                        throw new Exception(ErrorMessage.DataWriterExtensionLogicBase_FileGranularityTooHigh);
+                }
+
+                // check if file must be created or updated
+                if (fileBegin != _lastFileBegin)
+                {
+                    this.OnPrepareFile(fileBegin, variableContextGroups);
+
+                    _lastFileBegin = fileBegin;
                 }
 
                 // write data
-                foreach (var contextGroup in variableContextGroupSet)
+                foreach (var contextGroup in variableContextGroups)
                 {
                     var sampleRate = contextGroup.SampleRate;
 
@@ -111,36 +121,13 @@ namespace OneDas.Extensibility
                         actualPeriod
                     );
 
-                    // message
-                    var firstChunk = this.ToChunkIndex(actualFileOffset, sampleRate);
-                    var lastChunk = this.ToChunkIndex(actualFileOffset + actualPeriod, sampleRate) - 1;
-
-                    if (firstChunk == lastChunk)
-                        this.Logger.LogInformation($"chunk { firstChunk + 1 } of { this.ChunkCount } written to file");
-                    else
-                        this.Logger.LogInformation($"chunks { firstChunk + 1 }-{ lastChunk + 1 } of { this.ChunkCount } written to file");
+                    this.Logger.LogInformation($"data written to file");
                 }
 
                 bufferOffset += period;
             }
 
-            _lastWrittenDateTime = dateTime + bufferPeriod;
-        }
-
-        protected ulong TimeSpanToIndex(TimeSpan timeSpan, SampleRateContainer samplesRate)
-        {
-            return (ulong)(this.TimeSpanToIndexDouble(timeSpan, samplesRate));
-        }
-
-#warning This method is required since downloading 600 s average data causes an index value < 1, which in turn causes a division by zero in the function "ToChunkIndex". Check if this still holds when sample time mechanisms were revised.
-        protected double TimeSpanToIndexDouble(TimeSpan timeSpan, SampleRateContainer samplesRate)
-        {
-            return timeSpan.TotalSeconds * (double)samplesRate.SamplesPerSecond;
-        }
-
-        protected ulong ToChunkIndex(ulong offset, SampleRateContainer sampleRate)
-        {
-            return (ulong)(offset / this.TimeSpanToIndexDouble(this.ChunkPeriod, sampleRate));
+            _lastWrite = begin + bufferPeriod;
         }
 
         protected virtual void OnConfigure()
@@ -151,6 +138,11 @@ namespace OneDas.Extensibility
         protected abstract void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet);
 
         protected abstract void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length);
+
+        private ulong TimeSpanToIndex(TimeSpan timeSpan, SampleRateContainer sampleRate)
+        {
+            return (ulong)(timeSpan.TotalSeconds * (double)sampleRate.SamplesPerSecond);
+        }
 
         #endregion
     }

@@ -5,21 +5,22 @@
     <div>
         <MatDatePicker class="settings-control"
                        Label="From (UTC)"
-                       Maximum="this.AppState.DateTimeBeginMaximum"
                        Format="dd.MM.yyyy HH:mm"
                        @bind-Value="this.AppState.DateTimeBeginWorkaround"
                        EnableTime="true"
+                       EnableSeconds="false"
                        Enable24hours="true"
                        AllowInput="true">
         </MatDatePicker>
 
         <MatDatePicker class="settings-control"
                        Label="To (UTC)"
-                       Minimum="this.AppState.DateTimeEndMinimum"
                        Format="dd.MM.yyyy HH:mm"
                        @bind-Value="this.AppState.DateTimeEndWorkaround"
                        EnableTime="true"
-                       Enable24hours="true">
+                       EnableSeconds="false"
+                       Enable24hours="true"
+                       AllowInput="true">
         </MatDatePicker>
 
         <MatSelectItem class="settings-control"

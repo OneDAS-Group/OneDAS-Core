@@ -1,9 +1,8 @@
 ﻿using OneDas.DataManagement.Explorer.ViewModels;
-using OneDas.DataManagement.Database;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-	public partial class CampaignBox
+    public partial class CampaignBox
     {
 		#region Constructors
 
@@ -13,7 +12,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 			{
 				if (e.PropertyName == nameof(AppStateViewModel.ClientState))
 				{
-					this.InvokeAsync(() => { this.StateHasChanged(); });
+					this.InvokeAsync(this.StateHasChanged);
 				}
 			};
 		}
@@ -31,11 +30,6 @@ namespace OneDas.DataManagement.Explorer.Shared
 		private void OpenAttachmentsDialog()
 		{
 			this.AttachmentsDialogIsOpen = true;
-		}
-
-		private void OnCampaignContainerSelected(CampaignContainer campaignContainer)
-		{
-			this.AppState.CampaignContainer = campaignContainer;
 		}
 
 		#endregion

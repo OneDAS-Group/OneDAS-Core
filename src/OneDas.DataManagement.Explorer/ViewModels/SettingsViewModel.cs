@@ -13,21 +13,23 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Fields
 
         private IdentityUser _user;
-        private List<ClaimViewModel> _claims;
         private UserManager<IdentityUser> _userManager;
 
         #endregion
 
         #region Constructors
 
-        public SettingsViewModel(UserManager<IdentityUser> userManager)
+        public SettingsViewModel(AppStateViewModel appState, UserManager<IdentityUser> userManager)
         {
+            this.AppState = appState;
             _userManager = userManager;
         }
 
         #endregion
 
         #region Properties - General
+
+        public AppStateViewModel AppState { get; }
 
         public IdentityUser User
         {
@@ -44,12 +46,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public List<IdentityUser> Users => _userManager.Users.ToList();
 
-        public List<ClaimViewModel> Claims
-        {
-            get { return _claims; }
-            set { base.SetProperty(ref _claims, value); }
-        }
-
+        public List<ClaimViewModel> Claims { get; set; }
+        
         #endregion
 
         #region Methods
@@ -60,7 +58,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.RaisePropertyChanged(nameof(SettingsViewModel.Claims));
         }
 
-        public async void SaveChanges()
+        public async void SaveClaimChanges()
         {
             var claimsToRemove = await _userManager.GetClaimsAsync(this.User);
             var claimsToAdd = this.Claims.Where(claim => !string.IsNullOrWhiteSpace(claim.Type)).Select(claim => claim.ToClaim());

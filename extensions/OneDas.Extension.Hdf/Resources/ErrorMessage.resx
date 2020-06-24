@@ -138,7 +138,4 @@
   <data name="HdfWriter_HdfLibraryNotThreadSafe" xml:space="preserve">
     <value>The HDF library is not thread safe.</value>
   </data>
-  <data name="HdfWriter_SampleRateTooLow" xml:space="preserve">
-    <value>The sample rate is too low.</value>
-  </data>
 </root>

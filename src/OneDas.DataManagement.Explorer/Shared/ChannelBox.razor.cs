@@ -1,6 +1,5 @@
 ﻿using MatBlazor;
 using OneDas.DataManagement.Explorer.ViewModels;
-using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
@@ -52,15 +51,6 @@ namespace OneDas.DataManagement.Explorer.Shared
 		public int VariablePageSize { get; set; } = 9;
 
 		public int VariablePage { get; set; } = 0;
-
-		#endregion
-
-		#region Methods
-
-		public void OnVariableGroupSelected(List<VariableInfoViewModel> variableGroup)
-		{
-			this.AppState.VariableGroup = variableGroup;
-		}
 
 		#endregion
     }

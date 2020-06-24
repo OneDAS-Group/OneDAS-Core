@@ -88,11 +88,20 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DateTime and TimeSpan arguments must have a granularity &gt;= 1 minute. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DateTime and TimeSpan arguments must have a granularity &gt;= 1 s. ähnelt.
         /// </summary>
         internal static string DataWriterExtensionLogicBase_DateTimeGranularityTooHigh {
             get {
                 return ResourceManager.GetString("DataWriterExtensionLogicBase_DateTimeGranularityTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The file granularity is higher than the sample period. ähnelt.
+        /// </summary>
+        internal static string DataWriterExtensionLogicBase_FileGranularityTooHigh {
+            get {
+                return ResourceManager.GetString("DataWriterExtensionLogicBase_FileGranularityTooHigh", resourceCulture);
             }
         }
         

@@ -20,11 +20,11 @@ namespace OneDas.DataManagement.Explorer.Shared
             {
                 if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
                 {
-                    this.InvokeAsync(() => { this.StateHasChanged(); });
+                    this.InvokeAsync(this.StateHasChanged);
                 }
                 else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
                 {
-                    this.InvokeAsync(() => { this.StateHasChanged(); });
+                    this.InvokeAsync(this.StateHasChanged);
                 }
             };
         }
@@ -34,11 +34,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-		public IJSRuntime JsRuntime { get; set; }
-
-        #endregion
-
-        #region Properties
+        public IJSRuntime JsRuntime { get; set; }
 
         public bool PresetsDialogIsOpen { get; set; }
 

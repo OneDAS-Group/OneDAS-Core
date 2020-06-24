@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
-using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
 using Prism.Mvvm;
 using System;
@@ -14,7 +15,6 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using OneDas.DataManagement.Infrastructure;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
@@ -28,19 +28,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private double _downloadProgress;
         private double _visualizeProgress;
 
+        private bool _isEditEnabled;
         private bool _visualizeBeginAtZero;
 
         private ClientState _clientState;
         private IJSRuntime _jsRuntime;
 
         private DataService _dataService;
+        private CampaignContainer _campaignContainer;
+        private OneDasDatabaseManager _databaseManager;
         private CancellationTokenSource _cts_download;
         private PropertyChangedEventHandler _propertyChanged;
         private AuthenticationStateProvider _authenticationStateProvider;
 
-        private CampaignContainer _campaignContainer;
         private List<VariableInfoViewModel> _variableGroup;
-
         private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
         private Dictionary<CampaignContainer, List<VariableInfoViewModel>> _campaignContainerToVariablesMap;
 
@@ -56,6 +57,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             _jsRuntime = jsRuntime;
             _authenticationStateProvider = authenticationStateProvider;
+            _databaseManager = databaseManager;
             _dataService = dataService;
 
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
@@ -102,6 +104,24 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public string Version { get; }
 
+        public bool IsEditEnabled
+        {
+            get { return _isEditEnabled; }
+            set
+            {
+#warning Make this more efficient. Maybe by tracking changes.
+                if (_isEditEnabled && !value)
+                {
+                    _databaseManager.Database.CampaignContainers.ForEach(campaignContainer =>
+                    {
+                        _databaseManager.SaveCampaignMeta(campaignContainer.CampaignMeta);
+                    });
+                }
+
+                this.SetProperty(ref _isEditEnabled, value);
+            }
+        }
+
         public ClientState ClientState
         {
             get { return _clientState; }
@@ -138,6 +158,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                 else
                     this.DateTimeBegin = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+
+                if (this.DateTimeBegin >= this.DateTimeEnd)
+                    this.DateTimeEnd = this.DateTimeBegin;
             }
         }
 
@@ -150,12 +173,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     this.DateTimeEnd = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                 else
                     this.DateTimeEnd = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+
+                if (this.DateTimeEnd <= this.DateTimeBegin)
+                    this.DateTimeBegin = this.DateTimeEnd;
             }
         }
-
-        public DateTime DateTimeBeginMaximum { get; private set; }
-
-        public DateTime DateTimeEndMinimum { get; private set; }
 
         public List<string> SampleRateValues { get; set; }
 
@@ -247,8 +269,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 this.ExportConfiguration.DateTimeBegin = value;
                 this.RaisePropertyChanged();
-
-                this.DateTimeEndMinimum = value;
             }
         }
 
@@ -259,8 +279,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 this.ExportConfiguration.DateTimeEnd = value;
                 this.RaisePropertyChanged();
-
-                this.DateTimeBeginMaximum = value;
             }
         }
 
@@ -309,11 +327,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public bool CanDownload()
         {
-            return this.DateTimeBegin < this.DateTimeEnd &&
-                   this.SelectedDatasets.Count > 0 &&
-                   (ulong)this.FileGranularity >= 86400 / new SampleRateContainer(this.SampleRate).SamplesPerDay &&
-                   this.State == OneDasExplorerState.Ready &&
-                   !this.SampleRate.Contains("600 s");
+            if (this.SampleRate != null)
+            {
+                var samplePeriod = new SampleRateContainer(this.SampleRate).Period.TotalSeconds;
+
+
+                return this.DateTimeBegin < this.DateTimeEnd &&
+                       this.SelectedDatasets.Count > 0 &&
+                       (ulong)this.FileGranularity >= samplePeriod &&
+                       this.State == OneDasExplorerState.Ready;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public async Task DownloadAsync(IPAddress remoteIpAdress)
@@ -398,13 +425,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
         {
-            return await _dataService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Name, this.DateTimeBegin, this.DateTimeEnd);
+            return await _dataService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
         }
 
         public void SetExportConfiguration(ExportConfiguration exportConfiguration)
         {
-            this.DateTimeBeginMaximum = exportConfiguration.DateTimeEnd;
-            this.DateTimeEndMinimum = exportConfiguration.DateTimeBegin;
             this.InitializeSampleRateToDatasetsMap();
 
             this.ExportConfiguration = exportConfiguration;
@@ -417,7 +442,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 var variableName = pathParts[4];
                 var datasetName = pathParts[5];
 
-                var campaignContainer = this.CampaignContainers.FirstOrDefault(current => current.Name == campaignName);
+                var campaignContainer = this.CampaignContainers.FirstOrDefault(current => current.Id == campaignName);
 
                 if (campaignContainer != null)
                 {
@@ -475,7 +500,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             if (this.CampaignContainer != null)
             {
-                var folderPath = Path.Combine(Environment.CurrentDirectory, "META", this.CampaignContainer.PhysicalName);
+                var folderPath = Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS", this.CampaignContainer.PhysicalName);
 
                 if (Directory.Exists(folderPath))
                     this.Attachments = Directory.GetFiles(folderPath, "*").ToList();
@@ -516,7 +541,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }
 
             if (this.GroupedVariables.Any())
-                this.VariableGroup = this.GroupedVariables.First().Value;
+                this.VariableGroup = this.GroupedVariables.OrderBy(entry => entry.Key).First().Value;
             else
                 this.VariableGroup = null;
         }
@@ -549,7 +574,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 _campaignContainerToVariablesMap[campaignContainer] = campaignContainer.Campaign.Variables.Select(variable =>
                 {
-                    var variableMeta = campaignContainer.CampaignMeta.Variables.FirstOrDefault(variableMeta => variableMeta.Name == variable.Id);
+                    var variableMeta = campaignContainer.CampaignMeta.Variables.First(variableMeta => variableMeta.Id == variable.Id);
                     return new VariableInfoViewModel(variable, variableMeta);
                 }).ToList();
             }
@@ -576,7 +601,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             var principal = authState.User;
             var visibleCampaigns = new List<CampaignContainer>();
 
-            return campaignContainers.Where(campaignContainer => Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign, restrictedCampaigns)).ToList();
+            return campaignContainers.Where(campaignContainer =>
+            {
+                return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign.Id, restrictedCampaigns)
+                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
+            }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
         }
 
         #endregion

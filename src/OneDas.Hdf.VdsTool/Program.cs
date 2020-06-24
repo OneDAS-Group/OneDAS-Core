@@ -1,4 +1,3 @@
-﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.Hdf.VdsTool.Commands;
 using System;
@@ -25,24 +24,33 @@ namespace OneDas.Hdf.VdsTool
 
         private static async Task<int> Main(string[] args)
         {
-            if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+            #warning How to handle other, non-HDF databases?
+            if (!args.Contains("pwsh"))
             {
-                Console.WriteLine(message);
-                return 1;
+                if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+                {
+                    Console.WriteLine(message);
+                    return 1;
+                }
             }
 
             Console.Title = "VdsTool";
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
+            // paths
+            var appdataFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");
+            Directory.CreateDirectory(appdataFolderPath);
+
+            var logFolderPath = Path.Combine(appdataFolderPath, "LOGS");
+            Directory.CreateDirectory(logFolderPath);
+
             // configure logging
-            var serviceProvider = new ServiceCollection().AddLogging(builder =>
+            _loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                builder.AddFile(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "LOGS", "VdsTool-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
-            }).BuildServiceProvider();
-
-            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                builder.AddFile(Path.Combine(logFolderPath, "VdsTool-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
+            });
 
             // configure CLI
             var rootCommand = new RootCommand("Virtual dataset tool");
@@ -50,7 +58,6 @@ namespace OneDas.Hdf.VdsTool
             rootCommand.AddCommand(Program.PrepareAutoVdsCommand());
             rootCommand.AddCommand(Program.PrepareVdsCommand());
             rootCommand.AddCommand(Program.PrepareInitCommand());
-            rootCommand.AddCommand(Program.PreparePwshCommand());
             rootCommand.AddCommand(Program.PrepareAggregateCommand());
 
             return await rootCommand.InvokeAsync(args);
@@ -164,43 +171,6 @@ namespace OneDas.Hdf.VdsTool
             return command;
         }
 
-        private static Command PreparePwshCommand()
-        {
-            var command = new Command("pwsh", "Runs the provided Powershell script")
-            {
-                new Option("--script-path", "The location of the powershell script")
-                {
-                    Argument = new Argument<string>(),
-                    Required = true
-                },
-                new Option("--transaction-id", "Log messages are tagged with the transaction identifier")
-                {
-                    Argument = new Argument<string>(),
-                    Required = true
-                }
-            };
-
-            command.Handler = CommandHandler.Create((string scriptPath, string transactionId) =>
-            {
-                var logger = _loggerFactory.CreateLogger($"PWSH ({transactionId})");
-
-                try
-                {
-                    new PwshCommand(scriptPath, logger).Run();
-                    logger.LogInformation($"Execution of the 'pwsh' command finished successfully (path: '{scriptPath}').");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Execution of the 'pwsh' command failed (path: '{scriptPath}'). Error message: '{ex.Message}'.");
-                    return 1;
-                }
-
-                return 0;
-            });
-
-            return command;
-        }
-
         private static Command PrepareAggregateCommand()
         {
             var command = new Command("aggregate", "Aggregates data of channels that match the filter conditions.")
@@ -208,22 +178,27 @@ namespace OneDas.Hdf.VdsTool
                 new Option("--chunk-size", "The aggregation chunk size in MB.")
                 {
                     Argument = new Argument<uint>(() => 200),
-                    Required = true
+                    Required = false
                 },
                 new Option("--days", "The number of days in the past to look for files to calculate aggregations for.")
                 {
                     Argument = new Argument<uint>(),
                     Required = true
+                },
+                new Option("--force", "Force recalculation of existing aggregations.")
+                {
+                    Argument = new Argument<bool>(() => false),
+                    Required = false
                 }
             };
 
-            command.Handler = CommandHandler.Create((uint chunkSize, uint days) =>
+            command.Handler = CommandHandler.Create((uint chunkSize, uint days, bool force) =>
             {
                 var logger = _loggerFactory.CreateLogger("AGGREGATE");
                 
                 try
                 {
-                    new AggregateCommand(days, chunkSize, logger).Run();
+                    new AggregateCommand(days, chunkSize, force, logger, _loggerFactory).Run();
                     logger.LogInformation($"Execution of the 'aggregate' command finished successfully.");
                 }
                 catch (Exception ex)

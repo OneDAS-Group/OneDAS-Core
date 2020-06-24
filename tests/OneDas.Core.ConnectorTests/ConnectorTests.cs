@@ -1,9 +1,3 @@
-using OneDas.DataManagement.Connector;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace OneDas.Core.Tests
 {
     public class ConnectorTests

@@ -23,24 +23,6 @@
       ]
     },
     {
-      "library": "font-awesome@5.12.1",
-      "destination": "wwwroot/lib/font-awesome/",
-      "files": [
-        "js/fontawesome.js",
-        "js/fontawesome.min.js",
-        "js/solid.js",
-        "js/solid.min.js",
-        "js/regular.min.js",
-        "js/regular.js",
-        "css/regular.css",
-        "css/regular.min.css",
-        "css/solid.css",
-        "css/solid.min.css",
-        "css/fontawesome.min.css",
-        "css/fontawesome.css"
-      ]
-    },
-    {
       "provider": "unpkg",
       "library": "@microsoft/signalr@3.1.2",
       "destination": "wwwroot/lib/signalr/"
@@ -49,29 +31,28 @@
       "library": "font-awesome@5.12.1",
       "destination": "wwwroot/lib/font-awesome/",
       "files": [
-        "css/regular.css",
-        "css/regular.min.css",
-        "css/solid.css",
-        "css/solid.min.css",
-        "css/fontawesome.min.css",
         "css/fontawesome.css",
+        "css/fontawesome.min.css",
+        "css/all.css",
+        "css/all.min.css",
         "js/fontawesome.js",
         "js/fontawesome.min.js",
-        "js/regular.js",
-        "js/regular.min.js",
-        "js/solid.js",
-        "js/solid.min.js",
-        "webfonts/fa-regular-400.eot",
+        "js/all.js",
+        "js/all.min.js",
         "webfonts/fa-regular-400.svg",
         "webfonts/fa-regular-400.ttf",
         "webfonts/fa-regular-400.woff",
         "webfonts/fa-regular-400.woff2",
-        "webfonts/fa-solid-900.eot",
         "webfonts/fa-solid-900.svg",
         "webfonts/fa-solid-900.ttf",
         "webfonts/fa-solid-900.woff",
         "webfonts/fa-solid-900.woff2"
       ]
+    },
+    {
+      "provider": "unpkg",
+      "library": "material-design-icons-iconfont@5.0.1",
+      "destination": "wwwroot/lib/material-design-icons-iconfont/"
     }
   ]
 }

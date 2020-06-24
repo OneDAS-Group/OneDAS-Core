@@ -13,19 +13,23 @@ namespace OneDas.DataManagement.Explorer.Shared
 			{
 				if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
 				{
-					this.InvokeAsync(() => { this.StateHasChanged(); });
+					this.InvokeAsync(this.StateHasChanged);
 				}
 				else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
 				{
-					this.InvokeAsync(() => { this.StateHasChanged(); });
+					this.InvokeAsync(this.StateHasChanged);
 				}
 				else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
 				{
-					this.InvokeAsync(() => { this.StateHasChanged(); });
+					this.InvokeAsync(this.StateHasChanged);
+				}
+				else if (e.PropertyName == nameof(AppStateViewModel.FileGranularity))
+				{
+					this.InvokeAsync(this.StateHasChanged);
 				}
 				else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
 				{
-					this.InvokeAsync(() => { this.StateHasChanged(); });
+					this.InvokeAsync(this.StateHasChanged);
 				}
 			};
 		}

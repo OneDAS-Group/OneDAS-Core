@@ -46,6 +46,13 @@ namespace OneDas.DataManagement.Explorer.Shared
                         this.StateHasChanged();
                     });
                 }
+                else if (e.PropertyName == nameof(AppStateViewModel.IsEditEnabled))
+                {
+                    this.InvokeAsync(() =>
+                    {
+                        this.StateHasChanged();
+                    });
+                }
             };
 
             this.UpdateFilteredDatasets();

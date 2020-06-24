@@ -32,17 +32,31 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public string Id => _variable.Id;
 
-        public string Name => _variable.VariableNames.Last();
+        public string Name => _variable.Name;
 
-        public string Group => _variable.VariableGroups.Last();
+        public string Group => _variable.Group;
 
-        public string Unit => _variableMeta == null ? _variable.Units.Last() : _variableMeta.Unit;
+        public string Unit => !string.IsNullOrWhiteSpace(_variableMeta.Unit) 
+            ? _variableMeta.Unit 
+            : _variable.Unit;
 
-        public string Description => _variableMeta == null ? "<no description available>" : _variableMeta.Description;
+        public string Description
+        {
+            get { return _variableMeta.Description; }
+            set { _variableMeta.Description = value; }
+        }
+
+        public string SpecialInfo
+        {
+            get { return _variableMeta.SpecialInfo; }
+            set { _variableMeta.SpecialInfo = value; }
+        }
 
         public CampaignInfo Parent => (CampaignInfo)_variable.Parent;
 
-        public List<TransferFunction> TransferFunctions => _variableMeta == null ? new List<TransferFunction>() : _variableMeta.TransferFunctions;
+        public List<TransferFunction> TransferFunctions => _variableMeta.TransferFunctions.Any() 
+            ? _variableMeta.TransferFunctions
+            : _variable.TransferFunctions;
 
         public List<DatasetInfoViewModel> Datasets { get; private set; }
 

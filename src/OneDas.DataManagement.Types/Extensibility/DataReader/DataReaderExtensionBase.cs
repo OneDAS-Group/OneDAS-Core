@@ -1,19 +1,33 @@
-﻿using OneDas.DataManagement.Database;
+﻿using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Extensibility
 {
     public abstract class DataReaderExtensionBase : IDisposable
     {
+        #region Fields
+
+        private static Dictionary<string, List<CampaignInfo>> _rootPathToCampaignsMap;
+
+        #endregion
+
         #region Constructors
 
-        public DataReaderExtensionBase(string rootPath)
+        static DataReaderExtensionBase()
+        {
+            _rootPathToCampaignsMap = new Dictionary<string, List<CampaignInfo>>();
+        }
+
+        public DataReaderExtensionBase(string rootPath, ILogger logger)
         {
             this.RootPath = rootPath;
+            this.Logger = logger;
             this.Progress = new Progress<double>();
         }
 
@@ -23,7 +37,20 @@ namespace OneDas.DataManagement.Extensibility
 
         public string RootPath { get; }
 
+        public ILogger Logger { get; }
+
         public Progress<double> Progress { get; }
+
+        protected List<CampaignInfo> Campaigns
+        {
+            get
+            {
+                if (!_rootPathToCampaignsMap.ContainsKey(this.RootPath))
+                    _rootPathToCampaignsMap[this.RootPath] = this.LoadCampaigns();
+
+                return _rootPathToCampaignsMap[this.RootPath];
+            }
+        }
 
         #endregion
 
@@ -178,17 +205,80 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public abstract List<string> GetCampaignNames();
+        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
+        {
+            var dateBegin = begin.Date;
+            var dateEnd = end.Date;
 
-        public abstract CampaignInfo GetCampaign(string campaignName);
+            int[] aggregatedData = default;
+            var granularity = DataAvailabilityGranularity.DayLevel;
+            var totalDays = (int)(dateEnd - dateBegin).TotalDays;
 
-        public abstract bool IsDataOfDayAvailable(string campaignName, DateTime date);
+            if (totalDays <= 365)
+            {
+                aggregatedData = new int[totalDays];
 
-        public abstract DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignName, DateTime begin, DateTime end);
+                Parallel.For(0, totalDays, day =>
+                {
+                    var date = dateBegin.AddDays(day);
+                    aggregatedData[day] = (int)(this.GetDataAvailability(campaignId, date) * 100);
+                });
+            }
+            else
+            {
+                granularity = DataAvailabilityGranularity.MonthLevel;
+
+                var months = new DateTime[totalDays];
+                var datasets = new int[totalDays];
+
+                Parallel.For(0, totalDays, day =>
+                {
+                    var date = dateBegin.AddDays(day);
+                    var month = new DateTime(date.Year, date.Month, 1);
+
+                    months[day] = month;
+                    datasets[day] = (int)(this.GetDataAvailability(campaignId, date) * 100);
+                });
+
+                var uniqueMonths = months.Distinct().OrderBy(month => month).ToList();
+                var zipData = months.Zip(datasets, (month, dataset) => (month, dataset)).ToList();
+
+                aggregatedData = new int[uniqueMonths.Count];
+
+                for (int i = 0; i < uniqueMonths.Count; i++)
+                {
+                    aggregatedData[i] = (int)zipData
+                        .Where(current => current.month == uniqueMonths[i])
+                        .Average(current => current.dataset);
+                }
+            }
+
+            return new DataAvailabilityStatistics(granularity, aggregatedData);
+        }
+
+
+        public List<string> GetCampaignNames()
+        {
+            return this.Campaigns.Select(campaign => campaign.Id).ToList();
+        }
+
+        public CampaignInfo GetCampaign(string campaignId)
+        {
+            return this.Campaigns.First(campaign => campaign.Id == campaignId);
+        }
+
+        public bool IsDataOfDayAvailable(string campaignId, DateTime day)
+        {
+            return this.GetDataAvailability(campaignId, day) > 0;
+        }
+
+        public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 
         public abstract void Dispose();
 
-        protected abstract (T[] dataset, byte[] statusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
+        protected abstract List<CampaignInfo> LoadCampaigns();
+
+        protected abstract double GetDataAvailability(string campaignId, DateTime Day);
 
         private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
         {

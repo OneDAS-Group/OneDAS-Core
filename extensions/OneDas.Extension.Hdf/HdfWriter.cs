@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using OneDas.Infrastructure;
 
 namespace OneDas.Extension.Hdf
 {
@@ -20,15 +21,15 @@ namespace OneDas.Extension.Hdf
 
         private HdfSettings _settings;
 
-        private IList<string> _systemTimeChangedSet;
-        private bool _systemTimeChanged_second;
-
         private string _dataFilePath;
 
         private long _lastCompletedChunk;
         private long _fileId = -1;
 
-        IntPtr _isChunkCompletedIntPtr;
+        private TimeSpan _chunkPeriod;
+        private IntPtr _isChunkCompletedIntPtr;
+
+        private IList<string> _systemTimeChangedSet;
 
         #endregion
 
@@ -42,6 +43,7 @@ namespace OneDas.Extension.Hdf
 
             _systemTimeChangedSet = new List<string>();
             _isChunkCompletedIntPtr = Marshal.AllocHGlobal(1);
+            _chunkPeriod = TimeSpan.FromMinutes(1);
 
             Marshal.WriteByte(_isChunkCompletedIntPtr, 1);
 
@@ -66,7 +68,6 @@ namespace OneDas.Extension.Hdf
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
 
-#warning Use Span.GetPinnableReference, remove DataBufferPtr property and pass an already sliced Span to the writers instead of 'dataStorage.DataBufferPtr + (int)bufferOffset + ...' and 'simpleDataStorageSet[i].DataBuffer[(int)(bufferOffset + rowIndex)]'?
             this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
 
             _systemTimeChangedSet.Clear();
@@ -93,6 +94,7 @@ namespace OneDas.Extension.Hdf
 
                 _lastCompletedChunk = IOHelper.ReadAttribute<long>(groupId, "last_completed_chunk").FirstOrDefault();
 
+                // this does not work in conjunction with multiple context groups
                 if (firstChunk <= _lastCompletedChunk)
                 {
                     //throw new Exception(ErrorMessage.HdfLogic_ChunkAlreadyWritten);
@@ -103,9 +105,6 @@ namespace OneDas.Extension.Hdf
                 {
                     this.WriteData(fileOffset, bufferOffset, length, contextGroup.VariableContextSet[i]);
                 }
-
-                // system time changed
-                IOHelper.PrepareAttribute(_fileId, "system_time_changed_set", _systemTimeChangedSet.ToArray(), new ulong[] { H5S.UNLIMITED }, true);
 
                 // write is_chunk_completed_set
                 for (long chunkIndex = firstChunk; chunkIndex <= lastChunk; chunkIndex++)
@@ -196,13 +195,17 @@ namespace OneDas.Extension.Hdf
                 // file -> campaign -> channels
                 foreach (VariableContext variableContext in variableContextSet)
                 {
-                    this.PrepareVariable(groupId, variableContext.VariableDescription);
+                    var periodInSeconds = (ulong)_settings.FileGranularity;
+                    var samplesPerSecond = variableContext.VariableDescription.SampleRate.SamplesPerSecond;
+                    (var chunkLength, var chunkCount) = GeneralHelper.CalculateChunkParameters(periodInSeconds, samplesPerSecond);
+
+                    this.PrepareVariable(groupId, variableContext.VariableDescription, chunkLength, chunkCount);
                 }
 
                 // file -> chunk info
                 IOHelper.PrepareAttribute(groupId, "last_completed_chunk", new long[] { -1 }, new ulong[] { 1 }, true);
                 typeId = TypeConversionHelper.GetHdfTypeIdFromType(_fileId, typeof(byte));
-                datasetId = IOHelper.OpenOrCreateDataset(groupId, "is_chunk_completed_set", typeId, this.ChunkCount, 1).DatasetId;
+                datasetId = IOHelper.OpenOrCreateDataset(groupId, "is_chunk_completed_set", typeId, 1440, 1).DatasetId;
             }
             catch
             {
@@ -241,7 +244,7 @@ namespace OneDas.Extension.Hdf
                 var elementType = OneDasUtilities.GetTypeFromOneDasDataType(variableContext.VariableDescription.DataType);
                 var campaignDescription = this.DataWriterContext.CampaignDescription;
 
-                groupId = H5G.open(_fileId, $"/{campaignDescription.PrimaryGroupName}/{campaignDescription.SecondaryGroupName}/{campaignDescription.CampaignName}/{variableContext.VariableDescription.Guid.ToString()}");
+                groupId = H5G.open(_fileId, $"/{campaignDescription.PrimaryGroupName}/{campaignDescription.SecondaryGroupName}/{campaignDescription.CampaignName}/{variableContext.VariableDescription.Guid}");
 
                 // dataset
                 var datasetName = variableContext.VariableDescription.DatasetName;
@@ -317,7 +320,7 @@ namespace OneDas.Extension.Hdf
             }
         }
 
-        private void PrepareVariable(long locationId, VariableDescription variableDescription)
+        private void PrepareVariable(long locationId, VariableDescription variableDescription, ulong chunkLength, ulong chunkCount)
         {
             long groupId = -1;
             long datasetId = -1;
@@ -328,12 +331,6 @@ namespace OneDas.Extension.Hdf
 
             try
             {
-                // chunk length
-                var chunkLength = this.TimeSpanToIndex(this.ChunkPeriod, variableDescription.SampleRate);
-
-                if (chunkLength <= 0)
-                    throw new Exception(ErrorMessage.HdfWriter_SampleRateTooLow);
-
                 // group (GUID)
                 groupId = IOHelper.OpenOrCreateGroup(locationId, variableDescription.Guid.ToString()).GroupId;
 
@@ -349,13 +346,13 @@ namespace OneDas.Extension.Hdf
                 // dataset (native)
                 datasetName = variableDescription.DatasetName;
                 datasetTypeId = TypeConversionHelper.GetHdfTypeIdFromType(OneDasUtilities.GetTypeFromOneDasDataType(variableDescription.DataType));
-                datasetId = IOHelper.OpenOrCreateDataset(groupId, datasetName, datasetTypeId, chunkLength, this.ChunkCount).DatasetId;
+                datasetId = IOHelper.OpenOrCreateDataset(groupId, datasetName, datasetTypeId, chunkLength, chunkCount).DatasetId;
 
                 // dataset (status)
                 if (variableDescription.BufferType == BufferType.Extended)
                 {
                     datasetName = $"{datasetName}_status";
-                    datasetId_status = IOHelper.OpenOrCreateDataset(groupId, datasetName, H5T.NATIVE_UINT8, chunkLength, this.ChunkCount).DatasetId;
+                    datasetId_status = IOHelper.OpenOrCreateDataset(groupId, datasetName, H5T.NATIVE_UINT8, chunkLength, chunkCount).DatasetId;
                 }
             }
             finally
@@ -368,10 +365,15 @@ namespace OneDas.Extension.Hdf
             }          
         }
 
+        private ulong ToChunkIndex(ulong offset, SampleRateContainer sampleRate)
+        {
+            var length = _chunkPeriod.TotalSeconds * (double)sampleRate.SamplesPerSecond;
+            return (ulong)(offset / length);
+        }
+
         private void CloseHdfFile(long fileId)
         {
-            if (H5I.is_valid(fileId) > 0)
-                H5F.close(fileId);
+            if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
         }
 
         #endregion

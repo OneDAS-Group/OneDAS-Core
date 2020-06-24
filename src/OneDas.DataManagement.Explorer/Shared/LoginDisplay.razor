@@ -1,8 +1,18 @@
-﻿<div class="login-display">
+﻿@inject AppStateViewModel AppState
+
+<div class="login-display">
     <AuthorizeView>
         <Authorized>
 
             @*<a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>*@
+
+            <AuthorizeView Policy="RequireAdmin" Context="_">
+                <Authorized>
+                    <div class="mdc-button @(this.AppState.IsEditEnabled ? "active" : "")" @onclick="() => this.AppState.IsEditEnabled = !this.AppState.IsEditEnabled">
+                        <i class="far fa-edit" aria-hidden="true"></i> &nbsp; Edit
+                    </div>
+                </Authorized>
+            </AuthorizeView>
 
             <a href="Identity/Account/Manage">
                 <div class="mdc-button">
@@ -18,7 +28,7 @@
                         </div>
                     </NavLink>
                 </Authorized>
-            </AuthorizeView>          
+            </AuthorizeView>
 
             <form method="post" action="Identity/Account/LogOut">
                 <button type="submit" class="submit-button">

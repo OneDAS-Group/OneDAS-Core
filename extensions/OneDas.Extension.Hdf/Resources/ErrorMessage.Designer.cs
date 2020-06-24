@@ -122,14 +122,5 @@ namespace OneDas.Extension.Hdf {
                 return ResourceManager.GetString("HdfWriter_HdfLibraryNotThreadSafe", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The sample rate is too low. ähnelt.
-        /// </summary>
-        internal static string HdfWriter_SampleRateTooLow {
-            get {
-                return ResourceManager.GetString("HdfWriter_SampleRateTooLow", resourceCulture);
-            }
-        }
     }
 }

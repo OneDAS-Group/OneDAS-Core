@@ -1,10 +1,10 @@
-﻿using OneDas.Infrastructure;
+﻿using OneDas.DataManagement.Database;
 
 namespace OneDas.Hdf.VdsTool
 {
     public class AggregationBufferData
     {
-        public AggregationBufferData(Period period)
+        public AggregationBufferData(AggregationPeriod period)
         {
             this.Buffer = new double[86400 / (int)period];
         }

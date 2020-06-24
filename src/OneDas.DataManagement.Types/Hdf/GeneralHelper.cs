@@ -12,7 +12,15 @@ namespace OneDas.DataManagement.Hdf
 {
     public static class GeneralHelper
     {
-        private static object campaignInfo;
+        public static (ulong, ulong) CalculateChunkParameters(ulong periodInSeconds, decimal samplesPerSecond)
+        {
+            var maxChunkLength = 4096UL;
+            var length = (ulong)(periodInSeconds * samplesPerSecond);
+            var chunkLength = GeneralHelper.FindLargestDivisor(length, maxChunkLength);
+            var chunkCount = length / chunkLength;
+
+            return (chunkLength, chunkCount);
+        }
 
         public static (ulong start, ulong block) GetStartAndBlock(DateTime begin, DateTime end, ulong samplesPerDay)
         {
@@ -28,17 +36,17 @@ namespace OneDas.DataManagement.Hdf
             return (start, block);
         }
 
-        public static void UpdateCampaigns(long fileId, List<CampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static void UpdateCampaigns(long fileId, List<HdfCampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
         {
             GeneralHelper.InternalUpdateCampaigns(fileId, campaigns, null, updateSourceFileMap);
         }
 
-        public static CampaignInfo GetCampaign(long fileId, string campaignGroupPath)
+        public static HdfCampaignInfo GetCampaign(long fileId, string campaignGroupPath)
         {
             return GeneralHelper.InternalUpdateCampaigns(fileId, null, campaignGroupPath, null).FirstOrDefault();
         }
 
-        public static List<CampaignInfo> GetCampaigns(long fileId)
+        public static List<HdfCampaignInfo> GetCampaigns(long fileId)
         {
             return GeneralHelper.InternalUpdateCampaigns(fileId, null, null, null);
         }
@@ -57,15 +65,15 @@ namespace OneDas.DataManagement.Hdf
             H5E.set_auto(H5E.DEFAULT, func, clientData);
         }
 
-        public static List<CampaignInfo> InternalUpdateCampaigns(long fileId,
-                                                                     List<CampaignInfo> campaigns = null,
+        public static List<HdfCampaignInfo> InternalUpdateCampaigns(long fileId,
+                                                                     List<HdfCampaignInfo> campaigns = null,
                                                                      string campaignGroupPath = "",
                                                                      UpdateSourceFileMapDelegate updateSourceFileMap = null)
         {
             var idx = 0UL;
 
             if (campaigns == null)
-                campaigns = new List<CampaignInfo>();
+                campaigns = new List<HdfCampaignInfo>();
 
             GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
 
@@ -135,7 +143,7 @@ namespace OneDas.DataManagement.Hdf
 
                                 if (currentCampaign == null)
                                 {
-                                    currentCampaign = new CampaignInfo(fullName);
+                                    currentCampaign = new HdfCampaignInfo(fullName);
                                     campaigns.Add(currentCampaign);
                                 }
 
@@ -247,13 +255,13 @@ namespace OneDas.DataManagement.Hdf
 
             foreach (var variable in campaign.Variables.Take(probingCount))
             {
-                if (GeneralHelper.TryGetMappingDate(fileId, variable, first: true, out var firstDate))
+                if (GeneralHelper.TryGetHdfMappingDate(fileId, variable, first: true, out var firstDate))
                 {
                     if (firstDate < minDate)
                         minDate = firstDate;
                 }
 
-                if (GeneralHelper.TryGetMappingDate(fileId, variable, first: false, out var lastDate))
+                if (GeneralHelper.TryGetHdfMappingDate(fileId, variable, first: false, out var lastDate))
                 {
                     if (lastDate > maxDate)
                         maxDate = lastDate;
@@ -264,7 +272,7 @@ namespace OneDas.DataManagement.Hdf
             campaign.CampaignEnd = maxDate;
         }
 
-        private static bool TryGetMappingDate(long fileId, VariableInfo variable, bool first, out DateTime mappingDate)
+        private static bool TryGetHdfMappingDate(long fileId, VariableInfo variable, bool first, out DateTime mappingDate)
         {
             long groupId1 = -1;
             long datasetId1 = -1;
@@ -347,6 +355,66 @@ namespace OneDas.DataManagement.Hdf
             }
 
             return false;
+        }
+
+        private static ulong FindLargestDivisor(ulong length, ulong limit)
+        {
+            if (length < limit)
+                return length;
+
+            var primes = GeneralHelper.Factorize(length)
+                .GroupBy(value => value)
+                .Select(group => group.Aggregate(1UL, (previous, next) => previous * next))
+                .Where(prime => prime <= limit)
+                .ToList();
+
+            var products = GeneralHelper.Powerset(primes)
+                .Select(combo => combo.Aggregate(1UL, (previous, next) => previous * next))
+                .ToList();
+
+            products.Sort();
+
+            var result = products.LastOrDefault(value => value <= limit);
+
+            return result;
+        }
+
+        private static List<ulong> Factorize(ulong number)
+        {
+            var primes = new List<ulong>();
+
+            for (ulong div = 2; number > 1; div++)
+            {
+                if (number % div == 0)
+                {
+                    while (number % div == 0)
+                    {
+                        number /= div;
+                        primes.Add(div);
+                    }
+                }
+            }
+
+            return primes;
+        }
+
+        private static List<List<T>> Powerset<T>(List<T> list)
+        {
+            var comboCount = (int)Math.Pow(2, list.Count) - 1;
+            var result = new List<List<T>>();
+
+            for (int i = 1; i < comboCount + 1; i++)
+            {
+                result.Add(new List<T>());
+
+                for (int j = 0; j < list.Count; j++)
+                {
+                    if ((i >> j) % 2 != 0)
+                        result.Last().Add(list[j]);
+                }
+            }
+
+            return result;
         }
     }
 }

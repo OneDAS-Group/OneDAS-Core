@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using OneDas.DataManagement.Infrastructure;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +24,10 @@ namespace OneDas.DataManagement.Connector
         private HttpClient _httpClient;
         private HubConnection _connection;
 
+        private int _channelCount;
+        private int _channelIndex;
+        private bool _isStream;
+
         #endregion
 
         #region Constructors
@@ -36,8 +41,21 @@ namespace OneDas.DataManagement.Connector
 
         #region Methods
 
-        public OneDasConnector(string hostName, int port, Action<string> logAction, string userName = "default", string password = "default", bool secure = false)
+        public OneDasConnector(string hostName, int port, Action<string> logAction, string userName = "", string password = "", bool secure = false)
         {
+            // base url
+            var scheme = secure ? "https" : "http";
+
+            var loginUrlBuilder = new UriBuilder()
+            {
+                Scheme = scheme,
+                Host = hostName,
+                Port = port,
+            };
+
+            _baseUrl = loginUrlBuilder.ToString();
+
+            // http client
             _httpClient = new HttpClient();
 
             // logging
@@ -49,18 +67,18 @@ namespace OneDas.DataManagement.Connector
             // callbacks
             _connection.On("Downloader.ProgressChanged", (double progress, string message) =>
             {
-                _logger?.Log($"{progress * 100,3:0}%: {message}\n");
-            });
+                if (_isStream)
+                    progress = (_channelIndex + progress) / _channelCount;
 
-            _connection.On("Downloader.Error", (string message) =>
-            {
-                _logger?.Log($"An error occured: '{message}'.\n");
+                _logger?.Log($"{progress * 100,3:0}%: {message}\n");
             });
         }
 
-        public async Task ExportAsync(ExportSettings settings, string targetDirectoryPath)
+        public async Task ExportAsync(DateTime begin, DateTime end, FileFormat fileFormat, FileGranularity fileGranularity, List<string> channelNames, string targetDirectoryPath)
         {
             var url = string.Empty;
+
+            _isStream = false;
 
             try
             {
@@ -68,11 +86,11 @@ namespace OneDas.DataManagement.Connector
 
                 var reader = await _connection.StreamAsChannelAsync<string>(
                                 "ExportData",
-                                settings.DateTimeBegin,
-                                settings.DateTimeEnd,
-                                settings.FileFormat,
-                                settings.FileGranularity,
-                                settings.ChannelNames);
+                                begin,
+                                end,
+                                fileFormat,
+                                fileGranularity,
+                                channelNames);
 
                 while (await reader.WaitToReadAsync())
                 {
@@ -89,55 +107,58 @@ namespace OneDas.DataManagement.Connector
 
             var downloadFilePath = Path.GetTempFileName();
 
-            try
+            // download data
+            _logger.Log($"Downloading ZIP file from {_baseUrl}{url} to {downloadFilePath}.\n");
+
+            var webClient = new WebClient();
+            webClient.DownloadFile($"{_baseUrl}{url}", downloadFilePath);
+
+            // unzip data
+            using (var archive = ZipFile.OpenRead(downloadFilePath))
             {
-                // download data
-                _logger.Log($"Downloading ZIP file from {_baseUrl}{url} to {downloadFilePath}.\n");
+                var entries = archive.Entries.ToList();
+                var count = entries.Count;
+                var index = 0;
 
-                var webClient = new WebClient();
-                webClient.DownloadFile($"{_baseUrl}{url}", downloadFilePath);
-
-                // unzip data
-                using (var archive = ZipFile.OpenRead(downloadFilePath))
+                entries.ForEach(entry =>
                 {
-                    archive.Entries.ToList().ForEach(entry =>
+                    index++;
+                    var targetFilePath = Path.Combine(targetDirectoryPath, entry.FullName);
+
+                    _logger.Log($"Extracting file {index} of {count} ('{entry.FullName}').\n");
+
+                    if (!File.Exists(targetFilePath))
                     {
-                        var entryFilePath = Path.Combine(targetDirectoryPath, entry.FullName);
-
-                        _logger.Log($"Extracting file {entry.FullName}.\n");
-
-                        if (!File.Exists(entryFilePath))
-                        {
-                            Directory.CreateDirectory(Path.GetDirectoryName(entryFilePath));
-                            ZipFileExtensions.ExtractToFile(entry, entryFilePath);
-                        }
-                    });
-                }
-            }
-            finally
-            {
-                if (File.Exists(downloadFilePath))
-                    File.Delete(downloadFilePath);
+                        Directory.CreateDirectory(targetDirectoryPath);
+                        ZipFileExtensions.ExtractToFile(entry, targetFilePath);
+                    }
+                });
             }
         }
 
-        public async Task<Dictionary<string, ChannelInfo>> LoadAsync(LoadSettings settings)
+        public async Task<Dictionary<string, ChannelInfo>> LoadAsync(DateTime begin, DateTime end, List<string> channelNames)
         {
+            _isStream = true;
+            _channelIndex = 0;
+            _channelCount = channelNames.Count;
+
             try
             {
                 await _connection.StartAsync();
-                var variables = await _connection.InvokeAsync<List<VariableInfo>>("GetChannelInfos", settings.ChannelNames);
+                var variables = await _connection.InvokeAsync<List<VariableInfo>>("GetChannelInfos", channelNames);
                 var result = new Dictionary<string, ChannelInfo>();
 
-                for (int i = 0; i < settings.ChannelNames.Count; i++)
+                for (int i = 0; i < channelNames.Count; i++)
                 {
+                    _channelIndex = i;
+
                     var totalBuffer = new double[0];
-                    var channelName = settings.ChannelNames[i];
+                    var channelName = channelNames[i];
 
                     var reader = await _connection.StreamAsChannelAsync<double[]>(
                                     "StreamData",
-                                    settings.DateTimeBegin,
-                                    settings.DateTimeEnd,
+                                    begin,
+                                    end,
                                     channelName);
 
                     while (await reader.WaitToReadAsync())
@@ -162,14 +183,6 @@ namespace OneDas.DataManagement.Connector
         {
             var scheme = secure ? "https" : "http";
 
-            var loginUrlBuilder = new UriBuilder()
-            {
-                Scheme = scheme,
-                Host = hostName,
-                Port = port,
-                Path = "identity/account/generatetoken"
-            };
-
             var hubUrlBuilder = new UriBuilder()
             {
                 Scheme = scheme,
@@ -178,13 +191,31 @@ namespace OneDas.DataManagement.Connector
                 Path = hubName
             };
 
-            return new HubConnectionBuilder()
-                 .WithUrl(hubUrlBuilder.ToString(), options =>
-                 {
-                     options.AccessTokenProvider = async () => await this.GetJwtToken(loginUrlBuilder.ToString(), username, password);
-                 })
-                 .AddMessagePackProtocol()
-                 .Build();
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return new HubConnectionBuilder()
+                     .WithUrl(hubUrlBuilder.ToString())
+                     .AddMessagePackProtocol()
+                     .Build();
+            }
+            else
+            {
+                var loginUrlBuilder = new UriBuilder()
+                {
+                    Scheme = scheme,
+                    Host = hostName,
+                    Port = port,
+                    Path = "identity/account/generatetoken"
+                };
+
+                return new HubConnectionBuilder()
+                     .WithUrl(hubUrlBuilder.ToString(), options =>
+                     {
+                         options.AccessTokenProvider = async () => await this.GetJwtToken(loginUrlBuilder.ToString(), username, password);
+                     })
+                     .AddMessagePackProtocol()
+                     .Build();
+            }
         }
 
         private async Task<string> GetJwtToken(string url, string username, string password)

@@ -6,7 +6,7 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public class ZipSettings
     {
-        public ZipSettings(CampaignInfo campaign,
+        public ZipSettings(SparseCampaignInfo campaign,
                            DataReaderExtensionBase nativeDataReader,
                            DataReaderExtensionBase aggregationDataReader,
                            DateTime begin,
@@ -24,7 +24,7 @@ namespace OneDas.DataManagement.Explorer.Core
         }
 
 
-        public CampaignInfo Campaign { get; }
+        public SparseCampaignInfo Campaign { get; }
 
         public DataReaderExtensionBase NativeDataReader { get; }
 

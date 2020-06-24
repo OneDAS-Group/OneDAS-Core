@@ -44,6 +44,12 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         #region Methods
 
+        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
+        {
+#warning Always check that begin comes before end (applies also to other hub methods). Otherwise this could cause an overflow exception.
+            return _dataService.GetDataAvailabilityStatisticsAsync(campaignId, begin, end);
+        }
+
         public Task<List<VariableInfo>> GetChannelInfos(List<string> channelNames)
         {
             // translate channel names
@@ -60,7 +66,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
             foreach (var campaign in campaigns)
             {
-                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
                     throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
             }
 
@@ -76,11 +82,97 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<string>();
+            var client = this.Clients.Client(this.Context.ConnectionId);
 
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => this.InternalExportData(channel.Writer, remoteIpAddress, begin, end, fileFormat, fileGranularity, channelNames, cancellationToken));
+            _ = Task.Run(async () => 
+            {
+                Exception localException = null;
+
+                try
+                {
+                    _stateManager.CheckState();
+
+                    var datasets = channelNames.Select(channelName =>
+                    {
+                        if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
+                            throw new Exception($"Could not find the channel with name '{channelName}'.");
+
+                        // security check comes later in DataService
+
+                        return dataset;
+                    }).ToList();
+
+                    if (!datasets.Any())
+                        throw new Exception("The list of channel names is empty.");
+
+                    await this.InternalExportData(channel.Writer,
+                                            remoteIpAddress,
+                                            begin,
+                                            end,
+                                            fileFormat,
+                                            fileGranularity,
+                                            datasets,
+                                            cancellationToken,
+                                            client);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    localException = ex;
+                }
+
+                channel.Writer.TryComplete(localException);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<string> ExportDataByGroup(DateTime begin,
+                                                DateTime end,
+                                                FileFormat fileFormat,
+                                                FileGranularity fileGranularity,
+                                                string groupPath,
+                                                CancellationToken cancellationToken)
+        {
+            var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
+            var channel = Channel.CreateUnbounded<string>();
+            var client = this.Clients.Client(this.Context.ConnectionId);
+
+            // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
+            // for all the items to be written before returning the channel back to
+            // the client.
+            _ = Task.Run(async () =>
+            {
+                Exception localException = null;
+
+                try
+                {
+                    _stateManager.CheckState();
+
+                    if (!_databaseManager.Database.TryFindDatasetsByGroup(groupPath, out var datasets))
+                        throw new Exception($"Could not find any channels for group path '{groupPath}'.");                     
+
+                    await this.InternalExportData(channel.Writer,
+                                            remoteIpAddress,
+                                            begin,
+                                            end,
+                                            fileFormat,
+                                            fileGranularity,
+                                            datasets,
+                                            cancellationToken,
+                                            client);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    localException = ex;
+                }
+
+                channel.Writer.TryComplete(localException);
+            });
 
             return channel.Reader;
         }
@@ -92,82 +184,61 @@ namespace OneDas.DataManagement.Explorer.Hubs
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<double[]>();
+            var client = this.Clients.Client(this.Context.ConnectionId);
 
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() => this.InternalStreamData(channel.Writer, remoteIpAddress, begin, end, channelName, cancellationToken));
+            _ = Task.Run(() =>
+            {
+                this.InternalStreamData(channel.Writer,
+                                        remoteIpAddress,
+                                        begin,
+                                        end,
+                                        channelName,
+                                        cancellationToken,
+                                        client);
+            });
 
             return channel.Reader;
         }
 
-        private async void InternalExportData(ChannelWriter<string> writer,
+        private async Task InternalExportData(ChannelWriter<string> writer,
                                               IPAddress remoteIpAddress,
                                               DateTime begin,
                                               DateTime end,
                                               FileFormat fileFormat,
                                               FileGranularity fileGranularity,
-                                              List<string> channelNames,
-                                              CancellationToken cancellationToken)
+                                              List<DatasetInfo> datasets,
+                                              CancellationToken cancellationToken,
+                                              IClientProxy client)
         {
-            Exception localException = null;
-
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
             DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
+            var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
+            {
+                client.SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
+            });
+
+            _dataService.Progress.ProgressChanged += handler;
+
             try
             {
-                _stateManager.CheckState();
+                var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
 
-                if (!channelNames.Any())
-                    throw new Exception("The list of channel names is empty.");
+                if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
+                    throw new Exception("Channels with different sample rates have been requested.");
 
-                var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
-                {
-                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e.Progress, e.Message);
-                });
+                var sampleRate = sampleRates.First();
 
-                _dataService.Progress.ProgressChanged += handler;
-
-                try
-                {
-                    var datasets = channelNames.Select(channelName =>
-                    {
-                        if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
-                            throw new Exception($"Could not find the channel with name '{channelName}'.");
-
-                        // security check comes later in DataService
-
-                        return dataset;
-                    }).ToList();
-
-                    var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
-
-                    if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
-                        throw new Exception("Channels with different sample rates have been requested.");
-
-                    var sampleRate = sampleRates.First();
-
-                    var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
-                    await writer.WriteAsync(url, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    await this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.Error", ex.Message);
-                    throw;
-                }
-                finally
-                {
-                    _dataService.Progress.ProgressChanged -= handler;
-                }
+                var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
+                await writer.WriteAsync(url, cancellationToken);
             }
-            catch (Exception ex)
+            finally
             {
-                _logger.LogError(ex.Message);
-                localException = ex;
+                _dataService.Progress.ProgressChanged -= handler;
             }
-
-            writer.TryComplete(localException);
         }
 
         public void InternalStreamData(ChannelWriter<double[]> writer,
@@ -175,7 +246,8 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                        DateTime begin,
                                        DateTime end,
                                        string channelName,
-                                       CancellationToken cancellationToken)
+                                       CancellationToken cancellationToken,
+                                       IClientProxy client)
         {
             Exception localException = null;
 
@@ -187,7 +259,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
+            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ...";
             _logger.LogInformation(message);
 
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
@@ -204,16 +276,16 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 var campaign = (CampaignInfo)dataset.Parent.Parent;
 
                 // security check
-                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign, _databaseManager.Config.RestrictedCampaigns))
+                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
                     throw new UnauthorizedAccessException($"The current user is not authorized to access the campaign '{campaign.Id}'.");
 
                 // dataReader
-                var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.AggregationDataReader;
+                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.GetAggregationDataReader();
 
                 // progress changed event handling
                 var handler = (EventHandler<double>)((sender, e) =>
                 {
-                    this.Clients.Client(this.Context.ConnectionId).SendAsync("Downloader.ProgressChanged", e, "Loading data ...", cancellationToken);
+                    client.SendAsync("Downloader.ProgressChanged", e, "Loading data ...", cancellationToken);
                 });
 
                 dataReader.Progress.ProgressChanged += handler;
@@ -231,7 +303,16 @@ namespace OneDas.DataManagement.Explorer.Hubs
                         else
                             doubleData = (double[])dataRecord.Dataset;
 
-                        await writer.WriteAsync(doubleData, cancellationToken);
+                        // avoid throwing an uncatched exception here because this would crash the app
+                        // the task in cancelled anyway
+                        try
+                        {
+                           await writer.WriteAsync(doubleData, cancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _logger.LogWarning($"{message} Cancelled.");
+                        }
                     }, cancellationToken);
                 }
                 finally
@@ -241,7 +322,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError($"{message} {ex.Message}");
                 localException = ex;
             }
 

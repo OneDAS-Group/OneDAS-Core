@@ -1,4 +1,4 @@
-﻿using OneDas.Infrastructure;
+using OneDas.Infrastructure;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -7,25 +7,36 @@ namespace OneDas.Buffers
 {
     public static class BufferUtilities
     {
+        public static unsafe double[] ToDouble<T>(Span<T> dataset) where T : unmanaged
+        {
+            var doubleData = new double[dataset.Length];
+
+            fixed (T* dataPtr = dataset)
+            {
+                BufferUtilities.InternalToDouble(dataPtr, doubleData);
+            }
+
+            return doubleData;
+        }
+
         public unsafe static double[] ApplyDatasetStatus<T>(Span<T> dataset, Span<byte> status) where T : unmanaged
         {
-            var dataset_double = new double[dataset.Length];
+            var doubleData = new double[dataset.Length];
 
-            fixed (T* bufferPtr = dataset)
+            fixed (T* dataPtr = dataset)
             {
-                fixed (byte* statusBufferPtr = status)
+                fixed (byte* statusPtr = status)
                 {
-                    var usafeOps = new UnsafeOps<T>(bufferPtr, statusBufferPtr, dataset_double);
-                    Parallel.For(0, dataset.Length, usafeOps.Lambda);
+                    BufferUtilities.InternalApplyDatasetStatus(dataPtr, statusPtr, doubleData);
                 }
             }
 
-            return dataset_double;
+            return doubleData;
         }
 
         public static double[] ApplyDatasetStatus2(Array dataset, byte[] status)
         {
-            var methodName = nameof(BufferUtilities.InternalApplyDatasetStatus);
+            var methodName = nameof(BufferUtilities.ForwardApplyDatasetStatus);
             var flags = BindingFlags.NonPublic | BindingFlags.Static;
             var genericType = dataset.GetType().GetElementType();
             var parameters = new object[] { dataset, status };
@@ -46,31 +57,31 @@ namespace OneDas.Buffers
             return (IExtendedBuffer)Activator.CreateInstance(type, length);
         }
 
-        private unsafe static double[] InternalApplyDatasetStatus<T>(T[] dataset, byte[] status) where T : unmanaged
+        internal static unsafe void InternalToDouble<T>(T* dataPtr, double[] doubleData) where T : unmanaged
         {
-            return BufferUtilities.ApplyDatasetStatus<T>(dataset, status);
+            Parallel.For(0, doubleData.Length, i =>
+            {
+                doubleData[i] = GenericToDouble<T>.ToDouble(dataPtr[i]);
+            });
         }
 
-        private unsafe class UnsafeOps<T> where T : unmanaged
+        private unsafe static void InternalApplyDatasetStatus<T>(T* dataPtr, byte* statusPtr, double[] doubleData) where T : unmanaged
         {
-            private T* _bufferPtr;
-            private byte* _statusBufferPtr;
-            private double[] _dataset_double;
-
-            public UnsafeOps(T* bufferPtr, byte* statusBufferPtr, double[] dataset_double)
+            Parallel.For(0, doubleData.Length, i =>
             {
-                _bufferPtr = bufferPtr;
-                _statusBufferPtr = statusBufferPtr;
-                _dataset_double = dataset_double;
-            }
-
-            public unsafe void Lambda(int i)
-            {
-                if (_statusBufferPtr[i] != 1)
-                    _dataset_double[i] = double.NaN;
+                if (statusPtr[i] != 1)
+                    doubleData[i] = double.NaN;
                 else
-                    _dataset_double[i] = GenericToDouble<T>.ToDouble(_bufferPtr[i]);
-            }
+                    doubleData[i] = GenericToDouble<T>.ToDouble(dataPtr[i]);
+            });
+        }
+
+        private static double[] ForwardApplyDatasetStatus<T>(T[] dataset, byte[] status) where T : unmanaged
+        {
+            // This method is only required to correctly cast:
+            // dataset: Array  -> Span<T>    (desired)         Array  -> object -> T[]    -> Span<T> (actual)   
+            //  status: byte[] -> Span<byte> (desired)         byte[] -> object -> byte[] -> Span<T> (actual)   
+            return BufferUtilities.ApplyDatasetStatus<T>(dataset, status);
         }
     }
 }

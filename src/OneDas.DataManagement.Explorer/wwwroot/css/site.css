@@ -1,3 +1,8 @@
+@font-face {
+    font-family: Roboto;
+    src: url(../fonts/Roboto-Regular.ttf)
+}
+
 :root {
     --nav-bg-color: #0d343e;
     --main-bg-color: #215d6a;
@@ -5,6 +10,7 @@
     --font-color: rgba(0, 0, 0, 1);
     --font-color-inverse: rgba(255, 255, 255, 1);
     --font-color-subtitle: rgba(0, 0, 0, 0.54);
+    --font-color-highlight: rgb(255, 96, 0);
     --hover-color: rgba(136, 14, 79, 0.80);
     --hover-bg-color: rgba(255, 255, 255, 0.6);
     --active-color: rgba(136,14,79,1);
@@ -85,6 +91,10 @@ app {
         color: var(--box-color) !important;
         margin-left: 15px;
     }
+
+        .login-display .mdc-button.active {
+            border-bottom: 1px solid var(--active-color);
+        }
 
     .login-display .submit-button {
         border: none;
@@ -269,6 +279,23 @@ app {
         scrollbar-color: darkgray #fff0;
         scrollbar-width: thin;
     }
+
+.campaign-item .small-text {
+    font-size: 0.875rem;
+}
+
+.campaign-item {
+    cursor: pointer;
+    padding: 5px 15px 5px 15px;
+}
+
+.campaign-item:hover {
+    background-color: var(--hover-bg-color);
+}
+
+.campaign-item.active {
+    color: var(--active-color);
+}
 
 .campaign-box-selected {
     display: flex;
@@ -515,6 +542,26 @@ app {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+    .variable-description > input {
+        width: 98%;
+    }
+
+.variable-special-info {
+    font-size: 0.9rem;
+    color: var(--font-color-highlight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .variable-special-info svg {
+        margin-left: 0.5rem;
+    }
+
+    .variable-special-info input {
+        margin-left: 0.5rem;
+    }
 
 .right-column {
     display: flex;
