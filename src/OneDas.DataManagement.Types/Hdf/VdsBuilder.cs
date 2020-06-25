@@ -1,5 +1,6 @@
 ﻿using HDF.PInvoke;
 using Microsoft.Extensions.Logging;
+using OneDas.DataManagement;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Hdf;
 using System;
@@ -10,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace OneDas.Hdf.VdsTool.Commands
 {
-    public class VdsCommand
+    public class VdsBuilder
     {
         #region Fields
 
@@ -25,7 +26,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Constructors
 
-        public VdsCommand(DateTime epochStart, ILogger logger)
+        public VdsBuilder(DateTime epochStart, ILogger logger)
         {
             _epochStart = epochStart;
             _logger = logger;

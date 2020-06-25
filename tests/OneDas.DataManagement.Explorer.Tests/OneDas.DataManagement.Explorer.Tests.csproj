@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.Hdf.VdsTool\OneDas.Hdf.VdsTool.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj" />
   </ItemGroup>
 
 </Project>

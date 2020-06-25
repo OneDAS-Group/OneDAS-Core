@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.1.0" />
     <PackageReference Include="BlazorInputFile" Version="0.1.0-preview-00002" />
     <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />

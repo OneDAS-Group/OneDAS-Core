@@ -46,7 +46,7 @@ namespace OneDas.DataManagement
             _loggerFactory = loggerFactory;
 
             // config
-            var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
+            var filePath = Path.Combine(Environment.CurrentDirectory, "dbconfig.json");
 
             if (File.Exists(filePath))
             {
@@ -213,7 +213,7 @@ namespace OneDas.DataManagement
 
         public void SaveConfig(OneDasDatabaseConfig config)
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, "config.json");
+            var filePath = Path.Combine(Environment.CurrentDirectory, "dbconfig.json");
             var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true });
 
             File.WriteAllText(filePath, jsonString);

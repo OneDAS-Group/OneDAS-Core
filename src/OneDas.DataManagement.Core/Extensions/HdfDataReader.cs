@@ -1,13 +1,16 @@
 ﻿using HDF.PInvoke;
+using IwesOneDas;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
+using OneDas.Hdf.VdsTool.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -19,6 +22,8 @@ namespace OneDas.DataManagement.Extensions
         private string _filePath;
         private long _fileId = -1;
         private static object _lock;
+        private string _configFilePath;
+        private HdfConfig _config;
 
         #endregion
 
@@ -33,6 +38,14 @@ namespace OneDas.DataManagement.Extensions
         {
             _filePath = Path.Combine(this.RootPath, "VDS.h5");
             _fileId = H5F.open(_filePath, H5F.ACC_RDONLY);
+
+            // load config
+            _configFilePath = Path.Combine(this.RootPath, "config.json");
+
+            if (!File.Exists(_configFilePath))
+                throw new Exception($"The configuration file does not exist on path '{_configFilePath}'.");
+
+            _config = HdfConfig.Load(_configFilePath);
         }
 
         #endregion
@@ -70,6 +83,32 @@ namespace OneDas.DataManagement.Extensions
 
         protected override List<CampaignInfo> LoadCampaigns()
         {
+            // ensure that VDS files are up to date
+            var date = DateTime.UtcNow.Date;
+
+            if ((date - _config.LastScan).TotalDays > 1)
+            {
+#warning Replace this by an json based scan mechanism like for the DWG data (other project).
+                DateTime epochStart;
+
+                epochStart = new DateTime(date.Year, date.Month, 1).AddMonths(-1);
+                new VdsBuilder(epochStart, this.Logger).Run();
+
+                epochStart = new DateTime(date.Year, date.Month, 1);
+                new VdsBuilder(epochStart, this.Logger).Run();
+
+                epochStart = DateTime.MinValue;
+                new VdsBuilder(epochStart, this.Logger).Run();
+            }
+
+            _config.LastScan = date;
+
+            var options = new JsonSerializerOptions() { WriteIndented = true };
+            var jsonString2 = JsonSerializer.Serialize(_config, options);
+
+            File.WriteAllText(_configFilePath, jsonString2);
+
+            // load campaigns
             var campaigns = GeneralHelper.GetCampaigns(_fileId).Select(hdfCampaign => hdfCampaign.ToCampaign()).ToList();
 
             lock (_lock)

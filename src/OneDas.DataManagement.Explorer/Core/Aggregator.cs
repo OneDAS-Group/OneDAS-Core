@@ -1,12 +1,13 @@
 ﻿using HDF.PInvoke;
 using MathNet.Numerics.Statistics;
 using Microsoft.Extensions.Logging;
-using OneDas.DataManagement;
+using Microsoft.Extensions.Logging.Abstractions;
+using OneDas.Buffers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
-using OneDas.Buffers;
 using OneDas.Infrastructure;
+using OneDas.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,17 +16,14 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 
-namespace OneDas.Hdf.VdsTool.Commands
+namespace OneDas.DataManagement.Explorer.Core
 {
-    public class AggregateCommand
+    public class Aggregator
     {
         #region Fields
 
-        private uint _days;
         private uint _aggregationChunkSizeMb;
-        private bool _force;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
 
@@ -35,11 +33,9 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Constructors
 
-        public AggregateCommand(uint days, uint aggregationChunkSizeMb, bool force, ILogger logger, ILoggerFactory loggerFactory)
+        public Aggregator(uint aggregationChunkSizeMb, ILogger logger, ILoggerFactory loggerFactory)
         {
-            _days = days;
             _aggregationChunkSizeMb = aggregationChunkSizeMb;
-            _force = force;
             _logger = logger;
             _loggerFactory = loggerFactory;
         }
@@ -48,25 +44,25 @@ namespace OneDas.Hdf.VdsTool.Commands
 
         #region Methods
 
-        public void Run()
+        public void Run(uint days, bool force)
         {
             _databaseManager = new OneDasDatabaseManager(NullLogger.Instance, _loggerFactory);
             _databaseManager.Update();
 
             var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();
             var epochEnd = DateTime.UtcNow.Date;
-            var epochStart = epochEnd.AddDays(-_days);
+            var epochStart = epochEnd.AddDays(-days);
 
             foreach (var campaignName in campaignNames)
             {
-                for (int i = 0; i <= _days; i++)
+                for (int i = 0; i <= days; i++)
                 {
-                    this.CreateAggregatedFiles(campaignName, epochStart.AddDays(i));
+                    this.CreateAggregatedFiles(campaignName, epochStart.AddDays(i), force);
                 }
             }
         }
 
-        private void CreateAggregatedFiles(string campaignName, DateTime date)
+        private void CreateAggregatedFiles(string campaignName, DateTime date, bool force)
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DATA", subfolderName);
@@ -113,7 +109,7 @@ namespace OneDas.Hdf.VdsTool.Commands
                     }
 
                     // campaignInfo
-                    this.AggregateCampaign(dataReader, campaign, date, targetFileId);
+                    this.AggregateCampaign(dataReader, campaign, date, targetFileId, force);
                 }
                 finally
                 {
@@ -122,11 +118,11 @@ namespace OneDas.Hdf.VdsTool.Commands
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError(ex.GetFullMessage());
             }
         }
 
-        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime date, long targetFileId)
+        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime date, long targetFileId, bool force)
         {
             _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... ");
 
@@ -146,13 +142,18 @@ namespace OneDas.Hdf.VdsTool.Commands
                 OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, aggregationConfigs, date, targetFileId });
+                                                    new object[] { dataReader, dataset, aggregationConfigs, date, targetFileId, force });
             }
 
             _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... Done.");
         }
 
-        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader, DatasetInfo dataset, List<AggregationConfig> aggregationConfigs, DateTime date, long targetFileId) where T : unmanaged
+        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader,
+                                               DatasetInfo dataset,
+                                               List<AggregationConfig> aggregationConfigs,
+                                               DateTime date,
+                                               long targetFileId,
+                                               bool force) where T : unmanaged
         {
             _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... ");
 
@@ -197,7 +198,7 @@ namespace OneDas.Hdf.VdsTool.Commands
 
                     var targetDatasetPath = $"{groupPath}/{(int)setup.Period} s_{methodIdentifier}";
 
-                    if (_force || !IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                    if (force || !IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
                     {
                         // buffer data
                         var bufferData = new AggregationBufferData(setup.Period);

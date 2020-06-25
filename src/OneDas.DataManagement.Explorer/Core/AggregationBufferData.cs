@@ -1,6 +1,6 @@
 ﻿using OneDas.DataManagement.Database;
 
-namespace OneDas.Hdf.VdsTool
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class AggregationBufferData
     {

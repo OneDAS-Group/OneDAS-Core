@@ -1,7 +1,7 @@
 ﻿using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
 
-namespace OneDas.Hdf.VdsTool
+namespace OneDas.DataManagement.Explorer.Core
 {
     public class AggregationPeriodData
     {

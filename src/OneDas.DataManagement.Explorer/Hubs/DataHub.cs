@@ -5,6 +5,7 @@ using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
+using OneDas.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +121,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError(ex.GetFullMessage());
                     localException = ex;
                 }
 
@@ -167,7 +168,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError(ex.GetFullMessage());
                     localException = ex;
                 }
 
@@ -322,7 +323,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{message} {ex.Message}");
+                _logger.LogError($"{message} {ex.GetFullMessage()}");
                 localException = ex;
             }
 

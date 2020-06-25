@@ -2,20 +2,18 @@
 using System.IO;
 using System.Linq;
 
-namespace OneDas.Hdf.VdsTool.Commands
+namespace OneDas.DataManagement.Explorer.Core
 {
-    public class InitCommand
+    public class DBInitializer
     {
-        public InitCommand()
+        public void Initialize()
         {
             if (!this.IsDirectoryEmpty(Environment.CurrentDirectory))
                 throw new InvalidOperationException("The current folder is not empty.");
-        }
 
-        public void Run()
-        {
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "DATA"));
+            Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "EXPORT"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "EXTENSION"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "META"));
             Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "PRESETS"));

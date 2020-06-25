@@ -16,6 +16,8 @@ namespace OneDas.DataManagement.Explorer.Core
             this.InactivityPeriod = TimeSpan.Zero;
 
             // preset, mutable
+            this.AggregationChunkSizeMB = 200;
+            this.AggregationPeriodDays = 60;
             this.AspBaseUrl = "http://0.0.0.0:32769";
             this.Language = "en";
         }
@@ -31,6 +33,13 @@ namespace OneDas.DataManagement.Explorer.Core
         public TimeSpan InactivityPeriod { get; set; }
 
         // preset, mutable
+
+        [DataMember]
+        public uint AggregationChunkSizeMB { get; set; }
+
+        [DataMember]
+        public uint AggregationPeriodDays { get; set; }
+
         [DataMember]
         public string AspBaseUrl { get; set; }
 
@@ -38,7 +47,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public string Language { get; set; }
 
         // preset, immutable
-        public string SupportDirectoryPath { get => Path.Combine(this.DataBaseFolderPath, "SUPPORT"); }
+        public string ExportDirectoryPath { get => Path.Combine(this.DataBaseFolderPath, "EXPORT"); }
 
         public void Save(string directoryPath)
         {

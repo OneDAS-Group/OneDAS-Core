@@ -156,4 +156,7 @@
   <data name="TypeConversionHelper_CouldNotCommitDataType" xml:space="preserve">
     <value>Could not commit data type.</value>
   </data>
+  <data name="VdsCommand_CouldNotOpenFile" xml:space="preserve">
+    <value>Could not open file.</value>
+  </data>
 </root>

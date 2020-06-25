@@ -1,11 +1,12 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataManagement.Database;
-using OneDas.Hdf.VdsTool.Commands;
+using OneDas.DataManagement.Explorer.Core;
 using Xunit;
 
 namespace OneDas.Core.Tests
 {
-    public class AggregateCommandTests
+    public class AggregatorTests
     {
         [Theory]
 
@@ -24,12 +25,12 @@ namespace OneDas.Core.Tests
         public void CanAggregate1(AggregationMethod method, double nanLimit, double[] data, double expected)
         {
             // Arrange
-            var command = new AggregateCommand(1, 1, false, NullLogger.Instance);
+            var aggregator = new Aggregator(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
             var kernelSize = data.Length;
             var config = new AggregationConfig() { Method = method, Argument = "360" };
 
             // Act
-            var actual = command.ApplyAggregationFunction(config, kernelSize, data, nanLimit, NullLogger.Instance);
+            var actual = aggregator.ApplyAggregationFunction(config, kernelSize, data, nanLimit, NullLogger.Instance);
 
             // Assert
             Assert.Equal(expected, actual[0]);
@@ -45,7 +46,7 @@ namespace OneDas.Core.Tests
         public void CanAggregate2(AggregationMethod method, double nanLimit, int[] data, byte[] statusSet, double expected)
         {
             // Arrange
-            var command = new AggregateCommand(1, 1, false, NullLogger.Instance);
+            var command = new Aggregator(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
             var kernelSize = data.Length;
             var config = new AggregationConfig() { Method = method, Argument = "360" };
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OneDas.Types;
 using Prism.Mvvm;
 using System;
 
@@ -17,6 +18,7 @@ namespace OneDas.DataManagement.Explorer.Core
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private OneDasExplorerState _state;
+        private Aggregator _aggregator;
 
         #endregion
 
@@ -29,6 +31,7 @@ namespace OneDas.DataManagement.Explorer.Core
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _options = options.Value;
+            _aggregator = new Aggregator(_options.AggregationChunkSizeMB, _logger, loggerFactory);
 
             this.OnActivityTimerElapsed();
         }
@@ -101,17 +104,16 @@ namespace OneDas.DataManagement.Explorer.Core
                 try
                 {
                     _logger.LogInformation(message);
+
                     _databaseManager.Update();
+                    _aggregator.Run(_options.AggregationPeriodDays, false);
+                    _databaseManager.Update();
+
                     _logger.LogInformation($"{message} Done.");
                 }
                 catch (Exception ex)
                 {
-                    string exceptionMessage = ex.Message;
-
-                    if (ex.InnerException != null)
-                        exceptionMessage += $" Inner exception: {ex.InnerException.Message}";
-
-                    _logger.LogError($"{message} Error: {exceptionMessage}");
+                    _logger.LogError($"{message} Error: {ex.GetFullMessage()}");
                 }
                 finally
                 {

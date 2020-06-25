@@ -176,5 +176,14 @@ namespace OneDas.DataManagement {
                 return ResourceManager.GetString("TypeConversionHelper_CouldNotCommitDataType", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open file. ähnelt.
+        /// </summary>
+        internal static string VdsCommand_CouldNotOpenFile {
+            get {
+                return ResourceManager.GetString("VdsCommand_CouldNotOpenFile", resourceCulture);
+            }
+        }
     }
 }

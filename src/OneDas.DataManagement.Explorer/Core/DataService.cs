@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
+using OneDas.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -95,7 +96,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 _logger.LogInformation(message);
 
                 // zip file
-                var zipFilePath = Path.Combine(_options.SupportDirectoryPath, "EXPORT", $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
+                var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
 
                 // sampleRate
                 var samplesPerDay = sampleRate.SamplesPerDay;
@@ -150,7 +151,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError(ex.GetFullMessage());
                     throw;
                 }
 

@@ -175,7 +175,7 @@ namespace OneDas.DataManagement.Explorer
             });
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "SUPPORT", "EXPORT")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "EXPORT")),
                 RequestPath = "/export"
             });
 
