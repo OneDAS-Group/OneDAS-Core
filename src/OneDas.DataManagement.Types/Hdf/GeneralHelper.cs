@@ -3,10 +3,10 @@ using OneDas.DataManagement.Database;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace OneDas.DataManagement.Hdf
 {
@@ -34,6 +34,94 @@ namespace OneDas.DataManagement.Hdf
             var block = (ulong)Math.Ceiling((end - begin).TotalDays * samplesPerDay);
 
             return (start, block);
+        }
+
+        public static string GetCampaignNameFromFile(string filePath)
+        {
+            var fileId = H5F.open(filePath, H5F.ACC_RDONLY);
+
+            try
+            {
+                return GeneralHelper.GetCampaignNameFromFile(fileId);
+            }
+            finally
+            {
+                if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
+            }
+        }
+
+        private static string GetCampaignNameFromFile(long fileId)
+        {
+            var idx = 0UL;
+            string campaignName = string.Empty;
+
+            GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
+
+            return campaignName;
+
+            int Callback(long campaignGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
+            {
+                ulong idx2 = 0;
+
+                long groupId = -1;
+                long datasetId = -1;
+
+                H5O.type_t objectType;
+
+                try
+                {
+                    var name = Marshal.PtrToStringAnsi(intPtrName);
+                    var userData = Marshal.PtrToStringAnsi(intPtrUserData);
+                    var fullName = GeneralHelper.CombinePath(userData, name);
+                    var level = userData.Split("/".ToArray()).Count();
+
+                    // this is necessary, since H5Oget_info_by_name is slow because it wants verbose object header data 
+                    // and H5G_loc_info is not directly accessible
+                    // only chance is to modify source code (H5Oget_info_by_name)
+                    datasetId = H5D.open(campaignGroupId, name);
+
+                    if (H5I.is_valid(datasetId) > 0)
+                    {
+                        objectType = H5O.type_t.DATASET;
+                    }
+                    else
+                    {
+                        groupId = H5G.open(campaignGroupId, name);
+
+                        if (H5I.is_valid(groupId) > 0)
+                            objectType = H5O.type_t.GROUP;
+                        else
+                            objectType = H5O.type_t.UNKNOWN;
+                    }
+
+                    switch (level)
+                    {
+                        case 1:
+                        case 2:
+                            break;
+
+                        case 3:
+
+                            if (objectType == H5O.type_t.GROUP)
+                            {
+                                campaignName = fullName;
+                                return 0;
+                            }
+
+                            break;
+                    }
+
+                    if (objectType == H5O.type_t.GROUP && level < 3)
+                        H5L.iterate(groupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx2, Callback, Marshal.StringToHGlobalAnsi(fullName));
+                }
+                finally
+                {
+                    if (H5I.is_valid(groupId) > 0) { H5G.close(groupId); }
+                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+                }
+
+                return 0;
+            }
         }
 
         public static void UpdateCampaigns(long fileId, List<HdfCampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
@@ -65,7 +153,7 @@ namespace OneDas.DataManagement.Hdf
             H5E.set_auto(H5E.DEFAULT, func, clientData);
         }
 
-        public static List<HdfCampaignInfo> InternalUpdateCampaigns(long fileId,
+        private static List<HdfCampaignInfo> InternalUpdateCampaigns(long fileId,
                                                                      List<HdfCampaignInfo> campaigns = null,
                                                                      string campaignGroupPath = "",
                                                                      UpdateSourceFileMapDelegate updateSourceFileMap = null)
@@ -244,117 +332,6 @@ namespace OneDas.DataManagement.Hdf
         public static string CombinePath(string path1, string path2)
         {
             return $"{path1}/{path2}".Replace("///", "/").Replace("//", "/");
-        }
-
-        public static void UpdateCampaignStartAndEnd(long fileId, CampaignInfo campaign, int maxProbingCount)
-        {
-            DateTime minDate = DateTime.MaxValue;
-            DateTime maxDate = DateTime.MinValue;
-
-            var probingCount = Math.Min(campaign.Variables.Count, maxProbingCount);
-
-            foreach (var variable in campaign.Variables.Take(probingCount))
-            {
-                if (GeneralHelper.TryGetHdfMappingDate(fileId, variable, first: true, out var firstDate))
-                {
-                    if (firstDate < minDate)
-                        minDate = firstDate;
-                }
-
-                if (GeneralHelper.TryGetHdfMappingDate(fileId, variable, first: false, out var lastDate))
-                {
-                    if (lastDate > maxDate)
-                        maxDate = lastDate;
-                }
-            }
-
-            campaign.CampaignStart = minDate;
-            campaign.CampaignEnd = maxDate;
-        }
-
-        private static bool TryGetHdfMappingDate(long fileId, VariableInfo variable, bool first, out DateTime mappingDate)
-        {
-            long groupId1 = -1;
-            long datasetId1 = -1;
-            long dcpl1 = -1;
-
-            long fileId2 = -1;
-            long groupId2 = -1;
-            long datasetId2 = -1;
-            long dcpl2 = -1;
-
-            var length = 255;
-            var campaignName = variable.Parent.Id;
-
-            mappingDate = DateTime.MinValue;
-
-            // ensure variable
-            if (variable == null)
-                return false;
-
-            var dataset = variable.Datasets.First();
-
-            // ensure dataset
-            if (dataset == null)
-                return false;
-
-            // go and find mapping date
-            try
-            {
-                var index1 = IntPtr.Zero;
-                var stringBuilder1 = new StringBuilder(length);
-
-                groupId1 = H5G.open(fileId, GeneralHelper.CombinePath(campaignName, variable.Id));
-                datasetId1 = H5D.open(groupId1, dataset.Id);
-                dcpl1 = H5D.get_create_plist(datasetId1);
-
-                if (!first)
-                {
-                    H5P.get_virtual_count(dcpl1, ref index1);
-                    index1 -= 1;
-                }
-
-                H5P.get_virtual_filename(dcpl1, index1, stringBuilder1, new IntPtr(length));
-
-                if (File.Exists(stringBuilder1.ToString()))
-                {
-                    var index2 = IntPtr.Zero;
-                    var stringBuilder2 = new StringBuilder(length);
-
-                    fileId2 = H5F.open(stringBuilder1.ToString(), H5F.ACC_RDONLY);
-                    groupId2 = H5G.open(fileId2, GeneralHelper.CombinePath(campaignName, variable.Id));
-                    datasetId2 = H5D.open(groupId2, dataset.Id);
-                    dcpl2 = H5D.get_create_plist(datasetId2);
-
-                    if (!first)
-                    {
-                        H5P.get_virtual_count(dcpl2, ref index2);
-                        index2 -= 1;
-                    }
-
-                    H5P.get_virtual_filename(dcpl2, index2, stringBuilder2, new IntPtr(length));
-
-                    var fileName = stringBuilder2.ToString();
-                    var datePart = fileName.Substring(fileName.Length - 23, 20);
-
-                    mappingDate = DateTime.ParseExact(datePart, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime();
-
-                    return true;
-                }
-            }
-            finally
-            {
-                if (H5I.is_valid(dcpl2) > 0) { H5P.close(dcpl2); }
-                if (H5I.is_valid(datasetId2) > 0) { H5D.close(datasetId2); }
-                if (H5I.is_valid(groupId2) > 0) { H5G.close(groupId2); }
-                if (H5I.is_valid(fileId2) > 0) { H5F.close(fileId2); }
-
-                if (H5I.is_valid(dcpl1) > 0) { H5P.close(dcpl1); }
-                if (H5I.is_valid(datasetId1) > 0) { H5D.close(datasetId1); }
-                if (H5I.is_valid(groupId1) > 0) { H5G.close(groupId1); }
-            }
-
-            return false;
         }
 
         private static ulong FindLargestDivisor(ulong length, ulong limit)
