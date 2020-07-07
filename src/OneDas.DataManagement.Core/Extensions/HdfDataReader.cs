@@ -106,12 +106,12 @@ namespace OneDas.DataManagement.Extensions
                         {
                             // cache is outdated
                             if (this.IsCacheOutdated(campaignName, currentDataFolderPath, versioning))
-                                campaign = this.ScanFiles(campaignName, currentDataFolderPath);
+                                campaign = this.ScanFiles(campaignName, currentDataFolderPath, versioning);
                         }
                         // campaign is not in cache
                         else
                         {
-                            campaign = this.ScanFiles(campaignName, currentDataFolderPath);
+                            campaign = this.ScanFiles(campaignName, currentDataFolderPath, versioning);
                             campaigns.Add(campaign);
                         }
                     }
@@ -121,7 +121,7 @@ namespace OneDas.DataManagement.Extensions
                 {
                     campaigns = campaignNames.Select(campaignName =>
                     {
-                        var campaign = this.ScanFiles(campaignName, currentDataFolderPath);
+                        var campaign = this.ScanFiles(campaignName, currentDataFolderPath, versioning);
                         return campaign;
                     }).ToList();
                 }
@@ -129,11 +129,11 @@ namespace OneDas.DataManagement.Extensions
                 // (6) save cache file
                 JsonSerializerHelper.Serialize(campaigns, cacheFilePath);
 
-                currentMonth.AddMonths(1);
-            }
+                // (7) save versioning file
+                JsonSerializerHelper.Serialize(versioning, versioningFilePath);
 
-            // (7) save versioning file
-            JsonSerializerHelper.Serialize(versioning, versioningFilePath);
+                currentMonth = currentMonth.AddMonths(1);
+            }
 
             // (8) merge cache files
 #warning not yet implemented
@@ -194,14 +194,12 @@ namespace OneDas.DataManagement.Extensions
 
         private bool IsCacheOutdated(string campaignName, string dataFolderPath, HdfVersioning versioning)
         {
-            var lastFile = Directory.EnumerateFiles($"{campaignName}*.h5").Last();
-            var dateString = lastFile.Substring(lastFile.Length - 24, lastFile.Length);
-            var date = DateTime.ParseExact(dateString, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture);
-
-            return date > versioning.ScannedUntil;
+            var files = Directory.EnumerateFiles(dataFolderPath, $"{campaignName.Replace('/', '_').TrimStart('_')}*.h5");
+            var lastDateTime = this.GetLastDateTime(files);
+            return lastDateTime > versioning.ScannedUntil;
         }
 
-        private CampaignInfo ScanFiles(string campaignId, string dataFolderPath)
+        private CampaignInfo ScanFiles(string campaignId, string dataFolderPath, HdfVersioning versioning)
         {
             var files = Directory.EnumerateFiles(dataFolderPath, $"{campaignId.Replace('/', '_').TrimStart('_')}*.h5");
             var campaign = new CampaignInfo(campaignId);
@@ -226,7 +224,29 @@ namespace OneDas.DataManagement.Extensions
                 }
             }
 
+            // update scanned until
+            var scannedUntil = this.GetLastDateTime(files);
+
+            if (scannedUntil > versioning.ScannedUntil)
+                versioning.ScannedUntil = scannedUntil;
+
             return campaign;
+        }
+
+        private DateTime GetLastDateTime(IEnumerable<string> files)
+        {
+            if (files.Any())
+            {
+                var lastFile = files.Last();
+                var dateString = lastFile.Substring(lastFile.Length - 23, 20);
+                var dateTime = DateTime.ParseExact(dateString, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                return dateTime.ToUniversalTime();
+            }
+            else
+            {
+                return DateTime.MinValue;
+            }
         }
 
         public override void Dispose()
