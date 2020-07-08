@@ -43,23 +43,40 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
-        public void Merge(VariableInfo variable)
+        public void Merge(VariableInfo variable, VariableMergeMode mergeMode)
         {
             if (this.Parent.Id != variable.Parent.Id)
                 throw new Exception("The variable to be merged has a different parent.");
 
             // merge properties
-            if (string.IsNullOrWhiteSpace(this.Name))
-                this.Name = variable.Name;
+            switch (mergeMode)
+            {
+                case VariableMergeMode.OverwriteMissing:
+                    
+                    if (string.IsNullOrWhiteSpace(this.Name))
+                        this.Name = variable.Name;
 
-            if (string.IsNullOrWhiteSpace(this.Group))
-                this.Group = variable.Group;
+                    if (string.IsNullOrWhiteSpace(this.Group))
+                        this.Group = variable.Group;
 
-            if (string.IsNullOrWhiteSpace(this.Unit))
-                this.Unit = variable.Unit;
+                    if (string.IsNullOrWhiteSpace(this.Unit))
+                        this.Unit = variable.Unit;
 
-            if (!this.TransferFunctions.Any())
-                this.TransferFunctions = variable.TransferFunctions;
+                    if (!this.TransferFunctions.Any())
+                        this.TransferFunctions = variable.TransferFunctions;
+
+                    break;
+
+                case VariableMergeMode.NewWins:
+                    this.Name = variable.Name;
+                    this.Group = variable.Group;
+                    this.Unit = variable.Unit;
+                    this.TransferFunctions = variable.TransferFunctions;
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
 
             // merge datasets
             var newDatasets = new List<DatasetInfo>();

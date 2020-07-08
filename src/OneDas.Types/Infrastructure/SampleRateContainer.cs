@@ -126,7 +126,7 @@ namespace OneDas.Infrastructure
 
         public override int GetHashCode()
         {
-            return this.SamplesPerDay.GetHashCode();
+            return HashCode.Combine(SamplesPerDay);
         }
 
         public string ToUnitString(bool underscore = false)

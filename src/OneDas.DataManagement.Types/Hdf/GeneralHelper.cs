@@ -1,12 +1,12 @@
 ﻿using HDF.PInvoke;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Types.Hdf;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace OneDas.DataManagement.Hdf
 {
@@ -36,7 +36,7 @@ namespace OneDas.DataManagement.Hdf
             return (start, block);
         }
 
-        public static string GetCampaignNameFromFile(string filePath)
+        public static string GetCampaignIdFromFile(string filePath)
         {
             var fileId = H5F.open(filePath, H5F.ACC_RDONLY);
 
@@ -124,19 +124,9 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        public static void UpdateCampaigns(long fileId, List<HdfCampaignInfo> campaigns, UpdateSourceFileMapDelegate updateSourceFileMap)
+        public static CampaignInfo GetCampaign(long fileId, string campaignGroupPath)
         {
-            GeneralHelper.InternalUpdateCampaigns(fileId, campaigns, null, updateSourceFileMap);
-        }
-
-        public static HdfCampaignInfo GetCampaign(long fileId, string campaignGroupPath)
-        {
-            return GeneralHelper.InternalUpdateCampaigns(fileId, null, campaignGroupPath, null).FirstOrDefault();
-        }
-
-        public static List<HdfCampaignInfo> GetCampaigns(long fileId)
-        {
-            return GeneralHelper.InternalUpdateCampaigns(fileId, null, null, null);
+            return GeneralHelper.InternalUpdateCampaigns(fileId, null, campaignGroupPath).FirstOrDefault();
         }
 
         public static void SuppressErrors(Action action)
@@ -153,15 +143,14 @@ namespace OneDas.DataManagement.Hdf
             H5E.set_auto(H5E.DEFAULT, func, clientData);
         }
 
-        private static List<HdfCampaignInfo> InternalUpdateCampaigns(long fileId,
-                                                                     List<HdfCampaignInfo> campaigns = null,
-                                                                     string campaignGroupPath = "",
-                                                                     UpdateSourceFileMapDelegate updateSourceFileMap = null)
+        private static List<CampaignInfo> InternalUpdateCampaigns(long fileId,
+                                                                     List<CampaignInfo> campaigns = null,
+                                                                     string campaignGroupPath = "")
         {
             var idx = 0UL;
 
             if (campaigns == null)
-                campaigns = new List<HdfCampaignInfo>();
+                campaigns = new List<CampaignInfo>();
 
             GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
 
@@ -231,11 +220,11 @@ namespace OneDas.DataManagement.Hdf
 
                                 if (currentCampaign == null)
                                 {
-                                    currentCampaign = new HdfCampaignInfo(fullName);
+                                    currentCampaign = new CampaignInfo(fullName);
                                     campaigns.Add(currentCampaign);
                                 }
 
-                                currentCampaign.Update(groupId, new FileContext(formatVersion, dateTime, filePath.ToString()), updateSourceFileMap);
+                                currentCampaign.Update(groupId, formatVersion);
                             }
 
                             break;

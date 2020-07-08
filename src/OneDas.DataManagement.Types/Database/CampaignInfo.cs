@@ -34,7 +34,7 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
-        public void Merge(CampaignInfo campaign)
+        public void Merge(CampaignInfo campaign, VariableMergeMode mergeMode)
         {
             if (this.Id != campaign.Id)
                 throw new Exception("The campaign to be merged has a different ID.");
@@ -47,7 +47,7 @@ namespace OneDas.DataManagement.Database
                 var referenceVariable = this.Variables.FirstOrDefault(current => current.Id == variable.Id);
 
                 if (referenceVariable != null)
-                    referenceVariable.Merge(variable);
+                    referenceVariable.Merge(variable, mergeMode);
                 else
                     newVariables.Add(variable);
 

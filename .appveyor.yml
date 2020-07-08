@@ -49,6 +49,7 @@ build_script:
 
 test_script:
   - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
+  - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
 
 artifacts:
   - path: ./artifacts/packages/**/*.nupkg

@@ -154,7 +154,7 @@ namespace OneDas.DataManagement
                         }
 
                         //
-                        container.Campaign.Merge(campaign);
+                        container.Campaign.Merge(campaign, VariableMergeMode.OverwriteMissing);
                     }
                 }
                 finally

@@ -14,6 +14,7 @@ namespace OneDas.DataManagement.Extensibility
         #region Fields
 
         private static Dictionary<string, List<CampaignInfo>> _rootPathToCampaignsMap;
+        private object _lock;
 
         #endregion
 
@@ -29,6 +30,8 @@ namespace OneDas.DataManagement.Extensibility
             this.RootPath = rootPath;
             this.Logger = logger;
             this.Progress = new Progress<double>();
+
+            _lock = new object();
         }
 
         #endregion
@@ -45,10 +48,13 @@ namespace OneDas.DataManagement.Extensibility
         {
             get
             {
-                if (!_rootPathToCampaignsMap.ContainsKey(this.RootPath))
-                    _rootPathToCampaignsMap[this.RootPath] = this.LoadCampaigns();
+                lock (_lock)
+                {
+                    if (!_rootPathToCampaignsMap.ContainsKey(this.RootPath))
+                        _rootPathToCampaignsMap[this.RootPath] = this.LoadCampaigns();
 
-                return _rootPathToCampaignsMap[this.RootPath];
+                    return _rootPathToCampaignsMap[this.RootPath];
+                }
             }
         }
 
@@ -274,7 +280,10 @@ namespace OneDas.DataManagement.Extensibility
 
         public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
 
-        public abstract void Dispose();
+        public virtual void Dispose()
+        {
+            //
+        }
 
         protected abstract List<CampaignInfo> LoadCampaigns();
 

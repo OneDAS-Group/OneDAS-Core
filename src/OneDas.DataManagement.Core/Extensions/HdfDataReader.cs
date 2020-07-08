@@ -5,11 +5,14 @@ using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
+using OneDas.Infrastructure;
+using OneDas.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -27,26 +30,77 @@ namespace OneDas.DataManagement.Extensions
 
         #region Methods
 
+#warning Unify this with other readers
         public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
+            long fileId = -1;
 
-            T[] data = null;
-            byte[] statusSet = null;
+            var variable = (VariableInfo)dataset.Parent;
+            var folderPath = Path.Combine(this.RootPath, "DATA");
 
-            var samplesPerDay = dataset.GetSampleRate().SamplesPerDay;
-            (var start, var block) = GeneralHelper.GetStartAndBlock(begin, end, samplesPerDay);
+            var samplesPerDay = new SampleRateContainer(dataset.Id).SamplesPerDay;
+            var length = (long)((end - begin).TotalSeconds * 86400 * samplesPerDay);
+            var data = new T[length];
+            var statusSet = new byte[length];
 
-            //lock (_lock)
-            //{
-            //    this.SwitchLocation(() =>
-            //    {
-                    //var datasetPath = dataset.GetPath();
-                    //data = IOHelper.ReadDataset<T>(_fileId, datasetPath, start, block);
+            if (!Directory.Exists(folderPath))
+                return (data, statusSet);
 
-                    //if (H5L.exists(_fileId, datasetPath + "_status") > 0)
-                    //    statusSet = IOHelper.ReadDataset(_fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
-            //    });
-            //}
+            var periodPerFile = TimeSpan.FromDays(1);
+
+            // read data
+            var currentBegin = begin.RoundDown(periodPerFile);
+            var totalOffset = 0L;
+            var remainingLength = length;
+            var fileLength = (long)(periodPerFile.TotalSeconds * 86400 * samplesPerDay);
+
+            while (remainingLength > 0)
+            {
+                // get data
+                var fileName = $"{currentBegin.ToString("yyyy-MM-dd_HH-mm-ss")}.dat";
+                var filePath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"), fileName);
+
+                if (File.Exists(filePath))
+                {
+                    fileId = H5F.open(filePath, H5F.ACC_RDONLY);
+
+                    try
+                    {
+                        if (H5I.is_valid(fileId) > 0)
+                        {
+                            var datasetPath = dataset.GetPath();
+
+                            if (IOHelper.CheckLinkExists(fileId, datasetPath))
+                            {
+                                // invoke generic 'ReadData' method
+                                var methodName = nameof(HdfDataReader.ReadData);
+                                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                                var genericType = OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType);
+                                var parameters = new object[] { fileId, datasetPath, start, block };
+                                var result = ((T[] Dataset, byte[] StatusSet))OneDasUtilities.InvokeGenericMethod(this, methodName, flags, genericType, parameters);
+
+                                // write data
+                                var currentLength = Math.Min(remainingLength, block);
+                                result.Dataset[..currentLength].CopyTo(data.AsSpan(totalOffset));
+                                result.StatusSet.CopyTo(statusSet.AsSpan(totalOffset));
+                            }
+                        }
+                        else
+                        {
+                            this.Logger.LogError($"Could not open file '{filePath}'.");
+                        }
+                    }
+                    finally
+                    {
+                        if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
+                    }
+                }
+
+                // update loop state
+                totalOffset += fileLength;
+                remainingLength -= fileLength;
+                currentBegin += periodPerFile;
+            }
 
             return (data, statusSet);
         }
@@ -77,68 +131,130 @@ namespace OneDas.DataManagement.Extensions
             var currentMonth = firstMonth;
 
             var cacheFolderPath = Path.Combine(this.RootPath, "CACHE");
+            var mainCacheFilePath = Path.Combine(cacheFolderPath, "main.json");
             Directory.CreateDirectory(cacheFolderPath);
+
+            bool cacheChanged = false;
 
             for (int i = 0; i < months; i++)
             {
                 var currentDataFolderPath = Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM"));
 
-                // (3) find available campaign names by scanning file names
-                var campaignNames = this.FindCampaignNames(Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM")));
+                // (3) find available campaign ids by scanning file contents (optimized)
+                var campaignIds = this.FindCampaignIds(Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM")));
 
                 // (4) find corresponding cache file
                 var cacheFilePath = Path.Combine(cacheFolderPath, $"{currentMonth.ToString("yyyy-MM")}.json");
 
-                List<CampaignInfo> campaigns;
+                List<CampaignInfo> cache;
 
                 // (5.a) cache file exists
                 if (File.Exists(cacheFilePath))
                 {
-                    campaigns = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(cacheFilePath);
-                    campaigns.ForEach(campaign => campaign.Initialize());
+                    cache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(cacheFilePath);
+                    cache.ForEach(campaign => campaign.Initialize());
 
-                    foreach (var campaignName in campaignNames)
+                    foreach (var campaignId in campaignIds)
                     {
-                        var campaign = campaigns.FirstOrDefault(campaign => campaign.Id == campaignName);
+                        var campaign = cache.FirstOrDefault(campaign => campaign.Id == campaignId);
 
-                        // campaign is in cache
+                        // campaign is in cache ...
                         if (campaign != null)
                         {
-                            // cache is outdated
-                            if (this.IsCacheOutdated(campaignName, currentDataFolderPath, versioning))
-                                campaign = this.ScanFiles(campaignName, currentDataFolderPath, versioning);
+                            // ... but cache is outdated
+                            if (this.IsCacheOutdated(campaignId, currentDataFolderPath, versioning))
+                            {
+                                campaign = this.ScanFiles(campaignId, currentDataFolderPath, versioning);
+                                cacheChanged = true;
+                            }
                         }
                         // campaign is not in cache
                         else
                         {
-                            campaign = this.ScanFiles(campaignName, currentDataFolderPath, versioning);
-                            campaigns.Add(campaign);
+                            campaign = this.ScanFiles(campaignId, currentDataFolderPath, versioning);
+                            cache.Add(campaign);
+                            cacheChanged = true;
                         }
                     }
                 }
                 // (5.b) cache file does not exist
                 else
                 {
-                    campaigns = campaignNames.Select(campaignName =>
+                    cache = campaignIds.Select(campaignId =>
                     {
-                        var campaign = this.ScanFiles(campaignName, currentDataFolderPath, versioning);
+                        var campaign = this.ScanFiles(campaignId, currentDataFolderPath, versioning);
+                        cacheChanged = true;
                         return campaign;
                     }).ToList();
                 }
 
-                // (6) save cache file
-                JsonSerializerHelper.Serialize(campaigns, cacheFilePath);
-
-                // (7) save versioning file
-                JsonSerializerHelper.Serialize(versioning, versioningFilePath);
+                // (6) save cache and versioning files
+                if (cacheChanged)
+                {
+                    JsonSerializerHelper.Serialize(cache, cacheFilePath);
+                    JsonSerializerHelper.Serialize(versioning, versioningFilePath);
+                }
 
                 currentMonth = currentMonth.AddMonths(1);
             }
 
-            // (8) merge cache files
-#warning not yet implemented
-#warning Update LastScan missing
-            return new List<CampaignInfo>();
+            // (7) update main cache
+            List<CampaignInfo> mainCache;
+
+            if (cacheChanged || !File.Exists(mainCacheFilePath))
+            {
+                var cacheFiles = Directory.EnumerateFiles(cacheFolderPath, "*-*.json");
+                mainCache = new List<CampaignInfo>();
+
+                var message = "Merging cache files to main cache ...";
+
+                try
+                {
+                    this.Logger.LogInformation(message);
+
+                    foreach (var cacheFile in cacheFiles)
+                    {
+                        var cache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(cacheFile);
+                        cache.ForEach(campaign => campaign.Initialize());
+
+                        foreach (var campaign in cache)
+                        {
+                            var reference = mainCache.FirstOrDefault(current => current.Id == campaign.Id);
+
+                            if (reference != null)
+                                reference.Merge(campaign, VariableMergeMode.NewWins);
+                            else
+                                mainCache.Add(campaign);
+                        }
+                    }
+
+                    this.Logger.LogInformation($"{message} Done.");
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.LogError($"{message} Error: {ex.GetFullMessage()}");
+                    throw;
+                }
+
+                JsonSerializerHelper.Serialize(mainCache, mainCacheFilePath);
+            }
+            else
+            {
+                mainCache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(mainCacheFilePath);
+            }
+
+            // update campaign start and end
+            foreach (var campaign in mainCache)
+            {
+                var searchPattern = $"{this.ToUnderscoredId(campaign.Id)}*.h5";
+                var files = Directory.EnumerateFiles(dataFolderPath, searchPattern, SearchOption.AllDirectories);
+                var firstDateTime = this.GetFirstDateTime(files);
+
+                campaign.CampaignStart = firstDateTime;
+                campaign.CampaignEnd = versioning.ScannedUntilMap[campaign.Id].AddDays(1);
+            }
+
+            return mainCache;
         }
 
         protected override double GetDataAvailability(string campaignId, DateTime day)
@@ -146,34 +262,15 @@ namespace OneDas.DataManagement.Extensions
             if (!this.Campaigns.Any(campaign => campaign.Id == campaignId))
                 throw new Exception($"The campaign '{campaignId}' could not be found.");
 
-            // epoch & hyperslab
-            var epochStart = new DateTime(2000, 01, 01);
-            var epochEnd = new DateTime(2030, 01, 01);
+            var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*_{day.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+            var folderName = day.ToString("yyyy-MM");
+            var folderPath = Path.Combine(this.RootPath, "DATA", folderName);
+            var fileCount = Directory.EnumerateFiles(folderPath, fileNamePattern, SearchOption.AllDirectories).Count();
 
-            if (!(epochStart <= day && day <= epochEnd))
-                throw new Exception("requirement >> epochStart <= day && day <= epochEnd << is not matched");
-
-            var samplesPerDay = 1440UL;
-            var start = (ulong)Math.Floor((day - epochStart).TotalDays * samplesPerDay);
-            var block = samplesPerDay;
-
-            // get data
-            var result = 0.0;
-
-#warning Switching the location is no good idea. It breaks the webserver. Locks is required since this method is called with Parallel.For() which causes the current location to be set incorrectly.
-            //lock (_lock)
-            //{
-            //    this.SwitchLocation(() =>
-            //    {
-                    //var data = IOHelper.ReadDataset<byte>(_fileId, $"{campaignId}/is_chunk_completed_set", start, block).Select(value => (int)value).ToArray();
-                    //result = data.Sum() / 1440.0;
-            //    });
-            //}
-
-            return result;
+            return fileCount > 0 ? 1 : 0;
         }
 
-        private List<string> FindCampaignNames(string dataFolderPath)
+        private List<string> FindCampaignIds(string dataFolderPath)
         {
             var distinctFiles = Directory
                 .EnumerateFiles(dataFolderPath, "*.h5")
@@ -187,50 +284,85 @@ namespace OneDas.DataManagement.Extensions
             return distinctFiles.Select(distinctFile =>
             {
                 var filePath = Directory.EnumerateFiles(dataFolderPath, $"{distinctFile}*.h5").First();
-                var campaignName = GeneralHelper.GetCampaignNameFromFile(filePath);
-                return campaignName;
+                var campaignId = GeneralHelper.GetCampaignIdFromFile(filePath);
+                return campaignId;
             }).Distinct().ToList();
         }
 
-        private bool IsCacheOutdated(string campaignName, string dataFolderPath, HdfVersioning versioning)
+        private bool IsCacheOutdated(string campaignId, string dataFolderPath, HdfVersioning versioning)
         {
-            var files = Directory.EnumerateFiles(dataFolderPath, $"{campaignName.Replace('/', '_').TrimStart('_')}*.h5");
+            var searchPattern = $"{this.ToUnderscoredId(campaignId)}*.h5";
+            var files = Directory.EnumerateFiles(dataFolderPath, searchPattern);
             var lastDateTime = this.GetLastDateTime(files);
-            return lastDateTime > versioning.ScannedUntil;
+            return lastDateTime > versioning.ScannedUntilMap[campaignId];
         }
 
         private CampaignInfo ScanFiles(string campaignId, string dataFolderPath, HdfVersioning versioning)
         {
-            var files = Directory.EnumerateFiles(dataFolderPath, $"{campaignId.Replace('/', '_').TrimStart('_')}*.h5");
+            var message = $"Scanning files for {Path.GetFileName(dataFolderPath)} ({campaignId}) ...";
+            var searchPattern = $"{this.ToUnderscoredId(campaignId)}*.h5";
+            var files = Directory.EnumerateFiles(dataFolderPath, searchPattern);
             var campaign = new CampaignInfo(campaignId);
 
-            foreach (var file in files)
-            {
-                var fileId = H5F.open(file, H5F.ACC_RDONLY);
+            this.Logger.LogInformation(message);
 
-                try
+            try
+            {
+                foreach (var file in files)
                 {
-                    if (H5I.is_valid(fileId) > 0)
+                    var fileId = H5F.open(file, H5F.ACC_RDONLY);
+
+                    try
                     {
-                        var newCampaign = GeneralHelper.GetCampaign(fileId, campaignId);
-#warning make sure merge is working correctly for this use case
-#warning ToCampaign: Replace HdFCampaignInfo by normal CampaignInfo
-                        campaign.Merge(newCampaign.ToCampaign());
+                        if (H5I.is_valid(fileId) > 0)
+                        {
+                            var newCampaign = GeneralHelper.GetCampaign(fileId, campaignId);
+                            campaign.Merge(newCampaign, VariableMergeMode.NewWins);
+                        }
+                    }
+                    finally
+                    {
+                        if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                     }
                 }
-                finally
+
+                // update scanned until
+                var scannedUntil = this.GetLastDateTime(files);
+
+                if (versioning.ScannedUntilMap.TryGetValue(campaignId, out var value))
                 {
-                    if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
+                    if (scannedUntil > value)
+                        versioning.ScannedUntilMap[campaignId] = scannedUntil;
                 }
+                else
+                {
+                    versioning.ScannedUntilMap[campaignId] = scannedUntil;
+                }
+
+                this.Logger.LogInformation($"{message} Done.");
+            }
+            catch (Exception ex)
+            {
+                this.Logger.LogError($"{message} Error: {ex.GetFullMessage()}");
             }
 
-            // update scanned until
-            var scannedUntil = this.GetLastDateTime(files);
-
-            if (scannedUntil > versioning.ScannedUntil)
-                versioning.ScannedUntil = scannedUntil;
-
             return campaign;
+        }
+
+        private DateTime GetFirstDateTime(IEnumerable<string> files)
+        {
+            if (files.Any())
+            {
+                var firstFile = files.First();
+                var dateString = firstFile.Substring(firstFile.Length - 23, 20);
+                var dateTime = DateTime.ParseExact(dateString, "yyyy-MM-ddTHH-mm-ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                return dateTime.ToUniversalTime();
+            }
+            else
+            {
+                return DateTime.MinValue;
+            }
         }
 
         private DateTime GetLastDateTime(IEnumerable<string> files)
@@ -245,14 +377,25 @@ namespace OneDas.DataManagement.Extensions
             }
             else
             {
-                return DateTime.MinValue;
+                return DateTime.MaxValue;
             }
         }
 
-        public override void Dispose()
+        private string ToUnderscoredId(string campaignId)
         {
-            //
-#warning make virtual
+            return campaignId.Replace('/', '_').TrimStart('_');
+        }
+
+        private (T[], byte[]) ReadData<T>(long fileId, string datasetPath, ulong start, ulong block) where T : unmanaged
+        {
+            var data = IOHelper.ReadDataset<T>(fileId, datasetPath, start, block);
+
+            byte[] statusSet = null;
+
+            if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
+                statusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
+
+            return (data, statusSet);
         }
 
         #endregion

@@ -69,11 +69,6 @@ namespace OneDas.DataManagement.Extensions
             return (data, statusSet);
         }
 
-        public override void Dispose()
-        {
-            //
-        }
-
         protected override List<CampaignInfo> LoadCampaigns()
         {
             var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
