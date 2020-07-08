@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -35,11 +34,9 @@ namespace OneDas.DataManagement.Extensions
         {
             long fileId = -1;
 
-            var variable = (VariableInfo)dataset.Parent;
             var folderPath = Path.Combine(this.RootPath, "DATA");
-
             var samplesPerDay = new SampleRateContainer(dataset.Id).SamplesPerDay;
-            var length = (long)((end - begin).TotalSeconds * 86400 * samplesPerDay);
+            var length = (long)Math.Round((end - begin).TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
             var data = new T[length];
             var statusSet = new byte[length];
 
@@ -50,15 +47,24 @@ namespace OneDas.DataManagement.Extensions
 
             // read data
             var currentBegin = begin.RoundDown(periodPerFile);
-            var totalOffset = 0L;
-            var remainingLength = length;
-            var fileLength = (long)(periodPerFile.TotalSeconds * 86400 * samplesPerDay);
+            var fileLength = (int)Math.Round(periodPerFile.TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
+            var fileOffset = (int)Math.Round((begin - currentBegin).TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
+            var bufferOffset = 0;
+            var remainingBufferLength = (int)length;
 
-            while (remainingLength > 0)
+            while (remainingBufferLength > 0)
             {
                 // get data
-                var fileName = $"{currentBegin.ToString("yyyy-MM-dd_HH-mm-ss")}.dat";
-                var filePath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"), fileName);
+                var campaignId = ((CampaignInfo)dataset.Parent.Parent).Id;
+                var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*_{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+                var currentFolderPath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"));
+#warning Use correct file name and remember to include different versions
+                var filePath = Directory
+                    .EnumerateFiles(currentFolderPath, fileNamePattern, SearchOption.TopDirectoryOnly)
+                    .First();
+
+                var fileBlock = fileLength - fileOffset;
+                var currentBlock = Math.Min(remainingBufferLength, fileBlock);
 
                 if (File.Exists(filePath))
                 {
@@ -72,17 +78,16 @@ namespace OneDas.DataManagement.Extensions
 
                             if (IOHelper.CheckLinkExists(fileId, datasetPath))
                             {
-                                // invoke generic 'ReadData' method
-                                var methodName = nameof(HdfDataReader.ReadData);
-                                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-                                var genericType = OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType);
-                                var parameters = new object[] { fileId, datasetPath, start, block };
-                                var result = ((T[] Dataset, byte[] StatusSet))OneDasUtilities.InvokeGenericMethod(this, methodName, flags, genericType, parameters);
+                                var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
+
+                                byte[] currentStatusSet = null;
+
+                                if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
+                                    statusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
 
                                 // write data
-                                var currentLength = Math.Min(remainingLength, block);
-                                result.Dataset[..currentLength].CopyTo(data.AsSpan(totalOffset));
-                                result.StatusSet.CopyTo(statusSet.AsSpan(totalOffset));
+                                currentDataset.CopyTo(data.AsSpan(bufferOffset));
+                                currentStatusSet.CopyTo(statusSet.AsSpan(bufferOffset));
                             }
                         }
                         else
@@ -97,8 +102,9 @@ namespace OneDas.DataManagement.Extensions
                 }
 
                 // update loop state
-                totalOffset += fileLength;
-                remainingLength -= fileLength;
+                fileOffset = 0; // Only the data in the first file may have an offset.
+                bufferOffset += currentBlock;
+                remainingBufferLength -= currentBlock;
                 currentBegin += periodPerFile;
             }
 
@@ -384,18 +390,6 @@ namespace OneDas.DataManagement.Extensions
         private string ToUnderscoredId(string campaignId)
         {
             return campaignId.Replace('/', '_').TrimStart('_');
-        }
-
-        private (T[], byte[]) ReadData<T>(long fileId, string datasetPath, ulong start, ulong block) where T : unmanaged
-        {
-            var data = IOHelper.ReadDataset<T>(fileId, datasetPath, start, block);
-
-            byte[] statusSet = null;
-
-            if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
-                statusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", start, block).Cast<byte>().ToArray();
-
-            return (data, statusSet);
         }
 
         #endregion

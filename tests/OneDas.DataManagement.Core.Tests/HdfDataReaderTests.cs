@@ -112,19 +112,17 @@ namespace OneDas.Core.Tests
             var dataset = campaign.Variables.First().Datasets.First();
 
             var begin = new DateTime(2020, 07, 08);
-            var end = new DateTime(2015, 07, 09);
+            var end = new DateTime(2020, 07, 10);
 
-            var result = dataReader.ReadSingle<float>(dataset, begin, end);
+            var result = dataReader.ReadSingle<double>(dataset, begin, end);
 
             // assert
-            Assert.True(result.Dataset[0] > 4.91485 && result.Dataset[0] < 4.91486);
-            Assert.True(result.Dataset[10] > 4.96125 && result.Dataset[10] < 4.96126);
-            Assert.True(result.Dataset[100] > 5.06813 && result.Dataset[100] < 5.06814);
-            Assert.True(result.Dataset[1000] > 4.91121 && result.Dataset[1000] < 4.91122);
-            Assert.True(result.Dataset[10000] > 5.01093 && result.Dataset[10000] < 5.01094);
-
-            Assert.True(result.StatusSet[14999] == 1);
-            Assert.True(result.StatusSet[15000] == 0);
+            Assert.True(result.Dataset[0] == 99.27636);
+            Assert.True(result.Dataset[2] == 99.27626);
+            Assert.True(result.Dataset[86400 * 100 - 1] == 2323e-3);
+            Assert.True(result.Dataset[86400 * 100 + 0] == 98.27636);
+            Assert.True(result.Dataset[86400 * 100 + 2] == 97.27626);
+            Assert.True(result.Dataset[86400 * 100 + 86400 * 100 - 1] == 2323e-6);
         }
 
         private string InitializeDatabase()
