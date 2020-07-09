@@ -191,9 +191,9 @@ namespace OneDas.DataManagement
             return new HdfDataReader(Environment.CurrentDirectory, _loggerFactory.CreateLogger("aggregation"));
         }
 
-        public DataReaderExtensionBase GetNativeDataReader(string campaignName)
+        public DataReaderExtensionBase GetNativeDataReader(string campaignId)
         {
-            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
+            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignId);
 
             if (container == null)
                 throw new KeyNotFoundException("The requested campaign could not be found.");

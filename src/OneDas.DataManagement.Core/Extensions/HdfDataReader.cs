@@ -55,18 +55,23 @@ namespace OneDas.DataManagement.Extensions
             while (remainingBufferLength > 0)
             {
                 // get data
-                var campaignId = ((CampaignInfo)dataset.Parent.Parent).Id;
+                var campaign = (CampaignInfo)dataset.Parent.Parent;
+                var campaignId = campaign.Id;
                 var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*_{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
                 var currentFolderPath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"));
-#warning Use correct file name and remember to include different versions
-                var filePath = Directory
+
+                List<string> filePaths;
+
+                if (Directory.Exists(currentFolderPath))
+                    filePaths = Directory
                     .EnumerateFiles(currentFolderPath, fileNamePattern, SearchOption.TopDirectoryOnly)
-                    .First();
+                    .ToList();
+                else
+                    filePaths = new List<string>();
 
-                var fileBlock = fileLength - fileOffset;
-                var currentBlock = Math.Min(remainingBufferLength, fileBlock);
+                var compensation = fileLength - fileOffset;
 
-                if (File.Exists(filePath))
+                foreach (var filePath in filePaths)
                 {
                     fileId = H5F.open(filePath, H5F.ACC_RDONLY);
 
@@ -74,25 +79,59 @@ namespace OneDas.DataManagement.Extensions
                     {
                         if (H5I.is_valid(fileId) > 0)
                         {
-                            var datasetPath = dataset.GetPath();
+                            int lastIndex = -1;
 
-                            if (IOHelper.CheckLinkExists(fileId, datasetPath))
+                            // the averages database has no "is_chunk_completed_set"
+#warning use format version instead to check this?
+                            var isChunkCompletedSetPath = $"{campaign.GetPath()}/is_chunk_completed_set";
+
+                            if (IOHelper.CheckLinkExists(fileId, isChunkCompletedSetPath))
                             {
-                                var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
+                                var isChunkCompletedSet = IOHelper.ReadDataset<byte>(fileId, isChunkCompletedSetPath).ToList();
+                                lastIndex = isChunkCompletedSet.FindLastIndex(value => value > 0);
+                            }
+                            else
+                            {
+                                lastIndex = 1440 - 1;
+                            }
 
-                                byte[] currentStatusSet = null;
+                            if (lastIndex > -1)
+                            {
+                                var actualFileLength = (int)Math.Round(fileLength * (double)(lastIndex + 1) / 1440, MidpointRounding.AwayFromZero);
+                                var fileBlock = actualFileLength - fileOffset;
+                                var currentBlock = Math.Min(remainingBufferLength, fileBlock);
+                                var datasetPath = dataset.GetPath();
 
-                                if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
-                                    statusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
+                                if (IOHelper.CheckLinkExists(fileId, datasetPath))
+                                {
+                                    var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
 
-                                // write data
-                                currentDataset.CopyTo(data.AsSpan(bufferOffset));
-                                currentStatusSet.CopyTo(statusSet.AsSpan(bufferOffset));
+                                    byte[] currentStatusSet = null;
+
+                                    if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
+                                        currentStatusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
+
+                                    // write data
+                                    currentDataset.CopyTo(data.AsSpan(bufferOffset));
+
+                                    if (currentStatusSet != null)
+                                        currentStatusSet.CopyTo(statusSet.AsSpan(bufferOffset));
+
+                                    // update loop state
+                                    fileOffset += currentBlock; // file offset
+                                    bufferOffset += currentBlock; // buffer offset
+                                    compensation -= currentBlock; // file remaining 
+                                    remainingBufferLength -= currentBlock; // buffer remaining
+                                }
+                                else
+                                {
+                                    this.Logger.LogWarning($"Could not find dataset '{datasetPath}'.");
+                                }
                             }
                         }
                         else
                         {
-                            this.Logger.LogError($"Could not open file '{filePath}'.");
+                            this.Logger.LogWarning($"Could not open file '{filePath}'.");
                         }
                     }
                     finally
@@ -101,10 +140,12 @@ namespace OneDas.DataManagement.Extensions
                     }
                 }
 
+                // compensate remaining offset to get a full day
+                fileOffset = (fileOffset + compensation) % fileLength;
+                bufferOffset += compensation;
+                remainingBufferLength -= compensation;
+
                 // update loop state
-                fileOffset = 0; // Only the data in the first file may have an offset.
-                bufferOffset += currentBlock;
-                remainingBufferLength -= currentBlock;
                 currentBegin += periodPerFile;
             }
 
@@ -147,7 +188,12 @@ namespace OneDas.DataManagement.Extensions
                 var currentDataFolderPath = Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM"));
 
                 // (3) find available campaign ids by scanning file contents (optimized)
-                var campaignIds = this.FindCampaignIds(Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM")));
+                List<string> campaignIds;
+
+                if (Directory.Exists(currentDataFolderPath))
+                    campaignIds = this.FindCampaignIds(Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM")));
+                else
+                    campaignIds = new List<string>();
 
                 // (4) find corresponding cache file
                 var cacheFilePath = Path.Combine(cacheFolderPath, $"{currentMonth.ToString("yyyy-MM")}.json");
@@ -247,6 +293,7 @@ namespace OneDas.DataManagement.Extensions
             else
             {
                 mainCache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(mainCacheFilePath);
+                mainCache.ForEach(campaign => campaign.Initialize());
             }
 
             // update campaign start and end
@@ -271,7 +318,13 @@ namespace OneDas.DataManagement.Extensions
             var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*_{day.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
             var folderName = day.ToString("yyyy-MM");
             var folderPath = Path.Combine(this.RootPath, "DATA", folderName);
-            var fileCount = Directory.EnumerateFiles(folderPath, fileNamePattern, SearchOption.AllDirectories).Count();
+
+            int fileCount;
+
+            if (Directory.Exists(folderPath))
+                fileCount = Directory.EnumerateFiles(folderPath, fileNamePattern, SearchOption.AllDirectories).Count();
+            else
+                fileCount = 0;
 
             return fileCount > 0 ? 1 : 0;
         }

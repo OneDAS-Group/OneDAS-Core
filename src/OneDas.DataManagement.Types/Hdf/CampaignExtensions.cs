@@ -1,7 +1,9 @@
 ﻿using HDF.PInvoke;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Hdf;
+using OneDas.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -54,20 +56,27 @@ namespace OneDas.DataManagement.Types.Hdf
         {
             var idx = 0UL;
 
-            variable.Name = IOHelper.ReadAttribute<string>(variableGroupId, "name_set").Last();
-            variable.Group = IOHelper.ReadAttribute<string>(variableGroupId, "group_set").Last();
-
-            if (formatVersion != 1)
+            if (formatVersion == -1) // aggregation file
             {
-                variable.Unit = IOHelper.ReadAttribute<string>(variableGroupId, "unit_set").LastOrDefault();
-                
-                // sometimes the unit property is null in the HDF file
-                if (string.IsNullOrWhiteSpace(variable.Unit))
-                    variable.Unit = string.Empty;
+                // do nothing
+            }
+            else
+            {
+                variable.Name = IOHelper.ReadAttribute<string>(variableGroupId, "name_set").Last();
+                variable.Group = IOHelper.ReadAttribute<string>(variableGroupId, "group_set").Last();
 
-                // hdf_transfer_function_t to TransferFunction
-                var hdf_transfer_function_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(variableGroupId, "transfer_function_set");
-                variable.TransferFunctions = hdf_transfer_function_set.Select(tf => tf.ToTransferFunction()).ToList();
+                if (formatVersion != 1)
+                {
+                    variable.Unit = IOHelper.ReadAttribute<string>(variableGroupId, "unit_set").LastOrDefault();
+
+                    // sometimes the unit property is null in the HDF file
+                    if (string.IsNullOrWhiteSpace(variable.Unit))
+                        variable.Unit = string.Empty;
+
+                    // hdf_transfer_function_t to TransferFunction
+                    var hdf_transfer_function_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(variableGroupId, "transfer_function_set");
+                    variable.TransferFunctions = hdf_transfer_function_set.Select(tf => tf.ToTransferFunction()).ToList();
+                }
             }
 
             H5L.iterate(variableGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero);

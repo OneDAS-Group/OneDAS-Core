@@ -26,8 +26,7 @@ namespace OneDas
                          Directory.Exists(Path.Combine(databaseFolderPath, "EXPORT")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "EXTENSION")) &&
                          Directory.Exists(Path.Combine(databaseFolderPath, "META")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "PRESETS")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "VDS"));
+                         Directory.Exists(Path.Combine(databaseFolderPath, "PRESETS"));
 
             message = string.Empty;
 

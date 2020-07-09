@@ -1,27 +1,23 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using OneDas.Buffers;
 using OneDas.DataManagement.Core.Tests;
 using OneDas.DataManagement.Extensions;
-using OneDas.Extensibility;
-using OneDas.Extension.Hdf;
-using OneDas.Infrastructure;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OneDas.Core.Tests
 {
-    public class HdfDataReaderTests
+    public class HdfDataReaderTests : IClassFixture<HdfDataReaderFixture>
     {
         private ILogger _logger;
+        private HdfDataReaderFixture _fixture;
 
-        public HdfDataReaderTests(ITestOutputHelper xunitLogger)
+        public HdfDataReaderTests(HdfDataReaderFixture fixture, ITestOutputHelper xunitLogger)
         {
+            _fixture = fixture;
             _logger = new XunitLoggerProvider(xunitLogger).CreateLogger(nameof(HdfDataReaderTests));
         }
 
@@ -29,8 +25,7 @@ namespace OneDas.Core.Tests
         public void ProvidesCampaignNames()
         {
             // arrange
-            var root = this.InitializeDatabase();
-            var dataReader = new HdfDataReader(root, _logger);
+            var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
             var actual = dataReader.GetCampaignNames();
@@ -44,8 +39,7 @@ namespace OneDas.Core.Tests
         public void ProvidesCampaign()
         {
             // arrange
-            var root = this.InitializeDatabase();
-            var dataReader = new HdfDataReader(root, _logger);
+            var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
             var actual = dataReader.GetCampaign("/A/B/C");
@@ -71,8 +65,7 @@ namespace OneDas.Core.Tests
         public void ProvidesDataAvailabilityStatistics()
         {
             // arrange
-            var root = this.InitializeDatabase();
-            var dataReader = new HdfDataReader(root, _logger);
+            var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
             var actual = dataReader.GetDataAvailabilityStatistics("/A/B/C", new DateTime(2020, 07, 1), new DateTime(2020, 08, 01));
@@ -89,8 +82,7 @@ namespace OneDas.Core.Tests
         public void DetectsIfDataOfDayIsAvailable()
         {
             // arrange
-            var root = this.InitializeDatabase();
-            var dataReader = new HdfDataReader(root, _logger);
+            var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
             var actual = dataReader.IsDataOfDayAvailable("/A/B/C", new DateTime(2020, 07, 08));
@@ -101,87 +93,53 @@ namespace OneDas.Core.Tests
         }
 
         [Fact]
-        public void CanReadTwoDays()
+        public void CanReadTwoDaysShifted()
         {
             // arrange
-            var root = this.InitializeDatabase();
-            var dataReader = new HdfDataReader(root, _logger);
+            var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
             var campaign = dataReader.GetCampaign("/A/B/C");
             var dataset = campaign.Variables.First().Datasets.First();
 
-            var begin = new DateTime(2020, 07, 08);
-            var end = new DateTime(2020, 07, 10);
+            var begin = new DateTime(2020, 07, 07, 23, 00, 00);
+            var end = new DateTime(2020, 07, 10, 00, 00, 00);
 
             var result = dataReader.ReadSingle<double>(dataset, begin, end);
 
             // assert
-            Assert.True(result.Dataset[0] == 99.27636);
-            Assert.True(result.Dataset[2] == 99.27626);
-            Assert.True(result.Dataset[86400 * 100 - 1] == 2323e-3);
-            Assert.True(result.Dataset[86400 * 100 + 0] == 98.27636);
-            Assert.True(result.Dataset[86400 * 100 + 2] == 97.27626);
-            Assert.True(result.Dataset[86400 * 100 + 86400 * 100 - 1] == 2323e-6);
-        }
+            var samplesPerDay = 86400 * 100;
 
-        private string InitializeDatabase()
-        {
-            // create dirs
-            var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(root);
+            var baseOffset = samplesPerDay / 24 * 1;
+            var dayOffset = 86400 * 100;
+            var hourOffset = 360000;
+            var halfHourOffset = hourOffset / 2;
 
-            var dataFolderPathEmpty = Path.Combine(root, "DATA", "2020-06");
-            Directory.CreateDirectory(dataFolderPathEmpty);
+            // day 1 V1
+            Assert.True(result.StatusSet[baseOffset + 0] == 1);
+            Assert.True(result.StatusSet[baseOffset + 1] == 0);
+            Assert.True(result.StatusSet[baseOffset + 2] == 1);
+            Assert.True(result.StatusSet[baseOffset + 3] == 0);
+            Assert.True(result.Dataset[baseOffset + 0] == 99.27636);
+            Assert.True(result.Dataset[baseOffset + 2] == 99.27626);
+            Assert.True(result.Dataset[baseOffset + 86400 * 100 - 1] == 2323e-3);
 
-            var dataFolderPath = Path.Combine(root, "DATA", "2020-07");
-            Directory.CreateDirectory(dataFolderPath);
+            // day 2 V1
+            Assert.True(result.StatusSet[baseOffset + dayOffset - 1] == 1);
+            Assert.True(result.StatusSet[baseOffset + dayOffset + 0] == 1);
+            Assert.True(result.StatusSet[baseOffset + dayOffset + 2] == 1);
+            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - hourOffset - 1] == 1);
+            Assert.True(result.Dataset[baseOffset + dayOffset + 0] == 98.27636);
+            Assert.True(result.Dataset[baseOffset + dayOffset + 2] == 97.27626);
+            Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - hourOffset - 1] == 2323e-6);
 
-            // create files
-            var settings = new HdfSettings()
-            {
-                FileGranularity = FileGranularity.Day
-            };
-
-            using var writer = new HdfWriter(settings, NullLogger.Instance);
-            var campaignDescription = new OneDasCampaignDescription(Guid.NewGuid(), 1, "A", "B", "C");
-            var context = new DataWriterContext("HdfTestDatabase", dataFolderPath, campaignDescription, new List<CustomMetadataEntry>());
-            var varDesc = new List<VariableDescription>();
-            varDesc.Add(new VariableDescription(Guid.NewGuid(), "A", "100 Hz", "Group A", OneDasDataType.FLOAT64, new SampleRateContainer(SampleRate.SampleRate_100), "Hz", new List<TransferFunction>(), BufferType.Extended));
-
-            writer.Configure(context, varDesc);
-
-            var buffer = (ExtendedBuffer<double>)BufferUtilities.CreateExtendedBuffer(OneDasDataType.FLOAT64, 86400 * 100);
-
-            buffer.StatusBuffer[0] = 1;
-            buffer.StatusBuffer[2] = 1;
-            buffer.StatusBuffer[86400 * 100 - 1] = 1;
-
-            var buffers = new List<IBuffer>();
-            buffers.Add(buffer);
-
-            // day 1 
-            buffer.Buffer[0] = 99.27636;
-            buffer.Buffer[2] = 99.27626;
-            buffer.Buffer[86400 * 100 - 1] = 2323e-3;
-
-            writer.Write(new DateTime(2020, 07, 08), TimeSpan.FromDays(1), buffers);
-
-            // day 2
-            buffer.Buffer[0] = 98.27636;
-            buffer.Buffer[2] = 97.27626;
-            buffer.Buffer[86400 * 100 - 1] = 2323e-6;
-            writer.Write(new DateTime(2020, 07, 09), TimeSpan.FromDays(1), buffers);
-
-            // second campaign
-            using var writer2 = new HdfWriter(settings, NullLogger.Instance);
-
-            campaignDescription.PrimaryGroupName = "A2";
-
-            writer2.Configure(context, varDesc);
-            writer2.Write(new DateTime(2020, 07, 08), TimeSpan.FromDays(1), buffers);
-
-            return root;
+            // day 2 V2
+            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - halfHourOffset + 0] == 1);
+            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - halfHourOffset + 2] == 1);
+            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - 1] == 1);
+            Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - halfHourOffset + 0] == 90.27636);
+            Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - halfHourOffset + 2] == 90.27626);
+            Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - 1] == 2323e-9);
         }
     }
 }
