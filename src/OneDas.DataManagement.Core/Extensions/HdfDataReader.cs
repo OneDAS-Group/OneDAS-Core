@@ -59,7 +59,7 @@ namespace OneDas.DataManagement.Extensions
                 var campaignId = campaign.Id;
 
                 /* aggregated data have no version number in file names */
-                var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+                var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
                 var currentFolderPath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"));
 
                 List<string> filePaths;
