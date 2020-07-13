@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Hdf\OneDas.Extension.Hdf.csproj" />
-    <ProjectReference Include="..\..\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj" />
+    <ProjectReference Include="..\..\src\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj" />
   </ItemGroup>
 
 </Project>
