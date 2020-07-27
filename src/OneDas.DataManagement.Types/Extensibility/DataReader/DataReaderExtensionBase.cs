@@ -11,27 +11,13 @@ namespace OneDas.DataManagement.Extensibility
 {
     public abstract class DataReaderExtensionBase : IDisposable
     {
-        #region Fields
-
-        private static Dictionary<string, List<CampaignInfo>> _rootPathToCampaignsMap;
-        private object _lock;
-
-        #endregion
-
         #region Constructors
-
-        static DataReaderExtensionBase()
-        {
-            _rootPathToCampaignsMap = new Dictionary<string, List<CampaignInfo>>();
-        }
 
         public DataReaderExtensionBase(string rootPath, ILogger logger)
         {
             this.RootPath = rootPath;
             this.Logger = logger;
             this.Progress = new Progress<double>();
-
-            _lock = new object();
         }
 
         #endregion
@@ -44,23 +30,21 @@ namespace OneDas.DataManagement.Extensibility
 
         public Progress<double> Progress { get; }
 
-        protected List<CampaignInfo> Campaigns
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    if (!_rootPathToCampaignsMap.ContainsKey(this.RootPath))
-                        _rootPathToCampaignsMap[this.RootPath] = this.LoadCampaigns();
-
-                    return _rootPathToCampaignsMap[this.RootPath];
-                }
-            }
-        }
+        public List<CampaignInfo> Campaigns { get; private set; }
 
         #endregion
 
         #region Methods
+
+        public void InitializeCampaigns()
+        {
+            this.Campaigns = this.LoadCampaigns();
+        }
+
+        public void InitializeCampaigns(List<CampaignInfo> campaigns)
+        {
+            this.Campaigns = campaigns;
+        }
 
         public void Read(DatasetInfo dataset,
                          DateTime begin,

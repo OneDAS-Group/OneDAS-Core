@@ -35,6 +35,7 @@ namespace OneDas.DataManagement
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
         private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
+        private Dictionary<string, List<CampaignInfo>> _rootPathToCampaignsMap;
 
         #endregion
 
@@ -83,6 +84,9 @@ namespace OneDas.DataManagement
         public void Update()
         {
             var database = new OneDasDatabase();
+
+            // create new empty campaigns map
+            _rootPathToCampaignsMap = new Dictionary<string, List<CampaignInfo>>();
 
             // load data readers
             _rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
@@ -188,7 +192,7 @@ namespace OneDas.DataManagement
 
         public DataReaderExtensionBase GetAggregationDataReader()
         {
-            return new HdfDataReader(Environment.CurrentDirectory, _loggerFactory.CreateLogger("aggregation"));
+            return this.InstantiateDataReader(Environment.CurrentDirectory, typeof(HdfDataReader));
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignId)
@@ -222,7 +226,20 @@ namespace OneDas.DataManagement
         private DataReaderExtensionBase InstantiateDataReader(string rootPath, Type type)
         {
             var logger = _loggerFactory.CreateLogger(rootPath);
-            return (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
+            var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
+
+            // initialize campaigns property
+            if (_rootPathToCampaignsMap.TryGetValue(rootPath, out var value))
+            {
+                dataReader.InitializeCampaigns(value);
+            }
+            else
+            {
+                dataReader.InitializeCampaigns();
+                _rootPathToCampaignsMap[rootPath] = dataReader.Campaigns;
+            }
+
+            return dataReader;
         }
 
         private string GetCampaignMetaPath(string campaignName)
