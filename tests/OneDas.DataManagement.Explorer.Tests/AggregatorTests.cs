@@ -22,6 +22,9 @@ namespace OneDas.Core.Tests
         [InlineData(AggregationMethod.MeanPolar, 0.90, new double[] { 0, 1, 2, 3, -4, 5, 6, 7, double.NaN, 2.5, 97, 12.5 }, 9.248975696093401)]
         [InlineData(AggregationMethod.MeanPolar, 0.99, new double[] { 0, 1, 2, 3, -4, 5, 6, 7, double.NaN, 2.5, 97, 12.5 }, double.NaN)]
 
+        [InlineData(AggregationMethod.Sum, 0.90, new double[] { 0, 1, 2, 3, -4, 5, 6, 7, double.NaN, 2.5, 97, 12.5 }, 132)]
+        [InlineData(AggregationMethod.Sum, 0.99, new double[] { 0, 1, 2, 3, -4, 5, 6, 7, double.NaN, 2.5, 97, 12.5 }, double.NaN)]
+
         public void CanAggregate1(AggregationMethod method, double nanLimit, double[] data, double expected)
         {
             // Arrange

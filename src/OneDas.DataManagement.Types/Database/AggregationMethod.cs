@@ -10,6 +10,7 @@
         Rms = 5,
         MinBitwise = 6,
         MaxBitwise = 7,
-        SampleAndHold = 8
+        SampleAndHold = 8,
+        Sum = 9
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HDF.PInvoke;
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Statistics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -193,6 +194,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         AggregationMethod.MinBitwise => "min_bitwise",
                         AggregationMethod.MaxBitwise => "max_bitwise",
                         AggregationMethod.SampleAndHold => "sample_and_hold",
+                        AggregationMethod.Sum => "sum",
                         _ => throw new Exception($"The aggregation method '{setup.Config.Method}' is unknown.")
                     };
 
@@ -305,6 +307,7 @@ namespace OneDas.DataManagement.Explorer.Core
                     case AggregationMethod.Std:
                     case AggregationMethod.Rms:
                     case AggregationMethod.SampleAndHold:
+                    case AggregationMethod.Sum:
 
                         if (dataset_double == null)
                             dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
@@ -464,6 +467,21 @@ namespace OneDas.DataManagement.Explorer.Core
 
                         if (isHighQuality)
                             result[x] = chunkData.First();
+                        else
+                            result[x] = double.NaN;
+                    });
+
+                    break;
+
+                case AggregationMethod.Sum:
+
+                    Parallel.For(0, targetDatasetLength, x =>
+                    {
+                        var chunkData = this.GetNaNFreeData(data, x, kernelSize);
+                        var isHighQuality = (chunkData.Length / (double)kernelSize) >= nanLimit;
+
+                        if (isHighQuality)
+                            result[x] = Vector<double>.Build.Dense(chunkData).Sum();
                         else
                             result[x] = double.NaN;
                     });
