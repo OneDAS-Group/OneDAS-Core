@@ -54,4 +54,10 @@ async def main():
     plt.grid()
     plt.show()
 
-asyncio.run(main())
+# run event loop
+loop = asyncio.get_event_loop()
+
+if loop.is_running() == False:
+    asyncio.run(main())
+else:
+    await main()
