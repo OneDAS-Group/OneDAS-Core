@@ -149,7 +149,7 @@ namespace OneDas.Extension.Csv
                     for (int i = 0; i < simpleBuffers.Count; i++)
                     {
                         var value = simpleBuffers[i].Buffer[(int)(bufferOffset + rowIndex)];
-                        streamWriter.Write($"{string.Format(_nfi, $"{{0:G{_settings.SignificantPlaces}}}", value)};");
+                        streamWriter.Write($"{string.Format(_nfi, $"{{0:G{_settings.SignificantFigures}}}", value)};");
                     }
 
                     streamWriter.WriteLine();

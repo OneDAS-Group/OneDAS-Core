@@ -25,65 +25,62 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Fields
 
+        private ulong _blockSizeLimit;
         private string _zipFilePath;
         private ZipArchive _zipArchive;
-        private FileGranularity _fileGranularity;
-        private FileFormat _fileFormat;
-        private CancellationToken _cancellationToken;
+        private ExportConfiguration _exportConfig;
 
         #endregion
 
         #region Constructors
 
-        public DataExporter(string zipFilePath, FileGranularity fileGranularity, FileFormat fileFormat, CancellationToken cancellationToken)
+        public DataExporter(string zipFilePath, ExportConfiguration exportConfig, ulong blockSizeLimit)
         {
             _zipFilePath = zipFilePath;
-            _fileGranularity = fileGranularity;
-            _fileFormat = fileFormat;
-            _cancellationToken = cancellationToken;
+            _exportConfig = exportConfig;
+            _blockSizeLimit = blockSizeLimit;
         }
 
         #endregion
 
         #region Methods
 
-        public bool WriteZipFileCampaignEntry(ZipSettings zipSettings)
+        public bool WriteZipFileCampaignEntry(CampaignSettings campaignSettings, CancellationToken cancellationToken)
         {
             if (_zipArchive == null)
                 _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
 
-            var variableDescriptionSet = zipSettings.Campaign.ToVariableDescriptions();
+            var variableDescriptionSet = campaignSettings.Campaign.ToVariableDescriptions();
 
             DataWriterExtensionSettingsBase settings;
             DataWriterExtensionLogicBase dataWriter;
 
-            switch (_fileFormat)
+            switch (_exportConfig.FileFormat)
             {
                 case FileFormat.CSV:
 
-                    settings = new CsvSettings() { FileGranularity = _fileGranularity };
+                    settings = new CsvSettings() 
+                    {
+                        FileGranularity = _exportConfig.FileGranularity,
+                        RowIndexFormat = _exportConfig.Extended.CsvRowIndexFormat,
+                        SignificantFigures = _exportConfig.Extended.CsvSignificantFigures,
+                    };
+
                     dataWriter = new CsvWriter((CsvSettings)settings, NullLogger.Instance);
 
                     break;
 
                 case FileFormat.FAMOS:
 
-                    settings = new FamosSettings() { FileGranularity = _fileGranularity };
+                    settings = new FamosSettings() { FileGranularity = _exportConfig.FileGranularity };
                     dataWriter = new FamosWriter((FamosSettings)settings, NullLogger.Instance);
 
                     break;
 
                 case FileFormat.MAT73:
 
-                    settings = new Mat73Settings() { FileGranularity = _fileGranularity };
+                    settings = new Mat73Settings() { FileGranularity = _exportConfig.FileGranularity };
                     dataWriter = new Mat73Writer((Mat73Settings)settings, NullLogger.Instance);
-
-                    break;
-
-                case FileFormat.CSV2:
-
-                    settings = new CsvSettings() { FileGranularity = _fileGranularity, RowIndexFormat = CsvRowIndexFormat.Unix };
-                    dataWriter = new CsvWriter((CsvSettings)settings, NullLogger.Instance);
 
                     break;
 
@@ -100,14 +97,14 @@ namespace OneDas.DataManagement.Explorer.Core
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "HDF Explorer", CustomMetadataEntryLevel.File));
 
             // initialize data writer
-            var campaignName_splitted = zipSettings.Campaign.Id.Split('/');
+            var campaignName_splitted = campaignSettings.Campaign.Id.Split('/');
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 
             // create temp files
             try
             {
-                if (!this.CreateFiles(dataWriter, zipSettings))
+                if (!this.CreateFiles(dataWriter, campaignSettings, cancellationToken))
                 {
                     this.CleanUp(directoryPath);
                     return false;
@@ -125,7 +122,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             foreach (string filePath in filePathSet)
             {
-                if (_cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                     return false;
 
                 var zipArchiveEntry = _zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
@@ -144,11 +141,11 @@ namespace OneDas.DataManagement.Explorer.Core
             return true;
         }
 
-        private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, ZipSettings zipSettings)
+        private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, CampaignSettings campaignSettings, CancellationToken cancellationToken)
         {
 #warning: To handle native and aggregated datasets individually will probably lead to strange effects for data writers. Check this.
 
-            var datasets = zipSettings.Campaign.Variables.SelectMany(variable => variable.Datasets);
+            var datasets = campaignSettings.Campaign.Variables.SelectMany(variable => variable.Datasets);
             var nativeDatasets = datasets.Where(dataset => dataset.IsNative).ToList();
             var aggregatedDatasets = datasets.Where(dataset => !dataset.IsNative).ToList();
             var currentMode = string.Empty;
@@ -163,15 +160,15 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (nativeDatasets.Any())
             {
-                var reader = zipSettings.NativeDataReader;
+                var reader = campaignSettings.NativeDataReader;
                 reader.Progress.ProgressChanged += progressHandler;
 
                 try
                 {
-                    reader.Read(nativeDatasets, zipSettings.Begin, zipSettings.End, zipSettings.BlockSizeLimit, progressRecord =>
+                    reader.Read(nativeDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, progressRecord =>
                     {
                         this.ProcessData(dataWriter, progressRecord);
-                    }, _cancellationToken);
+                    }, cancellationToken);
                 }
                 finally
                 {
@@ -184,15 +181,15 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (aggregatedDatasets.Any())
             {
-                var reader = zipSettings.AggregationDataReader;
+                var reader = campaignSettings.AggregationDataReader;
                 reader.Progress.ProgressChanged += progressHandler;
 
                 try
                 {
-                    reader.Read(aggregatedDatasets, zipSettings.Begin, zipSettings.End, zipSettings.BlockSizeLimit, progressRecord =>
+                    reader.Read(aggregatedDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, progressRecord =>
                     {
                         this.ProcessData(dataWriter, progressRecord);
-                    }, _cancellationToken);
+                    }, cancellationToken);
                 }
                 finally
                 {
@@ -201,7 +198,7 @@ namespace OneDas.DataManagement.Explorer.Core
             }
 
             // cancellation
-            if (_cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
                 return false;
 
             return true;

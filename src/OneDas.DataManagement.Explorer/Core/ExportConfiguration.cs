@@ -11,12 +11,13 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public ExportConfiguration()
         {
-            this.FormatVersion = 1;
-            this.DateTimeBegin = DateTime.UtcNow.Date.AddDays(-2);
-            this.DateTimeEnd = DateTime.UtcNow.Date.AddDays(-1);
+            this.FormatVersion = 2;
+            this.Begin = DateTime.UtcNow.Date.AddDays(-2);
+            this.End = DateTime.UtcNow.Date.AddDays(-1);
             this.FileGranularity = FileGranularity.Hour;
             this.FileFormat = FileFormat.CSV;
-            this.Variables = new List<string>();
+            this.Channels = new List<string>();
+            this.Extended = new ExtendedExportConfiguration();
         }
 
         #endregion
@@ -25,9 +26,9 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public int FormatVersion { get; set; }
 
-        public DateTime DateTimeBegin { get; set; }
+        public DateTime Begin { get; set; }
 
-        public DateTime DateTimeEnd { get; set; }
+        public DateTime End { get; set; }
 
         public FileGranularity FileGranularity { get; set; }
 
@@ -35,7 +36,24 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public string SampleRate { get; set; }
 
-        public List<string> Variables { get; set; }
+        public List<string> Channels { get; set; }
+
+        public ExtendedExportConfiguration Extended { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        public static ExportConfiguration UpdateVersion(ExportConfiguration config)
+        {
+            if (config.FormatVersion == 1)
+            {
+                config.Extended = new ExtendedExportConfiguration();
+                config.FormatVersion = 2;
+            }
+
+            return config;
+        }
 
         #endregion
     }

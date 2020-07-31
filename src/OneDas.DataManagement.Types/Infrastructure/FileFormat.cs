@@ -4,7 +4,6 @@
     {
         CSV = 1,
         FAMOS = 2,
-        MAT73 = 3,
-        CSV2 = 4
+        MAT73 = 3
     }
 }

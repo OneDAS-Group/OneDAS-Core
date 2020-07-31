@@ -27,13 +27,7 @@ async def main():
     target_folder = "data"
 
     # export data
-    connector = OneDasConnector(host, port, username, password) # or without authentication: ... = OneDasConnector(host, port)
-    await connector.export(begin, end, FileFormat.MAT73, FileGranularity.Day, channels, target_folder)   
+    connector = OneDasConnector(host, port) # or without authentication: ... = OneDasConnector(host, port)
+    await connector.export(begin, end, FileFormat.CSV, FileGranularity.Day, channels, target_folder)   
 
-# run event loop
-loop = asyncio.get_event_loop()
-
-if loop.is_running() == False:
-    asyncio.run(main())
-else:
-    await main()
+asyncio.run(main())

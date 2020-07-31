@@ -61,6 +61,7 @@ namespace OneDas.DataManagement.Explorer.Shared
             if (file != null)
             {
                 var exportConfiguration = await JsonSerializer.DeserializeAsync<ExportConfiguration>(file.Data);
+                exportConfiguration = ExportConfiguration.UpdateVersion(exportConfiguration);
                 this.AppState.SetExportConfiguration(exportConfiguration);
             }
         }

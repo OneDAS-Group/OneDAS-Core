@@ -41,6 +41,24 @@
             </ItemTemplate>
         </MatSelectItem>
 
+        @if (this.AppState.FileFormat == Infrastructure.FileFormat.CSV)
+        {
+            <MatSelectItem class="settings-control"
+                           Label="Row index format"
+                           @bind-Value="this.AppState.ExportConfiguration.Extended.CsvRowIndexFormat"
+                           Items="this.AppState.CsvRowIndexFormatValues">
+                <ItemTemplate Context="value">
+                    @Utilities.GetEnumLocalization(@value)
+                </ItemTemplate>
+            </MatSelectItem>
+
+            <MatTextField class="settings-control"
+                          Type="number"
+                          Label="Significant figures"
+                          @bind-Value="this.AppState.ExportConfiguration.Extended.CsvSignificantFigures">
+            </MatTextField>
+        }
+
         <MatSelectItem class="settings-control"
                        Label="Sample Rate"
                        @bind-Value="this.AppState.SampleRate"

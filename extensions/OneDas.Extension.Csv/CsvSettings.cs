@@ -12,7 +12,7 @@ namespace OneDas.Extension.Csv
 
         public CsvSettings()
         {
-            this.SignificantPlaces = 4;
+            this.SignificantFigures = 4;
         }
 
         #endregion
@@ -20,7 +20,7 @@ namespace OneDas.Extension.Csv
         #region Properties
 
         public CsvRowIndexFormat RowIndexFormat { get; set; }
-        public uint SignificantPlaces { get; set; }
+        public uint SignificantFigures { get; set; }
 
         #endregion
 

@@ -4,6 +4,7 @@ using OneDas.Buffers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Infrastructure;
+using OneDas.Extension.Csv;
 using OneDas.Infrastructure;
 using OneDas.Types;
 using System;
@@ -81,6 +82,26 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                                 List<string> channelNames,
                                                 CancellationToken cancellationToken)
         {
+            return this.ExportData2(
+                begin,
+                end, 
+                fileFormat,
+                fileGranularity, 
+                channelNames,
+                CsvRowIndexFormat.Index,
+                4,
+                cancellationToken);
+        }
+
+        public ChannelReader<string> ExportData2(DateTime begin,
+                                                DateTime end,
+                                                FileFormat fileFormat,
+                                                FileGranularity fileGranularity,
+                                                List<string> channelNames,
+                                                CsvRowIndexFormat csvRowIndexFormat,
+                                                uint csvSignificantFigures,
+                                                CancellationToken cancellationToken)
+        {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
             var channel = Channel.CreateUnbounded<string>();
             var client = this.Clients.Client(this.Context.ConnectionId);
@@ -88,7 +109,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(async () => 
+            _ = Task.Run(async () =>
             {
                 Exception localException = null;
 
@@ -109,6 +130,12 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     if (!datasets.Any())
                         throw new Exception("The list of channel names is empty.");
 
+                    var extended = new ExtendedExportConfiguration()
+                    {
+                        CsvRowIndexFormat = csvRowIndexFormat,
+                        CsvSignificantFigures = csvSignificantFigures
+                    };
+
                     await this.InternalExportData(channel.Writer,
                                             remoteIpAddress,
                                             begin,
@@ -116,6 +143,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                             fileFormat,
                                             fileGranularity,
                                             datasets,
+                                            extended,
                                             cancellationToken,
                                             client);
                 }
@@ -127,7 +155,6 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
                 channel.Writer.TryComplete(localException);
             });
-
             return channel.Reader;
         }
 
@@ -136,6 +163,26 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                                 FileFormat fileFormat,
                                                 FileGranularity fileGranularity,
                                                 string groupPath,
+                                                CancellationToken cancellationToken)
+        {
+            return this.ExportDataByGroup2(
+                begin,
+                end,
+                fileFormat,
+                fileGranularity,
+                groupPath,
+                CsvRowIndexFormat.Index,
+                4,
+                cancellationToken);
+        }
+
+        public ChannelReader<string> ExportDataByGroup2(DateTime begin,
+                                                DateTime end,
+                                                FileFormat fileFormat,
+                                                FileGranularity fileGranularity,
+                                                string groupPath,
+                                                CsvRowIndexFormat csvRowIndexFormat,
+                                                uint csvSignificantFigures,
                                                 CancellationToken cancellationToken)
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
@@ -154,7 +201,13 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     _stateManager.CheckState();
 
                     if (!_databaseManager.Database.TryFindDatasetsByGroup(groupPath, out var datasets))
-                        throw new Exception($"Could not find any channels for group path '{groupPath}'.");                     
+                        throw new Exception($"Could not find any channels for group path '{groupPath}'.");
+
+                    var extended = new ExtendedExportConfiguration()
+                    {
+                        CsvRowIndexFormat = csvRowIndexFormat,
+                        CsvSignificantFigures = csvSignificantFigures
+                    };
 
                     await this.InternalExportData(channel.Writer,
                                             remoteIpAddress,
@@ -163,6 +216,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                             fileFormat,
                                             fileGranularity,
                                             datasets,
+                                            extended,
                                             cancellationToken,
                                             client);
                 }
@@ -211,6 +265,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                               FileFormat fileFormat,
                                               FileGranularity fileGranularity,
                                               List<DatasetInfo> datasets,
+                                              ExtendedExportConfiguration extended,
                                               CancellationToken cancellationToken,
                                               IClientProxy client)
         {
@@ -233,7 +288,18 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
                 var sampleRate = sampleRates.First();
 
-                var url = await _dataService.ExportDataAsync(remoteIpAddress, begin, end, sampleRate, fileFormat, fileGranularity, datasets, cancellationToken);
+                var exportConfig = new ExportConfiguration()
+                {
+                    Begin = begin,
+                    End = end,
+                    Channels = null,
+                    FileFormat = fileFormat,
+                    FileGranularity = fileGranularity,
+                    SampleRate = sampleRate.ToUnitString(),
+                    Extended = extended
+                };
+
+                var url = await _dataService.ExportDataAsync(remoteIpAddress, exportConfig, datasets, cancellationToken);
                 await writer.WriteAsync(url, cancellationToken);
             }
             finally
@@ -260,11 +326,11 @@ namespace OneDas.DataManagement.Explorer.Hubs
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ...";
-            _logger.LogInformation(message);
-
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
             DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ...";
+            _logger.LogInformation(message);
 
             try
             {

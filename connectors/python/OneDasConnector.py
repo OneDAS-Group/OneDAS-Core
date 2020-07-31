@@ -34,6 +34,10 @@ class FileGranularity(Enum):
     Hour = 3600
     Day = 86400
 
+class CsvRowIndexFormat(Enum):
+    Index = 0
+    Unix = 1
+
 class OneDasConnector():
 
     url = None
@@ -96,7 +100,7 @@ class OneDasConnector():
 
         try:
             await self.connection.start()
-            await self.connection.stream("ExportData", [begin, end, format, granularity, channels], self._on_next)
+            await self.connection.stream("ExportData2", [begin, end, format, granularity, channels, CsvRowIndexFormat.Index, 4], self._on_next)
 
             # download and extract zip file
             with NamedTemporaryFile() as target_file:

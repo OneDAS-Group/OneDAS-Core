@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Infrastructure;
+using OneDas.Extension.Csv;
 using OneDas.Infrastructure;
 using Prism.Mvvm;
 using System;
@@ -63,6 +64,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
+            this.CsvRowIndexFormatValues = Utilities.GetEnumValues<CsvRowIndexFormat>();
             this.NewsPaper = NewsPaper.Load();
             this.VisualizeBeginAtZero = true;
 
@@ -185,6 +187,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public List<FileFormat> FileFormatValues { get; }
 
+        public List<CsvRowIndexFormat> CsvRowIndexFormatValues { get; }
+
         public bool VisualizeBeginAtZero
         {
             get { return _visualizeBeginAtZero; }
@@ -264,20 +268,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public DateTime DateTimeBegin
         {
-            get { return this.ExportConfiguration.DateTimeBegin; }
+            get { return this.ExportConfiguration.Begin; }
             set
             {
-                this.ExportConfiguration.DateTimeBegin = value;
+                this.ExportConfiguration.Begin = value;
                 this.RaisePropertyChanged();
             }
         }
 
         public DateTime DateTimeEnd
         {
-            get { return this.ExportConfiguration.DateTimeEnd; }
+            get { return this.ExportConfiguration.End; }
             set
             {
-                this.ExportConfiguration.DateTimeEnd = value;
+                this.ExportConfiguration.End = value;
                 this.RaisePropertyChanged();
             }
         }
@@ -358,15 +362,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 this.ClientState = ClientState.PrepareDownload;
                 _dataService.Progress.ProgressChanged += eventHandler;
 
-                var sampleRateContainer = new SampleRateContainer(this.SampleRate);
                 var selectedDatasets = this.GetSelectedDatasets().Select(dataset => dataset.Model).ToList();
 
                 var downloadLink = await _dataService.ExportDataAsync(remoteIpAdress,
-                                                                       this.DateTimeBegin,
-                                                                       this.DateTimeEnd,
-                                                                       sampleRateContainer,
-                                                                       this.FileFormat,
-                                                                       this.FileGranularity,
+                                                                       this.ExportConfiguration,
                                                                        selectedDatasets,
                                                                        _cts_download.Token);
 
@@ -435,7 +434,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.ExportConfiguration = exportConfiguration;
             var selectedDatasets = this.GetSelectedDatasets();
 
-            exportConfiguration.Variables.ForEach(value =>
+            exportConfiguration.Channels.ForEach(value =>
             {
                 var pathParts = value.Split('/');
                 var campaignName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
@@ -548,7 +547,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         private void UpdateExportConfiguration()
         {
-            this.ExportConfiguration.Variables = this.GetSelectedDatasets().Select(dataset =>
+            this.ExportConfiguration.Channels = this.GetSelectedDatasets().Select(dataset =>
             {
                 return $"{dataset.Parent.Parent.Id}/{dataset.Parent.Id}/{dataset.Name}";
             }).ToList();

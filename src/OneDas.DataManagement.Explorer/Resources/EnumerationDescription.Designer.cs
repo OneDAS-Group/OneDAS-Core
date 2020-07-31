@@ -61,20 +61,29 @@ namespace OneDas.DataManagement.Explorer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Index-based ähnelt.
+        /// </summary>
+        internal static string CsvRowIndexFormat_Index {
+            get {
+                return ResourceManager.GetString("CsvRowIndexFormat_Index", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unix time ähnelt.
+        /// </summary>
+        internal static string CsvRowIndexFormat_Unix {
+            get {
+                return ResourceManager.GetString("CsvRowIndexFormat_Unix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Comma-separated (*.csv) ähnelt.
         /// </summary>
         internal static string FileFormat_CSV {
             get {
                 return ResourceManager.GetString("FileFormat_CSV", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Comma-separated (unix time) (*.csv) ähnelt.
-        /// </summary>
-        internal static string FileFormat_CSV2 {
-            get {
-                return ResourceManager.GetString("FileFormat_CSV2", resourceCulture);
             }
         }
         

@@ -34,12 +34,13 @@ namespace OneDas.DataManagement.Explorer.Shared
             var jsonString = File.ReadAllText(filePath);
             var exportConfiguration = JsonSerializer.Deserialize<ExportConfiguration>(jsonString);
 
-            var timeSpan = exportConfiguration.DateTimeEnd - exportConfiguration.DateTimeBegin;
-            var dt = exportConfiguration.DateTimeEnd;
+            var timeSpan = exportConfiguration.End - exportConfiguration.Begin;
+            var dt = exportConfiguration.End;
             var now = DateTime.UtcNow.AddDays(-1);
 
-            exportConfiguration.DateTimeEnd = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
-            exportConfiguration.DateTimeBegin = exportConfiguration.DateTimeEnd - timeSpan;
+            exportConfiguration.End = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
+            exportConfiguration.Begin = exportConfiguration.End - timeSpan;
+            exportConfiguration = ExportConfiguration.UpdateVersion(exportConfiguration);
 
             this.OnIsOpenChanged(false);
             this.AppState.SetExportConfiguration(exportConfiguration);

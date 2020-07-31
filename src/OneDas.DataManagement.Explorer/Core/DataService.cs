@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
-using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
 using OneDas.Types;
 using System;
@@ -69,11 +68,7 @@ namespace OneDas.DataManagement.Explorer.Core
         }
 
         public Task<string> ExportDataAsync(IPAddress remoteIpAddress,
-                                            DateTime begin,
-                                            DateTime end,
-                                            SampleRateContainer sampleRate,
-                                            FileFormat fileFormat,
-                                            FileGranularity fileGranularity,
+                                            ExportConfiguration exportConfig,
                                             List<DatasetInfo> datasets,
                                             CancellationToken cancellationToken)
         {
@@ -81,8 +76,10 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 _stateManager.CheckState();
 
-                if (!datasets.Any() || begin == end)
+                if (!datasets.Any() || exportConfig.Begin == exportConfig.End)
                     return string.Empty;
+
+                var sampleRate = new SampleRateContainer(exportConfig.SampleRate);
 
                 // log
                 string userName;
@@ -92,15 +89,13 @@ namespace OneDas.DataManagement.Explorer.Core
                 else
                     userName = "anonymous";
 
-                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {begin.ToString("yyyy-MM-dd HH:mm:ss")} to {end.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
+                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {exportConfig.Begin.ToString("yyyy-MM-dd HH:mm:ss")} to {exportConfig.End.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
                 _logger.LogInformation(message);
 
                 // zip file
-                var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
+                var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{exportConfig.Begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
 
-                // sampleRate
-                var samplesPerDay = sampleRate.SamplesPerDay;
-
+                // sample rate
                 try
                 {
                     // convert datasets into campaigns
@@ -108,39 +103,35 @@ namespace OneDas.DataManagement.Explorer.Core
                     var campaignContainers = _databaseManager.Database.CampaignContainers
                         .Where(campaignContainer => campaignNames.Contains(campaignContainer.Id));
 
-                    var campaigns = campaignContainers.Select(campaignContainer =>
+                    var sparseCampaigns = campaignContainers.Select(campaignContainer =>
                     {
                         var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == campaignContainer.Id).ToList();
                         return campaignContainer.ToSparseCampaign(currentDatasets);
                     });
 
                     // security check
-                    foreach (var campaign in campaigns)
+                    foreach (var sparseCampaign in sparseCampaigns)
                     {
-                        if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                            throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
+                        if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, sparseCampaign.Id, _databaseManager.Config.RestrictedCampaigns))
+                            throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{sparseCampaign.Id}'.");
                     }
 
                     // start
                     var blockSizeLimit = 50 * 1000 * 1000UL;
 
-                    using var dataExporter = new DataExporter(zipFilePath, fileGranularity, fileFormat, cancellationToken);
+                    using var dataExporter = new DataExporter(zipFilePath, exportConfig, blockSizeLimit);
                     dataExporter.Progress += this.OnProgress;
 
                     try
                     {
-                        foreach (var campaign in campaigns)
+                        foreach (var sparseCampaign in sparseCampaigns)
                         {
-                            using var nativeDataReader = _databaseManager.GetNativeDataReader(campaign.Id);
+                            using var nativeDataReader = _databaseManager.GetNativeDataReader(sparseCampaign.Id);
                             using var aggregationDataReader = _databaseManager.GetAggregationDataReader();
 
-                            var zipSettings = new ZipSettings(campaign,
-                                                              nativeDataReader, aggregationDataReader,
-                                                              begin, end,
-                                                              samplesPerDay,
-                                                              blockSizeLimit);
+                            var campaignSettings = new CampaignSettings(sparseCampaign, nativeDataReader, aggregationDataReader);
 
-                            if (!dataExporter.WriteZipFileCampaignEntry(zipSettings))
+                            if (!dataExporter.WriteZipFileCampaignEntry(campaignSettings, cancellationToken))
                                 return string.Empty;
                         }
                     }
