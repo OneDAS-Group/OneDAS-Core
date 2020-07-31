@@ -126,7 +126,7 @@ namespace OneDas
             if (string.IsNullOrWhiteSpace(value))
                 value = "unnamed";
 
-            Regex.Replace(value, "[^A-Za-z0-9_]", "_");
+            value = Regex.Replace(value, "[^A-Za-z0-9_]", "_");
 
             if (Regex.IsMatch(value, "^[0-9_]"))
                 value = "X_" + value;
