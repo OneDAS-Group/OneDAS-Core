@@ -79,20 +79,6 @@ namespace OneDas.Core.Tests
         }
 
         [Fact]
-        public void DetectsIfDataOfDayIsAvailable()
-        {
-            // arrange
-            var dataReader = new HdfDataReader(_fixture.Root, _logger);
-
-            // act
-            var actual = dataReader.IsDataOfDayAvailable("/A/B/C", new DateTime(2020, 07, 08));
-
-            // assert
-            var expected = true;
-            Assert.True(actual == expected);
-        }
-
-        [Fact]
         public void CanReadTwoDaysShifted()
         {
             // arrange
