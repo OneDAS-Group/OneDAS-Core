@@ -26,7 +26,6 @@ class FileFormat(Enum):
     CSV = 1
     FAMOS = 2
     MAT73 = 3
-    CSV2 = 4
 
 class FileGranularity(Enum):
     Minute_1 = 60
