@@ -109,7 +109,8 @@ namespace OneDas.Extension.Famos
             // for each context group
             foreach (var contextGroup in variableContextGroupSet)
             {
-                var totalLength = (int)((int)_settings.FileGranularity * contextGroup.SampleRate.SamplesPerSecond);
+                var totalSeconds = (int)Math.Round(_settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
+                var totalLength = (int)(totalSeconds * contextGroup.SampleRate.SamplesPerSecond);
 
                 if (totalLength * (double)OneDasUtilities.SizeOf(OneDasDataType.FLOAT64) > 2 * Math.Pow(10, 9))
                     throw new Exception(ErrorMessage.FamosWriter_DataSizeExceedsLimit);

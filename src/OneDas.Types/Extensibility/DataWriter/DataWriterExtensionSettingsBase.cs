@@ -13,7 +13,7 @@ namespace OneDas.Extensibility
 
         public DataWriterExtensionSettingsBase()
         {
-            this.FileGranularity = FileGranularity.Day;
+            this.FilePeriod = TimeSpan.FromDays(1);
             this.BufferRequestSet = new List<BufferRequest>();
         }
 
@@ -22,7 +22,10 @@ namespace OneDas.Extensibility
         #region "Properties"
 
         [DataMember]
-        public FileGranularity FileGranularity { get; set; }
+        public TimeSpan FilePeriod { get; set; }
+
+        [DataMember]
+        public bool SingleFile { get; set; }
 
         [DataMember]
         public List<BufferRequest> BufferRequestSet { get; set; }
@@ -35,10 +38,8 @@ namespace OneDas.Extensibility
         {
             base.Validate();
 
-            if (this.FileGranularity == 0)
-            {
+            if (this.FilePeriod == TimeSpan.Zero)
                 throw new Exception(ErrorMessage.DataWriterExtensionSettingsBase_FileGranularityInvalid);
-            }
         }
 
         #endregion

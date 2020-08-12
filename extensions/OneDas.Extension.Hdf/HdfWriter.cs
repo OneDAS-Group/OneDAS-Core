@@ -195,7 +195,7 @@ namespace OneDas.Extension.Hdf
                 // file -> campaign -> channels
                 foreach (VariableContext variableContext in variableContextSet)
                 {
-                    var periodInSeconds = (ulong)_settings.FileGranularity;
+                    var periodInSeconds = (ulong)Math.Round(_settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
                     var samplesPerSecond = variableContext.VariableDescription.SampleRate.SamplesPerSecond;
                     (var chunkLength, var chunkCount) = GeneralHelper.CalculateChunkParameters(periodInSeconds, samplesPerSecond);
 

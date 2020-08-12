@@ -51,6 +51,14 @@ namespace OneDas.DataManagement.Explorer.Core
                 _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
 
             var variableDescriptionSet = campaignSettings.Campaign.ToVariableDescriptions();
+            var singleFile = _exportConfig.FileGranularity == FileGranularity.SingleFile;
+
+            TimeSpan filePeriod;
+
+            if (singleFile)
+                filePeriod = _exportConfig.End - _exportConfig.Begin;
+            else
+                filePeriod = TimeSpan.FromSeconds((int)_exportConfig.FileGranularity);
 
             DataWriterExtensionSettingsBase settings;
             DataWriterExtensionLogicBase dataWriter;
@@ -61,7 +69,8 @@ namespace OneDas.DataManagement.Explorer.Core
 
                     settings = new CsvSettings() 
                     {
-                        FileGranularity = _exportConfig.FileGranularity,
+                        FilePeriod = filePeriod,
+                        SingleFile = singleFile,
                         RowIndexFormat = _exportConfig.Extended.CsvRowIndexFormat,
                         SignificantFigures = _exportConfig.Extended.CsvSignificantFigures,
                     };
@@ -72,14 +81,22 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 case FileFormat.FAMOS:
 
-                    settings = new FamosSettings() { FileGranularity = _exportConfig.FileGranularity };
+                    settings = new FamosSettings() 
+                    {
+                        FilePeriod = filePeriod,
+                        SingleFile = singleFile,
+                    };
                     dataWriter = new FamosWriter((FamosSettings)settings, NullLogger.Instance);
 
                     break;
 
                 case FileFormat.MAT73:
 
-                    settings = new Mat73Settings() { FileGranularity = _exportConfig.FileGranularity };
+                    settings = new Mat73Settings()
+                    {
+                        FilePeriod = filePeriod,
+                        SingleFile = singleFile,
+                    };
                     dataWriter = new Mat73Writer((Mat73Settings)settings, NullLogger.Instance);
 
                     break;

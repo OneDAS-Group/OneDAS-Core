@@ -65,7 +65,6 @@ namespace OneDas.Extensibility
                 throw new ArgumentException(ErrorMessage.DataWriterExtensionLogicBase_DateTimeGranularityTooHigh);
 
             var bufferOffset = TimeSpan.Zero;
-            var filePeriod = TimeSpan.FromSeconds((int)this.Settings.FileGranularity);
 
             var variableContexts = _variableDescriptions
                 .Zip(buffers, (variableDescription, buffer) => new VariableContext(variableDescription, buffer))
@@ -79,10 +78,17 @@ namespace OneDas.Extensibility
             while (bufferOffset < bufferPeriod)
             {
                 var currentBegin = begin + bufferOffset;
-                var fileBegin = currentBegin.RoundDown(filePeriod);
+
+                DateTime fileBegin;
+
+                if (this.Settings.SingleFile)
+                    fileBegin = _lastFileBegin != DateTime.MinValue ? _lastFileBegin : begin;
+                else
+                    fileBegin = currentBegin.RoundDown(this.Settings.FilePeriod);
+
                 var fileOffset = currentBegin - fileBegin;
 
-                var remainingFilePeriod = filePeriod - fileOffset;
+                var remainingFilePeriod = this.Settings.FilePeriod - fileOffset;
                 var remainingBufferPeriod = bufferPeriod - bufferOffset;
 
                 var period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingBufferPeriod.Ticks));
@@ -91,7 +97,8 @@ namespace OneDas.Extensibility
                 foreach (var contextGroup in variableContextGroups)
                 {
                     var sampleRate = contextGroup.SampleRate;
-                    var length = (decimal)this.Settings.FileGranularity * sampleRate.SamplesPerSecond;
+                    var totalSeconds = (int)Math.Round(this.Settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
+                    var length = totalSeconds * sampleRate.SamplesPerSecond;
 
                     if (length < 1)
                         throw new Exception(ErrorMessage.DataWriterExtensionLogicBase_FileGranularityTooHigh);

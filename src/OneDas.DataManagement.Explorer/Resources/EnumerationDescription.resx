@@ -144,4 +144,7 @@
   <data name="FileGranularity_Minute_10" xml:space="preserve">
     <value>1 file per 10 minutes</value>
   </data>
+  <data name="FileGranularity_SingleFile" xml:space="preserve">
+    <value>Single file</value>
+  </data>
 </root>

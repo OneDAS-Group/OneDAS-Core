@@ -140,5 +140,14 @@ namespace OneDas.DataManagement.Explorer {
                 return ResourceManager.GetString("FileGranularity_Minute_10", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Single file ähnelt.
+        /// </summary>
+        internal static string FileGranularity_SingleFile {
+            get {
+                return ResourceManager.GetString("FileGranularity_SingleFile", resourceCulture);
+            }
+        }
     }
 }
