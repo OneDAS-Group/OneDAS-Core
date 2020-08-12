@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -88,8 +89,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 fileFormat,
                 fileGranularity, 
                 channelNames,
-                CsvRowIndexFormat.Index,
-                4,
+                new Dictionary<string, object>(),
                 cancellationToken);
         }
 
@@ -98,8 +98,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                                                 FileFormat fileFormat,
                                                 FileGranularity fileGranularity,
                                                 List<string> channelNames,
-                                                CsvRowIndexFormat csvRowIndexFormat,
-                                                uint csvSignificantFigures,
+                                                Dictionary<string, object> parameters,
                                                 CancellationToken cancellationToken)
         {
             var remoteIpAddress = this.Context.GetHttpContext().Connection.RemoteIpAddress;
@@ -130,11 +129,8 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     if (!datasets.Any())
                         throw new Exception("The list of channel names is empty.");
 
-                    var extended = new ExtendedExportConfiguration()
-                    {
-                        CsvRowIndexFormat = csvRowIndexFormat,
-                        CsvSignificantFigures = csvSignificantFigures
-                    };
+                    var jsonString = JsonSerializer.Serialize(parameters);
+                    var extended = JsonSerializer.Deserialize<ExtendedExportConfiguration>(jsonString);
 
                     await this.InternalExportData(channel.Writer,
                                             remoteIpAddress,
