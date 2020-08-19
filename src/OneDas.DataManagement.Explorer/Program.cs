@@ -34,8 +34,6 @@ namespace OneDas.DataManagement.Explorer
 
         public static async Task<int> Main(string[] args)
         {
-            Console.WriteLine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
