@@ -3,7 +3,7 @@ clone_depth: 1
 stack: node 8
 
 image:
-  - Visual Studio 2019
+#  - Visual Studio 2019
   - Ubuntu
 
 branches:
@@ -22,7 +22,7 @@ before_build:
   - ps: npm --version
   - ps: dotnet --info
   - ps: "Get-ChildItem Env:"
-  - ps: ./init_solution.ps1
+#  - ps: ./init_solution.ps1
 
 build_script:
 #  - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
@@ -50,7 +50,7 @@ build_script:
 
 test_script:
 #  - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
-  - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
+#  - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
 
 artifacts:
   - path: ./artifacts/packages/**/*.nupkg
