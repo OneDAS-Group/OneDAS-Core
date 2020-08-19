@@ -1,11 +1,22 @@
-﻿<div class="startup-settings-box">
+﻿@using System.Runtime.InteropServices
+
+<div class="startup-settings-box">
     <div class="startup-settings-subbox">
         <MatBlazor.MatHeadline2>Welcome to your new OneDAS Explorer instance!</MatBlazor.MatHeadline2>
         <MatBlazor.MatSubtitle1>Please select the database location to continue.</MatBlazor.MatSubtitle1>
 
-        <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
-                      Label="Database Location">
-        </MatTextField>
+        @if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
+                          Label="e.g. /var/lib/onedas">
+            </MatTextField>
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
+                          Label="e.g. D:\OneDAS">
+            </MatTextField>
+        }
 
         <MatButton @onclick="this.TryRunApp"
                    Outlined="true">
