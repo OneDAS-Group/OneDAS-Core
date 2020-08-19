@@ -32,6 +32,7 @@ namespace OneDas.DataManagement
     {
         #region Fields
 
+        private string _folderPath;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
         private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
@@ -45,28 +46,6 @@ namespace OneDas.DataManagement
         {
             _logger = logger;
             _loggerFactory = loggerFactory;
-
-            // config
-            var filePath = Path.Combine(Environment.CurrentDirectory, "dbconfig.json");
-
-            if (File.Exists(filePath))
-            {
-                var jsonString = File.ReadAllText(filePath);
-                this.Config = JsonSerializer.Deserialize<OneDasDatabaseConfig>(jsonString);
-            }
-            else
-            {
-                this.Config = new OneDasDatabaseConfig();
-            }
-
-            // initalize
-            this.Config.Initialize();
-
-            // save config to disk
-            this.SaveConfig(this.Config);
-
-            // create empty database
-            this.Database = new OneDasDatabase();
         }
 
         #endregion
@@ -75,11 +54,59 @@ namespace OneDas.DataManagement
 
         public OneDasDatabase Database { get; private set; }
 
-        public OneDasDatabaseConfig Config { get; }
+        public OneDasDatabaseConfig Config { get; private set; }
 
         #endregion
 
         #region Methods
+
+        public void Initialize(string folderPath)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                throw new Exception("Could not initialize database. Please check the database folder path and try again.");
+            }
+            else
+            {
+                try
+                {
+                    Directory.CreateDirectory(folderPath);
+                    Directory.CreateDirectory(Path.Combine(folderPath, "ATTACHMENTS"));
+                    Directory.CreateDirectory(Path.Combine(folderPath, "DATA"));
+                    Directory.CreateDirectory(Path.Combine(folderPath, "EXPORT"));
+                    Directory.CreateDirectory(Path.Combine(folderPath, "EXTENSION"));
+                    Directory.CreateDirectory(Path.Combine(folderPath, "META"));
+                    Directory.CreateDirectory(Path.Combine(folderPath, "PRESETS"));
+
+                    var filePath = Path.Combine(folderPath, "dbconfig.json");
+
+                    if (File.Exists(filePath))
+                    {
+                        var jsonString = File.ReadAllText(filePath);
+                        this.Config = JsonSerializer.Deserialize<OneDasDatabaseConfig>(jsonString);
+                    }
+                    else
+                    {
+                        this.Config = new OneDasDatabaseConfig();
+                    }
+
+                    // initialize
+                    this.Config.Initialize();
+
+                    // save config to disk
+                    this.SaveConfig(folderPath, this.Config);
+
+                    // create empty database
+                    this.Database = new OneDasDatabase();
+                }
+                catch
+                {
+                    throw new Exception("Could not initialize database. Please check the database folder path and try again.");
+                }
+            }
+
+            _folderPath = folderPath;
+        }
 
         public void Update()
         {
@@ -192,7 +219,7 @@ namespace OneDas.DataManagement
 
         public DataReaderExtensionBase GetAggregationDataReader()
         {
-            return this.InstantiateDataReader(Environment.CurrentDirectory, typeof(HdfDataReader));
+            return this.InstantiateDataReader(_folderPath, typeof(HdfDataReader));
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string campaignId)
@@ -215,9 +242,9 @@ namespace OneDas.DataManagement
             File.WriteAllText(filePath, jsonString);
         }
 
-        public void SaveConfig(OneDasDatabaseConfig config)
+        public void SaveConfig(string folderPath, OneDasDatabaseConfig config)
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, "dbconfig.json");
+            var filePath = Path.Combine(folderPath, "dbconfig.json");
             var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true });
 
             File.WriteAllText(filePath, jsonString);
@@ -244,12 +271,12 @@ namespace OneDas.DataManagement
 
         private string GetCampaignMetaPath(string campaignName)
         {
-            return Path.Combine(Environment.CurrentDirectory, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+            return Path.Combine(_folderPath, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
         }
 
         private Dictionary<string, Type> LoadDataReaders(Dictionary<string, string> rootPathToDataReaderIdMap)
         {
-            var extensionDirectoryPath = Path.Combine(Environment.CurrentDirectory, "EXTENSION");
+            var extensionDirectoryPath = Path.Combine(_folderPath, "EXTENSION");
 
             var extensionFilePaths = Directory.EnumerateFiles(extensionDirectoryPath, "*.deps.json", SearchOption.AllDirectories)
                                               .Select(filePath => filePath.Replace(".deps.json", ".dll")).ToList();

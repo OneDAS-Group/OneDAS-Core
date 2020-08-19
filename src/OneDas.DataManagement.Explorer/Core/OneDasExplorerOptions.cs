@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
@@ -12,54 +13,60 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             // unset, mutable
             this.DataBaseFolderPath = string.Empty;
-            this.InactiveOn = TimeSpan.Zero;
-            this.InactivityPeriod = TimeSpan.Zero;
 
             // preset, mutable
             this.AggregationChunkSizeMB = 200;
             this.AggregationPeriodDays = 60;
-            this.AspBaseUrl = "http://0.0.0.0:32769";
+            this.AspBaseUrl = "http://0.0.0.0:8080";
+            this.InactiveOn = TimeSpan.FromHours(2);
+            this.InactivityPeriod = TimeSpan.FromHours(1);
             this.Language = "en";
         }
 
         // unset, mutable
-        [DataMember]
         public string DataBaseFolderPath { get; set; }
-
-        [DataMember]
-        public TimeSpan InactiveOn { get; set; }
-
-        [DataMember]
-        public TimeSpan InactivityPeriod { get; set; }
 
         // preset, mutable
 
-        [DataMember]
         public uint AggregationChunkSizeMB { get; set; }
 
-        [DataMember]
         public uint AggregationPeriodDays { get; set; }
 
-        [DataMember]
         public string AspBaseUrl { get; set; }
 
-        [DataMember]
+        public TimeSpan InactiveOn { get; set; }
+
+        public TimeSpan InactivityPeriod { get; set; }
+
         public string Language { get; set; }
 
         // preset, immutable
-        public string ExportDirectoryPath { get => Path.Combine(this.DataBaseFolderPath, "EXPORT"); }
+        [JsonIgnore]
+        public string ExportDirectoryPath => Path.Combine(this.DataBaseFolderPath, "EXPORT");
 
-        public void Save(string directoryPath)
+        public static OneDasExplorerOptions Load(string filePath)
         {
-            Directory.CreateDirectory(directoryPath);
+            var jsonString = File.ReadAllText(filePath);
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new TimeSpanConverter());
 
-            using (StreamWriter streamWriter = new StreamWriter(Path.Combine(directoryPath, "settings.json")))
+            return JsonSerializer.Deserialize<OneDasExplorerOptions>(jsonString, options);
+        }
+
+        public void Save(string filePath)
+        {
+            var folderPath = Path.GetDirectoryName(filePath);
+            Directory.CreateDirectory(folderPath);
+
+            var options = new JsonSerializerOptions()
             {
-                string rawJson;
+                WriteIndented = true
+            };
 
-                rawJson = JsonConvert.SerializeObject(this, Formatting.Indented);
-                new JsonTextWriter(streamWriter).WriteRaw(rawJson);
-            }
+            options.Converters.Add(new TimeSpanConverter());
+
+            var jsonString = JsonSerializer.Serialize(this, options);
+            File.WriteAllText(filePath, jsonString);
         }
     }
 }

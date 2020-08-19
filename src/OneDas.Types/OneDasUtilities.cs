@@ -1,6 +1,5 @@
 ﻿using OneDas.Infrastructure;
 using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -14,29 +13,6 @@ namespace OneDas
         public static double ToUnixTimeStamp(this DateTime value)
         {
             return value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-        }
-
-        public static bool ValidateDatabaseFolderPath(string databaseFolderPath, out string message)
-        {
-            var result = true;
-
-            var exists = Directory.Exists(databaseFolderPath) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "ATTACHMENTS")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "DATA")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "EXPORT")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "EXTENSION")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "META")) &&
-                         Directory.Exists(Path.Combine(databaseFolderPath, "PRESETS"));
-
-            message = string.Empty;
-
-            if (!exists)
-            {
-                message = "The provided path does not contain a OneDAS Explorer database.";
-                result = false;
-            }
-
-            return result;
         }
 
         public static int SizeOf(OneDasDataType dataType)

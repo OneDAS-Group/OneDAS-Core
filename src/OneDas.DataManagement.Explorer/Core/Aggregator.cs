@@ -45,9 +45,10 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        public void Run(uint days, bool force)
+        public void Run(string databaseFolderPath, uint days, bool force)
         {
             _databaseManager = new OneDasDatabaseManager(NullLogger.Instance, _loggerFactory);
+            _databaseManager.Initialize(databaseFolderPath);
             _databaseManager.Update();
 
             var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();
@@ -58,15 +59,15 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 for (int i = 0; i <= days; i++)
                 {
-                    this.CreateAggregatedFiles(campaignName, epochStart.AddDays(i), force);
+                    this.CreateAggregatedFiles(databaseFolderPath, campaignName, epochStart.AddDays(i), force);
                 }
             }
         }
 
-        private void CreateAggregatedFiles(string campaignName, DateTime date, bool force)
+        private void CreateAggregatedFiles(string databaseFolderPath, string campaignName, DateTime date, bool force)
         {
             var subfolderName = date.ToString("yyyy-MM");
-            var targetDirectoryPath = Path.Combine(Environment.CurrentDirectory, "DATA", subfolderName);
+            var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
 
             using var dataReader = _databaseManager.GetNativeDataReader(campaignName);
 

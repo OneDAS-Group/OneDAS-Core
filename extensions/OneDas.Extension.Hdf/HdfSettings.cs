@@ -1,4 +1,5 @@
 ﻿using OneDas.Extensibility;
+using System;
 using System.Runtime.Serialization;
 
 namespace OneDas.Extension.Hdf
@@ -12,7 +13,7 @@ namespace OneDas.Extension.Hdf
 
         public HdfSettings()
         {
-            this.FileGranularity = Infrastructure.FileGranularity.Day;
+            this.FilePeriod = TimeSpan.FromDays(1);
         }
 
         #endregion

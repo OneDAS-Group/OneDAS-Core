@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OneDas.Types;
 using Prism.Mvvm;
 using System;
@@ -12,6 +11,7 @@ namespace OneDas.DataManagement.Explorer.Core
     {
         #region Fields
 
+        private bool _isFollowUp;
         private bool _isActive;
         private ILogger _logger;
         private System.Timers.Timer _activityTimer;
@@ -26,14 +26,14 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager,
                                           ILoggerFactory loggerFactory,
-                                          IOptions<OneDasExplorerOptions> options)
+                                          OneDasExplorerOptions options)
         {
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
-            _options = options.Value;
+            _options = options;
             _aggregator = new Aggregator(_options.AggregationChunkSizeMB, _logger, loggerFactory);
 
-            this.OnActivityTimerElapsed();
+            this.TryRunApp(out var _);
         }
 
         #endregion
@@ -50,10 +50,31 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
+        public bool TryRunApp(out Exception exception)
+        {
+            try
+            {
+                _databaseManager.Initialize(_options.DataBaseFolderPath);
+                _options.Save(Program.OptionsFilePath);
+                this.OnActivityTimerElapsed();
+                exception = null;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                this.State = OneDasExplorerState.FirstStart;
+                exception = ex;
+                return false;
+            }                
+        }
+
         public void CheckState()
         {
             switch (this.State)
             {
+                case OneDasExplorerState.FirstStart:
+                    throw new Exception("OneDAS Explorer is not fully configured yet.");
+
                 case OneDasExplorerState.Inactive:
                     throw new Exception("OneDAS Explorer is in scheduled inactivity mode.");
 
@@ -106,8 +127,16 @@ namespace OneDas.DataManagement.Explorer.Core
                     _logger.LogInformation(message);
 
                     _databaseManager.Update();
-                    _aggregator.Run(_options.AggregationPeriodDays, false);
-                    _databaseManager.Update();
+
+                    if (_isFollowUp)
+                    {
+                        _aggregator.Run(_options.DataBaseFolderPath, _options.AggregationPeriodDays, false);
+                        _databaseManager.Update();
+                    }
+                    else
+                    {
+                        _isFollowUp = true;
+                    }
 
                     _logger.LogInformation($"{message} Done.");
                 }

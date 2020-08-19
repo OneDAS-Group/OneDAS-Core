@@ -29,10 +29,8 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        public static NewsPaper Load()
+        public static NewsPaper Load(string filePath)
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, "news.json");
-
             if (File.Exists(filePath))
             {
                 var jsonString = File.ReadAllText(filePath);

@@ -1,33 +1,76 @@
 ﻿@inherits AppStateComponentBase
 
-<div class="settings-content-box">
-    <MatList>
-        @foreach (var user in this.Settings.Users)
-        {
-            <MatListItem @onclick="() => this.Settings.User = user">
-                @user.UserName
-            </MatListItem>
-        }
-    </MatList>
+    <div class="settings-content-box">
+        <MatBlazor.MatHeadline4>Claims</MatBlazor.MatHeadline4>
 
-    @if (this.Settings.Claims != null)
-    {
-        <div class="flex-column">
-            @foreach (var claim in this.Settings.Claims)
+        <MatList>
+            @foreach (var user in this.Settings.Users)
             {
-                <MatTextField @bind-Value="@claim.Type" Label="Claim type"></MatTextField>
-                <MatTextField @bind-Value="@claim.Value" Label="Claim value"></MatTextField>
-                @if (!string.IsNullOrWhiteSpace(claim.Type))
-                {
-                    <MatButton @onclick="() => this.Settings.RemoveClaim(claim)">
-                        <i class="fa fa-minus" aria-hidden="true"></i> &nbsp; Delete
-                    </MatButton>
-                }
+                <MatListItem @onclick="() => this.Settings.User = user">
+                    @user.UserName
+                </MatListItem>
             }
-        </div>
+        </MatList>
 
-        <MatButton @onclick="this.Settings.SaveClaimChanges">
+        @if (this.Settings.Claims != null)
+        {
+            <div class="flex-column">
+                @foreach (var claim in this.Settings.Claims)
+                {
+                    <MatTextField @bind-Value="@claim.Type" Label="Claim type"></MatTextField>
+                    <MatTextField @bind-Value="@claim.Value" Label="Claim value"></MatTextField>
+                    @if (!string.IsNullOrWhiteSpace(claim.Type))
+                    {
+                        <MatButton @onclick="() => this.Settings.RemoveClaim(claim)">
+                            <i class="fa fa-minus" aria-hidden="true"></i> &nbsp; Delete
+                        </MatButton>
+                    }
+                }
+            </div>
+
+            <MatButton @onclick="this.Settings.SaveClaimChanges">
+                <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
+            </MatButton>
+        }
+
+        <MatBlazor.MatHeadline4>App Settings</MatBlazor.MatHeadline4>
+
+        <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
+                      Label="Database Location">
+        </MatTextField>
+
+        <MatNumericUpDownField @bind-Value="@this.Options.AggregationChunkSizeMB"
+                               Label="Aggregation chunk size (MB)"
+                               PlaceHolder="e.g. 200">
+        </MatNumericUpDownField>
+
+        <MatNumericUpDownField @bind-Value="@this.Options.AggregationPeriodDays"
+                               Label="Aggregation period (days)"
+                               PlaceHolder="e.g. 60">
+        </MatNumericUpDownField>
+
+        <MatTextField @bind-Value="@this.Options.AspBaseUrl"
+                      Label="URL"
+                      PlaceHolder="e.g. 0.0.0.0:8080">
+        </MatTextField>
+
+        @*<MatTextField @bind-Value="@this.Options.InactiveOn"
+                      Label="Inactive On"
+                      PlaceHolder="e.g. 02:00">
+        </MatTextField>*@
+
+        @*<MatTextField @bind-Value="@this.Options.InactivityPeriod"
+                      Label="Inactive Period"
+                      PlaceHolder="e.g. 01:00">
+        </MatTextField>*@
+
+        <MatTextField @bind-Value="@this.Options.Language"
+                      Label="Language"
+                      PlaceHolder="e.g. en">
+        </MatTextField>
+
+        <MatButton @onclick="this.SaveOptions">
             <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
         </MatButton>
-    }
-</div>
+
+    </div>

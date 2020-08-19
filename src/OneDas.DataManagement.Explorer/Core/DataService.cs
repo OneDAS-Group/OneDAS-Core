@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
 using OneDas.Types;
@@ -32,13 +31,13 @@ namespace OneDas.DataManagement.Explorer.Core
                            OneDasDatabaseManager databaseManager,
                            SignInManager<IdentityUser> signInManager,
                            ILoggerFactory loggerFactory,
-                           IOptions<OneDasExplorerOptions> options)
+                           OneDasExplorerOptions options)
         {
             _stateManager = stateManager;
             _databaseManager = databaseManager;
             _signInManager = signInManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
-            _options = options.Value;
+            _options = options;
 
             this.Progress = new Progress<ProgressUpdatedEventArgs>();
         }
@@ -89,7 +88,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 else
                     userName = "anonymous";
 
-                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {exportConfig.Begin.ToString("yyyy-MM-dd HH:mm:ss")} to {exportConfig.End.ToString("yyyy-MM-dd HH:mm:ss")} ... ";
+                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {exportConfig.Begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {exportConfig.End.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
                 _logger.LogInformation(message);
 
                 // zip file

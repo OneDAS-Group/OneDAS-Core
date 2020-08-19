@@ -38,6 +38,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private DataService _dataService;
         private CampaignContainer _campaignContainer;
         private OneDasDatabaseManager _databaseManager;
+        private OneDasExplorerOptions _options;
         private CancellationTokenSource _cts_download;
         private PropertyChangedEventHandler _propertyChanged;
         private AuthenticationStateProvider _authenticationStateProvider;
@@ -54,18 +55,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                                  AuthenticationStateProvider authenticationStateProvider,
                                  OneDasExplorerStateManager stateManager,
                                  OneDasDatabaseManager databaseManager,
+                                 OneDasExplorerOptions options,
                                  DataService dataService)
         {
             _jsRuntime = jsRuntime;
             _authenticationStateProvider = authenticationStateProvider;
             _databaseManager = databaseManager;
+            _options = options;
             _dataService = dataService;
 
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
             this.CsvRowIndexFormatValues = Utilities.GetEnumValues<CsvRowIndexFormat>();
-            this.NewsPaper = NewsPaper.Load();
+            this.NewsPaper = NewsPaper.Load(Path.Combine(options.DataBaseFolderPath, "news.json"));
             this.VisualizeBeginAtZero = true;
 
             // campaign containers and dependent init steps
@@ -499,7 +502,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             if (this.CampaignContainer != null)
             {
-                var folderPath = Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS", this.CampaignContainer.PhysicalName);
+                var folderPath = Path.Combine(_options.DataBaseFolderPath, "ATTACHMENTS", this.CampaignContainer.PhysicalName);
 
                 if (Directory.Exists(folderPath))
                     this.Attachments = Directory.GetFiles(folderPath, "*").ToList();

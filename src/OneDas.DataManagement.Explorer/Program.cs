@@ -1,7 +1,4 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -19,13 +16,15 @@ namespace OneDas.DataManagement.Explorer
     {
         #region Fields
 
-        private static OneDasExplorerOptions _options;
-        private static IConfiguration _configuration;
         private static ILoggerFactory _loggerFactory;
 
         #endregion
 
         #region Properties
+
+        public static string OptionsFilePath { get; private set; }
+
+        public static OneDasExplorerOptions Options { get; private set; }
 
         public static OneDasDatabaseManager DatabaseManager { get; private set; }
 
@@ -57,30 +56,16 @@ namespace OneDas.DataManagement.Explorer
             });
 
             // load configuration
-            var configurationFileName = "settings.json";
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(new PhysicalFileProvider(appdataFolderPath), path: configurationFileName, optional: true, reloadOnChange: true);
+            Program.OptionsFilePath = Path.Combine(appdataFolderPath, "settings.json");
 
-            _configuration = configurationBuilder.Build();
-            _options = _configuration.Get<OneDasExplorerOptions>();
-
-            if (_options == null)
+            if (File.Exists(Program.OptionsFilePath))
             {
-                _options = new OneDasExplorerOptions();
-                _configuration.Bind(_options);
-                _options.Save(appdataFolderPath);
+                Program.Options = OneDasExplorerOptions.Load(Program.OptionsFilePath);
             }
-
-            // change current directory to database location
-            var currentDirectory = Environment.CurrentDirectory;
-
-            if (Directory.Exists(_options.DataBaseFolderPath))
-                Environment.CurrentDirectory = _options.DataBaseFolderPath;
-
-            if (!OneDasUtilities.ValidateDatabaseFolderPath(Environment.CurrentDirectory, out var message))
+            else
             {
-                Console.WriteLine(message);
-                return 1;
+                Program.Options = new OneDasExplorerOptions();
+                Program.Options.Save(Program.OptionsFilePath);
             }
 
             // load and update database
@@ -89,16 +74,22 @@ namespace OneDas.DataManagement.Explorer
 
             // service vs. interactive
             if (isWindowsService)
-                await Program.CreateHostBuilder(currentDirectory, logFolderPath).UseWindowsService().Build().RunAsync();
+                await Program
+                    .CreateHostBuilder(Environment.CurrentDirectory, logFolderPath)
+                    .UseWindowsService()
+                    .Build()
+                    .RunAsync();
             else
-                await Program.CreateHostBuilder(currentDirectory, logFolderPath).Build().RunAsync();
+                await Program
+                    .CreateHostBuilder(Environment.CurrentDirectory, logFolderPath)
+                    .Build()
+                    .RunAsync();
 
             return 0;
         }
 
         public static IHostBuilder CreateHostBuilder(string currentDirectory, string logFolderPath) => 
             Host.CreateDefaultBuilder()
-                .ConfigureServices(services => services.Configure<OneDasExplorerOptions>(_configuration))
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
@@ -112,7 +103,7 @@ namespace OneDas.DataManagement.Explorer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls(_options.AspBaseUrl);
+                    webBuilder.UseUrls(Program.Options.AspBaseUrl);
                     webBuilder.UseContentRoot(currentDirectory);
                     webBuilder.SuppressStatusMessages(true);
                 });

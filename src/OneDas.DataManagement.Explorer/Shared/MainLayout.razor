@@ -1,9 +1,35 @@
 ﻿@inherits LayoutComponentBase
+@inject OneDasExplorerStateManager StateManager
 
-<div class="flex-row">
-    <NavMenu />
-</div>
+@if (this.StateManager.State == OneDasExplorerState.FirstStart)
+{
+    <StartupWizard />
+}
+else
+{
+    <div class="flex-row">
+        <NavMenu />
+    </div>
 
-<div class="main">
-    @Body
-</div>
+    <div class="main">
+        @Body
+    </div>
+}
+
+@code 
+{
+    protected override void OnParametersSet()
+    {
+        this.StateManager.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(OneDasExplorerStateManager.State))
+            {
+                this.InvokeAsync(() =>
+                {
+                    this.StateHasChanged();
+                });
+            }
+        };
+    }
+}
+

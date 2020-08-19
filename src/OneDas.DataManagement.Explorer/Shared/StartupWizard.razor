@@ -1,0 +1,20 @@
+﻿<div class="startup-settings-box">
+    <div class="startup-settings-subbox">
+        <MatBlazor.MatHeadline2>Welcome to your new OneDAS Explorer instance!</MatBlazor.MatHeadline2>
+        <MatBlazor.MatSubtitle1>Please select the database location to continue.</MatBlazor.MatSubtitle1>
+
+        <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
+                      Label="Database Location">
+        </MatTextField>
+
+        <MatButton @onclick="this.TryRunApp"
+                   Outlined="true">
+            Continue
+        </MatButton>
+
+        @if (!string.IsNullOrWhiteSpace(this.Error))
+        {
+            <MatBlazor.MatSubtitle2>@this.Error</MatBlazor.MatSubtitle2>
+        }
+    </div>
+</div>

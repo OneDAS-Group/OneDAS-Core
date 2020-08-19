@@ -46,6 +46,26 @@ app {
     width: 100%;
 }
 
+.startup-settings-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    background-color: white;
+    margin-top: 10rem;
+    padding-bottom: 2rem;
+}
+
+.startup-settings-subbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .startup-settings-subbox > .mdc-button {
+        align-self: end;
+    }
+
 .main {
     display: flex;
     flex-direction: row;
@@ -833,10 +853,6 @@ app {
     margin: 15px;
 }
 
-    .settings-content-box ul {
-        height: 100%;
-    }
-
 .clear-margin {
     margin: 0;
 }
@@ -845,13 +861,11 @@ app {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    width: 100%;
 }
 
 .flex-column {
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 
 .h-100 {

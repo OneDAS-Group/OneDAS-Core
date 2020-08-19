@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Hubs;
@@ -99,6 +98,7 @@ namespace OneDas.DataManagement.Explorer
             services.AddScoped<DataService>();
             services.AddScoped<JwtService<IdentityUser>>();
             services.AddSingleton(Program.DatabaseManager);
+            services.AddSingleton(Program.Options);
             services.AddSingleton<OneDasExplorerStateManager>();
         }
 
@@ -106,15 +106,13 @@ namespace OneDas.DataManagement.Explorer
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               ApplicationDbContext userDB,
-                              OneDasExplorerStateManager stateManager,
+                              OneDasExplorerStateManager stateManager, // stateManager is requested to create an instance and let the timers start
                               UserManager<IdentityUser> userManager,
-                              IOptions<OneDasExplorerOptions> options)
+                              OneDasExplorerOptions options)
         {
-            // stateManager is requested to create an instance and let the timers start
-
             // logger
             var logger = loggerFactory.CreateLogger("OneDAS Explorer");
-            logger.LogInformation($"Listening on: { options.Value.AspBaseUrl }");
+            logger.LogInformation($"Listening on: { options.AspBaseUrl }");
 
             // database
             if (userDB.Database.EnsureCreated())
@@ -164,18 +162,18 @@ namespace OneDas.DataManagement.Explorer
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "ATTACHMENTS")),
+                FileProvider = new LazyPhysicalFileProvider(options, "ATTACHMENTS"),
                 RequestPath = "/attachments",
                 ServeUnknownFileTypes = true
             });
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "PRESETS")),
+                FileProvider = new LazyPhysicalFileProvider(options, "PRESETS"),
                 RequestPath = "/presets"
             });
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "EXPORT")),
+                FileProvider = new LazyPhysicalFileProvider(options, "EXPORT"),
                 RequestPath = "/export"
             });
 
