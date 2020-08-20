@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -13,8 +12,6 @@ using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Hubs;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
-using System.IO;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer
@@ -100,53 +97,18 @@ namespace OneDas.DataManagement.Explorer
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
             services.AddSingleton<OneDasExplorerStateManager>();
+            services.AddSingleton<OneDasExplorerUserManager>();
         }
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory,
-                              ApplicationDbContext userDB,
                               OneDasExplorerStateManager stateManager, // stateManager is requested to create an instance and let the timers start
-                              UserManager<IdentityUser> userManager,
                               OneDasExplorerOptions options)
         {
             // logger
             var logger = loggerFactory.CreateLogger("OneDAS Explorer");
             logger.LogInformation($"Listening on: { options.AspBaseUrl }");
-
-            // database
-            if (userDB.Database.EnsureCreated())
-                logger.LogInformation($"SQLite database initialized.");
-
-            // ensure there is a root user
-            if (userManager.FindByNameAsync("root@root.org").Result == null)
-            {
-                var user = new IdentityUser()
-                {
-                    UserName = "root@root.org",
-                };
-
-                var defaultPassword = "#root0/User1";
-                var result = userManager.CreateAsync(user, defaultPassword).Result;
-
-                if (result.Succeeded)
-                {
-                    var claim = new Claim("IsAdmin", "true");
-                    userManager.AddClaimAsync(user, claim).Wait();
-                }
-            }
-
-            // ensure there is a test user
-            if (userManager.FindByNameAsync("test@root.org").Result == null)
-            {
-                var user = new IdentityUser()
-                {
-                    UserName = "test@root.org",
-                };
-
-                var defaultPassword = "#test0/User1";
-                var result = userManager.CreateAsync(user, defaultPassword).Result;
-            }
 
             // ...
             if (env.IsDevelopment())

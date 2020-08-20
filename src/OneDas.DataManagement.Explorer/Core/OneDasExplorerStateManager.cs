@@ -16,6 +16,7 @@ namespace OneDas.DataManagement.Explorer.Core
         private ILogger _logger;
         private System.Timers.Timer _activityTimer;
         private OneDasDatabaseManager _databaseManager;
+        private OneDasExplorerUserManager _userManager;
         private OneDasExplorerOptions _options;
         private OneDasExplorerState _state;
         private Aggregator _aggregator;
@@ -26,9 +27,11 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager,
                                           ILoggerFactory loggerFactory,
+                                          OneDasExplorerUserManager userManager,
                                           OneDasExplorerOptions options)
         {
             _databaseManager = databaseManager;
+            _userManager = userManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _options = options;
             _aggregator = new Aggregator(_options.AggregationChunkSizeMB, _logger, loggerFactory);
@@ -55,6 +58,7 @@ namespace OneDas.DataManagement.Explorer.Core
             try
             {
                 _databaseManager.Initialize(_options.DataBaseFolderPath);
+                _userManager.Initialize();
                 _options.Save(Program.OptionsFilePath);
                 this.OnActivityTimerElapsed();
                 exception = null;
