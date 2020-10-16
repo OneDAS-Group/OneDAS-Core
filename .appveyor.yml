@@ -60,11 +60,13 @@ artifacts:
   - path: ./artifacts/packages/**/*.nupkg
   - path: ./artifacts/msi/**/*.msi
 
-deploy:
+before_deploy:
 
 # Docker
   - ps: docker login -u="apollo3zehn" -p="$env:DOCKER_PASSWORD"
   - ps: docker push onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER
+
+deploy:
 
 # MyGet (dev)
   - provider: NuGet
