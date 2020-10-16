@@ -60,11 +60,11 @@ artifacts:
   - path: ./artifacts/packages/**/*.nupkg
   - path: ./artifacts/msi/**/*.msi
 
-before_deploy:
+deploy_script:
 
 # Docker
-  - ps: docker login -u="apollo3zehn" -p="$env:DOCKER_PASSWORD"
-  - ps: docker push onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER
+  - ps: if ($isLinux) { docker login -u="apollo3zehn" -p="$env:DOCKER_PASSWORD" }
+  - ps: if ($isLinux) { docker push onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER }
 
 deploy:
 
