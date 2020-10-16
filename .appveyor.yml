@@ -64,7 +64,7 @@ after_test:
 
 # Docker
   - ps: if ($isLinux) { docker login -u="apollo3zehn" -p="$env:DOCKER_PASSWORD" }
-  - ps: if ($isLinux) { docker push onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER }
+  - ps: if ($isLinux) { docker push apollo3zehn/onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER }
 
 deploy:
 
