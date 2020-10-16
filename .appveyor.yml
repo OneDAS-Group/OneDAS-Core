@@ -47,7 +47,7 @@ build_script:
 #  - ps: if ($isWindows) { dotnet publish .\src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
 #  - ps: if ($isWindows) { dotnet publish .\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:BuildProjectReferences=false }
 
-  - ps: if ($isLinux) { sudo docker build -t onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER . }
+  - ps: if ($isLinux) { sudo docker build -t apollo3zehn/onedas-explorer:1.0.0.alpha.3.$Env:APPVEYOR_BUILD_NUMBER . }
 
 #  - ps: if ($isWindows) { msbuild .\src\OneDas.Core.Deployment\OneDas.Core.Deployment.wixproj     /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }
 #  - ps: if ($isWindows) { msbuild .\src\OneDas.DataManagement.Deployment\OneDas.DataManagement.Deployment.wixproj       /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }
