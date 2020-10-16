@@ -5,7 +5,7 @@ WORKDIR /source
 # copy everything else and build app
 COPY . .
 WORKDIR /source/src/OneDas.DataManagement.Explorer
-RUN dotnet dotnet tool install -g Microsoft.Web.LibraryManager.Cli
+RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 RUN libman restore
 RUN dotnet publish -c release -o /app -r linux-x64 --self-contained false
 
