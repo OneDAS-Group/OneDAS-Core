@@ -54,7 +54,7 @@
     <PropertyGroup>
       <WixApplicationName>OneDas.DataManagement.Explorer</WixApplicationName>
       <WixConfiguration>Release</WixConfiguration>
-      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\netcoreapp3.1\win10-x64\publish</WixHarvestPath>
+      <WixHarvestPath>.\..\..\artifacts\bin\$(WixApplicationName)\$(WixConfiguration)\net5.0\publish</WixHarvestPath>
 	    <DefineConstants>WixApplicationName=$(WixApplicationName);WixHarvestPath=$(WixHarvestPath);WixVersion=$(Version);WixFileVersion=$(FileVersion)</DefineConstants>
       <OutputName>OneDAS-DataManagement-Explorer-$(Version)</OutputName>
       <TargetName>$(OutputName)</TargetName>

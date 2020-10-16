@@ -1,9 +1,8 @@
-﻿using BlazorInputFile;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.ViewModels;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -54,13 +53,14 @@ namespace OneDas.DataManagement.Explorer.Shared
 			await JsInterop.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
 		}
 
-        private async Task OnLoadExportSettingsAsync(IFileListEntry[] files)
+        private async Task OnLoadExportSettingsAsync(InputFileChangeEventArgs e)
         {
-            var file = files.FirstOrDefault();
+            var file = e.File;
 
             if (file != null)
             {
-                var exportConfiguration = await JsonSerializer.DeserializeAsync<ExportConfiguration>(file.Data);
+                using var utf8json = file.OpenReadStream();
+                var exportConfiguration = await JsonSerializer.DeserializeAsync<ExportConfiguration>(utf8json);
                 exportConfiguration = ExportConfiguration.UpdateVersion(exportConfiguration);
                 this.AppState.SetExportConfiguration(exportConfiguration);
             }

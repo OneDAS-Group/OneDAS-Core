@@ -139,7 +139,7 @@ namespace OneDas.DataManagement.Explorer
                 RequestPath = "/export"
             });
 
-            // routing
+            // routing (for REST API)
             app.UseRouting();
 
             // default authentication
@@ -165,6 +165,7 @@ namespace OneDas.DataManagement.Explorer
             // endpoints
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapHub<DataHub>("datahub");
                 endpoints.MapFallbackToPage("/_Host");

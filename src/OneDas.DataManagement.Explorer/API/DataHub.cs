@@ -367,7 +367,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                             doubleData = (double[])dataRecord.Dataset;
 
                         // avoid throwing an uncatched exception here because this would crash the app
-                        // the task in cancelled anyway
+                        // the task is cancelled anyway
                         try
                         {
                            await writer.WriteAsync(doubleData, cancellationToken);

@@ -1,14 +1,14 @@
 # https://hub.docker.com/_/microsoft-dotnet-core
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /source
 
 # copy everything else and build app
 COPY . .
 WORKDIR /source/src/OneDas.DataManagement.Explorer
-RUN dotnet publish -c release -o /app -r linux-musl-x64 --self-contained false
+RUN dotnet publish -c release -o /app -r linux-x64 --self-contained false
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
 COPY --from=build /app ./
 

@@ -41,7 +41,7 @@ build_script:
 #  - ps: dotnet build ./extensions/OneDas.Extension.Udp/OneDas.Extension.Udp.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
 #  - ps: if ($isWindows) { dotnet publish .\src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
-#  - ps: if ($isWindows) { dotnet publish .\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
+#  - ps: if ($isWindows) { dotnet publish .\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:BuildProjectReferences=false }
 
   - ps: if ($isLinux) { sudo docker build -t onedas-explorer:0.0.0-$Env:APPVEYOR_BUILD_NUMBER . }
 

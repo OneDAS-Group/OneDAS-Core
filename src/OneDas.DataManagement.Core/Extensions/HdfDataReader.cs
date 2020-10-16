@@ -101,33 +101,37 @@ namespace OneDas.DataManagement.Extensions
                             {
                                 var actualFileLength = (int)Math.Round(fileLength * (double)(lastIndex + 1) / 1440, MidpointRounding.AwayFromZero);
                                 var fileBlock = actualFileLength - fileOffset;
-                                var currentBlock = Math.Min(remainingBufferLength, fileBlock);
-                                var datasetPath = dataset.GetPath();
-
-                                if (IOHelper.CheckLinkExists(fileId, datasetPath))
+                                
+                                if (fileBlock >= 0) /* data available in file */
                                 {
-                                    var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
+                                    var currentBlock = Math.Min(remainingBufferLength, fileBlock);
+                                    var datasetPath = dataset.GetPath();
 
-                                    byte[] currentStatusSet = null;
+                                    if (IOHelper.CheckLinkExists(fileId, datasetPath))
+                                    {
+                                        var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
 
-                                    if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
-                                        currentStatusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
+                                        byte[] currentStatusSet = null;
 
-                                    // write data
-                                    currentDataset.CopyTo(data.AsSpan(bufferOffset));
+                                        if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
+                                            currentStatusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
 
-                                    if (currentStatusSet != null)
-                                        currentStatusSet.CopyTo(statusSet.AsSpan(bufferOffset));
+                                        // write data
+                                        currentDataset.CopyTo(data.AsSpan(bufferOffset));
 
-                                    // update loop state
-                                    fileOffset += currentBlock; // file offset
-                                    bufferOffset += currentBlock; // buffer offset
-                                    compensation -= currentBlock; // file remaining 
-                                    remainingBufferLength -= currentBlock; // buffer remaining
-                                }
-                                else
-                                {
-                                    this.Logger.LogWarning($"Could not find dataset '{datasetPath}'.");
+                                        if (currentStatusSet != null)
+                                            currentStatusSet.CopyTo(statusSet.AsSpan(bufferOffset));
+
+                                        // update loop state
+                                        fileOffset += currentBlock; // file offset
+                                        bufferOffset += currentBlock; // buffer offset
+                                        compensation -= currentBlock; // file remaining 
+                                        remainingBufferLength -= currentBlock; // buffer remaining
+                                    }
+                                    else
+                                    {
+                                        this.Logger.LogWarning($"Could not find dataset '{datasetPath}'.");
+                                    }
                                 }
                             }
                         }
