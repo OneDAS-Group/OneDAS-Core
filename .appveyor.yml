@@ -60,7 +60,7 @@ artifacts:
   - path: ./artifacts/packages/**/*.nupkg
   - path: ./artifacts/msi/**/*.msi
 
-deploy_script:
+after_test:
 
 # Docker
   - ps: if ($isLinux) { docker login -u="apollo3zehn" -p="$env:DOCKER_PASSWORD" }
