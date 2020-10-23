@@ -36,20 +36,10 @@ namespace OneDas.DataManagement.Explorer.Core
                 string rootUsername = Environment.GetEnvironmentVariable("ONEDAS_ROOT_USERNAME");
                 string rootPassword = Environment.GetEnvironmentVariable("ONEDAS_ROOT_PASSWORD");
 
-                // remove any references to defaultUserName
-                if (!string.IsNullOrWhiteSpace(rootUsername))
-                {
-                    var userToDelete = userManager.FindByNameAsync(defaultRootUsername).Result;
-
-                    if (userToDelete != null)
-                        userManager.DeleteAsync(userToDelete);
-                }
                 // fallback to default user
-                else
-                {
+                if (string.IsNullOrWhiteSpace(rootUsername))
                     rootUsername = defaultRootUsername;
-                }
-
+                
                 // fallback to default password
                 if (string.IsNullOrWhiteSpace(rootPassword))
                     rootPassword = defaultRootPassword;
@@ -57,17 +47,26 @@ namespace OneDas.DataManagement.Explorer.Core
                 // ensure there is a root user
                 if (userManager.FindByNameAsync(rootUsername).Result == null)
                 {
-                    var user = new IdentityUser()
-                    {
-                        UserName = rootUsername,
-                    };
-
+                    var user = new IdentityUser(rootUsername);
                     var result = userManager.CreateAsync(user, rootPassword).Result;
 
                     if (result.Succeeded)
                     {
                         var claim = new Claim("IsAdmin", "true");
                         userManager.AddClaimAsync(user, claim).Wait();
+
+                        // remove default root user
+                        if (rootUsername != defaultRootUsername)
+                        {
+                            var userToDelete = userManager.FindByNameAsync(defaultRootUsername).Result;
+
+                            if (userToDelete != null)
+                                userManager.DeleteAsync(userToDelete);
+                        }
+                    }
+                    else
+                    {
+                        var _ = userManager.CreateAsync(new IdentityUser(defaultRootUsername), defaultRootPassword).Result;
                     }
                 }
 
