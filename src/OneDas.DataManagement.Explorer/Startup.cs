@@ -88,6 +88,9 @@ namespace OneDas.DataManagement.Explorer
             services.AddSignalR(options => options.EnableDetailedErrors = true)
                 .AddMessagePackProtocol();
 
+            // swagger
+            services.AddSwaggerDocument();
+
             // custom
             services.AddHttpContextAccessor();
             services.AddScoped<AppStateViewModel>();
@@ -138,6 +141,10 @@ namespace OneDas.DataManagement.Explorer
                 FileProvider = new LazyPhysicalFileProvider(options, "EXPORT"),
                 RequestPath = "/export"
             });
+
+            // swagger
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
 
             // routing (for REST API)
             app.UseRouting();
