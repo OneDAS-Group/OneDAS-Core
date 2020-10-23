@@ -131,7 +131,7 @@ classdef MatOneDasConnector
                 'yyyy-MM-ddTHH:mm:ssZ', ...
                 CultureInfo.InvariantCulture);
             
-            netDateTime = DateTime.SpecifyKind(netDateTime, DateTimeKind.Utc);
+            netDateTime = netDateTime.ToUniversalTime();
         end
     end
 end
