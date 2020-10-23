@@ -30,15 +30,39 @@ namespace OneDas.DataManagement.Explorer.Core
                     _logger.LogInformation($"SQLite database initialized.");
 
                 // ensure there is a root user
-                if (userManager.FindByNameAsync("root@root.org").Result == null)
+                var defaultRootUsername = "root@root.org";
+                var defaultRootPassword = "#root0/User1";
+
+                string rootUsername = Environment.GetEnvironmentVariable("ONEDAS_ROOT_USERNAME");
+                string rootPassword = Environment.GetEnvironmentVariable("ONEDAS_ROOT_PASSWORD");
+
+                // remove any references to defaultUserName
+                if (!string.IsNullOrWhiteSpace(rootUsername))
+                {
+                    var userToDelete = userManager.FindByNameAsync(defaultRootUsername).Result;
+
+                    if (userToDelete != null)
+                        userManager.DeleteAsync(userToDelete);
+                }
+                // fallback to default user
+                else
+                {
+                    rootUsername = defaultRootUsername;
+                }
+
+                // fallback to default password
+                if (string.IsNullOrWhiteSpace(rootPassword))
+                    rootPassword = defaultRootPassword;
+
+                // ensure there is a root user
+                if (userManager.FindByNameAsync(rootUsername).Result == null)
                 {
                     var user = new IdentityUser()
                     {
-                        UserName = "root@root.org",
+                        UserName = rootUsername,
                     };
 
-                    var defaultPassword = "#root0/User1";
-                    var result = userManager.CreateAsync(user, defaultPassword).Result;
+                    var result = userManager.CreateAsync(user, rootPassword).Result;
 
                     if (result.Succeeded)
                     {
