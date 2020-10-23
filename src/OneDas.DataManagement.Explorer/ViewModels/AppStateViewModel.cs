@@ -74,9 +74,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             // campaign containers and dependent init steps
             var campaignContainers = databaseManager.Database.CampaignContainers;
             var restrictedCampaigns = databaseManager.Config.RestrictedCampaigns;
-            this.CampaignContainers = GetAccessibleCampainContainersAsync(campaignContainers, restrictedCampaigns).Result.AsReadOnly();
+            var hiddenCampaigns = new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
+            this.CampaignContainersInfo = this.SplitCampainContainersAsync(campaignContainers, restrictedCampaigns, hiddenCampaigns).Result;
 
-            this.SampleRateValues = this.CampaignContainers.SelectMany(campaignContainer =>
+            this.SampleRateValues = this.CampaignContainersInfo.Accessible.SelectMany(campaignContainer =>
             {
                 return campaignContainer.Campaign.Variables.SelectMany(variable =>
                 {
@@ -221,7 +222,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public List<string> Attachments { get; private set; }
 
-        public ReadOnlyCollection<CampaignContainer> CampaignContainers { get; }
+        public SplittedCampaignContainers CampaignContainersInfo { get; }
 
         public Dictionary<string, List<VariableInfoViewModel>> GroupedVariables { get; private set; }
 
@@ -444,7 +445,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 var variableName = pathParts[4];
                 var datasetName = pathParts[5];
 
-                var campaignContainer = this.CampaignContainers.FirstOrDefault(current => current.Id == campaignName);
+                var campaignContainer = this.CampaignContainersInfo.Accessible.FirstOrDefault(current => current.Id == campaignName);
 
                 if (campaignContainer != null)
                 {
@@ -572,7 +573,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             _campaignContainerToVariablesMap = new Dictionary<CampaignContainer, List<VariableInfoViewModel>>();
 
-            foreach (var campaignContainer in this.CampaignContainers)
+            foreach (var campaignContainer in this.CampaignContainersInfo.Accessible)
             {
                 _campaignContainerToVariablesMap[campaignContainer] = campaignContainer.Campaign.Variables.Select(variable =>
                 {
@@ -597,18 +598,33 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 return new List<DatasetInfoViewModel>();
         }
 
-        private async Task<List<CampaignContainer>> GetAccessibleCampainContainersAsync(List<CampaignContainer> campaignContainers, List<string> restrictedCampaigns)
+        private async Task<SplittedCampaignContainers> SplitCampainContainersAsync(List<CampaignContainer> campaignContainers,
+                                                                                  List<string> restrictedCampaigns,
+                                                                                  List<string> hiddenCampaigns)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var principal = authState.User;
-            var visibleCampaigns = new List<CampaignContainer>();
 
-            return campaignContainers.Where(campaignContainer =>
+            var accessible = campaignContainers.Where(campaignContainer =>
             {
                 return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign.Id, restrictedCampaigns)
-                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" });
+                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, hiddenCampaigns);
             }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
+
+            var restricted = campaignContainers.Where(campaignContainer =>
+            {
+                return !Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign.Id, restrictedCampaigns)
+                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, hiddenCampaigns);
+            }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
+
+            return new SplittedCampaignContainers(accessible, restricted);
         }
+
+        #endregion
+
+        #region Records
+
+        public record SplittedCampaignContainers(List<CampaignContainer> Accessible, List<CampaignContainer> Restricted);
 
         #endregion
 

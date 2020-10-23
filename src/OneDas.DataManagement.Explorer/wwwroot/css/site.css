@@ -317,6 +317,14 @@ app {
     color: var(--active-color);
 }
 
+.campaign-item.disabled {
+    color: var(--disabled-color);
+}
+
+    .campaign-item.disabled div {
+        color: var(--disabled-color) !important;
+    }
+
 .campaign-box-selected {
     display: flex;
     flex-direction: column;
