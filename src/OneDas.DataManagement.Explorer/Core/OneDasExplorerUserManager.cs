@@ -73,13 +73,11 @@ namespace OneDas.DataManagement.Explorer.Core
                 // ensure there is a test user
                 if (userManager.FindByNameAsync("test@root.org").Result == null)
                 {
-                    var user = new IdentityUser()
-                    {
-                        UserName = "test@root.org",
-                    };
+                    var defaultTestUsername = "test@root.org";
+                    var defaultTestPassword = "#test0/User1";
+                    var user = new IdentityUser(defaultTestUsername);
 
-                    var defaultPassword = "#test0/User1";
-                    var result = userManager.CreateAsync(user, defaultPassword).Result;
+                    var _ = userManager.CreateAsync(user, defaultTestPassword).Result;
                 }
             }
         }
