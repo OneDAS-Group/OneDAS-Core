@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using OneDas.DataManagement.Explorer.Core;
-using Serilog.Extensions.Logging;
 using System;
 using System.Globalization;
 using System.IO;
@@ -52,7 +51,6 @@ namespace OneDas.DataManagement.Explorer
             _loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                builder.AddFile(Path.Combine(logFolderPath, "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
             });
 
             // load configuration
@@ -96,9 +94,6 @@ namespace OneDas.DataManagement.Explorer
 
                     logging.AddConsole();
                     logging.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
-
-                    logging.AddFile(Path.Combine(logFolderPath, "OneDasExplorer-{Date}.txt"), outputTemplate: OneDasConstants.FileLoggerTemplate);
-                    logging.AddFilter<SerilogLoggerProvider>("Microsoft", LogLevel.None);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
