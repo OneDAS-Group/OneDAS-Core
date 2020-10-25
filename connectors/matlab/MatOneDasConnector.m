@@ -6,15 +6,15 @@ classdef MatOneDasConnector
     
     methods
         
-        function self = MatOneDasConnector(host, port, username, password)
+        function self = MatOneDasConnector(host, port, secure, username, password)
             import OneDas.DataManagement.Connector.*
             
-            if nargin == 2
-                self.Connector = OneDasConnector(host, port, @(message) self.Print(message));    
-            elseif nargin == 4
-                self.Connector = OneDasConnector(host, port, @(message) self.Print(message), username, password);    
+            if nargin == 3
+                self.Connector = OneDasConnector(host, port, secure, @(message) self.Print(message));    
+            elseif nargin == 5
+                self.Connector = OneDasConnector(host, port, secure, @(message) self.Print(message), username, password);    
             else
-                error('Two our four arguments must be passed.')
+                error('Three our five arguments must be passed.')
             end
         end
         

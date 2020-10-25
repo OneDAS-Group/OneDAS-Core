@@ -8,6 +8,7 @@ host            = 'localhost';
 port         	= 80;
 username        = 'test@root.org';
 password        = '#test0/User1'; % password = input('Please enter your password: ')
+secure          = false; % http + ws vs https + wss
 targetDir       = 'data';
 
 dateTimeBegin 	= datetime(2020, 02, 01, 0, 0, 0, 'TimeZone', 'UTC');
@@ -20,7 +21,7 @@ channels = { ...
 };
 
 %% export data
-connector = MatOneDasConnector(host, port, username, password); % or without authentication: ... = MatOneDasConnector(host, port)
+connector = MatOneDasConnector(host, port, secure, username, password); % or without authentication: ... = MatOneDasConnector(host, port, secure)
 
 connector.Export( ...
     dateTimeBegin, ...

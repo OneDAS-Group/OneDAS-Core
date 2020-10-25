@@ -46,7 +46,7 @@ class OneDasConnector():
     _channel_index = None
     _is_stream = None
 
-    def __init__(self, host, port, username="", password="", secure=False):
+    def __init__(self, host, port, secure, username="", password=""):
         
         self.host = host
         self.port = port

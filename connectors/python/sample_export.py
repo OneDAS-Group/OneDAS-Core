@@ -15,6 +15,7 @@ async def main():
     port = 80
     username = "test@root.org"
     password = "#test0/User1" # password = input("Please enter your password: ")
+    secure = False # http + ws vs https + wss
 
     begin = datetime(2020, 2, 1, 0, 0, tzinfo=timezone.utc)
     end   = datetime(2020, 2, 3, 0, 0, tzinfo=timezone.utc)
@@ -27,7 +28,7 @@ async def main():
     target_folder = "data"
 
     # export data
-    connector = OneDasConnector(host, port, username, password) # or without authentication: ... = OneDasConnector(host, port)
+    connector = OneDasConnector(host, port, secure, username, password) # or without authentication: ... = OneDasConnector(host, port, secure)
     await connector.export(begin, end, FileFormat.MAT73, FileGranularity.Day, channels, target_folder)   
 
 asyncio.run(main())

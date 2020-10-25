@@ -41,7 +41,7 @@ namespace OneDas.DataManagement.Connector
 
         #region Methods
 
-        public OneDasConnector(string hostName, int port, Action<string> logAction, string userName = "", string password = "", bool secure = false)
+        public OneDasConnector(string hostName, int port, bool secure, Action<string> logAction, string userName = "", string password = "")
         {
             // base url
             var scheme = secure ? "https" : "http";
