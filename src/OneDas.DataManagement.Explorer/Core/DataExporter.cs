@@ -6,6 +6,7 @@ using OneDas.Extension.Csv;
 using OneDas.Extension.Famos;
 using OneDas.Extension.Mat73;
 using OneDas.Infrastructure;
+using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -182,10 +183,10 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 try
                 {
-                    reader.Read(nativeDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, progressRecord =>
+                    foreach (var progressRecord in reader.Read(nativeDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, cancellationToken))
                     {
                         this.ProcessData(dataWriter, progressRecord);
-                    }, cancellationToken);
+                    }
                 }
                 finally
                 {
@@ -203,10 +204,10 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 try
                 {
-                    reader.Read(aggregatedDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, progressRecord =>
+                    foreach (var progressRecord in reader.Read(aggregatedDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, cancellationToken))
                     {
                         this.ProcessData(dataWriter, progressRecord);
-                    }, cancellationToken);
+                    }
                 }
                 finally
                 {

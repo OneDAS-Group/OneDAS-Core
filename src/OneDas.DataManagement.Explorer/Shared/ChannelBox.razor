@@ -1,6 +1,7 @@
 ﻿@inherits AppStateComponentBase
 
-@if (this.AppState.GroupedVariables != null)
+
+@if (this.AppState.GroupedVariables != null) // user has access to campaign
 {
     <div class="available-groups">
 
@@ -39,4 +40,8 @@
             <Paginator Length="this.AppState.VariableGroup.Count" PageSize="this.VariablePageSize" @bind-Page="this.VariablePage"></Paginator>
         }
     </div>
+} 
+else if (this.AppState.CampaignContainer != null) // user has no access to campaign
+{
+    <span>You do not have access to this campaign.@(!string.IsNullOrWhiteSpace(this.AppState.CampaignContainer.CampaignMeta.ResponsiblePerson) ? $" Please contact {this.AppState.CampaignContainer.CampaignMeta.ResponsiblePerson} to request permission." : "")</span>
 }

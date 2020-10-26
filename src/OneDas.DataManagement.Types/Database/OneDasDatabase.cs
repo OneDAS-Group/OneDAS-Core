@@ -28,18 +28,56 @@ namespace OneDas.DataManagement.Database
             return this.CampaignContainers.Select(container => container.Campaign).ToList();
         }
 
-        public bool TryFindDataset(string channelName, out DatasetInfo dataset)
+        public bool TryFindCampaignById(string id, out CampaignInfo campaign)
         {
-            var channelNameParts = channelName.Split("/");
+            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Id == id);
+            campaign = campaignContainer?.Campaign;
 
-            if (channelNameParts.Length != 6)
-                throw new Exception($"The channel name '{channelName}' is invalid.");
+            return campaign != null;
+        }
 
-            var campaignName = $"/{channelNameParts[1]}/{channelNameParts[2]}/{channelNameParts[3]}";
-            var variableName = channelNameParts[4];
-            var datasetName = channelNameParts[5];
+        public bool TryFindVariableById(string campaignId, string variableId, out VariableInfo variable)
+        {
+            variable = default;
 
-            return this.TryFindDataset(campaignName, variableName, datasetName, out dataset);
+            if (this.TryFindCampaignById(campaignId, out var campaign))
+            {
+                variable = campaign.Variables.FirstOrDefault(variable => variable.Id == variableId);
+
+                if (variable == null)
+                    variable = campaign.Variables.FirstOrDefault(variable => variable.Name == variableId);
+            }
+
+            return variable != null;
+        }
+
+        public bool TryFindDatasetById(string campaignId, string variableId, string datsetId, out DatasetInfo dataset)
+        {
+            dataset = default;
+
+            if (this.TryFindVariableById(campaignId, variableId, out var variable))
+            {
+                dataset = variable.Datasets.FirstOrDefault(dataset => dataset.Id == datsetId);
+
+                if (dataset != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool TryFindDataset(string path, out DatasetInfo dataset)
+        {
+            var pathParts = path.Split("/");
+
+            if (pathParts.Length != 6)
+                throw new Exception($"The channel name '{path}' is invalid.");
+
+            var campaignName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
+            var variableName = pathParts[4];
+            var datasetName = pathParts[5];
+
+            return this.TryFindDatasetById(campaignName, variableName, datasetName, out dataset);
         }
 
         public bool TryFindDatasetsByGroup(string groupPath, out List<DatasetInfo> datasets)
@@ -54,31 +92,6 @@ namespace OneDas.DataManagement.Database
             var datasetName = groupPathParts[5];
 
             return this.TryFindDatasetsByGroup(campaignName, groupName, datasetName, out datasets);
-        }
-
-        private bool TryFindDataset(string campaignName, string variableName, string datasetName, out DatasetInfo dataset)
-        {
-            dataset = default;
-
-            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Id == campaignName);
-
-            if (campaignContainer != null)
-            {
-                var variable = campaignContainer.Campaign.Variables.FirstOrDefault(variable => variable.Id == variableName);
-
-                if (variable == null)
-                    variable = campaignContainer.Campaign.Variables.FirstOrDefault(variable => variable.Name == variableName);
-
-                if (variable != null)
-                {
-                    dataset = variable.Datasets.FirstOrDefault(dataset => dataset.Id == datasetName);
-
-                    if (dataset != null)
-                        return true;
-                }
-            }
-
-            return false;
         }
 
         private bool TryFindDatasetsByGroup(string campaignName, string groupName, string datasetName, out List<DatasetInfo> datasets)

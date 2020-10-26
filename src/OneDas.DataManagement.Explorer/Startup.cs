@@ -8,10 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Hubs;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer
@@ -89,7 +92,22 @@ namespace OneDas.DataManagement.Explorer
                 .AddMessagePackProtocol();
 
             // swagger
-            services.AddSwaggerDocument();
+            services.AddSwaggerDocument(config =>
+            {
+                config.Title = "OneDAS Explorer REST API";
+                config.Version = "v1";
+                config.Description = "Explore resources and get their data.";
+                config.OperationProcessors.Add(new OperationSecurityScopeProcessor("JWT Token"));
+                config.AddSecurity("JWT Token", Enumerable.Empty<string>(),
+                    new OpenApiSecurityScheme()
+                    {
+                        Type = OpenApiSecuritySchemeType.ApiKey,
+                        Name = "Authorization",
+                        In = OpenApiSecurityApiKeyLocation.Header,
+                        Description = "Copy this into the value field: Bearer {token}"
+                    }
+                );
+            });
 
             // custom
             services.AddHttpContextAccessor();

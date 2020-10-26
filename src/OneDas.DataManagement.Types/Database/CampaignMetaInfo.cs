@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace OneDas.DataManagement.Database
@@ -10,6 +10,7 @@ namespace OneDas.DataManagement.Database
         public CampaignMetaInfo(string id)
         {
             this.Id = id;
+            this.ResponsiblePerson = string.Empty;
             this.ShortDescription = string.Empty;
             this.LongDescription = string.Empty;
             this.Variables = new List<VariableMetaInfo>();
@@ -25,6 +26,8 @@ namespace OneDas.DataManagement.Database
         #region Properties
 
         public string Id { get; set; }
+
+        public string ResponsiblePerson { get; set; }
 
         public string ShortDescription { get; set; }
 

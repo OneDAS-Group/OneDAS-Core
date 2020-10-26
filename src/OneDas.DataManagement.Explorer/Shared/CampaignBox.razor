@@ -3,21 +3,17 @@
 <div class="campaign-box-available">
     <MatHeadline5>Available Campaigns</MatHeadline5>
     <ul>
-        @foreach (var campaignContainer in this.AppState.CampaignContainersInfo.Accessible)
+        @foreach (var campaignContainer in this.AppState.CampaignContainersInfo.Accessible.Concat(this.AppState.CampaignContainersInfo.Restricted))
         {
             <li @onclick="() => this.AppState.CampaignContainer = campaignContainer">
                 <div class="campaign-item @(this.AppState.CampaignContainer == campaignContainer ? "active" : "")">
-                    <div class="campaign-item-name">@campaignContainer.Id.TrimStart('/').Replace("/", " / ")</div>
-                    <div class="small-text">&nbsp;&nbsp;&nbsp;@campaignContainer.CampaignMeta.ShortDescription</div>
-                </div>
-            </li>
-        }
-
-        @foreach (var campaignContainer in this.AppState.CampaignContainersInfo.Restricted)
-        {
-            <li>
-                <div class="campaign-item disabled">
-                    <div class="campaign-item-name">@campaignContainer.Id.TrimStart('/').Replace("/", " / ")&nbsp;&nbsp;<i class="fas fa-lock"></i></div>
+                    <div class="campaign-item-name">
+                        @campaignContainer.Id.TrimStart('/').Replace("/", " / ")
+                        @if (this.AppState.CampaignContainersInfo.Restricted.Contains(campaignContainer))
+                        {
+                            <span>&nbsp; &nbsp;<i class="fas fa-lock"></i></span>
+                        }
+                    </div>
                     <div class="small-text">&nbsp;&nbsp;&nbsp;@campaignContainer.CampaignMeta.ShortDescription</div>
                 </div>
             </li>
@@ -37,14 +33,17 @@
                 <b>Start:&nbsp;</b> @this.AppState.CampaignContainer.Campaign.CampaignStart.ToString("dd.MM.yyyy") &nbsp;&nbsp;&nbsp; <b>End:&nbsp;</b> @this.AppState.CampaignContainer.Campaign.CampaignEnd.ToString("dd.MM.yyyy")
             </div>
 
-            <div class="campaign-box-selected-footer-icons">
-                @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
-                {
-                    <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />
-                }
+            @if (this.AppState.CampaignContainersInfo.Accessible.Contains(this.AppState.CampaignContainer))
+            {
+                <div class="campaign-box-selected-footer-icons">
+                    @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
+                    {
+                        <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />
+                    }
 
-                <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
-            </div>
+                    <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
+                </div>
+            }
         </div>
     }
     else

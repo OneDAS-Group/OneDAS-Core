@@ -238,7 +238,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 var blockSizeLimit = _aggregationChunkSizeMb * 1000 * 1000;
 
                 // read data
-                dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, progressRecord =>
+                foreach (var progressRecord in dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, CancellationToken.None))
                 {
                     var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
 
@@ -256,7 +256,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
                         bufferData.BufferPosition += partialBuffer.Length;
                     }
-                }, CancellationToken.None);
+                }
 
                 // write data to file
                 foreach (var entry in setupToDataMap)

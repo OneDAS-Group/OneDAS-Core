@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
+using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -46,44 +48,58 @@ namespace OneDas.DataManagement.Extensibility
             this.Campaigns = campaigns;
         }
 
-        public void Read(DatasetInfo dataset,
-                         DateTime begin,
-                         DateTime end,
-                         ulong upperBlockSize,
-                         Action<DataReaderProgressRecord> dataAvailable,
-                         CancellationToken cancellationToken)
+        public DataReaderStream ReadAsStream(
+            DatasetInfo dataset,
+            DateTime begin,
+            DateTime end,
+            ulong upperBlockSize)
         {
-            this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), dataAvailable, cancellationToken);
+            var cts = new CancellationTokenSource();
+            var progressRecords = this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cts.Token);
+            var samplesPerSecond = new SampleRateContainer(dataset.Id).SamplesPerSecond;
+            var length = (long)Math.Round(samplesPerSecond * (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero);
+
+            return new DataReaderStream(length, progressRecords, cts);
         }
 
-        public void Read(List<DatasetInfo> datasets,
-                         DateTime begin,
-                         DateTime end,
-                         ulong upperBlockSize,
-                         Action<DataReaderProgressRecord> dataAvailable,
-                         CancellationToken cancellationToken)
+        public IEnumerable<DataReaderProgressRecord> Read(
+            DatasetInfo dataset,
+            DateTime begin,
+            DateTime end,
+            ulong upperBlockSize,
+            CancellationToken cancellationToken)
         {
-            this.Read(datasets, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), dataAvailable, cancellationToken);
+            return this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cancellationToken);
         }
 
-        public void Read(DatasetInfo dataset,
-                         DateTime begin,
-                         DateTime end,
-                         ulong upperBlockSize,
-                         TimeSpan fundamentalPeriod,
-                         Action<DataReaderProgressRecord> dataAvailable,
-                         CancellationToken cancellationToken)
+        public IEnumerable<DataReaderProgressRecord> Read(
+            List<DatasetInfo> datasets,
+            DateTime begin,
+            DateTime end,
+            ulong upperBlockSize,
+            CancellationToken cancellationToken)
         {
-            this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, fundamentalPeriod, dataAvailable, cancellationToken);
+            return this.Read(datasets, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cancellationToken);
         }
 
-        public void Read(List<DatasetInfo> datasets,
-                         DateTime begin,
-                         DateTime end,
-                         ulong blockSizeLimit,
-                         TimeSpan fundamentalPeriod,
-                         Action<DataReaderProgressRecord> dataAvailable,
-                         CancellationToken cancellationToken)
+        public IEnumerable<DataReaderProgressRecord> Read(
+            DatasetInfo dataset,
+            DateTime begin,
+            DateTime end,
+            ulong upperBlockSize,
+            TimeSpan fundamentalPeriod,
+            CancellationToken cancellationToken)
+        {
+            return this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, fundamentalPeriod, cancellationToken);
+        }
+
+        public IEnumerable<DataReaderProgressRecord> Read(
+            List<DatasetInfo> datasets,
+            DateTime begin,
+            DateTime end,
+            ulong blockSizeLimit,
+            TimeSpan fundamentalPeriod,
+            CancellationToken cancellationToken)
         {
             /* 
              * |....................|
@@ -107,10 +123,10 @@ namespace OneDas.DataManagement.Extensibility
              */
 
             if (cancellationToken.IsCancellationRequested)
-                return;
+                yield break;
 
             if (!datasets.Any() || begin == end)
-                return;
+                yield break;
 
             var minute = TimeSpan.FromMinutes(1);
             var period = end - begin;
@@ -166,7 +182,7 @@ namespace OneDas.DataManagement.Extensibility
                 foreach (var dataset in datasets)
                 {
                     if (cancellationToken.IsCancellationRequested)
-                        return;
+                        yield break;
 
                     // invoke generic method
                     var type = typeof(DataReaderExtensionBase);
@@ -187,7 +203,7 @@ namespace OneDas.DataManagement.Extensibility
                 }
 
                 // notify about new data
-                dataAvailable?.Invoke(new DataReaderProgressRecord(datasetToRecordMap, currentBegin, currentEnd));
+                yield return new DataReaderProgressRecord(datasetToRecordMap, currentBegin, currentEnd);
 
                 // continue in time
                 currentBegin += currentPeriod;

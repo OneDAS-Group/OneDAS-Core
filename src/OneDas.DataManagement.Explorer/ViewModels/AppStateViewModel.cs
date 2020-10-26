@@ -8,7 +8,6 @@ using OneDas.Infrastructure;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -74,8 +73,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             // campaign containers and dependent init steps
             var campaignContainers = databaseManager.Database.CampaignContainers;
             var restrictedCampaigns = databaseManager.Config.RestrictedCampaigns;
-            var hiddenCampaigns = new List<string>() { "/IN_MEMORY/ALLOWED/TEST", "/IN_MEMORY/RESTRICTED/TEST" };
-            this.CampaignContainersInfo = this.SplitCampainContainersAsync(campaignContainers, restrictedCampaigns, hiddenCampaigns).Result;
+
+            this.CampaignContainersInfo = this.SplitCampainContainersAsync(campaignContainers, restrictedCampaigns, Constants.HiddenCampaigns).Result;
 
             this.SampleRateValues = this.CampaignContainersInfo.Accessible.SelectMany(campaignContainer =>
             {
@@ -215,8 +214,16 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 _searchString = string.Empty;
 
-                this.UpdateGroupedVariables();
-                this.UpdateAttachments();
+                if (this.CampaignContainersInfo.Accessible.Contains(value))
+                {
+                    this.UpdateGroupedVariables();
+                    this.UpdateAttachments();
+                }
+                else
+                {
+                    this.GroupedVariables = null;
+                    this.Attachments = null;
+                }
             }
         }
 

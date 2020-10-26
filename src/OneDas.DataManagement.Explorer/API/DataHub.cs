@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
@@ -240,9 +241,9 @@ namespace OneDas.DataManagement.Explorer.Hubs
             // We don't want to await WriteItemsAsync, otherwise we'd end up waiting 
             // for all the items to be written before returning the channel back to
             // the client.
-            _ = Task.Run(() =>
+            _ = Task.Run(async () =>
             {
-                this.InternalStreamData(channel.Writer,
+                await this.InternalStreamData(channel.Writer,
                                         remoteIpAddress,
                                         begin,
                                         end,
@@ -304,13 +305,13 @@ namespace OneDas.DataManagement.Explorer.Hubs
             }
         }
 
-        public void InternalStreamData(ChannelWriter<double[]> writer,
-                                       IPAddress remoteIpAddress,
-                                       DateTime begin,
-                                       DateTime end,
-                                       string channelName,
-                                       CancellationToken cancellationToken,
-                                       IClientProxy client)
+        public async Task InternalStreamData(ChannelWriter<double[]> writer,
+                                           IPAddress remoteIpAddress,
+                                           DateTime begin,
+                                           DateTime end,
+                                           string channelName,
+                                           CancellationToken cancellationToken,
+                                           IClientProxy client)
         {
             Exception localException = null;
 
@@ -356,7 +357,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 try
                 {
                     // read and stream data
-                    dataReader.Read(dataset, begin, end, 5 * 1000 * 1000UL, async progressRecord =>
+                    foreach (var progressRecord in dataReader.Read(dataset, begin, end, 5 * 1000 * 1000UL, cancellationToken))
                     {
                         double[] doubleData = default;
                         var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
@@ -370,13 +371,13 @@ namespace OneDas.DataManagement.Explorer.Hubs
                         // the task is cancelled anyway
                         try
                         {
-                           await writer.WriteAsync(doubleData, cancellationToken);
+                            await writer.WriteAsync(doubleData, cancellationToken);
                         }
                         catch (OperationCanceledException)
                         {
                             _logger.LogWarning($"{message} Cancelled.");
                         }
-                    }, cancellationToken);
+                    }
                 }
                 finally
                 {
