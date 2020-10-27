@@ -3,7 +3,7 @@ clone_depth: 1
 stack: node 8
 
 image:
-  - Visual Studio 2019 Preview
+  # - Visual Studio 2019
   - Ubuntu
 
 environment:
@@ -53,8 +53,8 @@ build_script:
 #  - ps: if ($isWindows) { msbuild .\src\OneDas.DataManagement.Deployment\OneDas.DataManagement.Deployment.wixproj       /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }
 
 test_script:
- - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
- - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
+#  - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
+#  - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
 
 artifacts:
   - path: ./artifacts/packages/**/*.nupkg
