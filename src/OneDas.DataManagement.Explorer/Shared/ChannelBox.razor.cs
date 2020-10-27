@@ -25,7 +25,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 						this.StateHasChanged();
 					});
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.CampaignContainer))
+				else if (e.PropertyName == nameof(AppStateViewModel.ProjectContainer))
 				{
 					this.InvokeAsync(() =>
 					{

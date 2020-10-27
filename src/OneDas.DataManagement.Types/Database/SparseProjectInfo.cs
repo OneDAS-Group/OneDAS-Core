@@ -6,11 +6,11 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    public class SparseCampaignInfo : CampaignInfo
+    public class SparseProjectInfo : ProjectInfo
     {
         #region "Constructors"
 
-        public SparseCampaignInfo(string id) : base(id)
+        public SparseProjectInfo(string id) : base(id)
         {
             //
         }

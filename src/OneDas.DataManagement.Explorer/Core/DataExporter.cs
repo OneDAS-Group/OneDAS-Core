@@ -46,12 +46,12 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        public bool WriteZipFileCampaignEntry(CampaignSettings campaignSettings, CancellationToken cancellationToken)
+        public bool WriteZipFileProjectEntry(ProjectSettings projectSettings, CancellationToken cancellationToken)
         {
             if (_zipArchive == null)
                 _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
 
-            var variableDescriptionSet = campaignSettings.Campaign.ToVariableDescriptions();
+            var variableDescriptionSet = projectSettings.Project.ToVariableDescriptions();
             var singleFile = _exportConfig.FileGranularity == FileGranularity.SingleFile;
 
             TimeSpan filePeriod;
@@ -115,14 +115,14 @@ namespace OneDas.DataManagement.Explorer.Core
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "HDF Explorer", CustomMetadataEntryLevel.File));
 
             // initialize data writer
-            var campaignName_splitted = campaignSettings.Campaign.Id.Split('/');
-            var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasCampaignDescription(Guid.Empty, 0, campaignName_splitted[1], campaignName_splitted[2], campaignName_splitted[3]), customMetadataEntrySet);
+            var projectName_splitted = projectSettings.Project.Id.Split('/');
+            var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasProjectDescription(Guid.Empty, 0, projectName_splitted[1], projectName_splitted[2], projectName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, variableDescriptionSet);
 
             // create temp files
             try
             {
-                if (!this.CreateFiles(dataWriter, campaignSettings, cancellationToken))
+                if (!this.CreateFiles(dataWriter, projectSettings, cancellationToken))
                 {
                     this.CleanUp(directoryPath);
                     return false;
@@ -159,11 +159,11 @@ namespace OneDas.DataManagement.Explorer.Core
             return true;
         }
 
-        private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, CampaignSettings campaignSettings, CancellationToken cancellationToken)
+        private bool CreateFiles(DataWriterExtensionLogicBase dataWriter, ProjectSettings projectSettings, CancellationToken cancellationToken)
         {
 #warning: To handle native and aggregated datasets individually will probably lead to strange effects for data writers. Check this.
 
-            var datasets = campaignSettings.Campaign.Variables.SelectMany(variable => variable.Datasets);
+            var datasets = projectSettings.Project.Variables.SelectMany(variable => variable.Datasets);
             var nativeDatasets = datasets.Where(dataset => dataset.IsNative).ToList();
             var aggregatedDatasets = datasets.Where(dataset => !dataset.IsNative).ToList();
             var currentMode = string.Empty;
@@ -178,7 +178,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (nativeDatasets.Any())
             {
-                var reader = campaignSettings.NativeDataReader;
+                var reader = projectSettings.NativeDataReader;
                 reader.Progress.ProgressChanged += progressHandler;
 
                 try
@@ -199,7 +199,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (aggregatedDatasets.Any())
             {
-                var reader = campaignSettings.AggregationDataReader;
+                var reader = projectSettings.AggregationDataReader;
                 reader.Progress.ProgressChanged += progressHandler;
 
                 try

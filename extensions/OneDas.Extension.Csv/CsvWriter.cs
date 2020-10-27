@@ -49,7 +49,7 @@ namespace OneDas.Extension.Csv
 
             foreach (var contextGroup in variableContextGroupSet)
             {
-                var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
+                var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.ProjectDescription.PrimaryGroupName}_{this.DataWriterContext.ProjectDescription.SecondaryGroupName}_{this.DataWriterContext.ProjectDescription.ProjectName}_V{this.DataWriterContext.ProjectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
 
                 if (!File.Exists(dataFilePath))
                 {
@@ -66,12 +66,12 @@ namespace OneDas.Extension.Csv
                             streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
                         }
 
-                        streamWriter.WriteLine($"# campaign_first_level: { this.DataWriterContext.CampaignDescription.PrimaryGroupName };");
-                        streamWriter.WriteLine($"# campaign_second_level: { this.DataWriterContext.CampaignDescription.SecondaryGroupName };");
-                        streamWriter.WriteLine($"# campaign_name: { this.DataWriterContext.CampaignDescription.CampaignName };");
-                        streamWriter.WriteLine($"# campaign_version: { this.DataWriterContext.CampaignDescription.Version };");
+                        streamWriter.WriteLine($"# project_first_level: { this.DataWriterContext.ProjectDescription.PrimaryGroupName };");
+                        streamWriter.WriteLine($"# project_second_level: { this.DataWriterContext.ProjectDescription.SecondaryGroupName };");
+                        streamWriter.WriteLine($"# project_name: { this.DataWriterContext.ProjectDescription.ProjectName };");
+                        streamWriter.WriteLine($"# project_version: { this.DataWriterContext.ProjectDescription.Version };");
 
-                        foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
+                        foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Project))
                         {
                             streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
                         }
@@ -122,8 +122,8 @@ namespace OneDas.Extension.Csv
 
         protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
-            var campaignDescription = this.DataWriterContext.CampaignDescription;
-            var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{campaignDescription.PrimaryGroupName}_{campaignDescription.SecondaryGroupName}_{campaignDescription.CampaignName}_V{campaignDescription.Version }_{_lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
+            var projectDescription = this.DataWriterContext.ProjectDescription;
+            var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{projectDescription.PrimaryGroupName}_{projectDescription.SecondaryGroupName}_{projectDescription.ProjectName}_V{projectDescription.Version }_{_lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
 
             if (length <= 0)
                 throw new Exception(ErrorMessage.CsvWriter_SampleRateTooLow);

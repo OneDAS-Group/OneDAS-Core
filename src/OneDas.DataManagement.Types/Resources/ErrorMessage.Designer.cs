@@ -63,9 +63,9 @@ namespace OneDas.DataManagement {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Invalid group identifier. ähnelt.
         /// </summary>
-        internal static string CampaignInfo {
+        internal static string ProjectInfo {
             get {
-                return ResourceManager.GetString("CampaignInfo", resourceCulture);
+                return ResourceManager.GetString("ProjectInfo", resourceCulture);
             }
         }
         

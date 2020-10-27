@@ -36,13 +36,13 @@ namespace OneDas.DataManagement.Hdf
             return (start, block);
         }
 
-        public static string GetCampaignIdFromFile(string filePath)
+        public static string GetProjectIdFromFile(string filePath)
         {
             var fileId = H5F.open(filePath, H5F.ACC_RDONLY);
 
             try
             {
-                return GeneralHelper.GetCampaignNameFromFile(fileId);
+                return GeneralHelper.GetProjectNameFromFile(fileId);
             }
             finally
             {
@@ -50,16 +50,16 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        private static string GetCampaignNameFromFile(long fileId)
+        private static string GetProjectNameFromFile(long fileId)
         {
             var idx = 0UL;
-            string campaignName = string.Empty;
+            string projectName = string.Empty;
 
             GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
 
-            return campaignName;
+            return projectName;
 
-            int Callback(long campaignGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
+            int Callback(long projectGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
             {
                 ulong idx2 = 0;
 
@@ -78,7 +78,7 @@ namespace OneDas.DataManagement.Hdf
                     // this is necessary, since H5Oget_info_by_name is slow because it wants verbose object header data 
                     // and H5G_loc_info is not directly accessible
                     // only chance is to modify source code (H5Oget_info_by_name)
-                    datasetId = H5D.open(campaignGroupId, name);
+                    datasetId = H5D.open(projectGroupId, name);
 
                     if (H5I.is_valid(datasetId) > 0)
                     {
@@ -86,7 +86,7 @@ namespace OneDas.DataManagement.Hdf
                     }
                     else
                     {
-                        groupId = H5G.open(campaignGroupId, name);
+                        groupId = H5G.open(projectGroupId, name);
 
                         if (H5I.is_valid(groupId) > 0)
                             objectType = H5O.type_t.GROUP;
@@ -104,7 +104,7 @@ namespace OneDas.DataManagement.Hdf
 
                             if (objectType == H5O.type_t.GROUP)
                             {
-                                campaignName = fullName;
+                                projectName = fullName;
                                 return 0;
                             }
 
@@ -124,9 +124,9 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        public static CampaignInfo GetCampaign(long fileId, string campaignGroupPath)
+        public static ProjectInfo GetProject(long fileId, string projectGroupPath)
         {
-            return GeneralHelper.InternalUpdateCampaigns(fileId, null, campaignGroupPath).FirstOrDefault();
+            return GeneralHelper.InternalUpdateProjects(fileId, null, projectGroupPath).FirstOrDefault();
         }
 
         public static void SuppressErrors(Action action)
@@ -143,20 +143,20 @@ namespace OneDas.DataManagement.Hdf
             H5E.set_auto(H5E.DEFAULT, func, clientData);
         }
 
-        private static List<CampaignInfo> InternalUpdateCampaigns(long fileId,
-                                                                     List<CampaignInfo> campaigns = null,
-                                                                     string campaignGroupPath = "")
+        private static List<ProjectInfo> InternalUpdateProjects(long fileId,
+                                                                     List<ProjectInfo> projects = null,
+                                                                     string projectGroupPath = "")
         {
             var idx = 0UL;
 
-            if (campaigns == null)
-                campaigns = new List<CampaignInfo>();
+            if (projects == null)
+                projects = new List<ProjectInfo>();
 
             GeneralHelper.SuppressErrors(() => H5L.iterate(fileId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, Marshal.StringToHGlobalAnsi("/")));
 
-            return campaigns;
+            return projects;
 
-            int Callback(long campaignGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
+            int Callback(long projectGroupId, IntPtr intPtrName, ref H5L.info_t info, IntPtr intPtrUserData)
             {
                 ulong idx2 = 0;
 
@@ -187,7 +187,7 @@ namespace OneDas.DataManagement.Hdf
                     // this is necessary, since H5Oget_info_by_name is slow because it wants verbose object header data 
                     // and H5G_loc_info is not directly accessible
                     // only chance is to modify source code (H5Oget_info_by_name)
-                    datasetId = H5D.open(campaignGroupId, name);
+                    datasetId = H5D.open(projectGroupId, name);
 
                     if (H5I.is_valid(datasetId) > 0)
                     {
@@ -195,7 +195,7 @@ namespace OneDas.DataManagement.Hdf
                     }
                     else
                     {
-                        groupId = H5G.open(campaignGroupId, name);
+                        groupId = H5G.open(projectGroupId, name);
 
                         if (H5I.is_valid(groupId) > 0)
                             objectType = H5O.type_t.GROUP;
@@ -213,18 +213,18 @@ namespace OneDas.DataManagement.Hdf
 
                             if (objectType == H5O.type_t.GROUP)
                             {
-                                if (!string.IsNullOrWhiteSpace(campaignGroupPath) && fullName != campaignGroupPath)
+                                if (!string.IsNullOrWhiteSpace(projectGroupPath) && fullName != projectGroupPath)
                                     return 0;
 
-                                var currentCampaign = campaigns.FirstOrDefault(campaign => campaign.Id == fullName);
+                                var currentProject = projects.FirstOrDefault(project => project.Id == fullName);
 
-                                if (currentCampaign == null)
+                                if (currentProject == null)
                                 {
-                                    currentCampaign = new CampaignInfo(fullName);
-                                    campaigns.Add(currentCampaign);
+                                    currentProject = new ProjectInfo(fullName);
+                                    projects.Add(currentProject);
                                 }
 
-                                currentCampaign.Update(groupId, formatVersion);
+                                currentProject.Update(groupId, formatVersion);
                             }
 
                             break;

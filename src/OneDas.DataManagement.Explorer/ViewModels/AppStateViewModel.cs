@@ -35,7 +35,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private IJSRuntime _jsRuntime;
 
         private DataService _dataService;
-        private CampaignContainer _campaignContainer;
+        private ProjectContainer _projectContainer;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private CancellationTokenSource _cts_download;
@@ -44,7 +44,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         private List<VariableInfoViewModel> _variableGroup;
         private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
-        private Dictionary<CampaignContainer, List<VariableInfoViewModel>> _campaignContainerToVariablesMap;
+        private Dictionary<ProjectContainer, List<VariableInfoViewModel>> _projectContainerToVariablesMap;
 
         #endregion
 
@@ -70,21 +70,21 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.NewsPaper = NewsPaper.Load(Path.Combine(options.DataBaseFolderPath, "news.json"));
             this.VisualizeBeginAtZero = true;
 
-            // campaign containers and dependent init steps
-            var campaignContainers = databaseManager.Database.CampaignContainers;
-            var restrictedCampaigns = databaseManager.Config.RestrictedCampaigns;
+            // project containers and dependent init steps
+            var projectContainers = databaseManager.Database.ProjectContainers;
+            var restrictedProjects = databaseManager.Config.RestrictedProjects;
 
-            this.CampaignContainersInfo = this.SplitCampainContainersAsync(campaignContainers, restrictedCampaigns, Constants.HiddenCampaigns).Result;
+            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, restrictedProjects, Constants.HiddenProjects).Result;
 
-            this.SampleRateValues = this.CampaignContainersInfo.Accessible.SelectMany(campaignContainer =>
+            this.SampleRateValues = this.ProjectContainersInfo.Accessible.SelectMany(projectContainer =>
             {
-                return campaignContainer.Campaign.Variables.SelectMany(variable =>
+                return projectContainer.Project.Variables.SelectMany(variable =>
                 {
                     return variable.Datasets.Select(dataset => dataset.Id.Split('_')[0]);
                 });
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
 
-            this.InitializeCampaignContainerToVariableMap();
+            this.InitializeProjectContainerToVariableMap();
             this.InitializeSampleRateToDatasetsMap();
 
             // state manager
@@ -117,9 +117,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 #warning Make this more efficient. Maybe by tracking changes.
                 if (_isEditEnabled && !value)
                 {
-                    _databaseManager.Database.CampaignContainers.ForEach(campaignContainer =>
+                    _databaseManager.Database.ProjectContainers.ForEach(projectContainer =>
                     {
-                        _databaseManager.SaveCampaignMeta(campaignContainer.CampaignMeta);
+                        _databaseManager.SaveProjectMeta(projectContainer.ProjectMeta);
                     });
                 }
 
@@ -202,19 +202,19 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - Channel Selection
 
-        public CampaignContainer CampaignContainer
+        public ProjectContainer ProjectContainer
         {
             get
             {
-                return _campaignContainer;
+                return _projectContainer;
             }
             set
             {
-                this.SetProperty(ref _campaignContainer, value);
+                this.SetProperty(ref _projectContainer, value);
 
                 _searchString = string.Empty;
 
-                if (this.CampaignContainersInfo.Accessible.Contains(value))
+                if (this.ProjectContainersInfo.Accessible.Contains(value))
                 {
                     this.UpdateGroupedVariables();
                     this.UpdateAttachments();
@@ -229,7 +229,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public List<string> Attachments { get; private set; }
 
-        public SplittedCampaignContainers CampaignContainersInfo { get; }
+        public SplittedProjectContainers ProjectContainersInfo { get; }
 
         public Dictionary<string, List<VariableInfoViewModel>> GroupedVariables { get; private set; }
 
@@ -435,7 +435,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
         {
-            return await _dataService.GetDataAvailabilityStatisticsAsync(this.CampaignContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
+            return await _dataService.GetDataAvailabilityStatisticsAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
         }
 
         public void SetExportConfiguration(ExportConfiguration exportConfiguration)
@@ -448,15 +448,15 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             exportConfiguration.Channels.ForEach(value =>
             {
                 var pathParts = value.Split('/');
-                var campaignName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
+                var projectName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
                 var variableName = pathParts[4];
                 var datasetName = pathParts[5];
 
-                var campaignContainer = this.CampaignContainersInfo.Accessible.FirstOrDefault(current => current.Id == campaignName);
+                var projectContainer = this.ProjectContainersInfo.Accessible.FirstOrDefault(current => current.Id == projectName);
 
-                if (campaignContainer != null)
+                if (projectContainer != null)
                 {
-                    var variables = _campaignContainerToVariablesMap[campaignContainer];
+                    var variables = _projectContainerToVariablesMap[projectContainer];
                     var variable = variables.FirstOrDefault(current => current.Id == variableName);
 
                     if (variable != null)
@@ -508,9 +508,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             this.Attachments = null;
 
-            if (this.CampaignContainer != null)
+            if (this.ProjectContainer != null)
             {
-                var folderPath = Path.Combine(_options.DataBaseFolderPath, "ATTACHMENTS", this.CampaignContainer.PhysicalName);
+                var folderPath = Path.Combine(_options.DataBaseFolderPath, "ATTACHMENTS", this.ProjectContainer.PhysicalName);
 
                 if (Directory.Exists(folderPath))
                     this.Attachments = Directory.GetFiles(folderPath, "*").ToList();
@@ -519,11 +519,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         private void UpdateGroupedVariables()
         {
-            if (this.CampaignContainer != null)
+            if (this.ProjectContainer != null)
             {
                 this.GroupedVariables = new Dictionary<string, List<VariableInfoViewModel>>();
 
-                foreach (var variable in _campaignContainerToVariablesMap[this.CampaignContainer])
+                foreach (var variable in _projectContainerToVariablesMap[this.ProjectContainer])
                 {
                     if (this.VariableMatchesFilter(variable))
                     {
@@ -576,15 +576,15 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             return false;
         }
 
-        private void InitializeCampaignContainerToVariableMap()
+        private void InitializeProjectContainerToVariableMap()
         {
-            _campaignContainerToVariablesMap = new Dictionary<CampaignContainer, List<VariableInfoViewModel>>();
+            _projectContainerToVariablesMap = new Dictionary<ProjectContainer, List<VariableInfoViewModel>>();
 
-            foreach (var campaignContainer in this.CampaignContainersInfo.Accessible)
+            foreach (var projectContainer in this.ProjectContainersInfo.Accessible)
             {
-                _campaignContainerToVariablesMap[campaignContainer] = campaignContainer.Campaign.Variables.Select(variable =>
+                _projectContainerToVariablesMap[projectContainer] = projectContainer.Project.Variables.Select(variable =>
                 {
-                    var variableMeta = campaignContainer.CampaignMeta.Variables.First(variableMeta => variableMeta.Id == variable.Id);
+                    var variableMeta = projectContainer.ProjectMeta.Variables.First(variableMeta => variableMeta.Id == variable.Id);
                     return new VariableInfoViewModel(variable, variableMeta);
                 }).ToList();
             }
@@ -605,33 +605,33 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 return new List<DatasetInfoViewModel>();
         }
 
-        private async Task<SplittedCampaignContainers> SplitCampainContainersAsync(List<CampaignContainer> campaignContainers,
-                                                                                  List<string> restrictedCampaigns,
-                                                                                  List<string> hiddenCampaigns)
+        private async Task<SplittedProjectContainers> SplitCampainContainersAsync(List<ProjectContainer> projectContainers,
+                                                                                  List<string> restrictedProjects,
+                                                                                  List<string> hiddenProjects)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var principal = authState.User;
 
-            var accessible = campaignContainers.Where(campaignContainer =>
+            var accessible = projectContainers.Where(projectContainer =>
             {
-                return Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign.Id, restrictedCampaigns)
-                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, hiddenCampaigns);
-            }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
+                return Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, restrictedProjects)
+                    && Utilities.IsProjectVisible(principal, projectContainer.Project.Id, hiddenProjects);
+            }).OrderBy(projectContainer => projectContainer.Id).ToList();
 
-            var restricted = campaignContainers.Where(campaignContainer =>
+            var restricted = projectContainers.Where(projectContainer =>
             {
-                return !Utilities.IsCampaignAccessible(principal, campaignContainer.Campaign.Id, restrictedCampaigns)
-                    && Utilities.IsCampaignVisible(principal, campaignContainer.Campaign.Id, hiddenCampaigns);
-            }).OrderBy(campaignContainer => campaignContainer.Id).ToList();
+                return !Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, restrictedProjects)
+                    && Utilities.IsProjectVisible(principal, projectContainer.Project.Id, hiddenProjects);
+            }).OrderBy(projectContainer => projectContainer.Id).ToList();
 
-            return new SplittedCampaignContainers(accessible, restricted);
+            return new SplittedProjectContainers(accessible, restricted);
         }
 
         #endregion
 
         #region Records
 
-        public record SplittedCampaignContainers(List<CampaignContainer> Accessible, List<CampaignContainer> Restricted);
+        public record SplittedProjectContainers(List<ProjectContainer> Accessible, List<ProjectContainer> Restricted);
 
         #endregion
 

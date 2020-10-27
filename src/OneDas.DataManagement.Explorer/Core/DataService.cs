@@ -52,17 +52,17 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync(string campaignId, DateTime begin, DateTime end)
+        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync(string projectId, DateTime begin, DateTime end)
         {
             return Task.Run(() =>
             {
                 _stateManager.CheckState();
 
-                if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, campaignId, _databaseManager.Config.RestrictedCampaigns))
-                    throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaignId}'.");
+                if (!Utilities.IsProjectAccessible(_signInManager.Context.User, projectId, _databaseManager.Config.RestrictedProjects))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access project '{projectId}'.");
 
-                using var dataReader = _databaseManager.GetNativeDataReader(campaignId);
-                return dataReader.GetDataAvailabilityStatistics(campaignId, begin, end);
+                using var dataReader = _databaseManager.GetNativeDataReader(projectId);
+                return dataReader.GetDataAvailabilityStatistics(projectId, begin, end);
             });
         }
 
@@ -97,22 +97,22 @@ namespace OneDas.DataManagement.Explorer.Core
                 // sample rate
                 try
                 {
-                    // convert datasets into campaigns
-                    var campaignNames = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
-                    var campaignContainers = _databaseManager.Database.CampaignContainers
-                        .Where(campaignContainer => campaignNames.Contains(campaignContainer.Id));
+                    // convert datasets into projects
+                    var projectNames = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
+                    var projectContainers = _databaseManager.Database.ProjectContainers
+                        .Where(projectContainer => projectNames.Contains(projectContainer.Id));
 
-                    var sparseCampaigns = campaignContainers.Select(campaignContainer =>
+                    var sparseProjects = projectContainers.Select(projectContainer =>
                     {
-                        var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == campaignContainer.Id).ToList();
-                        return campaignContainer.ToSparseCampaign(currentDatasets);
+                        var currentDatasets = datasets.Where(dataset => dataset.Parent.Parent.Id == projectContainer.Id).ToList();
+                        return projectContainer.ToSparseProject(currentDatasets);
                     });
 
                     // security check
-                    foreach (var sparseCampaign in sparseCampaigns)
+                    foreach (var sparseProject in sparseProjects)
                     {
-                        if (!Utilities.IsCampaignAccessible(_signInManager.Context.User, sparseCampaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                            throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{sparseCampaign.Id}'.");
+                        if (!Utilities.IsProjectAccessible(_signInManager.Context.User, sparseProject.Id, _databaseManager.Config.RestrictedProjects))
+                            throw new UnauthorizedAccessException($"The current user is not authorized to access project '{sparseProject.Id}'.");
                     }
 
                     // start
@@ -123,14 +123,14 @@ namespace OneDas.DataManagement.Explorer.Core
 
                     try
                     {
-                        foreach (var sparseCampaign in sparseCampaigns)
+                        foreach (var sparseProject in sparseProjects)
                         {
-                            using var nativeDataReader = _databaseManager.GetNativeDataReader(sparseCampaign.Id);
+                            using var nativeDataReader = _databaseManager.GetNativeDataReader(sparseProject.Id);
                             using var aggregationDataReader = _databaseManager.GetAggregationDataReader();
 
-                            var campaignSettings = new CampaignSettings(sparseCampaign, nativeDataReader, aggregationDataReader);
+                            var projectSettings = new ProjectSettings(sparseProject, nativeDataReader, aggregationDataReader);
 
-                            if (!dataExporter.WriteZipFileCampaignEntry(campaignSettings, cancellationToken))
+                            if (!dataExporter.WriteZipFileProjectEntry(projectSettings, cancellationToken))
                                 return string.Empty;
                         }
                     }

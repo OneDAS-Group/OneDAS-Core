@@ -6,7 +6,7 @@
     <div class="btn-group" role="group">
         <button class="btn btn-outline-primary btn-wide"
                 role="button"
-                data-bind="click: GetCampaignDescriptions"
+                data-bind="click: GetProjectDescriptions"
                 data-toggle="modal"
                 data-target="#Editor_OpenProjectModal"
                 data-backdrop="static">
@@ -32,15 +32,15 @@
             </div>
             <div class="modal-body">
                 <div class="list-group">
-                    <!-- ko if: CampaignDescriptionSet().length == 0 -->
+                    <!-- ko if: ProjectDescriptionSet().length == 0 -->
                     <h5 class="d-block text-center my-5"><small class="text-muted">- no projects available -</small></h5>
                     <!-- /ko -->
-                    <!-- ko foreach: CampaignDescriptionSet -->
+                    <!-- ko foreach: ProjectDescriptionSet -->
                     <a class="list-group-item list-group-item-action noselect url"
                        data-dismiss="modal"
                        data-bind="click: $parents[1].OpenProject">
                         <div class="d-flex">
-                            <h6 class="mb-1 mr-auto" data-bind="text: PrimaryGroupName + ' / ' + SecondaryGroupName + ' / ' + CampaignName"></h6>
+                            <h6 class="mb-1 mr-auto" data-bind="text: PrimaryGroupName + ' / ' + SecondaryGroupName + ' / ' + ProjectName"></h6>
                             <span class="fa fa-folder-open-o fa-fix ml-auto"></span>
                         </div>
                         <div class="d-flex">
@@ -90,12 +90,12 @@
                              data-bind="visible: SecondaryGroupNameHasError(), text: SecondaryGroupNameErrorDescription"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-control-label">Campaign:</label>
+                        <label class="form-control-label">Project:</label>
                         <input type="text"
                                class="form-control modal-input-full-width"
-                               data-bind="textinput: CampaignName">
+                               data-bind="textinput: ProjectName">
                         <div class="form-control-feedback"
-                             data-bind="visible: CampaignNameHasError(), text: CampaignNameErrorDescription"></div>
+                             data-bind="visible: ProjectNameHasError(), text: ProjectNameErrorDescription"></div>
                     </div>
                 </form>
             </div>
@@ -104,8 +104,8 @@
                         class="btn btn-primary"
                         role="button"
                         data-dismiss="modal"
-                        data-bind="disable: PrimaryGroupName().length == 0 || SecondaryGroupName().length == 0 || CampaignName().length == 0 ||
-                                            PrimaryGroupNameHasError() || SecondaryGroupNameHasError() || CampaignNameHasError(),
+                        data-bind="disable: PrimaryGroupName().length == 0 || SecondaryGroupName().length == 0 || ProjectName().length == 0 ||
+                                            PrimaryGroupNameHasError() || SecondaryGroupNameHasError() || ProjectNameHasError(),
                                             click: CreateNewProject">
                     Create
                 </button>
@@ -120,7 +120,7 @@
 <div id="Project_Header" class="container">
     <div class="row align-content-end my-5" data-bind="with: Description">
         <h1 class="display-4 mr-auto">Editor</h1>
-        <h1 class="display-small text-muted mt-auto" data-bind="text: PrimaryGroupName + ' / ' + SecondaryGroupName + ' / ' + CampaignName + ' v' + Version()"></h1>
+        <h1 class="display-small text-muted mt-auto" data-bind="text: PrimaryGroupName + ' / ' + SecondaryGroupName + ' / ' + ProjectName + ' v' + Version()"></h1>
     </div>
     <div class="row mb-1">
         <div class="col">
@@ -131,7 +131,7 @@
                    data-backdrop="static">
                 </a>
                 <a class="fa fa-folder-open-o glyphicon-action-bg url"
-                   data-bind="click: $parent.GetCampaignDescriptions"
+                   data-bind="click: $parent.GetProjectDescriptions"
                    data-toggle="modal"
                    data-target="#Editor_OpenProjectModal"
                    data-backdrop="static">

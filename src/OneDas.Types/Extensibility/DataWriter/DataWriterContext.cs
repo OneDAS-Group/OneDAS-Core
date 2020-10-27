@@ -10,7 +10,7 @@ namespace OneDas.Extensibility
     {
         private string errorDescription;
 
-        public DataWriterContext(string systemName, string dataDirectoryPath, OneDasCampaignDescription campaignDescription, IList<CustomMetadataEntry> customMetadataEntrySet)
+        public DataWriterContext(string systemName, string dataDirectoryPath, OneDasProjectDescription projectDescription, IList<CustomMetadataEntry> customMetadataEntrySet)
         {
             Contract.Requires(customMetadataEntrySet != null);
 
@@ -22,7 +22,7 @@ namespace OneDas.Extensibility
 
             this.SystemName = systemName;
             this.DataDirectoryPath = dataDirectoryPath;
-            this.CampaignDescription = campaignDescription;
+            this.ProjectDescription = projectDescription;
             this.CustomMetadataEntrySet = customMetadataEntrySet;
         }
 
@@ -30,7 +30,7 @@ namespace OneDas.Extensibility
 
         public string DataDirectoryPath { get; private set; }
 
-        public OneDasCampaignDescription CampaignDescription { get; private set; }
+        public OneDasProjectDescription ProjectDescription { get; private set; }
 
         public IList<CustomMetadataEntry> CustomMetadataEntrySet { get; private set; }
     }

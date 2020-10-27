@@ -6,11 +6,11 @@ using System.Diagnostics;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Id,nq}")]
-    public class DatasetInfo : CampaignElement
+    public class DatasetInfo : ProjectElement
     {
         #region "Constructors"
 
-        public DatasetInfo(string id, CampaignElement parent) : base(id, parent)
+        public DatasetInfo(string id, ProjectElement parent) : base(id, parent)
         {
             //
         }
@@ -44,7 +44,7 @@ namespace OneDas.DataManagement.Database
             return $"{this.Parent.GetPath()}/{this.Id}";
         }
 
-        public override IEnumerable<CampaignElement> GetChilds()
+        public override IEnumerable<ProjectElement> GetChilds()
         {
             return new List<DatasetInfo> { };
         }

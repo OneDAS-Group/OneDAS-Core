@@ -15,7 +15,7 @@
             {
                 <div class="selected-variable" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
                     <span class="selected-variable-name">@dataset.Parent.Name (@dataset.Name)</span>
-                    <span class="selected-variable-campaign">@dataset.Parent.Parent.Id.TrimStart('/').Replace("/", " / ")</span>
+                    <span class="selected-variable-project">@dataset.Parent.Parent.Id.TrimStart('/').Replace("/", " / ")</span>
                 </div>
             }
         }

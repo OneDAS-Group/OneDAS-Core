@@ -22,13 +22,13 @@ namespace OneDas.Core.Tests
         }
 
         [Fact]
-        public void ProvidesCampaignNames()
+        public void ProvidesProjectNames()
         {
             // arrange
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
-            var actual = dataReader.GetCampaignNames();
+            var actual = dataReader.GetProjectNames();
 
             // assert
             var expected = new List<string>() { "/A2/B/C", "/A/B/C" };
@@ -36,13 +36,13 @@ namespace OneDas.Core.Tests
         }
 
         [Fact]
-        public void ProvidesCampaign()
+        public void ProvidesProject()
         {
             // arrange
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
-            var actual = dataReader.GetCampaign("/A/B/C");
+            var actual = dataReader.GetProject("/A/B/C");
             var actualNames = actual.Variables.Select(variable => variable.Name).ToList();
             var actualGroups = actual.Variables.Select(variable => variable.Group).ToList();
             var actualUnits = actual.Variables.Select(variable => variable.Unit).ToList();
@@ -57,8 +57,8 @@ namespace OneDas.Core.Tests
             Assert.True(expectedNames.SequenceEqual(actualNames));
             Assert.True(expectedGroups.SequenceEqual(actualGroups));
             Assert.True(expectedUnits.SequenceEqual(actualUnits));
-            Assert.Equal(expectedStartDate, actual.CampaignStart);
-            Assert.Equal(expectedEndDate, actual.CampaignEnd);
+            Assert.Equal(expectedStartDate, actual.ProjectStart);
+            Assert.Equal(expectedEndDate, actual.ProjectEnd);
         }
 
         [Fact]
@@ -85,8 +85,8 @@ namespace OneDas.Core.Tests
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
 
             // act
-            var campaign = dataReader.GetCampaign("/A/B/C");
-            var dataset = campaign.Variables.First().Datasets.First();
+            var project = dataReader.GetProject("/A/B/C");
+            var dataset = project.Variables.First().Datasets.First();
 
             var begin = new DateTime(2020, 07, 07, 23, 00, 00);
             var end = new DateTime(2020, 07, 10, 00, 00, 00);

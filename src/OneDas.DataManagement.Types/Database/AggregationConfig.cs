@@ -8,7 +8,7 @@ namespace OneDas.DataManagement.Database
 
         public AggregationConfig()
         {
-            this.CampaignName = string.Empty;
+            this.ProjectName = string.Empty;
             this.Method = AggregationMethod.Mean;
             this.Argument = string.Empty;
             this.Filters = new Dictionary<string, string>();
@@ -18,7 +18,7 @@ namespace OneDas.DataManagement.Database
 
         #region Properties
 
-        public string CampaignName { get; set; }
+        public string ProjectName { get; set; }
 
         public AggregationMethod Method { get; set; }
 

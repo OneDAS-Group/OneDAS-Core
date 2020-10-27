@@ -2,11 +2,11 @@
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class CampaignBox
+    public partial class ProjectBox
     {
 		#region Constructors
 
-		public CampaignBox()
+		public ProjectBox()
 		{
 			this.PropertyChanged = (sender, e) =>
 			{

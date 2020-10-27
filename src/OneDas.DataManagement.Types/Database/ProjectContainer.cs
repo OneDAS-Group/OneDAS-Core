@@ -5,18 +5,18 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Id,nq}")]
-    public class CampaignContainer
+    public class ProjectContainer
     {
         #region "Constructors"
 
-        public CampaignContainer(string id, string rootPath)
+        public ProjectContainer(string id, string rootPath)
         {
             this.Id = id;
             this.RootPath = rootPath;
-            this.Campaign = new CampaignInfo(id);
+            this.Project = new ProjectInfo(id);
         }
 
-        private CampaignContainer()
+        private ProjectContainer()
         {
             //
         }
@@ -31,9 +31,9 @@ namespace OneDas.DataManagement.Database
 
         public string RootPath { get; set; }
 
-        public CampaignInfo Campaign { get; set; }
+        public ProjectInfo Project { get; set; }
 
-        public CampaignMetaInfo CampaignMeta { get; set; }
+        public ProjectMetaInfo ProjectMeta { get; set; }
 
         #endregion
 
@@ -41,19 +41,19 @@ namespace OneDas.DataManagement.Database
 
         public void Initialize()
         {
-            this.Campaign.Initialize();
+            this.Project.Initialize();
         }
 
-        public SparseCampaignInfo ToSparseCampaign(List<DatasetInfo> datasets)
+        public SparseProjectInfo ToSparseProject(List<DatasetInfo> datasets)
         {
-            var campaign = new SparseCampaignInfo(this.Id);
+            var project = new SparseProjectInfo(this.Id);
             var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
 
-            campaign.Variables = variables.Select(reference =>
+            project.Variables = variables.Select(reference =>
             {
-                var variableMeta = this.CampaignMeta.Variables.First(variableMeta => variableMeta.Id == reference.Id);
+                var variableMeta = this.ProjectMeta.Variables.First(variableMeta => variableMeta.Id == reference.Id);
 
-                var variable = new VariableInfo(reference.Id, campaign)
+                var variable = new VariableInfo(reference.Id, project)
                 {
                     Name = reference.Name,
                     Group = reference.Group,
@@ -81,7 +81,7 @@ namespace OneDas.DataManagement.Database
                 return variable;
             }).ToList();
 
-            return campaign;
+            return project;
         }
 
         #endregion

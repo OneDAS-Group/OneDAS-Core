@@ -7,15 +7,15 @@ using System.Runtime.InteropServices;
 
 namespace OneDas.DataManagement.Types.Hdf
 {
-    public static class CampaignExtensions
+    public static class ProjectExtensions
     {
-        public static void Update(this CampaignInfo campaign, long campaignGroupId, int formatVersion)
+        public static void Update(this ProjectInfo project, long projectGroupId, int formatVersion)
         {
             var idx = 0UL;
 
-            GeneralHelper.SuppressErrors(() => H5L.iterate(campaignGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero));
+            GeneralHelper.SuppressErrors(() => H5L.iterate(projectGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero));
 
-            int Callback(long campaignGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
+            int Callback(long projectGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
             {
                 long groupId = -1;
 
@@ -26,16 +26,16 @@ namespace OneDas.DataManagement.Types.Hdf
                     // this is necessary, since H5Oget_info_by_name is slow because it wants verbose object header data 
                     // and H5G_loc_info is not directly accessible
                     // only chance is to modify source code (H5Oget_info_by_name)
-                    groupId = H5G.open(campaignGroupId2, name);
+                    groupId = H5G.open(projectGroupId2, name);
 
                     if (groupId > -1)
                     {
-                        var currentVariable = campaign.Variables.FirstOrDefault(variable => variable.Id == name);
+                        var currentVariable = project.Variables.FirstOrDefault(variable => variable.Id == name);
 
                         if (currentVariable == null)
                         {
-                            currentVariable = new VariableInfo(name, campaign);
-                            campaign.Variables.Add(currentVariable);
+                            currentVariable = new VariableInfo(name, project);
+                            project.Variables.Add(currentVariable);
                         }
 
                         currentVariable.Update(groupId, formatVersion);

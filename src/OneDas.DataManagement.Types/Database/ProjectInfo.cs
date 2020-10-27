@@ -6,16 +6,16 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Id,nq}")]
-    public class CampaignInfo : CampaignElement
+    public class ProjectInfo : ProjectElement
     {
         #region "Constructors"
 
-        public CampaignInfo(string id) : base(id, null)
+        public ProjectInfo(string id) : base(id, null)
         {
             this.Variables = new List<VariableInfo>();
         }
 
-        private CampaignInfo()
+        private ProjectInfo()
         {
             //
         }
@@ -24,9 +24,9 @@ namespace OneDas.DataManagement.Database
 
         #region "Properties"
 
-        public DateTime CampaignStart { get; set; }
+        public DateTime ProjectStart { get; set; }
 
-        public DateTime CampaignEnd { get; set; }
+        public DateTime ProjectEnd { get; set; }
 
         public List<VariableInfo> Variables { get; set; }
 
@@ -34,15 +34,15 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
-        public void Merge(CampaignInfo campaign, VariableMergeMode mergeMode)
+        public void Merge(ProjectInfo project, VariableMergeMode mergeMode)
         {
-            if (this.Id != campaign.Id)
-                throw new Exception("The campaign to be merged has a different ID.");
+            if (this.Id != project.Id)
+                throw new Exception("The project to be merged has a different ID.");
 
             // merge variables
             List<VariableInfo> newVariables = new List<VariableInfo>();
 
-            foreach (var variable in campaign.Variables)
+            foreach (var variable in project.Variables)
             {
                 var referenceVariable = this.Variables.FirstOrDefault(current => current.Id == variable.Id);
 
@@ -57,15 +57,15 @@ namespace OneDas.DataManagement.Database
             this.Variables.AddRange(newVariables);
 
             // merge other data
-            if (this.CampaignStart == DateTime.MinValue)
-                this.CampaignStart = campaign.CampaignStart;
+            if (this.ProjectStart == DateTime.MinValue)
+                this.ProjectStart = project.ProjectStart;
             else
-                this.CampaignStart = new DateTime(Math.Min(this.CampaignStart.Ticks, campaign.CampaignStart.Ticks));
+                this.ProjectStart = new DateTime(Math.Min(this.ProjectStart.Ticks, project.ProjectStart.Ticks));
 
-            if (this.CampaignEnd == DateTime.MinValue)
-                this.CampaignEnd = campaign.CampaignEnd;
+            if (this.ProjectEnd == DateTime.MinValue)
+                this.ProjectEnd = project.ProjectEnd;
             else
-                this.CampaignEnd = new DateTime(Math.Max(this.CampaignEnd.Ticks, campaign.CampaignEnd.Ticks));
+                this.ProjectEnd = new DateTime(Math.Max(this.ProjectEnd.Ticks, project.ProjectEnd.Ticks));
         }
 
         public override string GetPath()
@@ -73,7 +73,7 @@ namespace OneDas.DataManagement.Database
             return this.Id;
         }
 
-        public override IEnumerable<CampaignElement> GetChilds()
+        public override IEnumerable<ProjectElement> GetChilds()
         {
             return this.Variables;
         }

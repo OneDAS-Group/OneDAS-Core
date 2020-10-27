@@ -37,7 +37,7 @@ namespace OneDas.Extension.Famos
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{ this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.dat");
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.ProjectDescription.PrimaryGroupName}_{this.DataWriterContext.ProjectDescription.SecondaryGroupName}_{this.DataWriterContext.ProjectDescription.ProjectName}_V{ this.DataWriterContext.ProjectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.dat");
 
             if (_famosFile != null)
                 _famosFile.Dispose();
@@ -91,20 +91,20 @@ namespace OneDas.Extension.Famos
 
             famosFile.Groups.Add(metadataGroup);
 
-            // file -> campaign
-            var campaignGroup = new FamosFileGroup($"{this.DataWriterContext.CampaignDescription.PrimaryGroupName} / {this.DataWriterContext.CampaignDescription.SecondaryGroupName} / {this.DataWriterContext.CampaignDescription.CampaignName}");
+            // file -> project
+            var projectGroup = new FamosFileGroup($"{this.DataWriterContext.ProjectDescription.PrimaryGroupName} / {this.DataWriterContext.ProjectDescription.SecondaryGroupName} / {this.DataWriterContext.ProjectDescription.ProjectName}");
 
-            campaignGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
+            projectGroup.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
             {
-                new FamosFileProperty("campaign_version", this.DataWriterContext.CampaignDescription.Version)
+                new FamosFileProperty("project_version", this.DataWriterContext.ProjectDescription.Version)
             });
 
-            foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
+            foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Project))
             {
-                campaignGroup.PropertyInfo.Properties.Add(new FamosFileProperty(customMetadataEntry.Key, customMetadataEntry.Value));
+                projectGroup.PropertyInfo.Properties.Add(new FamosFileProperty(customMetadataEntry.Key, customMetadataEntry.Value));
             }
 
-            famosFile.Groups.Add(campaignGroup);
+            famosFile.Groups.Add(projectGroup);
 
             // for each context group
             foreach (var contextGroup in variableContextGroupSet)
@@ -115,7 +115,7 @@ namespace OneDas.Extension.Famos
                 if (totalLength * (double)OneDasUtilities.SizeOf(OneDasDataType.FLOAT64) > 2 * Math.Pow(10, 9))
                     throw new Exception(ErrorMessage.FamosWriter_DataSizeExceedsLimit);
 
-                // file -> campaign -> channels
+                // file -> project -> channels
                 var field = new FamosFileField(FamosFileFieldType.MultipleYToSingleEquidistantTime);
 
                 foreach (VariableContext variableContext in contextGroup.VariableContextSet)
@@ -123,7 +123,7 @@ namespace OneDas.Extension.Famos
                     var dx = contextGroup.SampleRate.Period.TotalSeconds;
                     var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
 
-                    campaignGroup.Channels.Add(variable);
+                    projectGroup.Channels.Add(variable);
                 }
 
                 famosFile.Fields.Add(field);

@@ -36,7 +36,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <summary>
         /// Gets the requested data.
         /// </summary>
-        /// <param name="campaignId">The campaign identifier.</param>
+        /// <param name="projectId">The project identifier.</param>
         /// <param name="variableId">The variable identifier.</param>
         /// <param name="datasetId">The dataset identifier.</param>
         /// <param name="begin">Start date/time.</param>
@@ -44,16 +44,16 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns></returns>
 
-        [HttpGet("{campaign-id}/variables/{variable-id}/datasets/{dataset-id}")]
+        [HttpGet("{project-id}/variables/{variable-id}/datasets/{dataset-id}")]
         public IActionResult GetData(
-            [FromRoute(Name = "campaign-id")] string campaignId,
+            [FromRoute(Name = "project-id")] string projectId,
             [FromRoute(Name = "variable-id")] string variableId,
             [FromRoute(Name = "dataset-id")] string datasetId,
             [BindRequired] DateTime begin,
             [BindRequired] DateTime end,
             CancellationToken cancellationToken)
         {
-            campaignId = WebUtility.UrlDecode(campaignId);
+            projectId = WebUtility.UrlDecode(projectId);
             variableId = WebUtility.UrlDecode(variableId);
             datasetId = WebUtility.UrlDecode(datasetId);
 
@@ -78,19 +78,19 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // dataset
-                var path = $"{campaignId}/{variableId}/{datasetId}";
+                var path = $"{projectId}/{variableId}/{datasetId}";
 
                 if (!_databaseManager.Database.TryFindDataset(path, out var dataset))
                     return this.NotFound($"Could not find channel with name '{path}'.");
 
-                var campaign = (CampaignInfo)dataset.Parent.Parent;
+                var project = (ProjectInfo)dataset.Parent.Parent;
 
                 // security check
-                if (!Utilities.IsCampaignAccessible(this.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                    return this.Unauthorized($"The current user is not authorized to access the campaign '{campaign.Id}'.");
+                if (!Utilities.IsProjectAccessible(this.User, project.Id, _databaseManager.Config.RestrictedProjects))
+                    return this.Unauthorized($"The current user is not authorized to access the project '{project.Id}'.");
 
                 // dataReader
-                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.GetAggregationDataReader();
+                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(project.Id) : _databaseManager.GetAggregationDataReader();
 
                 // read data
                 var stream = dataReader.ReadAsStream(dataset, begin, end, 5 * 1000 * 1000UL);

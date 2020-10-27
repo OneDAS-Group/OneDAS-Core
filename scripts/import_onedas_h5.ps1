@@ -3,8 +3,8 @@ $ErrorActionPreference = "Stop"
 
 # general settings (example)
 $sourceDir      = '/OneDAS' 
-$campaignName   = 'GROUP1_GROUP2_CAMPAIGNNAME'
-$searchPattern  = "$($campaignName)_V*_c8157e56"
+$projectName   = 'GROUP1_GROUP2_CAMPAIGNNAME'
+$searchPattern  = "$($projectName)_V*_c8157e56"
 $dataWriterId   = 'HDF_DW1'
 $days           = 7
 
@@ -44,7 +44,7 @@ foreach ($directory in $directories)
     for ($i = 0; $i -lt $days; $i++) 
     {
         $currentBegin   = $dateTimeBegin.AddDays($i)
-        $fileName       = "$($campaignName)_$($version)_$($currentBegin.ToString('yyyy-MM-ddTHH-mm-ssZ')).h5"
+        $fileName       = "$($projectName)_$($version)_$($currentBegin.ToString('yyyy-MM-ddTHH-mm-ssZ')).h5"
 
         $sourceFile     = (Join-Path -Path $currentDir    -ChildPath $fileName).Replace('\', '/')
         $currTargetDir  =  Join-Path -Path $targetDir     -ChildPath $currentBegin.ToString("yyyy-MM")

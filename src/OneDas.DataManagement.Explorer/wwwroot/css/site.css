@@ -275,7 +275,7 @@ app {
         margin: 0px 15px 10px 15px;
     }
 
-.campaign-box {
+.project-box {
     display: flex;
     flex-direction: row;
     min-height: 0;
@@ -285,14 +285,14 @@ app {
     margin: 15px;
 }
 
-.campaign-box-available {
+.project-box-available {
     display: flex;
     flex-direction: column;
     flex: 1;
     padding: 10px;
 }
 
-    .campaign-box-available ul {
+    .project-box-available ul {
         padding: 0;
         padding-bottom: 10px;
         overflow-y: scroll;
@@ -300,45 +300,45 @@ app {
         scrollbar-width: thin;
     }
 
-.campaign-item .small-text {
+.project-item .small-text {
     font-size: 0.875rem;
 }
 
-.campaign-item {
+.project-item {
     cursor: pointer;
     padding: 5px 15px 5px 15px;
 }
 
-.campaign-item:hover {
+.project-item:hover {
     background-color: var(--hover-bg-color);
 }
 
-.campaign-item.active {
+.project-item.active {
     color: var(--active-color);
 }
 
-.campaign-item.disabled {
+.project-item.disabled {
     color: var(--disabled-color);
 }
 
-    .campaign-item.disabled div {
+    .project-item.disabled div {
         color: var(--disabled-color) !important;
     }
 
-.campaign-box-selected {
+.project-box-selected {
     display: flex;
     flex-direction: column;
     flex: 1;
     padding: 10px;
 }
 
-    .campaign-box-selected > span {
+    .project-box-selected > span {
         margin-top: auto;
         margin-bottom: auto;
         align-self: center;
     }
 
-.campaign-box-selected-footer {
+.project-box-selected-footer {
     display: flex;
     flex-direction: row;
     margin-top: auto;
@@ -348,16 +348,16 @@ app {
     color: var(--font-color-subtitle);
 }
 
-.campaign-box-selected-footer-date {
+.project-box-selected-footer-date {
     margin-bottom: 0.8rem;
 }
 
-.campaign-box-selected-footer-icons {
+.project-box-selected-footer-icons {
     display: flex;
     flex-direction: row;
 }
 
-    .campaign-box-selected-footer-icons .selected {
+    .project-box-selected-footer-icons .selected {
         color: #880e4f;
     }
 
@@ -692,7 +692,7 @@ app {
     margin-bottom: 3px;
 }
 
-.selected-variable-campaign {
+.selected-variable-project {
     font-size: 0.8rem;
     color: var(--font-color-subtitle);
     text-overflow: ellipsis;

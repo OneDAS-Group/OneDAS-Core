@@ -63,9 +63,9 @@ namespace OneDas.Core.Serialization
             }
         }
 
-        public OneDasCampaignDescription GetCampaignDescriptionFromFile(string filePath)
+        public OneDasProjectDescription GetProjectDescriptionFromFile(string filePath)
         {
-            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<OneDasCampaignDescription>();
+            return JObject.Parse(File.ReadAllText(filePath))["Description"].ToObject<OneDasProjectDescription>();
         }
 
         private void Upgrade(JObject jObject)

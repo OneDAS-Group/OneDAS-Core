@@ -3,17 +3,17 @@ using System.Text.Json.Serialization;
 
 namespace OneDas.DataManagement.Database
 {
-    public abstract class CampaignElement
+    public abstract class ProjectElement
     {
         #region "Constructors"
 
-        public CampaignElement(string id, CampaignElement parent)
+        public ProjectElement(string id, ProjectElement parent)
         {
             this.Id = id;
             this.Parent = parent;
         }
 
-        private protected CampaignElement()
+        private protected ProjectElement()
         {
             //
         }
@@ -25,7 +25,7 @@ namespace OneDas.DataManagement.Database
         public string Id { get; set; }
 
         [JsonIgnore]
-        public CampaignElement Parent { get; set; }
+        public ProjectElement Parent { get; set; }
 
         #endregion
 
@@ -33,7 +33,7 @@ namespace OneDas.DataManagement.Database
 
         public abstract string GetPath();
 
-        public abstract IEnumerable<CampaignElement> GetChilds();
+        public abstract IEnumerable<ProjectElement> GetChilds();
 
         public virtual void Initialize()
         {

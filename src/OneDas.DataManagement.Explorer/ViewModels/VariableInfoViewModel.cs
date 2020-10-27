@@ -52,7 +52,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { _variableMeta.SpecialInfo = value; }
         }
 
-        public CampaignInfo Parent => (CampaignInfo)_variable.Parent;
+        public ProjectInfo Parent => (ProjectInfo)_variable.Parent;
 
         public List<TransferFunction> TransferFunctions => _variableMeta.TransferFunctions.Any() 
             ? _variableMeta.TransferFunctions

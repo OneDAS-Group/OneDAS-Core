@@ -55,11 +55,11 @@ namespace OneDas.DataManagement.Extensions
             while (remainingBufferLength > 0)
             {
                 // get data
-                var campaign = (CampaignInfo)dataset.Parent.Parent;
-                var campaignId = campaign.Id;
+                var project = (ProjectInfo)dataset.Parent.Parent;
+                var projectId = project.Id;
 
                 /* aggregated data have no version number in file names */
-                var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+                var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
                 var currentFolderPath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"));
 
                 List<string> filePaths;
@@ -85,7 +85,7 @@ namespace OneDas.DataManagement.Extensions
 
                             // the averages database has no "is_chunk_completed_set"
 #warning use format version instead to check this?
-                            var isChunkCompletedSetPath = $"{campaign.GetPath()}/is_chunk_completed_set";
+                            var isChunkCompletedSetPath = $"{project.GetPath()}/is_chunk_completed_set";
 
                             if (IOHelper.CheckLinkExists(fileId, isChunkCompletedSetPath))
                             {
@@ -158,7 +158,7 @@ namespace OneDas.DataManagement.Extensions
             return (data, statusSet);
         }
 
-        protected override List<CampaignInfo> LoadCampaigns()
+        protected override List<ProjectInfo> LoadProjects()
         {
             // (0) load versioning file
             var versioningFilePath = Path.Combine(this.RootPath, "versioning.json");
@@ -174,7 +174,7 @@ namespace OneDas.DataManagement.Extensions
             var firstMonthString = Path.GetFileName(Directory.EnumerateDirectories(dataFolderPath).FirstOrDefault());
 
             if (firstMonthString == null)
-                return new List<CampaignInfo>();
+                return new List<ProjectInfo>();
 
             var firstMonth = DateTime.ParseExact(firstMonthString, "yyyy-MM", CultureInfo.InvariantCulture);
 
@@ -193,44 +193,44 @@ namespace OneDas.DataManagement.Extensions
             {
                 var currentDataFolderPath = Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM"));
 
-                // (3) find available campaign ids by scanning file contents (optimized)
-                List<string> campaignIds;
+                // (3) find available project ids by scanning file contents (optimized)
+                List<string> projectIds;
 
                 if (Directory.Exists(currentDataFolderPath))
-                    campaignIds = this.FindCampaignIds(Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM")));
+                    projectIds = this.FindProjectIds(Path.Combine(dataFolderPath, currentMonth.ToString("yyyy-MM")));
                 else
-                    campaignIds = new List<string>();
+                    projectIds = new List<string>();
 
                 // (4) find corresponding cache file
                 var cacheFilePath = Path.Combine(cacheFolderPath, $"{currentMonth.ToString("yyyy-MM")}.json");
 
-                List<CampaignInfo> cache;
+                List<ProjectInfo> cache;
 
                 // (5.a) cache file exists
                 if (File.Exists(cacheFilePath))
                 {
-                    cache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(cacheFilePath);
-                    cache.ForEach(campaign => campaign.Initialize());
+                    cache = JsonSerializerHelper.Deserialize<List<ProjectInfo>>(cacheFilePath);
+                    cache.ForEach(project => project.Initialize());
 
-                    foreach (var campaignId in campaignIds)
+                    foreach (var projectId in projectIds)
                     {
-                        var campaign = cache.FirstOrDefault(campaign => campaign.Id == campaignId);
+                        var project = cache.FirstOrDefault(project => project.Id == projectId);
 
-                        // campaign is in cache ...
-                        if (campaign != null)
+                        // project is in cache ...
+                        if (project != null)
                         {
                             // ... but cache is outdated
-                            if (this.IsCacheOutdated(campaignId, currentDataFolderPath, versioning))
+                            if (this.IsCacheOutdated(projectId, currentDataFolderPath, versioning))
                             {
-                                campaign = this.ScanFiles(campaignId, currentDataFolderPath, versioning);
+                                project = this.ScanFiles(projectId, currentDataFolderPath, versioning);
                                 cacheChanged = true;
                             }
                         }
-                        // campaign is not in cache
+                        // project is not in cache
                         else
                         {
-                            campaign = this.ScanFiles(campaignId, currentDataFolderPath, versioning);
-                            cache.Add(campaign);
+                            project = this.ScanFiles(projectId, currentDataFolderPath, versioning);
+                            cache.Add(project);
                             cacheChanged = true;
                         }
                     }
@@ -238,11 +238,11 @@ namespace OneDas.DataManagement.Extensions
                 // (5.b) cache file does not exist
                 else
                 {
-                    cache = campaignIds.Select(campaignId =>
+                    cache = projectIds.Select(projectId =>
                     {
-                        var campaign = this.ScanFiles(campaignId, currentDataFolderPath, versioning);
+                        var project = this.ScanFiles(projectId, currentDataFolderPath, versioning);
                         cacheChanged = true;
-                        return campaign;
+                        return project;
                     }).ToList();
                 }
 
@@ -257,12 +257,12 @@ namespace OneDas.DataManagement.Extensions
             }
 
             // (7) update main cache
-            List<CampaignInfo> mainCache;
+            List<ProjectInfo> mainCache;
 
             if (cacheChanged || !File.Exists(mainCacheFilePath))
             {
                 var cacheFiles = Directory.EnumerateFiles(cacheFolderPath, "*-*.json");
-                mainCache = new List<CampaignInfo>();
+                mainCache = new List<ProjectInfo>();
 
                 var message = "Merging cache files to main cache ...";
 
@@ -272,17 +272,17 @@ namespace OneDas.DataManagement.Extensions
 
                     foreach (var cacheFile in cacheFiles)
                     {
-                        var cache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(cacheFile);
-                        cache.ForEach(campaign => campaign.Initialize());
+                        var cache = JsonSerializerHelper.Deserialize<List<ProjectInfo>>(cacheFile);
+                        cache.ForEach(project => project.Initialize());
 
-                        foreach (var campaign in cache)
+                        foreach (var project in cache)
                         {
-                            var reference = mainCache.FirstOrDefault(current => current.Id == campaign.Id);
+                            var reference = mainCache.FirstOrDefault(current => current.Id == project.Id);
 
                             if (reference != null)
-                                reference.Merge(campaign, VariableMergeMode.NewWins);
+                                reference.Merge(project, VariableMergeMode.NewWins);
                             else
-                                mainCache.Add(campaign);
+                                mainCache.Add(project);
                         }
                     }
 
@@ -298,30 +298,30 @@ namespace OneDas.DataManagement.Extensions
             }
             else
             {
-                mainCache = JsonSerializerHelper.Deserialize<List<CampaignInfo>>(mainCacheFilePath);
-                mainCache.ForEach(campaign => campaign.Initialize());
+                mainCache = JsonSerializerHelper.Deserialize<List<ProjectInfo>>(mainCacheFilePath);
+                mainCache.ForEach(project => project.Initialize());
             }
 
-            // update campaign start and end
-            foreach (var campaign in mainCache)
+            // update project start and end
+            foreach (var project in mainCache)
             {
-                var searchPattern = $"{this.ToUnderscoredId(campaign.Id)}*.h5";
+                var searchPattern = $"{this.ToUnderscoredId(project.Id)}*.h5";
                 var files = Directory.EnumerateFiles(dataFolderPath, searchPattern, SearchOption.AllDirectories);
                 var firstDateTime = this.GetFirstDateTime(files);
 
-                campaign.CampaignStart = firstDateTime;
-                campaign.CampaignEnd = versioning.ScannedUntilMap[campaign.Id].AddDays(1);
+                project.ProjectStart = firstDateTime;
+                project.ProjectEnd = versioning.ScannedUntilMap[project.Id].AddDays(1);
             }
 
             return mainCache;
         }
 
-        protected override double GetDataAvailability(string campaignId, DateTime day)
+        protected override double GetDataAvailability(string projectId, DateTime day)
         {
-            if (!this.Campaigns.Any(campaign => campaign.Id == campaignId))
-                throw new Exception($"The campaign '{campaignId}' could not be found.");
+            if (!this.Projects.Any(project => project.Id == projectId))
+                throw new Exception($"The project '{projectId}' could not be found.");
 
-            var fileNamePattern = $"{this.ToUnderscoredId(campaignId)}_*_{day.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+            var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*_{day.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
             var folderName = day.ToString("yyyy-MM");
             var folderPath = Path.Combine(this.RootPath, "DATA", folderName);
 
@@ -335,7 +335,7 @@ namespace OneDas.DataManagement.Extensions
             return fileCount > 0 ? 1 : 0;
         }
 
-        private List<string> FindCampaignIds(string dataFolderPath)
+        private List<string> FindProjectIds(string dataFolderPath)
         {
             var distinctFiles = Directory
                 .EnumerateFiles(dataFolderPath, "*.h5")
@@ -349,25 +349,25 @@ namespace OneDas.DataManagement.Extensions
             return distinctFiles.Select(distinctFile =>
             {
                 var filePath = Directory.EnumerateFiles(dataFolderPath, $"{distinctFile}*.h5").First();
-                var campaignId = GeneralHelper.GetCampaignIdFromFile(filePath);
-                return campaignId;
+                var projectId = GeneralHelper.GetProjectIdFromFile(filePath);
+                return projectId;
             }).Distinct().ToList();
         }
 
-        private bool IsCacheOutdated(string campaignId, string dataFolderPath, HdfVersioning versioning)
+        private bool IsCacheOutdated(string projectId, string dataFolderPath, HdfVersioning versioning)
         {
-            var searchPattern = $"{this.ToUnderscoredId(campaignId)}*.h5";
+            var searchPattern = $"{this.ToUnderscoredId(projectId)}*.h5";
             var files = Directory.EnumerateFiles(dataFolderPath, searchPattern);
             var lastDateTime = this.GetLastDateTime(files);
-            return lastDateTime > versioning.ScannedUntilMap[campaignId];
+            return lastDateTime > versioning.ScannedUntilMap[projectId];
         }
 
-        private CampaignInfo ScanFiles(string campaignId, string dataFolderPath, HdfVersioning versioning)
+        private ProjectInfo ScanFiles(string projectId, string dataFolderPath, HdfVersioning versioning)
         {
-            var message = $"Scanning files for {Path.GetFileName(dataFolderPath)} ({campaignId}) ...";
-            var searchPattern = $"{this.ToUnderscoredId(campaignId)}*.h5";
+            var message = $"Scanning files for {Path.GetFileName(dataFolderPath)} ({projectId}) ...";
+            var searchPattern = $"{this.ToUnderscoredId(projectId)}*.h5";
             var files = Directory.EnumerateFiles(dataFolderPath, searchPattern);
-            var campaign = new CampaignInfo(campaignId);
+            var project = new ProjectInfo(projectId);
 
             this.Logger.LogInformation(message);
 
@@ -381,8 +381,8 @@ namespace OneDas.DataManagement.Extensions
                     {
                         if (H5I.is_valid(fileId) > 0)
                         {
-                            var newCampaign = GeneralHelper.GetCampaign(fileId, campaignId);
-                            campaign.Merge(newCampaign, VariableMergeMode.NewWins);
+                            var newProject = GeneralHelper.GetProject(fileId, projectId);
+                            project.Merge(newProject, VariableMergeMode.NewWins);
                         }
                     }
                     finally
@@ -394,14 +394,14 @@ namespace OneDas.DataManagement.Extensions
                 // update scanned until
                 var scannedUntil = this.GetLastDateTime(files);
 
-                if (versioning.ScannedUntilMap.TryGetValue(campaignId, out var value))
+                if (versioning.ScannedUntilMap.TryGetValue(projectId, out var value))
                 {
                     if (scannedUntil > value)
-                        versioning.ScannedUntilMap[campaignId] = scannedUntil;
+                        versioning.ScannedUntilMap[projectId] = scannedUntil;
                 }
                 else
                 {
-                    versioning.ScannedUntilMap[campaignId] = scannedUntil;
+                    versioning.ScannedUntilMap[projectId] = scannedUntil;
                 }
 
                 this.Logger.LogInformation($"{message} Done.");
@@ -411,7 +411,7 @@ namespace OneDas.DataManagement.Extensions
                 this.Logger.LogError($"{message} Error: {ex.GetFullMessage()}");
             }
 
-            return campaign;
+            return project;
         }
 
         private DateTime GetFirstDateTime(IEnumerable<string> files)
@@ -446,9 +446,9 @@ namespace OneDas.DataManagement.Extensions
             }
         }
 
-        private string ToUnderscoredId(string campaignId)
+        private string ToUnderscoredId(string projectId)
         {
-            return campaignId.Replace('/', '_').TrimStart('_');
+            return projectId.Replace('/', '_').TrimStart('_');
         }
 
         #endregion

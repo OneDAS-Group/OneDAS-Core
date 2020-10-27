@@ -7,11 +7,11 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
-    public class VariableInfo : CampaignElement
+    public class VariableInfo : ProjectElement
     {
         #region "Constructors"
 
-        public VariableInfo(string id, CampaignElement parent) : base(id, parent)
+        public VariableInfo(string id, ProjectElement parent) : base(id, parent)
         {
             this.Name = string.Empty;
             this.Group = string.Empty;
@@ -101,7 +101,7 @@ namespace OneDas.DataManagement.Database
             return $"{this.Parent.GetPath()}/{this.Id}";
         }
 
-        public override IEnumerable<CampaignElement> GetChilds()
+        public override IEnumerable<ProjectElement> GetChilds()
         {
             return this.Datasets;
         }

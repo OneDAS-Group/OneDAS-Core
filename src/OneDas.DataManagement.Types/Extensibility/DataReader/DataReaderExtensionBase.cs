@@ -32,20 +32,20 @@ namespace OneDas.DataManagement.Extensibility
 
         public Progress<double> Progress { get; }
 
-        public List<CampaignInfo> Campaigns { get; private set; }
+        public List<ProjectInfo> Projects { get; private set; }
 
         #endregion
 
         #region Methods
 
-        public void InitializeCampaigns()
+        public void InitializeProjects()
         {
-            this.Campaigns = this.LoadCampaigns();
+            this.Projects = this.LoadProjects();
         }
 
-        public void InitializeCampaigns(List<CampaignInfo> campaigns)
+        public void InitializeProjects(List<ProjectInfo> projects)
         {
-            this.Campaigns = campaigns;
+            this.Projects = projects;
         }
 
         public DataReaderStream ReadAsStream(
@@ -211,7 +211,7 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
+        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string projectId, DateTime begin, DateTime end)
         {
             var dateBegin = begin.Date;
             var dateEnd = end.Date;
@@ -227,7 +227,7 @@ namespace OneDas.DataManagement.Extensibility
                 Parallel.For(0, totalDays, day =>
                 {
                     var date = dateBegin.AddDays(day);
-                    aggregatedData[day] = (int)(this.GetDataAvailability(campaignId, date) * 100);
+                    aggregatedData[day] = (int)(this.GetDataAvailability(projectId, date) * 100);
                 });
             }
             else
@@ -243,7 +243,7 @@ namespace OneDas.DataManagement.Extensibility
                     var month = new DateTime(date.Year, date.Month, 1);
 
                     months[day] = month;
-                    datasets[day] = (int)(this.GetDataAvailability(campaignId, date) * 100);
+                    datasets[day] = (int)(this.GetDataAvailability(projectId, date) * 100);
                 });
 
                 var uniqueMonths = months.Distinct().OrderBy(month => month).ToList();
@@ -263,19 +263,19 @@ namespace OneDas.DataManagement.Extensibility
         }
 
 
-        public List<string> GetCampaignNames()
+        public List<string> GetProjectNames()
         {
-            return this.Campaigns.Select(campaign => campaign.Id).ToList();
+            return this.Projects.Select(project => project.Id).ToList();
         }
 
-        public CampaignInfo GetCampaign(string campaignId)
+        public ProjectInfo GetProject(string projectId)
         {
-            return this.Campaigns.First(campaign => campaign.Id == campaignId);
+            return this.Projects.First(project => project.Id == projectId);
         }
 
-        public bool IsDataOfDayAvailable(string campaignId, DateTime day)
+        public bool IsDataOfDayAvailable(string projectId, DateTime day)
         {
-            return this.GetDataAvailability(campaignId, day) > 0;
+            return this.GetDataAvailability(projectId, day) > 0;
         }
 
         public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
@@ -285,9 +285,9 @@ namespace OneDas.DataManagement.Extensibility
             //
         }
 
-        protected abstract List<CampaignInfo> LoadCampaigns();
+        protected abstract List<ProjectInfo> LoadProjects();
 
-        protected abstract double GetDataAvailability(string campaignId, DateTime Day);
+        protected abstract double GetDataAvailability(string projectId, DateTime Day);
 
         private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
         {

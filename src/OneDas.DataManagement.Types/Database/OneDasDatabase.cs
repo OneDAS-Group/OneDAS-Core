@@ -10,52 +10,52 @@ namespace OneDas.DataManagement.Database
 
         public OneDasDatabase()
         {
-            this.CampaignContainers = new List<CampaignContainer>();
+            this.ProjectContainers = new List<ProjectContainer>();
         }
 
         #endregion
 
         #region Properties
 
-        public List<CampaignContainer> CampaignContainers { get; set; }
+        public List<ProjectContainer> ProjectContainers { get; set; }
 
         #endregion
 
         #region Methods
 
-        public List<CampaignInfo> GetCampaigns()
+        public List<ProjectInfo> GetProjects()
         {
-            return this.CampaignContainers.Select(container => container.Campaign).ToList();
+            return this.ProjectContainers.Select(container => container.Project).ToList();
         }
 
-        public bool TryFindCampaignById(string id, out CampaignInfo campaign)
+        public bool TryFindProjectById(string id, out ProjectInfo project)
         {
-            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Id == id);
-            campaign = campaignContainer?.Campaign;
+            var projectContainer = this.ProjectContainers.FirstOrDefault(projectContainer => projectContainer.Id == id);
+            project = projectContainer?.Project;
 
-            return campaign != null;
+            return project != null;
         }
 
-        public bool TryFindVariableById(string campaignId, string variableId, out VariableInfo variable)
+        public bool TryFindVariableById(string projectId, string variableId, out VariableInfo variable)
         {
             variable = default;
 
-            if (this.TryFindCampaignById(campaignId, out var campaign))
+            if (this.TryFindProjectById(projectId, out var project))
             {
-                variable = campaign.Variables.FirstOrDefault(variable => variable.Id == variableId);
+                variable = project.Variables.FirstOrDefault(variable => variable.Id == variableId);
 
                 if (variable == null)
-                    variable = campaign.Variables.FirstOrDefault(variable => variable.Name == variableId);
+                    variable = project.Variables.FirstOrDefault(variable => variable.Name == variableId);
             }
 
             return variable != null;
         }
 
-        public bool TryFindDatasetById(string campaignId, string variableId, string datsetId, out DatasetInfo dataset)
+        public bool TryFindDatasetById(string projectId, string variableId, string datsetId, out DatasetInfo dataset)
         {
             dataset = default;
 
-            if (this.TryFindVariableById(campaignId, variableId, out var variable))
+            if (this.TryFindVariableById(projectId, variableId, out var variable))
             {
                 dataset = variable.Datasets.FirstOrDefault(dataset => dataset.Id == datsetId);
 
@@ -73,11 +73,11 @@ namespace OneDas.DataManagement.Database
             if (pathParts.Length != 6)
                 throw new Exception($"The channel name '{path}' is invalid.");
 
-            var campaignName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
+            var projectName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
             var variableName = pathParts[4];
             var datasetName = pathParts[5];
 
-            return this.TryFindDatasetById(campaignName, variableName, datasetName, out dataset);
+            return this.TryFindDatasetById(projectName, variableName, datasetName, out dataset);
         }
 
         public bool TryFindDatasetsByGroup(string groupPath, out List<DatasetInfo> datasets)
@@ -87,22 +87,22 @@ namespace OneDas.DataManagement.Database
             if (groupPathParts.Length != 6)
                 throw new Exception($"The group path '{groupPath}' is invalid.");
 
-            var campaignName = $"/{groupPathParts[1]}/{groupPathParts[2]}/{groupPathParts[3]}";
+            var projectName = $"/{groupPathParts[1]}/{groupPathParts[2]}/{groupPathParts[3]}";
             var groupName = groupPathParts[4];
             var datasetName = groupPathParts[5];
 
-            return this.TryFindDatasetsByGroup(campaignName, groupName, datasetName, out datasets);
+            return this.TryFindDatasetsByGroup(projectName, groupName, datasetName, out datasets);
         }
 
-        private bool TryFindDatasetsByGroup(string campaignName, string groupName, string datasetName, out List<DatasetInfo> datasets)
+        private bool TryFindDatasetsByGroup(string projectName, string groupName, string datasetName, out List<DatasetInfo> datasets)
         {
             datasets = new List<DatasetInfo>();
 
-            var campaignContainer = this.CampaignContainers.FirstOrDefault(campaignContainer => campaignContainer.Id == campaignName);
+            var projectContainer = this.ProjectContainers.FirstOrDefault(projectContainer => projectContainer.Id == projectName);
 
-            if (campaignContainer != null)
+            if (projectContainer != null)
             {
-                var variables = campaignContainer.Campaign.Variables
+                var variables = projectContainer.Project.Variables
                     .Where(variable => variable.Group.Split('\n')
                     .Contains(groupName))
                     .OrderBy(variable => variable.Name)

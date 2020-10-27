@@ -51,28 +51,28 @@ namespace OneDas.DataManagement.Explorer.Core
             _databaseManager.Initialize(databaseFolderPath);
             _databaseManager.Update();
 
-            var campaignNames = _databaseManager.Config.AggregationConfigs.Select(config => config.CampaignName).Distinct().ToList();
+            var projectNames = _databaseManager.Config.AggregationConfigs.Select(config => config.ProjectName).Distinct().ToList();
             var epochEnd = DateTime.UtcNow.Date;
             var epochStart = epochEnd.AddDays(-days);
 
-            foreach (var campaignName in campaignNames)
+            foreach (var projectName in projectNames)
             {
                 for (int i = 0; i <= days; i++)
                 {
-                    this.CreateAggregatedFiles(databaseFolderPath, campaignName, epochStart.AddDays(i), force);
+                    this.CreateAggregatedFiles(databaseFolderPath, projectName, epochStart.AddDays(i), force);
                 }
             }
         }
 
-        private void CreateAggregatedFiles(string databaseFolderPath, string campaignName, DateTime date, bool force)
+        private void CreateAggregatedFiles(string databaseFolderPath, string projectName, DateTime date, bool force)
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
 
-            using var dataReader = _databaseManager.GetNativeDataReader(campaignName);
+            using var dataReader = _databaseManager.GetNativeDataReader(projectName);
 
             // get files
-            if (!dataReader.IsDataOfDayAvailable(campaignName, date))
+            if (!dataReader.IsDataOfDayAvailable(projectName, date))
                 return;
 
             // process data
@@ -80,16 +80,16 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 var targetFileId = -1L;
 
-                // campaign
-                var campaign = _databaseManager.Database.GetCampaigns().FirstOrDefault(campaign => campaign.Id == campaignName);
+                // project
+                var project = _databaseManager.Database.GetProjects().FirstOrDefault(project => project.Id == projectName);
 
-                if (campaign is null)
-                    throw new Exception($"The requested campaign '{campaignName}' could not be found.");
+                if (project is null)
+                    throw new Exception($"The requested project '{projectName}' could not be found.");
 
                 // targetFileId
-                var campaignFileName = campaignName.TrimStart('/').Replace("/", "_");
+                var projectFileName = projectName.TrimStart('/').Replace("/", "_");
                 var dateTimeFileName = date.ToString("yyyy-MM-ddTHH-mm-ssZ");
-                var targetFileName = $"{campaignFileName}_{dateTimeFileName}.h5";
+                var targetFileName = $"{projectFileName}_{dateTimeFileName}.h5";
                 var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
 
                 if (!Directory.Exists(targetDirectoryPath))
@@ -110,8 +110,8 @@ namespace OneDas.DataManagement.Explorer.Core
                         IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
                     }
 
-                    // campaignInfo
-                    this.AggregateCampaign(dataReader, campaign, date, targetFileId, force);
+                    // projectInfo
+                    this.AggregateProject(dataReader, project, date, targetFileId, force);
                 }
                 finally
                 {
@@ -124,13 +124,13 @@ namespace OneDas.DataManagement.Explorer.Core
             }
         }
 
-        private void AggregateCampaign(DataReaderExtensionBase dataReader, CampaignInfo campaign, DateTime date, long targetFileId, bool force)
+        private void AggregateProject(DataReaderExtensionBase dataReader, ProjectInfo project, DateTime date, long targetFileId, bool force)
         {
             _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... ");
 
-            var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.CampaignName == campaign.Id).ToList();
+            var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.ProjectName == project.Id).ToList();
 
-            var variableToAggregationConfigMap = campaign.Variables
+            var variableToAggregationConfigMap = project.Variables
                 .ToDictionary(variable => variable, variable => potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(variable, config.Filters)).ToList())
                 .Where(entry => entry.Value.Any())
                 .ToDictionary(entry => entry.Key, entry => entry.Value);

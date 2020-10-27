@@ -2,7 +2,7 @@
 {
     // settings
     public FormatVersion: number
-    public Description: OneDasCampaignDescriptionViewModel
+    public Description: OneDasProjectDescriptionViewModel
     public ChannelHubSet: KnockoutObservableArray<ChannelHubViewModel>
     public GroupedChannelHubSet: KnockoutObservableArray<ObservableGroup<ChannelHubViewModel>>
     public DataGatewaySet: KnockoutObservableArray<DataGatewayViewModelBase>
@@ -54,7 +54,7 @@
         let promiseSet: Promise<any>[]
 
         this.FormatVersion = projectModel.FormatVersion
-        this.Description = new OneDasCampaignDescriptionViewModel(projectModel.Description)
+        this.Description = new OneDasProjectDescriptionViewModel(projectModel.Description)
         this.ChannelHubSet = ko.observableArray<ChannelHubViewModel>(projectModel.ChannelHubSettingsSet.map(x => new ChannelHubViewModel(x)))
         this.GroupedChannelHubSet = ko.observableArray(ObservableGroupBy(this.ChannelHubSet(), x => x.Name(), x => x.Group(), ""))
         this.DataGatewaySet = ko.observableArray<DataGatewayViewModelBase>()

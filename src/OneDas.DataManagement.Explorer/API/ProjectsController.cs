@@ -11,9 +11,9 @@ using System.Net;
 
 namespace OneDas.DataManagement.Explorer.Controllers
 {
-    [Route("v1/api/resources")]
+    [Route("v1/api/projects")]
     [ApiController]
-    public class ResourceController : ControllerBase
+    public class ProjectsController : ControllerBase
     {
         #region Fields
 
@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         #endregion
 
-        public ResourceController(OneDasExplorerStateManager stateManager,
+        public ProjectsController(OneDasExplorerStateManager stateManager,
                                   OneDasDatabaseManager databaseManager,
                                   ILoggerFactory loggerFactory)
         {
@@ -33,28 +33,28 @@ namespace OneDas.DataManagement.Explorer.Controllers
         }
 
         /// <summary>
-        /// Gets a list of all accessible and visible campaigns.
+        /// Gets a list of all accessible and visible projects.
         /// </summary>
         [HttpGet]
-        public ActionResult<List<string>> Campaigns()
+        public ActionResult<List<string>> Projects()
         {
-            var campaignIds = _databaseManager.Database.CampaignContainers
+            var projectIds = _databaseManager.Database.ProjectContainers
                 .Select(container => container.Id);
 
-            campaignIds = campaignIds.Where(campaignId
-                => Utilities.IsCampaignAccessible(this.User, campaignId, _databaseManager.Config.RestrictedCampaigns)
-                && Utilities.IsCampaignVisible(this.User, campaignId, Constants.HiddenCampaigns));
+            projectIds = projectIds.Where(projectId
+                => Utilities.IsProjectAccessible(this.User, projectId, _databaseManager.Config.RestrictedProjects)
+                && Utilities.IsProjectVisible(this.User, projectId, Constants.HiddenProjects));
     
-            return campaignIds.ToList();
+            return projectIds.ToList();
         }
 
         /// <summary>
-        /// Gets a description of the specified campaign.
+        /// Gets a description of the specified project.
         /// </summary>
-        /// <param name="id">The campaign identifier.</param>
+        /// <param name="id">The project identifier.</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public ActionResult<CampaignInfo> Campaigns(string id)
+        public ActionResult<ProjectInfo> Projects(string id)
         {
             id = WebUtility.UrlDecode(id);
 
@@ -68,7 +68,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) requests campaign '{id}' ...";
+            var message = $"User '{userName}' ({remoteIpAddress}) requests project '{id}' ...";
             _logger.LogInformation(message);
 
             try
@@ -76,18 +76,18 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // security check
-                if (!Utilities.IsCampaignAccessible(this.User, id, _databaseManager.Config.RestrictedCampaigns))
-                    return this.Unauthorized($"The current user is not authorized to access the campaign '{id}'.");
+                if (!Utilities.IsProjectAccessible(this.User, id, _databaseManager.Config.RestrictedProjects))
+                    return this.Unauthorized($"The current user is not authorized to access the project '{id}'.");
 
-                var campaignContainer = _databaseManager
+                var projectContainer = _databaseManager
                    .Database
-                   .CampaignContainers
+                   .ProjectContainers
                    .FirstOrDefault(container => container.Id == id);
 
                 _logger.LogInformation($"{message} Done.");
 
-                if (campaignContainer != null)
-                    return campaignContainer.Campaign;
+                if (projectContainer != null)
+                    return projectContainer.Project;
                 else
                     return this.NotFound(id);
             }
@@ -101,15 +101,15 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <summary>
         /// Gets a description of the specified variable.
         /// </summary>
-        /// <param name="campaignId">The campaign identifier.</param>
+        /// <param name="projectId">The project identifier.</param>
         /// <param name="variableId">The variable identifier.</param>
         /// <returns></returns>
-        [HttpGet("{campaign-id}/variables/{variable-id}")]
+        [HttpGet("{project-id}/variables/{variable-id}")]
         public ActionResult<VariableInfo> Variables(
-            [FromRoute(Name = "campaign-id")] string campaignId,
+            [FromRoute(Name = "project-id")] string projectId,
             [FromRoute(Name = "variable-id")] string variableId)
         {
-            campaignId = WebUtility.UrlDecode(campaignId);
+            projectId = WebUtility.UrlDecode(projectId);
             variableId = WebUtility.UrlDecode(variableId);
 
             var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
@@ -122,7 +122,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) requests variable '{campaignId}/{variableId}' ...";
+            var message = $"User '{userName}' ({remoteIpAddress}) requests variable '{projectId}/{variableId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -130,13 +130,13 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // security check
-                if (!_databaseManager.Database.TryFindVariableById(campaignId, variableId, out var variable))
-                    return this.NotFound($"{campaignId}/{variableId}");
+                if (!_databaseManager.Database.TryFindVariableById(projectId, variableId, out var variable))
+                    return this.NotFound($"{projectId}/{variableId}");
 
-                var campaign = variable.Parent;
+                var project = variable.Parent;
 
-                if (!Utilities.IsCampaignAccessible(this.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                    return this.Unauthorized($"The current user is not authorized to access the campaign '{campaignId}'.");
+                if (!Utilities.IsProjectAccessible(this.User, project.Id, _databaseManager.Config.RestrictedProjects))
+                    return this.Unauthorized($"The current user is not authorized to access the project '{projectId}'.");
 
                 _logger.LogInformation($"{message} Done.");
 
@@ -152,17 +152,17 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <summary>
         /// Gets a description of the specified dataset.
         /// </summary>
-        /// <param name="campaignId">The campaign identifier.</param>
+        /// <param name="projectId">The project identifier.</param>
         /// <param name="variableId">The variable identifier.</param>
         /// <param name="datasetId">The dataset identifier.</param>
         /// <returns></returns>
-        [HttpGet("{campaign-id}/variables/{variable-id}/datasets/{dataset-id}")]
+        [HttpGet("{project-id}/variables/{variable-id}/datasets/{dataset-id}")]
         public ActionResult<DatasetInfo> Variables(
-            [FromRoute(Name = "campaign-id")] string campaignId,
+            [FromRoute(Name = "project-id")] string projectId,
             [FromRoute(Name = "variable-id")] string variableId,
             [FromRoute(Name = "dataset-id")] string datasetId)
         {
-            campaignId = WebUtility.UrlDecode(campaignId);
+            projectId = WebUtility.UrlDecode(projectId);
             variableId = WebUtility.UrlDecode(variableId);
             datasetId = WebUtility.UrlDecode(datasetId);
 
@@ -176,7 +176,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) requests dataset '{campaignId}/{variableId}/{datasetId}' ...";
+            var message = $"User '{userName}' ({remoteIpAddress}) requests dataset '{projectId}/{variableId}/{datasetId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -184,13 +184,13 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // security check
-                if (!_databaseManager.Database.TryFindDatasetById(campaignId, variableId, datasetId, out var dataset))
-                    return this.NotFound($"{campaignId}/{variableId}/{datasetId}");
+                if (!_databaseManager.Database.TryFindDatasetById(projectId, variableId, datasetId, out var dataset))
+                    return this.NotFound($"{projectId}/{variableId}/{datasetId}");
 
-                var campaign = dataset.Parent.Parent;
+                var project = dataset.Parent.Parent;
 
-                if (!Utilities.IsCampaignAccessible(this.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                    return this.Unauthorized($"The current user is not authorized to access the campaign '{campaignId}'.");
+                if (!Utilities.IsProjectAccessible(this.User, project.Id, _databaseManager.Config.RestrictedProjects))
+                    return this.Unauthorized($"The current user is not authorized to access the project '{projectId}'.");
 
                 _logger.LogInformation($"{message} Done.");
 

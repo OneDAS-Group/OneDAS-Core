@@ -1,0 +1,55 @@
+﻿@inherits AppStateComponentBase
+
+<div class="project-box-available">
+    <MatHeadline5>Available Projects</MatHeadline5>
+    <ul>
+        @foreach (var projectContainer in this.AppState.ProjectContainersInfo.Accessible.Concat(this.AppState.ProjectContainersInfo.Restricted))
+        {
+            <li @onclick="() => this.AppState.ProjectContainer = projectContainer">
+                <div class="project-item @(this.AppState.ProjectContainer == projectContainer ? "active" : "")">
+                    <div class="project-item-name">
+                        @projectContainer.Id.TrimStart('/').Replace("/", " / ")
+                        @if (this.AppState.ProjectContainersInfo.Restricted.Contains(projectContainer))
+                        {
+                            <span>&nbsp; &nbsp;<i class="fas fa-lock"></i></span>
+                        }
+                    </div>
+                    <div class="small-text">&nbsp;&nbsp;&nbsp;@projectContainer.ProjectMeta.ShortDescription</div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+<div class="project-box-selected">
+
+    @if (this.AppState.ProjectContainer != null)
+    {
+        <MatHeadline5>@this.AppState.ProjectContainer.Id.TrimStart('/').Replace("/", " / ")</MatHeadline5>
+        <p class="long-description small-text">
+            @this.AppState.ProjectContainer.ProjectMeta.LongDescription
+        </p>
+        <div class="project-box-selected-footer">
+            <div class="project-box-selected-footer-date">
+                <b>Start:&nbsp;</b> @this.AppState.ProjectContainer.Project.ProjectStart.ToString("dd.MM.yyyy") &nbsp;&nbsp;&nbsp; <b>End:&nbsp;</b> @this.AppState.ProjectContainer.Project.ProjectEnd.ToString("dd.MM.yyyy")
+            </div>
+
+            @if (this.AppState.ProjectContainersInfo.Accessible.Contains(this.AppState.ProjectContainer))
+            {
+                <div class="project-box-selected-footer-icons">
+                    @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
+                    {
+                        <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />
+                    }
+
+                    <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <span class="small-text">no project selected</span>
+    }
+</div>
+
+<Attachments @bind-IsOpen="this.AttachmentsDialogIsOpen" />

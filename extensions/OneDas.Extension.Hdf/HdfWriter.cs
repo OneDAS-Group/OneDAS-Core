@@ -63,7 +63,7 @@ namespace OneDas.Extension.Hdf
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.CampaignDescription.PrimaryGroupName}_{this.DataWriterContext.CampaignDescription.SecondaryGroupName}_{this.DataWriterContext.CampaignDescription.CampaignName}_V{this.DataWriterContext.CampaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.h5");
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.ProjectDescription.PrimaryGroupName}_{this.DataWriterContext.ProjectDescription.SecondaryGroupName}_{this.DataWriterContext.ProjectDescription.ProjectName}_V{this.DataWriterContext.ProjectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.h5");
 
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
@@ -87,7 +87,7 @@ namespace OneDas.Extension.Hdf
                 var firstChunk = (long)this.ToChunkIndex(fileOffset, contextGroup.SampleRate);
                 var lastChunk = (long)this.ToChunkIndex(fileOffset + length, contextGroup.SampleRate) - 1;
 
-                groupId = H5G.open(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}");
+                groupId = H5G.open(_fileId, $"/{this.DataWriterContext.ProjectDescription.PrimaryGroupName}/{this.DataWriterContext.ProjectDescription.SecondaryGroupName}/{this.DataWriterContext.ProjectDescription.ProjectName}");
                 datasetId = H5D.open(groupId, "is_chunk_completed_set");
                 dataspaceId = H5D.get_space(datasetId);
                 dataspaceId_buffer = H5S.create_simple(1, new ulong[] { 1 }, new ulong[] { 1 });
@@ -182,17 +182,17 @@ namespace OneDas.Extension.Hdf
                     IOHelper.PrepareAttribute(_fileId, customMetadataEntry.Key, new string[] { customMetadataEntry.Value }, new ulong[] { 1 }, true);
                 }
 
-                // file -> campaign
-                groupId = IOHelper.OpenOrCreateGroup(_fileId, $"/{this.DataWriterContext.CampaignDescription.PrimaryGroupName}/{this.DataWriterContext.CampaignDescription.SecondaryGroupName}/{this.DataWriterContext.CampaignDescription.CampaignName}").GroupId;
+                // file -> project
+                groupId = IOHelper.OpenOrCreateGroup(_fileId, $"/{this.DataWriterContext.ProjectDescription.PrimaryGroupName}/{this.DataWriterContext.ProjectDescription.SecondaryGroupName}/{this.DataWriterContext.ProjectDescription.ProjectName}").GroupId;
 
-                IOHelper.PrepareAttribute(groupId, "campaign_version", new int[] { this.DataWriterContext.CampaignDescription.Version }, new ulong[] { 1 }, true);
+                IOHelper.PrepareAttribute(groupId, "project_version", new int[] { this.DataWriterContext.ProjectDescription.Version }, new ulong[] { 1 }, true);
 
-                foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign))
+                foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Project))
                 {
                     IOHelper.PrepareAttribute(groupId, customMetadataEntry.Key, new string[] { customMetadataEntry.Value }, new ulong[] { 1 }, true);
                 }
 
-                // file -> campaign -> channels
+                // file -> project -> channels
                 foreach (VariableContext variableContext in variableContextSet)
                 {
                     var periodInSeconds = (ulong)Math.Round(_settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
@@ -242,9 +242,9 @@ namespace OneDas.Extension.Hdf
                 var buffer = variableContext.Buffer;
                 var extendedBuffer = buffer as IExtendedBuffer;
                 var elementType = OneDasUtilities.GetTypeFromOneDasDataType(variableContext.VariableDescription.DataType);
-                var campaignDescription = this.DataWriterContext.CampaignDescription;
+                var projectDescription = this.DataWriterContext.ProjectDescription;
 
-                groupId = H5G.open(_fileId, $"/{campaignDescription.PrimaryGroupName}/{campaignDescription.SecondaryGroupName}/{campaignDescription.CampaignName}/{variableContext.VariableDescription.Guid}");
+                groupId = H5G.open(_fileId, $"/{projectDescription.PrimaryGroupName}/{projectDescription.SecondaryGroupName}/{projectDescription.ProjectName}/{variableContext.VariableDescription.Guid}");
 
                 // dataset
                 var datasetName = variableContext.VariableDescription.DatasetName;

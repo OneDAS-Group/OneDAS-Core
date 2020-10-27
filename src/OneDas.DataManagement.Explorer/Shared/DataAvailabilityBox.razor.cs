@@ -99,7 +99,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                 {
                     await this.UpdateChart();
                 }
-                else if (e.PropertyName == nameof(AppStateViewModel.CampaignContainer))
+                else if (e.PropertyName == nameof(AppStateViewModel.ProjectContainer))
                 {
                     await this.UpdateChart();
                 }

@@ -48,10 +48,10 @@ namespace OneDas.DataManagement.Explorer.Hubs
 
         #region Methods
 
-        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string campaignId, DateTime begin, DateTime end)
+        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatistics(string projectId, DateTime begin, DateTime end)
         {
 #warning Always check that begin comes before end (applies also to other hub methods). Otherwise this could cause an overflow exception.
-            return _dataService.GetDataAvailabilityStatisticsAsync(campaignId, begin, end);
+            return _dataService.GetDataAvailabilityStatisticsAsync(projectId, begin, end);
         }
 
         public Task<List<VariableInfo>> GetChannelInfos(List<string> channelNames)
@@ -66,12 +66,12 @@ namespace OneDas.DataManagement.Explorer.Hubs
             }).ToList();
 
             // security check
-            var campaigns = variables.Select(variable => (CampaignInfo)variable.Parent).Distinct();
+            var projects = variables.Select(variable => (ProjectInfo)variable.Parent).Distinct();
 
-            foreach (var campaign in campaigns)
+            foreach (var project in projects)
             {
-                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                    throw new UnauthorizedAccessException($"The current user is not authorized to access campaign '{campaign.Id}'.");
+                if (!Utilities.IsProjectAccessible(this.Context.User, project.Id, _databaseManager.Config.RestrictedProjects))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access project '{project.Id}'.");
             }
 
             return Task.FromResult(variables);
@@ -337,14 +337,14 @@ namespace OneDas.DataManagement.Explorer.Hubs
                 if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
                     throw new Exception($"Could not find channel with name '{channelName}'.");
 
-                var campaign = (CampaignInfo)dataset.Parent.Parent;
+                var project = (ProjectInfo)dataset.Parent.Parent;
 
                 // security check
-                if (!Utilities.IsCampaignAccessible(this.Context.User, campaign.Id, _databaseManager.Config.RestrictedCampaigns))
-                    throw new UnauthorizedAccessException($"The current user is not authorized to access the campaign '{campaign.Id}'.");
+                if (!Utilities.IsProjectAccessible(this.Context.User, project.Id, _databaseManager.Config.RestrictedProjects))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access the project '{project.Id}'.");
 
                 // dataReader
-                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(campaign.Id) : _databaseManager.GetAggregationDataReader();
+                using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(project.Id) : _databaseManager.GetAggregationDataReader();
 
                 // progress changed event handling
                 var handler = (EventHandler<double>)((sender, e) =>

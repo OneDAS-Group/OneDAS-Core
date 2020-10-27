@@ -180,27 +180,27 @@ namespace OneDas {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
         /// </summary>
-        internal static string OneDasCampaignDescription_InvalidFormatVersion {
+        internal static string OneDasProjectDescription_InvalidFormatVersion {
             get {
-                return ResourceManager.GetString("OneDasCampaignDescription_InvalidFormatVersion", resourceCulture);
+                return ResourceManager.GetString("OneDasProjectDescription_InvalidFormatVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign version must be equal or greater zero. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The project version must be equal or greater zero. ähnelt.
         /// </summary>
-        internal static string OneDasCampaignDescription_InvalidVersion {
+        internal static string OneDasProjectDescription_InvalidVersion {
             get {
-                return ResourceManager.GetString("OneDasCampaignDescription_InvalidVersion", resourceCulture);
+                return ResourceManager.GetString("OneDasProjectDescription_InvalidVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The campaign name is invalid. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The project name is invalid. ähnelt.
         /// </summary>
-        internal static string OneDasProject_CampaignNameInvalid {
+        internal static string OneDasProject_ProjectNameInvalid {
             get {
-                return ResourceManager.GetString("OneDasProject_CampaignNameInvalid", resourceCulture);
+                return ResourceManager.GetString("OneDasProject_ProjectNameInvalid", resourceCulture);
             }
         }
         

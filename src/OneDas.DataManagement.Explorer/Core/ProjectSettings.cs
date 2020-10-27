@@ -3,19 +3,19 @@ using OneDas.DataManagement.Extensibility;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public class CampaignSettings
+    public class ProjectSettings
     {
-        public CampaignSettings(SparseCampaignInfo campaign,
+        public ProjectSettings(SparseProjectInfo project,
                                 DataReaderExtensionBase nativeDataReader,
                                 DataReaderExtensionBase aggregationDataReader)
         {
-            this.Campaign = campaign;
+            this.Project = project;
             this.NativeDataReader = nativeDataReader;
             this.AggregationDataReader = aggregationDataReader;
         }
 
 
-        public SparseCampaignInfo Campaign { get; }
+        public SparseProjectInfo Project { get; }
 
         public DataReaderExtensionBase NativeDataReader { get; }
 

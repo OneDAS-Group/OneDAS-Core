@@ -21,20 +21,10 @@ The documentation is hosted on [onedas.readthedocs.io](https://onedas.readthedoc
 Run the following Powershell script to get started with OneDAS:
 
 ```
-# constants
-$projectName = "OneDAS"
-$origin = "https://github.com/OneDAS-Group/"
-
-# create parent folder
-md -Force  $projectName | Out-Null
-cd $projectName
-$rootFolder = (Get-Location).Path
-
-# clone projects
-git clone "$origin/$projectName-Core" --quiet
-git clone "$origin/$projectName-Documentation" --quiet
+# clone project
+git clone "https://github.com/OneDAS-Group/OneDAS-Core" --quiet
 
 # initial solution
-cd $rootFolder/$projectName-Core
+cd OneDAS-Core
 ./init_solution.ps1
 ```

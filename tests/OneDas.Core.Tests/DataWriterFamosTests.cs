@@ -25,14 +25,14 @@ namespace OneDas.Core.Tests
             var provider = services.BuildServiceProvider();
             var dataWriter = provider.GetRequiredService<FamosWriter>();
 
-            var campaignGuid = Guid.NewGuid();
-            var dataDirectoryPath = Path.Combine(Path.GetTempPath(), campaignGuid.ToString());
+            var projectGuid = Guid.NewGuid();
+            var dataDirectoryPath = Path.Combine(Path.GetTempPath(), projectGuid.ToString());
 
             Directory.CreateDirectory(dataDirectoryPath);
 
-            var campaignDescription = new OneDasCampaignDescription(campaignGuid, 1, "a", "b", "c");
+            var projectDescription = new OneDasProjectDescription(projectGuid, 1, "a", "b", "c");
             var customMetadataEntrySet = new List<CustomMetadataEntry>();
-            var dataWriterContext = new DataWriterContext("OneDAS", dataDirectoryPath, campaignDescription, customMetadataEntrySet);
+            var dataWriterContext = new DataWriterContext("OneDAS", dataDirectoryPath, projectDescription, customMetadataEntrySet);
 
             var variableDescriptionSet = new List<VariableDescription>()
             {

@@ -7,31 +7,31 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public static class Utilities
     {
-        public static bool IsCampaignAccessible(ClaimsPrincipal principal, string campaignId, List<string> restrictedCampaigns)
+        public static bool IsProjectAccessible(ClaimsPrincipal principal, string projectId, List<string> restrictedProjects)
         {
             var identitiy = principal.Identity;
 
-            if (!restrictedCampaigns.Contains(campaignId))
+            if (!restrictedProjects.Contains(projectId))
             {
                 return true;
             }
             else if (identitiy.IsAuthenticated)
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
-                var canAccessCampaignContainer = principal.HasClaim(claim => claim.Type == "CanAccessCampaign"
-                                                                 && claim.Value.Split(";").Any(current => current == campaignId));
+                var canAccessProjectContainer = principal.HasClaim(claim => claim.Type == "CanAccessProject"
+                                                                 && claim.Value.Split(";").Any(current => current == projectId));
 
-                return isAdmin || canAccessCampaignContainer;
+                return isAdmin || canAccessProjectContainer;
             }
 
             return false;
         }
 
-        public static bool IsCampaignVisible(ClaimsPrincipal principal, string campaignId, List<string> hiddenCampaigns)
+        public static bool IsProjectVisible(ClaimsPrincipal principal, string projectId, List<string> hiddenProjects)
         {
             var identitiy = principal.Identity;
 
-            if (!hiddenCampaigns.Contains(campaignId))
+            if (!hiddenProjects.Contains(projectId))
             {
                 return true;
             }

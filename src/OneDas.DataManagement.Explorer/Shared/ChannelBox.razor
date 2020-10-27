@@ -1,7 +1,7 @@
 ﻿@inherits AppStateComponentBase
 
 
-@if (this.AppState.GroupedVariables != null) // user has access to campaign
+@if (this.AppState.GroupedVariables != null) // user has access to project
 {
     <div class="available-groups">
 
@@ -41,7 +41,7 @@
         }
     </div>
 } 
-else if (this.AppState.CampaignContainer != null) // user has no access to campaign
+else if (this.AppState.ProjectContainer != null) // user has no access to project
 {
-    <span>You do not have access to this campaign.@(!string.IsNullOrWhiteSpace(this.AppState.CampaignContainer.CampaignMeta.ResponsiblePerson) ? $" Please contact {this.AppState.CampaignContainer.CampaignMeta.ResponsiblePerson} to request permission." : "")</span>
+    <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.ResponsiblePerson) ? $" Please contact {this.AppState.ProjectContainer.ProjectMeta.ResponsiblePerson} to request permission." : "")</span>
 }

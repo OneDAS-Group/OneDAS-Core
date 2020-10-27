@@ -18,16 +18,16 @@ namespace OneDas.ProjectManagement
             OneDasProjectSettings.CurrentFormatVersion = 2; // 11.08.2017 (unit_set, transfer_function_set)
         }
 
-        public OneDasProjectSettings(string primaryGroupName, string secondaryGroupName, string campaignName): this(primaryGroupName, secondaryGroupName, campaignName, new List<DataGatewayExtensionSettingsBase>(), new List<DataWriterExtensionSettingsBase>())
+        public OneDasProjectSettings(string primaryGroupName, string secondaryGroupName, string projectName): this(primaryGroupName, secondaryGroupName, projectName, new List<DataGatewayExtensionSettingsBase>(), new List<DataWriterExtensionSettingsBase>())
         {
             //
         }  
 
-        public OneDasProjectSettings(string primaryGroupName, string campaignSecondaryGroup, string campaignName, IEnumerable<DataGatewayExtensionSettingsBase> dataGatewaySettingsSet, IEnumerable<DataWriterExtensionSettingsBase> dataWriterSettingsSet)
+        public OneDasProjectSettings(string primaryGroupName, string projectSecondaryGroup, string projectName, IEnumerable<DataGatewayExtensionSettingsBase> dataGatewaySettingsSet, IEnumerable<DataWriterExtensionSettingsBase> dataWriterSettingsSet)
         {
             int nextId;
             
-            this.Description = new OneDasCampaignDescription(Guid.NewGuid(), 0, primaryGroupName, campaignSecondaryGroup, campaignName);
+            this.Description = new OneDasProjectDescription(Guid.NewGuid(), 0, primaryGroupName, projectSecondaryGroup, projectName);
             this.ChannelHubSettingsSet = new List<ChannelHubSettings>();
 
             this.DataGatewaySettingsSet = dataGatewaySettingsSet;
@@ -52,7 +52,7 @@ namespace OneDas.ProjectManagement
         public int FormatVersion { get; set; }
 
         [DataMember]
-        public OneDasCampaignDescription Description { get; set; }
+        public OneDasProjectDescription Description { get; set; }
 
         [DataMember]
         public List<ChannelHubSettings> ChannelHubSettingsSet { get; private set; }
@@ -89,9 +89,9 @@ namespace OneDas.ProjectManagement
                 throw new Exception($"{ErrorMessage.OneDasProject_SecondaryGroupNameInvalid}: {errorDescription}");
             }
 
-            if (!OneDasUtilities.CheckNamingConvention(this.Description.CampaignName, out errorDescription))
+            if (!OneDasUtilities.CheckNamingConvention(this.Description.ProjectName, out errorDescription))
             {
-                throw new Exception($"{ErrorMessage.OneDasProject_CampaignNameInvalid}: {errorDescription}");
+                throw new Exception($"{ErrorMessage.OneDasProject_ProjectNameInvalid}: {errorDescription}");
             }
 
             if (!this.ChannelHubSettingsSet.ToList().TrueForAll(x => OneDasUtilities.CheckNamingConvention(x.Name, out errorDescription)))

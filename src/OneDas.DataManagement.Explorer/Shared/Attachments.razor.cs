@@ -46,7 +46,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         public string GetHref(string filePath)
         {
-            return $"/attachments/{this.AppState.CampaignContainer.PhysicalName}/{this.GetFileName(filePath)}";
+            return $"/attachments/{this.AppState.ProjectContainer.PhysicalName}/{this.GetFileName(filePath)}";
         }
 
         private void OnIsOpenChanged(bool value)

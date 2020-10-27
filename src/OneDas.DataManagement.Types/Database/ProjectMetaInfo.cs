@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    public class CampaignMetaInfo
+    public class ProjectMetaInfo
     {
         #region Constructors
 
-        public CampaignMetaInfo(string id)
+        public ProjectMetaInfo(string id)
         {
             this.Id = id;
             this.ResponsiblePerson = string.Empty;
@@ -16,7 +16,7 @@ namespace OneDas.DataManagement.Database
             this.Variables = new List<VariableMetaInfo>();
         }
 
-        private CampaignMetaInfo()
+        private ProjectMetaInfo()
         {
             //
         }
@@ -39,7 +39,7 @@ namespace OneDas.DataManagement.Database
 
         #region Methods
 
-        public void Initialize(CampaignInfo campaign)
+        public void Initialize(ProjectInfo project)
         {
             if (string.IsNullOrWhiteSpace(this.ShortDescription))
                 this.ShortDescription = "<no description available>";
@@ -50,7 +50,7 @@ namespace OneDas.DataManagement.Database
             // create missing variable meta instances
             var variablesToAdd = new List<VariableMetaInfo>();
 
-            foreach (var referenceVariable in campaign.Variables)
+            foreach (var referenceVariable in project.Variables)
             {
                 var exists = this.Variables.Any(variable => variable.Id == referenceVariable.Id);
 

@@ -19,11 +19,11 @@ namespace OneDas.DataManagement
      * 02. load and instantiate data reader extensions (_rootPathToDataReaderMap)
      * 03. call Update() method
      * 04.   for each data reader in _rootPathToDataReaderMap
-     * 05.       get campaign names
-     * 06.           for each campaign name
-     * 07.               find campaign container in current database or create new one
-     * 08.               get an up-to-date campaign instance from the data reader
-     * 09.               merge both campaigns
+     * 05.       get project names
+     * 06.           for each project name
+     * 07.               find project container in current database or create new one
+     * 08.               get an up-to-date project instance from the data reader
+     * 09.               merge both projects
      * 10. save updated database
      * *******************************************************************************
      */
@@ -36,7 +36,7 @@ namespace OneDas.DataManagement
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
         private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
-        private Dictionary<string, List<CampaignInfo>> _rootPathToCampaignsMap;
+        private Dictionary<string, List<ProjectInfo>> _rootPathToProjectsMap;
 
         #endregion
 
@@ -112,8 +112,8 @@ namespace OneDas.DataManagement
         {
             var database = new OneDasDatabase();
 
-            // create new empty campaigns map
-            _rootPathToCampaignsMap = new Dictionary<string, List<CampaignInfo>>();
+            // create new empty projects map
+            _rootPathToProjectsMap = new Dictionary<string, List<ProjectInfo>>();
 
             // load data readers
             _rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
@@ -133,50 +133,50 @@ namespace OneDas.DataManagement
                 try
                 {
                     var isNativeDataReader = dataReader != aggregationDataReader;
-                    var campaignNames = dataReader.GetCampaignNames();
+                    var projectNames = dataReader.GetProjectNames();
 
-                    foreach (var campaignName in campaignNames)
+                    foreach (var projectName in projectNames)
                     {
-                        // find campaign container or create a new one
-                        var container = database.CampaignContainers.FirstOrDefault(container => container.Id == campaignName);
+                        // find project container or create a new one
+                        var container = database.ProjectContainers.FirstOrDefault(container => container.Id == projectName);
 
                         if (container == null)
                         {
-                            container = new CampaignContainer(campaignName, dataReader.RootPath);
-                            database.CampaignContainers.Add(container);
+                            container = new ProjectContainer(projectName, dataReader.RootPath);
+                            database.ProjectContainers.Add(container);
 
-                            // try to load campaign meta data
-                            var filePath = this.GetCampaignMetaPath(campaignName);
+                            // try to load project meta data
+                            var filePath = this.GetProjectMetaPath(projectName);
 
-                            CampaignMetaInfo campaignMeta;
+                            ProjectMetaInfo projectMeta;
 
                             if (File.Exists(filePath))
                             {
                                 var jsonString = File.ReadAllText(filePath);
-                                campaignMeta = JsonSerializer.Deserialize<CampaignMetaInfo>(jsonString);
+                                projectMeta = JsonSerializer.Deserialize<ProjectMetaInfo>(jsonString);
                             }
                             else
                             {
-                                campaignMeta = new CampaignMetaInfo(campaignName);
+                                projectMeta = new ProjectMetaInfo(projectName);
                             }
 
-                            container.CampaignMeta = campaignMeta;
+                            container.ProjectMeta = projectMeta;
                         }
 
-                        // ensure that found campaign container root path matches that of the data reader
+                        // ensure that found project container root path matches that of the data reader
                         if (isNativeDataReader)
                         {
                             if (dataReader.RootPath != container.RootPath) 
-                                throw new Exception("The data reader root path does not match the root path of the campaign data stored in the database.");
+                                throw new Exception("The data reader root path does not match the root path of the project data stored in the database.");
                         }
 
-                        // get up-to-date campaign from data reader
-                        var campaign = dataReader.GetCampaign(campaignName);
+                        // get up-to-date project from data reader
+                        var project = dataReader.GetProject(projectName);
 
                         // if data reader is for aggregation data, update dataset`s flag
                         if (!isNativeDataReader)
                         {
-                            var datasets = campaign.Variables.SelectMany(variable => variable.Datasets).ToList();
+                            var datasets = project.Variables.SelectMany(variable => variable.Datasets).ToList();
 
                             foreach (var dataset in datasets)
                             {
@@ -185,7 +185,7 @@ namespace OneDas.DataManagement
                         }
 
                         //
-                        container.Campaign.Merge(campaign, VariableMergeMode.OverwriteMissing);
+                        container.Project.Merge(project, VariableMergeMode.OverwriteMissing);
                     }
                 }
                 finally
@@ -196,22 +196,22 @@ namespace OneDas.DataManagement
 
             // the purpose of this block is to initalize empty properties 
             // add missing variables and clean up empty variables
-            foreach (var campaignContainer in database.CampaignContainers)
+            foreach (var projectContainer in database.ProjectContainers)
             {
                 // remove all variables where no native datasets are available
                 // because only these provide metadata like name and group
-                var variables = campaignContainer.Campaign.Variables;
+                var variables = projectContainer.Project.Variables;
 
                 variables
                     .Where(variable => string.IsNullOrWhiteSpace(variable.Name))
                     .ToList()
                     .ForEach(variable => variables.Remove(variable));
 
-                // initalize campaign meta
-                campaignContainer.CampaignMeta.Initialize(campaignContainer.Campaign);
+                // initalize project meta
+                projectContainer.ProjectMeta.Initialize(projectContainer.Project);
 
-                // save campaign meta to disk
-                this.SaveCampaignMeta(campaignContainer.CampaignMeta);
+                // save project meta to disk
+                this.SaveProjectMeta(projectContainer.ProjectMeta);
             }
 
             this.Database = database;
@@ -222,12 +222,12 @@ namespace OneDas.DataManagement
             return this.InstantiateDataReader(_folderPath, typeof(HdfDataReader));
         }
 
-        public DataReaderExtensionBase GetNativeDataReader(string campaignId)
+        public DataReaderExtensionBase GetNativeDataReader(string projectId)
         {
-            var container = this.Database.CampaignContainers.FirstOrDefault(container => container.Id == campaignId);
+            var container = this.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
 
             if (container == null)
-                throw new KeyNotFoundException("The requested campaign could not be found.");
+                throw new KeyNotFoundException("The requested project could not be found.");
 
             if (!_rootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
                 throw new KeyNotFoundException("The requested data reader could not be found.");
@@ -235,10 +235,10 @@ namespace OneDas.DataManagement
             return this.InstantiateDataReader(container.RootPath, dataReaderType);
         }
 
-        public void SaveCampaignMeta(CampaignMetaInfo campaignMeta)
+        public void SaveProjectMeta(ProjectMetaInfo projectMeta)
         {
-            var filePath = this.GetCampaignMetaPath(campaignMeta.Id);
-            var jsonString = JsonSerializer.Serialize(campaignMeta, new JsonSerializerOptions() { WriteIndented = true });
+            var filePath = this.GetProjectMetaPath(projectMeta.Id);
+            var jsonString = JsonSerializer.Serialize(projectMeta, new JsonSerializerOptions() { WriteIndented = true });
             File.WriteAllText(filePath, jsonString);
         }
 
@@ -255,23 +255,23 @@ namespace OneDas.DataManagement
             var logger = _loggerFactory.CreateLogger(rootPath);
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
 
-            // initialize campaigns property
-            if (_rootPathToCampaignsMap.TryGetValue(rootPath, out var value))
+            // initialize projects property
+            if (_rootPathToProjectsMap.TryGetValue(rootPath, out var value))
             {
-                dataReader.InitializeCampaigns(value);
+                dataReader.InitializeProjects(value);
             }
             else
             {
-                dataReader.InitializeCampaigns();
-                _rootPathToCampaignsMap[rootPath] = dataReader.Campaigns;
+                dataReader.InitializeProjects();
+                _rootPathToProjectsMap[rootPath] = dataReader.Projects;
             }
 
             return dataReader;
         }
 
-        private string GetCampaignMetaPath(string campaignName)
+        private string GetProjectMetaPath(string projectName)
         {
-            return Path.Combine(_folderPath, "META", $"{campaignName.TrimStart('/').Replace('/', '_')}.json");
+            return Path.Combine(_folderPath, "META", $"{projectName.TrimStart('/').Replace('/', '_')}.json");
         }
 
         private Dictionary<string, Type> LoadDataReaders(Dictionary<string, string> rootPathToDataReaderIdMap)

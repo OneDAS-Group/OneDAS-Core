@@ -53,8 +53,8 @@ namespace OneDas.DataManagement.Core.Tests
             };
 
             using var writer1 = new HdfWriter(settings, NullLogger.Instance);
-            var campaignDescription = new OneDasCampaignDescription(Guid.NewGuid(), 1, "A", "B", "C");
-            var context = new DataWriterContext("HdfTestDatabase", dataFolderPath, campaignDescription, new List<CustomMetadataEntry>());
+            var projectDescription = new OneDasProjectDescription(Guid.NewGuid(), 1, "A", "B", "C");
+            var context = new DataWriterContext("HdfTestDatabase", dataFolderPath, projectDescription, new List<CustomMetadataEntry>());
             var varDesc = new List<VariableDescription>();
             varDesc.Add(new VariableDescription(Guid.NewGuid(), "A", "100 Hz", "Group A", OneDasDataType.FLOAT64, new SampleRateContainer(SampleRate.SampleRate_100), "Hz", new List<TransferFunction>(), BufferType.Extended));
 
@@ -92,7 +92,7 @@ namespace OneDas.DataManagement.Core.Tests
             writer1.Write(new DateTime(2020, 07, 09), TimeSpan.FromHours(23), buffers2);
 
             // day 2 V2
-            campaignDescription.Version = 2;
+            projectDescription.Version = 2;
             using var writer2 = new HdfWriter(settings, NullLogger.Instance);
 
             var buffer3 = (ExtendedBuffer<double>)BufferUtilities.CreateExtendedBuffer(OneDasDataType.FLOAT64, 180000);
@@ -111,10 +111,10 @@ namespace OneDas.DataManagement.Core.Tests
             writer2.Configure(context, varDesc);
             writer2.Write(new DateTime(2020, 07, 09, 23, 30, 00), TimeSpan.FromMinutes(30), buffers3);
 
-            // second campaign
+            // second project
             using var writer3 = new HdfWriter(settings, NullLogger.Instance);
 
-            campaignDescription.PrimaryGroupName = "A2";
+            projectDescription.PrimaryGroupName = "A2";
 
             writer3.Configure(context, varDesc);
             writer3.Write(new DateTime(2020, 07, 08), TimeSpan.FromDays(1), buffers1);

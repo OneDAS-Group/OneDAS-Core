@@ -14,7 +14,7 @@ class OneDasAvailabilityCheck(Checker):
     Address: str
     Port: int
     Secure: bool
-    CampaignName: str
+    ProjectName: str
     LimitDays: int
     Username: str
     Password: str
@@ -24,7 +24,7 @@ class OneDasAvailabilityCheck(Checker):
         self.Address = settings["address"]
         self.Port = int(settings["port"])
         self.Secure = settings["secure"].lower() == 'true'
-        self.CampaignName = settings["campaign"]
+        self.ProjectName = settings["project"]
         self.LimitDays = int(settings["past-days"])
         self.LimitPercentWarning = int(settings["limit-percent-warning"])
         self.LimitPercentError = int(settings["limit-percent-error"])
@@ -41,7 +41,7 @@ class OneDasAvailabilityCheck(Checker):
                 
 
     def GetName(self) -> str:
-        return f"{self.CampaignName}"
+        return f"{self.ProjectName}"
 
     async def DoCheckAsync(self) -> CheckResult:
 
@@ -73,11 +73,11 @@ class OneDasAvailabilityCheck(Checker):
         try:
             await connection.start()
 
-            campaignName = self.CampaignName
+            projectName = self.ProjectName
             date = datetime.utcnow().date()
             begin = date - timedelta(days=max(self.LimitDays + 1, 2))
             end = date - timedelta(days=1)
-            availabilityStatistics = await connection.invoke("GetDataAvailabilityStatistics", [campaignName, begin, end])
+            availabilityStatistics = await connection.invoke("GetDataAvailabilityStatistics", [projectName, begin, end])
             availability = statistics.mean(availabilityStatistics["data"])
             message = f"Availability: {availability:.0f} % (last {self.LimitDays} days)"
 

@@ -4,15 +4,15 @@ using System.Runtime.Serialization;
 namespace OneDas.Infrastructure
 {
     [DataContract]
-    public class OneDasCampaignDescription
+    public class OneDasProjectDescription
     {
-        public OneDasCampaignDescription(Guid guid, int version, string primaryGroupName, string secondaryGroupName, string campaignName)
+        public OneDasProjectDescription(Guid guid, int version, string primaryGroupName, string secondaryGroupName, string projectName)
         {
             this.Guid = guid;
             this.Version = version;
             this.PrimaryGroupName = primaryGroupName;
             this.SecondaryGroupName = secondaryGroupName;
-            this.CampaignName = campaignName;
+            this.ProjectName = projectName;
         }
 
         [DataMember]
@@ -28,7 +28,7 @@ namespace OneDas.Infrastructure
         public string SecondaryGroupName { get; set; }
 
         [DataMember]
-        public string CampaignName { get; set; }
+        public string ProjectName { get; set; }
 
         public void Validate()
         {
@@ -36,7 +36,7 @@ namespace OneDas.Infrastructure
 
             if (this.Version < 0)
             {
-                throw new Exception(ErrorMessage.OneDasCampaignDescription_InvalidVersion);
+                throw new Exception(ErrorMessage.OneDasProjectDescription_InvalidVersion);
             }
 
             if (!OneDasUtilities.CheckNamingConvention(this.PrimaryGroupName, out errorMessage))
@@ -49,9 +49,9 @@ namespace OneDas.Infrastructure
                 throw new Exception($"The SecondaryGroupName is invalid: { errorMessage }");
             }
 
-            if (!OneDasUtilities.CheckNamingConvention(this.CampaignName, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.ProjectName, out errorMessage))
             {
-                throw new Exception($"The CampaignName is invalid: { errorMessage }");
+                throw new Exception($"The ProjectName is invalid: { errorMessage }");
             }
         }
     }

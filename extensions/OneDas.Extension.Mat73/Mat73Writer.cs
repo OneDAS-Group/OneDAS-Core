@@ -66,12 +66,12 @@ namespace OneDas.Extension.Mat73
                 _textEntrySet.Add(new TextEntry("/info", customMetadataEntry.Key, customMetadataEntry.Value));
             });
 
-            _textEntrySet.Add(new TextEntry("/info", "campaign_first_level", this.DataWriterContext.CampaignDescription.PrimaryGroupName));
-            _textEntrySet.Add(new TextEntry("/info", "campaign_second_level", this.DataWriterContext.CampaignDescription.SecondaryGroupName));
-            _textEntrySet.Add(new TextEntry("/info", "campaign_name", this.DataWriterContext.CampaignDescription.CampaignName));
-            _textEntrySet.Add(new TextEntry("/info", "campaign_version", this.DataWriterContext.CampaignDescription.Version.ToString()));
+            _textEntrySet.Add(new TextEntry("/info", "project_first_level", this.DataWriterContext.ProjectDescription.PrimaryGroupName));
+            _textEntrySet.Add(new TextEntry("/info", "project_second_level", this.DataWriterContext.ProjectDescription.SecondaryGroupName));
+            _textEntrySet.Add(new TextEntry("/info", "project_name", this.DataWriterContext.ProjectDescription.ProjectName));
+            _textEntrySet.Add(new TextEntry("/info", "project_version", this.DataWriterContext.ProjectDescription.Version.ToString()));
 
-            this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Campaign).ToList().ForEach(customMetadataEntry =>
+            this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.Project).ToList().ForEach(customMetadataEntry =>
             {
                 _textEntrySet.Add(new TextEntry("/info", customMetadataEntry.Key, customMetadataEntry.Value));
             });
@@ -82,8 +82,8 @@ namespace OneDas.Extension.Mat73
 
         protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
         {
-            var campaignDescription = this.DataWriterContext.CampaignDescription;
-            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{campaignDescription.PrimaryGroupName}_{campaignDescription.SecondaryGroupName}_{campaignDescription.CampaignName}_V{campaignDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.mat");
+            var projectDescription = this.DataWriterContext.ProjectDescription;
+            _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{projectDescription.PrimaryGroupName}_{projectDescription.SecondaryGroupName}_{projectDescription.ProjectName}_V{projectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.mat");
 
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);

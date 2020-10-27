@@ -9,6 +9,6 @@ namespace OneDas.Core.Serialization
 
         OneDasProjectSettings Load(string filePath);
 
-        OneDasCampaignDescription GetCampaignDescriptionFromFile(string filePath);
+        OneDasProjectDescription GetProjectDescriptionFromFile(string filePath);
     }
 }

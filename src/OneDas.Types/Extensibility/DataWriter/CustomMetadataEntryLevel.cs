@@ -3,6 +3,6 @@
     public enum CustomMetadataEntryLevel
     {
         File = 1,
-        Campaign = 2
+        Project = 2
     }
 }
