@@ -12,7 +12,7 @@ using static System.Net.WebRequestMethods;
 
 namespace OneDas.DataManagement.Explorer.Controllers
 {
-    [Route("v1/api/data")]
+    [Route("api/v1/data")]
     [ApiController]
     public class DataController : ControllerBase
     {
@@ -44,11 +44,11 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns></returns>
 
-        [HttpGet("{project-id}/channels/{channel-id}/datasets/{dataset-id}")]
+        [HttpGet]
         public IActionResult GetData(
-            [FromRoute(Name = "project-id")] string projectId,
-            [FromRoute(Name = "channel-id")] string channelId,
-            [FromRoute(Name = "dataset-id")] string datasetId,
+            [BindRequired] string projectId,
+            [BindRequired] string channelId,
+            [BindRequired] string datasetId,
             [BindRequired] DateTime begin,
             [BindRequired] DateTime end,
             CancellationToken cancellationToken)
