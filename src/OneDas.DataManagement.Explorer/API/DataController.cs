@@ -81,7 +81,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 var path = $"{projectId}/{channelId}/{datasetId}";
 
                 if (!_databaseManager.Database.TryFindDataset(path, out var dataset))
-                    return this.NotFound($"Could not find channel with name '{path}'.");
+                    return this.NotFound($"Could not find dataset with name '{path}'.");
 
                 var project = (ProjectInfo)dataset.Parent.Parent;
 

@@ -183,6 +183,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
                             current => current.Id == channelId);
 
                         if (channel == null)
+                            channel = project.Channels.FirstOrDefault(
+                                current => current.Name == channelId);
+
+                        if (channel == null)
                             return this.NotFound($"{projectId}/{channelId}");
 
                         var channelMeta = projectMeta.Channels.First(
@@ -236,6 +240,11 @@ namespace OneDas.DataManagement.Explorer.Controllers
                     {
                         var channel = project.Channels.FirstOrDefault(
                             current => current.Id == channelId);
+
+                        if (channel == null)
+                            channel = project.Channels.FirstOrDefault(
+                                current => current.Name == channelId);
+
 
                         if (channel == null)
                             return this.NotFound($"{projectId}/{channelId}");
@@ -293,6 +302,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
                     {
                         var channel = project.Channels.FirstOrDefault(
                             current => current.Id == channelId);
+
+                        if (channel == null)
+                            channel = project.Channels.FirstOrDefault(
+                                current => current.Name == channelId);
 
                         if (channel == null)
                             return this.NotFound($"{projectId}/{channelId}");

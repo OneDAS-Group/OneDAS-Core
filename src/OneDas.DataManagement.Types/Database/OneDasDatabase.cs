@@ -42,10 +42,10 @@ namespace OneDas.DataManagement.Database
 
             if (this.TryFindProjectById(projectId, out var project))
             {
-                channel = project.Channels.FirstOrDefault(channel => channel.Id == channelId);
+                channel = project.Channels.FirstOrDefault(current => current.Id == channelId);
 
                 if (channel == null)
-                    channel = project.Channels.FirstOrDefault(channel => channel.Name == channelId);
+                    channel = project.Channels.FirstOrDefault(current => current.Name == channelId);
             }
 
             return channel != null;
