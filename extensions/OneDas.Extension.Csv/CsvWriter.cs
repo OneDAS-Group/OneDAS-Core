@@ -42,12 +42,12 @@ namespace OneDas.Extension.Csv
 
         #region "Methods"
 
-        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<ChannelContextGroup> channelContextGroupSet)
         {
             _lastFileStartDateTime = startDateTime;
             _unixStart = (startDateTime - _unixEpoch).TotalSeconds;
 
-            foreach (var contextGroup in variableContextGroupSet)
+            foreach (var contextGroup in channelContextGroupSet)
             {
                 var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.ProjectDescription.PrimaryGroupName}_{this.DataWriterContext.ProjectDescription.SecondaryGroupName}_{this.DataWriterContext.ProjectDescription.ProjectName}_V{this.DataWriterContext.ProjectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
 
@@ -76,7 +76,7 @@ namespace OneDas.Extension.Csv
                             streamWriter.WriteLine($"# { customMetadataEntry.Key }: { customMetadataEntry.Value };");
                         }
 
-                        /* variable name */
+                        /* channel name */
                         switch (_settings.RowIndexFormat)
                         {
                             case CsvRowIndexFormat.Index:
@@ -89,9 +89,9 @@ namespace OneDas.Extension.Csv
                                 throw new NotSupportedException($"The row index format '{_settings.RowIndexFormat}' is not supported.");
                         }
 
-                        foreach (var variableContext in contextGroup.VariableContextSet)
+                        foreach (var channelContext in contextGroup.ChannelContextSet)
                         {
-                            streamWriter.Write($"{ variableContext.VariableDescription.VariableName };");
+                            streamWriter.Write($"{ channelContext.ChannelDescription.ChannelName };");
                         }
 
                         streamWriter.WriteLine();
@@ -99,9 +99,9 @@ namespace OneDas.Extension.Csv
                         /* dataset name */
                         streamWriter.Write("-;");
 
-                        foreach (var variableContext in contextGroup.VariableContextSet)
+                        foreach (var channelContext in contextGroup.ChannelContextSet)
                         {
-                            streamWriter.Write($"{ variableContext.VariableDescription.DatasetName };");
+                            streamWriter.Write($"{ channelContext.ChannelDescription.DatasetName };");
                         }
 
                         streamWriter.WriteLine();
@@ -109,9 +109,9 @@ namespace OneDas.Extension.Csv
                         /* unit */
                         streamWriter.Write("-;");
 
-                        foreach (var variableContext in contextGroup.VariableContextSet)
+                        foreach (var channelContext in contextGroup.ChannelContextSet)
                         {
-                            streamWriter.Write($"{ variableContext.VariableDescription.Unit };");
+                            streamWriter.Write($"{ channelContext.ChannelDescription.Unit };");
                         }
 
                         streamWriter.WriteLine();
@@ -120,7 +120,7 @@ namespace OneDas.Extension.Csv
             }
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
+        protected override void OnWrite(ChannelContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
             var projectDescription = this.DataWriterContext.ProjectDescription;
             var dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{projectDescription.PrimaryGroupName}_{projectDescription.SecondaryGroupName}_{projectDescription.ProjectName}_V{projectDescription.Version }_{_lastFileStartDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z_{contextGroup.SampleRate.SamplesPerDay}_samples_per_day.csv");
@@ -128,7 +128,7 @@ namespace OneDas.Extension.Csv
             if (length <= 0)
                 throw new Exception(ErrorMessage.CsvWriter_SampleRateTooLow);
 
-            var simpleBuffers = contextGroup.VariableContextSet.Select(variableContext => variableContext.Buffer.ToSimpleBuffer()).ToList();
+            var simpleBuffers = contextGroup.ChannelContextSet.Select(channelContext => channelContext.Buffer.ToSimpleBuffer()).ToList();
 
             using (StreamWriter streamWriter = new StreamWriter(File.Open(dataFilePath, FileMode.Append, FileAccess.Write)))
             {

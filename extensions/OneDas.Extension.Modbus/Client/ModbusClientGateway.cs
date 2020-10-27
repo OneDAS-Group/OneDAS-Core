@@ -45,8 +45,6 @@ namespace OneDas.Extension.Modbus
 
         protected new ModbusClientSettings Settings { get; }
 
-        protected ILogger Logger { get; }
-
         protected CancellationTokenSource CTS { get; private set; }
 
         #endregion

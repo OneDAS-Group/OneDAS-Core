@@ -99,18 +99,18 @@ namespace OneDas.DataManagement.Explorer.Controllers
         }
 
         /// <summary>
-        /// Gets a description of the specified variable.
+        /// Gets a description of the specified channel.
         /// </summary>
         /// <param name="projectId">The project identifier.</param>
-        /// <param name="variableId">The variable identifier.</param>
+        /// <param name="channelId">The channel identifier.</param>
         /// <returns></returns>
-        [HttpGet("{project-id}/variables/{variable-id}")]
-        public ActionResult<VariableInfo> Variables(
+        [HttpGet("{project-id}/channels/{channel-id}")]
+        public ActionResult<ChannelInfo> Channels(
             [FromRoute(Name = "project-id")] string projectId,
-            [FromRoute(Name = "variable-id")] string variableId)
+            [FromRoute(Name = "channel-id")] string channelId)
         {
             projectId = WebUtility.UrlDecode(projectId);
-            variableId = WebUtility.UrlDecode(variableId);
+            channelId = WebUtility.UrlDecode(channelId);
 
             var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
 
@@ -122,7 +122,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) requests variable '{projectId}/{variableId}' ...";
+            var message = $"User '{userName}' ({remoteIpAddress}) requests channel '{projectId}/{channelId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -130,17 +130,17 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // security check
-                if (!_databaseManager.Database.TryFindVariableById(projectId, variableId, out var variable))
-                    return this.NotFound($"{projectId}/{variableId}");
+                if (!_databaseManager.Database.TryFindChannelById(projectId, channelId, out var channel))
+                    return this.NotFound($"{projectId}/{channelId}");
 
-                var project = variable.Parent;
+                var project = channel.Parent;
 
                 if (!Utilities.IsProjectAccessible(this.User, project.Id, _databaseManager.Config.RestrictedProjects))
                     return this.Unauthorized($"The current user is not authorized to access the project '{projectId}'.");
 
                 _logger.LogInformation($"{message} Done.");
 
-                return variable;
+                return channel;
             }
             catch (Exception ex)
             {
@@ -153,17 +153,17 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// Gets a description of the specified dataset.
         /// </summary>
         /// <param name="projectId">The project identifier.</param>
-        /// <param name="variableId">The variable identifier.</param>
+        /// <param name="channelId">The channel identifier.</param>
         /// <param name="datasetId">The dataset identifier.</param>
         /// <returns></returns>
-        [HttpGet("{project-id}/variables/{variable-id}/datasets/{dataset-id}")]
-        public ActionResult<DatasetInfo> Variables(
+        [HttpGet("{project-id}/channels/{channel-id}/datasets/{dataset-id}")]
+        public ActionResult<DatasetInfo> Channels(
             [FromRoute(Name = "project-id")] string projectId,
-            [FromRoute(Name = "variable-id")] string variableId,
+            [FromRoute(Name = "channel-id")] string channelId,
             [FromRoute(Name = "dataset-id")] string datasetId)
         {
             projectId = WebUtility.UrlDecode(projectId);
-            variableId = WebUtility.UrlDecode(variableId);
+            channelId = WebUtility.UrlDecode(channelId);
             datasetId = WebUtility.UrlDecode(datasetId);
 
             var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
@@ -176,7 +176,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             else
                 userName = "anonymous";
 
-            var message = $"User '{userName}' ({remoteIpAddress}) requests dataset '{projectId}/{variableId}/{datasetId}' ...";
+            var message = $"User '{userName}' ({remoteIpAddress}) requests dataset '{projectId}/{channelId}/{datasetId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -184,8 +184,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // security check
-                if (!_databaseManager.Database.TryFindDatasetById(projectId, variableId, datasetId, out var dataset))
-                    return this.NotFound($"{projectId}/{variableId}/{datasetId}");
+                if (!_databaseManager.Database.TryFindDatasetById(projectId, channelId, datasetId, out var dataset))
+                    return this.NotFound($"{projectId}/{channelId}/{datasetId}");
 
                 var project = dataset.Parent.Parent;
 

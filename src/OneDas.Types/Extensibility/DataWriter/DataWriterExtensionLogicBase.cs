@@ -15,7 +15,7 @@ namespace OneDas.Extensibility
         private DateTime _lastFileBegin;
         private DateTime _lastWrite;
 
-        private IList<VariableDescription> _variableDescriptions;
+        private IList<ChannelDescription> _channelDescriptions;
 
         #endregion
 
@@ -45,10 +45,10 @@ namespace OneDas.Extensibility
 
         #region "Methods"
 
-        public void Configure(DataWriterContext dataWriterContext, IList<VariableDescription> variableDescriptions)
+        public void Configure(DataWriterContext dataWriterContext, IList<ChannelDescription> channelDescriptions)
         {
             this.DataWriterContext = dataWriterContext;
-            _variableDescriptions = variableDescriptions;
+            _channelDescriptions = channelDescriptions;
 
             this.OnConfigure();
         }
@@ -66,13 +66,13 @@ namespace OneDas.Extensibility
 
             var bufferOffset = TimeSpan.Zero;
 
-            var variableContexts = _variableDescriptions
-                .Zip(buffers, (variableDescription, buffer) => new VariableContext(variableDescription, buffer))
+            var channelContexts = _channelDescriptions
+                .Zip(buffers, (channelDescription, buffer) => new ChannelContext(channelDescription, buffer))
                 .ToList();
 
-            var variableContextGroups = variableContexts
-                .GroupBy(variableContext => variableContext.VariableDescription.SampleRate)
-                .Select(group => new VariableContextGroup(group.Key, group.ToList()))
+            var channelContextGroups = channelContexts
+                .GroupBy(channelContext => channelContext.ChannelDescription.SampleRate)
+                .Select(group => new ChannelContextGroup(group.Key, group.ToList()))
                 .ToList();
 
             while (bufferOffset < bufferPeriod)
@@ -94,7 +94,7 @@ namespace OneDas.Extensibility
                 var period = new TimeSpan(Math.Min(remainingFilePeriod.Ticks, remainingBufferPeriod.Ticks));
 
                 // ensure that file granularity is low enough for all sample rates
-                foreach (var contextGroup in variableContextGroups)
+                foreach (var contextGroup in channelContextGroups)
                 {
                     var sampleRate = contextGroup.SampleRate;
                     var totalSeconds = (int)Math.Round(this.Settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
@@ -107,13 +107,13 @@ namespace OneDas.Extensibility
                 // check if file must be created or updated
                 if (fileBegin != _lastFileBegin)
                 {
-                    this.OnPrepareFile(fileBegin, variableContextGroups);
+                    this.OnPrepareFile(fileBegin, channelContextGroups);
 
                     _lastFileBegin = fileBegin;
                 }
 
                 // write data
-                foreach (var contextGroup in variableContextGroups)
+                foreach (var contextGroup in channelContextGroups)
                 {
                     var sampleRate = contextGroup.SampleRate;
 
@@ -142,9 +142,9 @@ namespace OneDas.Extensibility
             //
         }
 
-        protected abstract void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet);
+        protected abstract void OnPrepareFile(DateTime startDateTime, List<ChannelContextGroup> channelContextGroupSet);
 
-        protected abstract void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length);
+        protected abstract void OnWrite(ChannelContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length);
 
         private ulong TimeSpanToIndex(TimeSpan timeSpan, SampleRateContainer sampleRate)
         {

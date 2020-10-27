@@ -98,53 +98,53 @@ namespace OneDas.DataManagement.Extensions
         {
             var project = new ProjectInfo(projectId);
 
-            var variableA = new VariableInfo(id1, project);
-            var variableB = new VariableInfo(id2, project);
-            var variableC = new VariableInfo(id3, project);
-            var variableD = new VariableInfo(id4, project);
+            var channelA = new ChannelInfo(id1, project);
+            var channelB = new ChannelInfo(id2, project);
+            var channelC = new ChannelInfo(id3, project);
+            var channelD = new ChannelInfo(id4, project);
 
-            var dataset1 = new DatasetInfo("25 Hz", variableA) { DataType = OneDasDataType.INT32 };
-            var dataset2 = new DatasetInfo("1 s_max", variableB) { DataType = OneDasDataType.FLOAT64 };
-            var dataset3 = new DatasetInfo("1 s_mean", variableB) { DataType = OneDasDataType.FLOAT64 };
-            var dataset4 = new DatasetInfo("1 s_mean", variableC) { DataType = OneDasDataType.FLOAT64 };
-            var dataset5 = new DatasetInfo("1 s_mean", variableD) { DataType = OneDasDataType.FLOAT64 };
+            var dataset1 = new DatasetInfo("25 Hz", channelA) { DataType = OneDasDataType.INT32 };
+            var dataset2 = new DatasetInfo("1 s_max", channelB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset3 = new DatasetInfo("1 s_mean", channelB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset4 = new DatasetInfo("1 s_mean", channelC) { DataType = OneDasDataType.FLOAT64 };
+            var dataset5 = new DatasetInfo("1 s_mean", channelD) { DataType = OneDasDataType.FLOAT64 };
 
-            // variable A
-            variableA.Name = "unix_time1";
-            variableA.Group = "Group 1";
-            variableA.Unit = "";
+            // channel A
+            channelA.Name = "unix_time1";
+            channelA.Group = "Group 1";
+            channelA.Unit = "";
 
-            variableA.Datasets.Add(dataset1);
+            channelA.Datasets.Add(dataset1);
 
-            // variable B
-            variableB.Name = "unix_time2";
-            variableB.Group = "Group 1";
-            variableB.Unit = string.Empty;
+            // channel B
+            channelB.Name = "unix_time2";
+            channelB.Group = "Group 1";
+            channelB.Unit = string.Empty;
 
-            variableB.Datasets.Add(dataset2);
-            variableB.Datasets.Add(dataset3);
+            channelB.Datasets.Add(dataset2);
+            channelB.Datasets.Add(dataset3);
 
-            // variable C
-            variableC.Name = "T1";
-            variableC.Group = "Group 2";
-            variableC.Unit = "°C";
+            // channel C
+            channelC.Name = "T1";
+            channelC.Group = "Group 2";
+            channelC.Unit = "°C";
 
-            variableC.Datasets.Add(dataset4);
+            channelC.Datasets.Add(dataset4);
 
-            // variable D
-            variableD.Name = "V1";
-            variableD.Group = "Group 2";
-            variableD.Unit = "m/s";
+            // channel D
+            channelD.Name = "V1";
+            channelD.Group = "Group 2";
+            channelD.Unit = "m/s";
 
-            variableD.Datasets.Add(dataset5);
+            channelD.Datasets.Add(dataset5);
 
             // project
-            project.Variables = new List<VariableInfo>()
+            project.Channels = new List<ChannelInfo>()
             {
-                variableA,
-                variableB,
-                variableC,
-                variableD
+                channelA,
+                channelB,
+                channelC,
+                channelD
             };
 
             return project;

@@ -33,9 +33,9 @@ namespace OneDas.DataManagement.Explorer.Shared
 						this.StateHasChanged();
 					});
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.VariableGroup))
+				else if (e.PropertyName == nameof(AppStateViewModel.ChannelGroup))
 				{
-					this.VariablePage = 0;
+					this.ChannelPage = 0;
 				}
 			};
 		}
@@ -48,9 +48,9 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 		public int GroupPage { get; set; } = 0;
 
-		public int VariablePageSize { get; set; } = 9;
+		public int ChannelPageSize { get; set; } = 9;
 
-		public int VariablePage { get; set; } = 0;
+		public int ChannelPage { get; set; } = 0;
 
 		#endregion
     }

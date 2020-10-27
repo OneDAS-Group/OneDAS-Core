@@ -23,7 +23,7 @@ classdef MatOneDasConnector
             dateTimeBegin   = self.ToNetDateTime(dateTimeBegin);
             dateTimeEnd     = self.ToNetDateTime(dateTimeEnd);
             
-            % translate variable list into .NET string array
+            % translate channel list into .NET string array
             netChannels = NET.createGeneric('System.Collections.Generic.List', {'System.String'});
 
             for netChannel = channels(:).'
@@ -40,7 +40,7 @@ classdef MatOneDasConnector
             dateTimeBegin   = self.ToNetDateTime(dateTimeBegin);
             dateTimeEnd     = self.ToNetDateTime(dateTimeEnd);
             
-            % translate variable list into .NET string array
+            % translate channel list into .NET string array
             netChannels = NET.createGeneric('System.Collections.Generic.List', {'System.String'});
 
             for netChannel = channels(:).'

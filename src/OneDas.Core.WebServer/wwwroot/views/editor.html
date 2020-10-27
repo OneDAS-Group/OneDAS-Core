@@ -1,7 +1,7 @@
 ﻿<!-- ko if: !Project() -->
 <div id="Editor_NoProject" class="center-vertically plus-center-horizontally">
     <h1 class="display-4">Open a project or create a new one!</h1>
-    <p>Here you can you can change extension settings, specify channels and edit the input-output variable mapping.</p>
+    <p>Here you can you can change extension settings, specify channels and edit the input-output channel mapping.</p>
     <p>&nbsp;</p>
     <div class="btn-group" role="group">
         <button class="btn btn-outline-primary btn-wide"
@@ -150,7 +150,7 @@
         <form>
             <div class="form-row">
                 <div class="col-4">
-                    <label>start variable</label>
+                    <label>start channel</label>
                     <input type="number" class="form-control"
                            min="0" step="1"
                            data-bind="value: DataPortStartIndex">
@@ -184,9 +184,9 @@
                 <div class="col-6">
                     <div class="form-check"
                          data-toggle="tooltip"
-                         data-title="enable this option to allow a variable to be mapped to multiple channels (1:n relationship)">
+                         data-title="enable this option to allow a channel to be mapped to multiple channels (1:n relationship)">
                         <label class="form-check-label">
-                            <input class="form-check-input" type="checkbox" data-bind="checked: KeepVariableMappings"><span class="noselect">keep variable mappings</span>
+                            <input class="form-check-input" type="checkbox" data-bind="checked: KeepChannelMappings"><span class="noselect">keep channel mappings</span>
                         </label>
                     </div>
                     <button type="button" class="btn btn-primary w-100"
@@ -320,14 +320,14 @@
                     <!-- /ko -->
                     <!-- ko if: $parents[1].MultiMappingEditor -->
                     <!-- ko if: DataPortSet().length === 0 -->
-                    <h5 class="d-block text-center mt-3"><small class="text-muted">- no variables available -</small></h5>
+                    <h5 class="d-block text-center mt-3"><small class="text-muted">- no channels available -</small></h5>
                     <!-- /ko -->
                     <!-- ko if: DataPortSet().length > 0 -->
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Variable</th>
+                                <th>Channel</th>
                                 <th>Data Type</th>
                             </tr>
                         </thead>
@@ -990,11 +990,11 @@
 <script type="text/html" id="Project_ModuleToDataPortMapTemplate">
     <div class="card my-2">
         <div class="card-header">
-            Variables
+            Channels
         </div>
         <div class="card-body">
             <!-- ko if: DataPortSet().length === 0 -->
-            <h5 class="d-block text-center my-5"><small class="text-muted">- no variables available -</small></h5>
+            <h5 class="d-block text-center my-5"><small class="text-muted">- no channels available -</small></h5>
             <!-- /ko -->
             <div data-bind="foreach: ModuleToDataPortMap">
                 <span data-bind="text: Key"></span>
@@ -1009,11 +1009,11 @@
 <script type="text/html" id="Project_DataPortSetTemplate">
     <div class="card my-2">
         <div class="card-header">
-            Variables
+            Channels
         </div>
         <div class="card-body">
             <!-- ko if: DataPortSet().length === 0 -->
-            <h5 class="d-block text-center my-5"><small class="text-muted">- no variables available -</small></h5>
+            <h5 class="d-block text-center my-5"><small class="text-muted">- no channels available -</small></h5>
             <!-- /ko -->
             <div data-bind="foreach: DataPortSet">
                 <div style="display:inline-block" data-bind="template: { name: 'Project_DataPortTemplate', data: { OriginalData: $data, DraggableCallback: $parents.find(parent =&gt; parent.Draggable).Draggable } }"></div>

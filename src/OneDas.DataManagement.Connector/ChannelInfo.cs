@@ -8,12 +8,12 @@ namespace OneDas.DataManagement.Connector
     {
         #region Constructors
 
-        public ChannelInfo(VariableInfo variable, string channelName, double[] data)
+        public ChannelInfo(ChannelInfo channel, string channelName, double[] data)
         {
-            this.Name = variable.Name;
-            this.Group = variable.Group;
-            this.Unit = variable.Unit;
-            this.TransferFunctions = variable.TransferFunctions;
+            this.Name = channel.Name;
+            this.Group = channel.Group;
+            this.Unit = channel.Unit;
+            this.TransferFunctions = channel.TransferFunctions;
             this.DatasetName = channelName.Split('/').Last();
             this.Values = data;
         }

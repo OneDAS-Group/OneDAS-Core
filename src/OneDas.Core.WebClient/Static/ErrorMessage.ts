@@ -1,6 +1,6 @@
 ﻿let ErrorMessage: { [index: string]: string } = {}
 ErrorMessage["MultiMappingEditorViewModel_InvalidSettings"] = "One or more settings are invalid."
-ErrorMessage["MultiMappingEditorViewModel_WrongDataType"] = "One or more variable-channel data type combinations are invalid."
+ErrorMessage["MultiMappingEditorViewModel_WrongDataType"] = "One or more channel-channel data type combinations are invalid."
 ErrorMessage["Project_ChannelAlreadyExists"] = "A channel with that name already exists."
 ErrorMessage["Project_DetachedExclamationMarkNotAllowed"] = "A detached exclamation mark is not allowed."
 ErrorMessage["Project_GroupFilterEmpty"] = "The group filter must not be empty."

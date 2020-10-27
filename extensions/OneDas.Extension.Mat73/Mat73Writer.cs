@@ -80,7 +80,7 @@ namespace OneDas.Extension.Mat73
                 throw new Exception("The number of custom metadata entries must not exceed 58.");
         }
 
-        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<ChannelContextGroup> channelContextGroupSet)
         {
             var projectDescription = this.DataWriterContext.ProjectDescription;
             _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{projectDescription.PrimaryGroupName}_{projectDescription.SecondaryGroupName}_{projectDescription.ProjectName}_V{projectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.mat");
@@ -88,10 +88,10 @@ namespace OneDas.Extension.Mat73
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
 
-            this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
+            this.OpenFile(_dataFilePath, startDateTime, channelContextGroupSet.SelectMany(contextGroup => contextGroup.ChannelContextSet).ToList());
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
+        protected override void OnWrite(ChannelContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
             long groupId = -1;
 
@@ -111,9 +111,9 @@ namespace OneDas.Extension.Mat73
                 }
 
                 // write data
-                for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
+                for (int i = 0; i < contextGroup.ChannelContextSet.Count(); i++)
                 {
-                    this.WriteData(fileOffset, bufferOffset, length, contextGroup.VariableContextSet[i]);
+                    this.WriteData(fileOffset, bufferOffset, length, contextGroup.ChannelContextSet[i]);
                 }
 
                 // write last_completed_chunk
@@ -134,7 +134,7 @@ namespace OneDas.Extension.Mat73
             if (H5I.is_valid(_fileId) > 0) { this.CloseHdfFile(_fileId); }
         }
 
-        private void OpenFile(string filePath, DateTime startDateTime, IList<VariableContext> variableContextSet)
+        private void OpenFile(string filePath, DateTime startDateTime, IList<ChannelContext> channelContextSet)
         {
             long propertyId = -1;
             long datasetId = -1;
@@ -176,19 +176,19 @@ namespace OneDas.Extension.Mat73
                     throw new Exception($"{ ErrorMessage.Mat73Writer_CouldNotOpenOrCreateFile } File: { filePath }.");
 
                 // prepare channels
-                foreach (VariableContext variableContext in variableContextSet)
+                foreach (ChannelContext channelContext in channelContextSet)
                 {
                     var periodInSeconds = (ulong)Math.Round(_settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
-                    var samplesPerSecond = variableContext.VariableDescription.SampleRate.SamplesPerSecond;
+                    var samplesPerSecond = channelContext.ChannelDescription.SampleRate.SamplesPerSecond;
                     (var chunkLength, var chunkCount) = GeneralHelper.CalculateChunkParameters(periodInSeconds, samplesPerSecond);
 
-                    this.PrepareVariable(_fileId, variableContext.VariableDescription, chunkLength, chunkCount);
+                    this.PrepareChannel(_fileId, channelContext.ChannelDescription, chunkLength, chunkCount);
                 }
 
                 // info
                 groupId = this.OpenOrCreateStruct(_fileId, "/info").GroupId;
 
-                (datasetId, isNew) = this.OpenOrCreateVariable(groupId, "last_completed_chunk", 1, 1);
+                (datasetId, isNew) = this.OpenOrCreateChannel(groupId, "last_completed_chunk", 1, 1);
 
                 if (isNew)
                     IOHelper.Write(datasetId, new double[] { -1 }, DataContainerType.Dataset);
@@ -218,9 +218,9 @@ namespace OneDas.Extension.Mat73
             _fileId = H5F.open(filePath, H5F.ACC_RDWR);
         }
 
-        private unsafe void WriteData(ulong fileOffset, ulong bufferOffset, ulong length, VariableContext variableContext)
+        private unsafe void WriteData(ulong fileOffset, ulong bufferOffset, ulong length, ChannelContext channelContext)
         {
-            Contract.Requires(variableContext != null, nameof(variableContext));
+            Contract.Requires(channelContext != null, nameof(channelContext));
 
             long groupId = -1;
             long datasetId = -1;
@@ -229,14 +229,14 @@ namespace OneDas.Extension.Mat73
 
             try
             {
-                groupId = H5G.open(_fileId, $"/{ variableContext.VariableDescription.VariableName }");
+                groupId = H5G.open(_fileId, $"/{ channelContext.ChannelDescription.ChannelName }");
 
-                var datasetName = $"dataset_{ variableContext.VariableDescription.DatasetName.Replace(" ", "_") }";
+                var datasetName = $"dataset_{ channelContext.ChannelDescription.DatasetName.Replace(" ", "_") }";
                 datasetId = H5D.open(groupId, datasetName);
                 dataspaceId = H5D.get_space(datasetId);
                 dataspaceId_Buffer = H5S.create_simple(1, new ulong[] { length }, null);
 
-                var simpleBuffers = variableContext.Buffer.ToSimpleBuffer();
+                var simpleBuffers = channelContext.Buffer.ToSimpleBuffer();
 
                 // dataset
                 H5S.select_hyperslab(dataspaceId,
@@ -264,7 +264,7 @@ namespace OneDas.Extension.Mat73
             }
         }
 
-        private void PrepareVariable(long locationId, VariableDescription variableDescription, ulong chunkLength, ulong chunkCount)
+        private void PrepareChannel(long locationId, ChannelDescription channelDescription, ulong chunkLength, ulong chunkCount)
         {
             long groupId = -1;
             long datasetId = -1;
@@ -275,9 +275,9 @@ namespace OneDas.Extension.Mat73
                     throw new Exception(ErrorMessage.Mat73Writer_SampleRateTooLow);
 
                 // struct
-                groupId = this.OpenOrCreateStruct(locationId, variableDescription.VariableName).GroupId;
+                groupId = this.OpenOrCreateStruct(locationId, channelDescription.ChannelName).GroupId;
 
-                datasetId = this.OpenOrCreateVariable(groupId, $"dataset_{ variableDescription.DatasetName.Replace(" ", "_") }", chunkLength, chunkCount).DatasetId;
+                datasetId = this.OpenOrCreateChannel(groupId, $"dataset_{ channelDescription.DatasetName.Replace(" ", "_") }", chunkLength, chunkCount).DatasetId;
             }
             finally
             {
@@ -298,7 +298,7 @@ namespace OneDas.Extension.Mat73
         }
 
         // low level
-        private (long DatasetId, bool IsNew) OpenOrCreateVariable(long locationId, string name, ulong chunkLength, ulong chunkCount)
+        private (long DatasetId, bool IsNew) OpenOrCreateChannel(long locationId, string name, ulong chunkLength, ulong chunkCount)
         {
             long datasetId = -1;
             GCHandle gcHandle_fillValue = default;

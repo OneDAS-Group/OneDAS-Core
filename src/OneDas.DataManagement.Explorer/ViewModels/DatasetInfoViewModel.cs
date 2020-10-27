@@ -7,7 +7,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
     {
         #region Constructors
 
-        public DatasetInfoViewModel(DatasetInfo dataset, VariableInfoViewModel parent)
+        public DatasetInfoViewModel(DatasetInfo dataset, ChannelInfoViewModel parent)
         {
             this.Model = dataset;
             this.Parent = parent;
@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public OneDasDataType DataType => this.Model.DataType;
 
-        public VariableInfoViewModel Parent { get; }
+        public ChannelInfoViewModel Parent { get; }
 
         #endregion
     }

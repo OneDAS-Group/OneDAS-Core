@@ -7,11 +7,11 @@ using System.Linq;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Name,nq}")]
-    public class VariableInfo : ProjectElement
+    public class ChannelInfo : ProjectElement
     {
         #region "Constructors"
 
-        public VariableInfo(string id, ProjectElement parent) : base(id, parent)
+        public ChannelInfo(string id, ProjectElement parent) : base(id, parent)
         {
             this.Name = string.Empty;
             this.Group = string.Empty;
@@ -20,7 +20,7 @@ namespace OneDas.DataManagement.Database
             this.Datasets = new List<DatasetInfo>();
         }
 
-        private VariableInfo()
+        private ChannelInfo()
         {
             //
         }
@@ -43,35 +43,35 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
-        public void Merge(VariableInfo variable, VariableMergeMode mergeMode)
+        public void Merge(ChannelInfo channel, ChannelMergeMode mergeMode)
         {
-            if (this.Parent.Id != variable.Parent.Id)
-                throw new Exception("The variable to be merged has a different parent.");
+            if (this.Parent.Id != channel.Parent.Id)
+                throw new Exception("The channel to be merged has a different parent.");
 
             // merge properties
             switch (mergeMode)
             {
-                case VariableMergeMode.OverwriteMissing:
+                case ChannelMergeMode.OverwriteMissing:
                     
                     if (string.IsNullOrWhiteSpace(this.Name))
-                        this.Name = variable.Name;
+                        this.Name = channel.Name;
 
                     if (string.IsNullOrWhiteSpace(this.Group))
-                        this.Group = variable.Group;
+                        this.Group = channel.Group;
 
                     if (string.IsNullOrWhiteSpace(this.Unit))
-                        this.Unit = variable.Unit;
+                        this.Unit = channel.Unit;
 
                     if (!this.TransferFunctions.Any())
-                        this.TransferFunctions = variable.TransferFunctions;
+                        this.TransferFunctions = channel.TransferFunctions;
 
                     break;
 
-                case VariableMergeMode.NewWins:
-                    this.Name = variable.Name;
-                    this.Group = variable.Group;
-                    this.Unit = variable.Unit;
-                    this.TransferFunctions = variable.TransferFunctions;
+                case ChannelMergeMode.NewWins:
+                    this.Name = channel.Name;
+                    this.Group = channel.Group;
+                    this.Unit = channel.Unit;
+                    this.TransferFunctions = channel.TransferFunctions;
                     break;
 
                 default:
@@ -81,7 +81,7 @@ namespace OneDas.DataManagement.Database
             // merge datasets
             var newDatasets = new List<DatasetInfo>();
 
-            foreach (var dataset in variable.Datasets)
+            foreach (var dataset in channel.Datasets)
             {
                 var referenceDataset = this.Datasets.FirstOrDefault(current => current.Id == dataset.Id);
 

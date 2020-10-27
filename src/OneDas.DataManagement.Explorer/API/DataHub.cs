@@ -54,19 +54,19 @@ namespace OneDas.DataManagement.Explorer.Hubs
             return _dataService.GetDataAvailabilityStatisticsAsync(projectId, begin, end);
         }
 
-        public Task<List<VariableInfo>> GetChannelInfos(List<string> channelNames)
+        public Task<List<ChannelInfo>> GetChannelInfos(List<string> channelNames)
         {
             // translate channel names
-            var variables = channelNames.Select(channelName =>
+            var channels = channelNames.Select(channelName =>
             {
                 if (!_databaseManager.Database.TryFindDataset(channelName, out var dataset))
                     throw new Exception($"Could not find channel with name '{channelName}'.");
 
-                return (VariableInfo)dataset.Parent;
+                return (ChannelInfo)dataset.Parent;
             }).ToList();
 
             // security check
-            var projects = variables.Select(variable => (ProjectInfo)variable.Parent).Distinct();
+            var projects = channels.Select(channel => (ProjectInfo)channel.Parent).Distinct();
 
             foreach (var project in projects)
             {
@@ -74,7 +74,7 @@ namespace OneDas.DataManagement.Explorer.Hubs
                     throw new UnauthorizedAccessException($"The current user is not authorized to access project '{project.Id}'.");
             }
 
-            return Task.FromResult(variables);
+            return Task.FromResult(channels);
         }
 
         public ChannelReader<string> ExportData(DateTime begin,

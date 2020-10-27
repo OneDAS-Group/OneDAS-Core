@@ -12,7 +12,7 @@ namespace OneDas.DataManagement.Database
 
         public ProjectInfo(string id) : base(id, null)
         {
-            this.Variables = new List<VariableInfo>();
+            this.Channels = new List<ChannelInfo>();
         }
 
         private ProjectInfo()
@@ -28,33 +28,33 @@ namespace OneDas.DataManagement.Database
 
         public DateTime ProjectEnd { get; set; }
 
-        public List<VariableInfo> Variables { get; set; }
+        public List<ChannelInfo> Channels { get; set; }
 
         #endregion
 
         #region "Methods"
 
-        public void Merge(ProjectInfo project, VariableMergeMode mergeMode)
+        public void Merge(ProjectInfo project, ChannelMergeMode mergeMode)
         {
             if (this.Id != project.Id)
                 throw new Exception("The project to be merged has a different ID.");
 
-            // merge variables
-            List<VariableInfo> newVariables = new List<VariableInfo>();
+            // merge channels
+            List<ChannelInfo> newChannels = new List<ChannelInfo>();
 
-            foreach (var variable in project.Variables)
+            foreach (var channel in project.Channels)
             {
-                var referenceVariable = this.Variables.FirstOrDefault(current => current.Id == variable.Id);
+                var referenceChannel = this.Channels.FirstOrDefault(current => current.Id == channel.Id);
 
-                if (referenceVariable != null)
-                    referenceVariable.Merge(variable, mergeMode);
+                if (referenceChannel != null)
+                    referenceChannel.Merge(channel, mergeMode);
                 else
-                    newVariables.Add(variable);
+                    newChannels.Add(channel);
 
-                variable.Parent = this;
+                channel.Parent = this;
             }
 
-            this.Variables.AddRange(newVariables);
+            this.Channels.AddRange(newChannels);
 
             // merge other data
             if (this.ProjectStart == DateTime.MinValue)
@@ -75,17 +75,17 @@ namespace OneDas.DataManagement.Database
 
         public override IEnumerable<ProjectElement> GetChilds()
         {
-            return this.Variables;
+            return this.Channels;
         }
 
         public override void Initialize()
         {
             base.Initialize();
 
-            foreach (var variable in this.Variables)
+            foreach (var channel in this.Channels)
             {
-                variable.Parent = this;
-                variable.Initialize();
+                channel.Parent = this;
+                channel.Initialize();
             }
         }
 

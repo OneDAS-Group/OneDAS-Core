@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Connector
 {
-    public class VariableInfo
+    public class ChannelInfo
     {
         #region Properties
 

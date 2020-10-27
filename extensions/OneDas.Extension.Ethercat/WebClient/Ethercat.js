@@ -47,7 +47,7 @@ class EthercatViewModel extends DataGatewayViewModelBase {
         };
         this.UpdateSlaveInfo = (slaveInfo) => __awaiter(this, void 0, void 0, function* () {
             slaveInfo.DynamicData(yield this.GetDynamicSlaveInfoDataAsync(slaveInfo));
-            this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (slaveInfo) => slaveInfo.GetVariables()));
+            this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (slaveInfo) => slaveInfo.GetChannels()));
             this.SelectedSlaveInfo(null);
         });
         this.ReloadHardware = () => __awaiter(this, void 0, void 0, function* () {
@@ -120,7 +120,7 @@ class EthercatViewModel extends DataGatewayViewModelBase {
                     });
                     alert(message);
                 }
-                this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (x) => x.GetVariables()));
+                this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (x) => x.GetChannels()));
             }
             else {
                 this.DataPortSet([]);
@@ -191,9 +191,9 @@ class SlaveInfoViewModel {
             });
             return descendantSet;
         };
-        this.GetVariables = () => {
+        this.GetChannels = () => {
             if (this.DynamicData()) {
-                return MapMany(this.DynamicData().PdoSet, (x) => x.VariableSet);
+                return MapMany(this.DynamicData().PdoSet, (x) => x.ChannelSet);
             }
             else {
                 return [];
@@ -244,16 +244,16 @@ class SlavePdoViewModel {
         this.Name = slavePdoModel.Name;
         this.Index = slavePdoModel.Index;
         this.SyncManager = slavePdoModel.SyncManager;
-        this.VariableSet = slavePdoModel.VariableSet.map(x => new SlaveVariableViewModel(x, this, dataGateway));
-        this.CompactView = ko.observable(this.VariableSet.length === 1);
+        this.ChannelSet = slavePdoModel.ChannelSet.map(x => new SlaveChannelViewModel(x, this, dataGateway));
+        this.CompactView = ko.observable(this.ChannelSet.length === 1);
     }
 }
-class SlaveVariableViewModel extends DataPortViewModel {
-    constructor(slaveVariableModel, parent, dataGateway) {
-        super(slaveVariableModel, dataGateway);
+class SlaveChannelViewModel extends DataPortViewModel {
+    constructor(slaveChannelModel, parent, dataGateway) {
+        super(slaveChannelModel, dataGateway);
         this.Parent = parent;
-        this.Index = slaveVariableModel.Index;
-        this.SubIndex = slaveVariableModel.SubIndex;
+        this.Index = slaveChannelModel.Index;
+        this.SubIndex = slaveChannelModel.SubIndex;
     }
     GetId() {
         return this.Parent.Parent.Csa + " / " + this.Parent.Name + " / " + this.Name();

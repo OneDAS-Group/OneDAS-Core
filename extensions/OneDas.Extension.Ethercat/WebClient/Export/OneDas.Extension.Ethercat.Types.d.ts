@@ -27,7 +27,7 @@ declare class SlaveInfoViewModel {
     ResetOldCsa: () => void;
     GetDescendants: (includeSelf: boolean) => SlaveInfoViewModel[];
     private InternalGetDescendants;
-    GetVariables: () => SlaveVariableViewModel[];
+    GetChannels: () => SlaveChannelViewModel[];
     GetEthercatSlaveExtension: (index: number) => SlaveExtensionViewModelBase;
     ToFlatModel: () => {
         Manufacturer: number;
@@ -44,14 +44,14 @@ declare class SlavePdoViewModel {
     readonly Name: string;
     readonly Index: number;
     readonly SyncManager: number;
-    readonly VariableSet: SlaveVariableViewModel[];
+    readonly ChannelSet: SlaveChannelViewModel[];
     readonly CompactView: KnockoutObservable<boolean>;
     constructor(slavePdoModel: any, parent: SlaveInfoViewModel, dataGateway: DataGatewayViewModelBase);
 }
-declare class SlaveVariableViewModel extends DataPortViewModel {
+declare class SlaveChannelViewModel extends DataPortViewModel {
     readonly Parent: SlavePdoViewModel;
     readonly Index: number;
     readonly SubIndex: number;
-    constructor(slaveVariableModel: any, parent: SlavePdoViewModel, dataGateway: DataGatewayViewModelBase);
+    constructor(slaveChannelModel: any, parent: SlavePdoViewModel, dataGateway: DataGatewayViewModelBase);
     GetId(): string;
 }

@@ -6,7 +6,7 @@
     public DataPortStartIndex: KnockoutObservable<number>
     public ChannelHubStartIndex: KnockoutObservable<number>
     public Length: KnockoutObservable<number>
-    public KeepVariableMappings: KnockoutObservable<boolean>
+    public KeepChannelMappings: KnockoutObservable<boolean>
     public IsValid: KnockoutObservable<boolean>
     public ErrorMessage: KnockoutObservable<string>
 
@@ -24,7 +24,7 @@
         this.DataPortStartIndex = ko.observable<number>(0)
         this.ChannelHubStartIndex = ko.observable<number>(0)
         this.Length = ko.observable<number>(0)
-        this.KeepVariableMappings = ko.observable<boolean>(false)
+        this.KeepChannelMappings = ko.observable<boolean>(false)
         this.IsValid = ko.observable<boolean>(false)
         this.ErrorMessage = ko.observable<string>("")
 
@@ -119,18 +119,18 @@
     private Apply()
     {
         let filteredChannelHubSet: ChannelHubViewModel[]
-        let keepVariableMappings: boolean
+        let keepChannelMappings: boolean
         let startDataPortIndex: number
         let startChannelHubIndex: number
 
         filteredChannelHubSet = this.FilteredChannelHubSet()
-        keepVariableMappings = this.KeepVariableMappings()
+        keepChannelMappings = this.KeepChannelMappings()
         startDataPortIndex = this.DataPortStartIndex()
         startChannelHubIndex = this.ChannelHubStartIndex()
 
         for (var i = 0; i < this.Length(); i++)
         {
-            if (!keepVariableMappings)
+            if (!keepChannelMappings)
             {
                 this._dataPortSet[i + startDataPortIndex].ResetAssociations(false)
             }

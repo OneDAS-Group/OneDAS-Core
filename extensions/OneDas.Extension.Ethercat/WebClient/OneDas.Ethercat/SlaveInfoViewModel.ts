@@ -100,11 +100,11 @@
         return descendantSet
     }
 
-    public GetVariables = () =>
+    public GetChannels = () =>
     {
         if (this.DynamicData())
         {
-            return MapMany(this.DynamicData().PdoSet, (x: SlavePdoViewModel) => x.VariableSet)
+            return MapMany(this.DynamicData().PdoSet, (x: SlavePdoViewModel) => x.ChannelSet)
         }
         else
         {

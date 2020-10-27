@@ -36,28 +36,28 @@ namespace OneDas.DataManagement.Database
             return project != null;
         }
 
-        public bool TryFindVariableById(string projectId, string variableId, out VariableInfo variable)
+        public bool TryFindChannelById(string projectId, string channelId, out ChannelInfo channel)
         {
-            variable = default;
+            channel = default;
 
             if (this.TryFindProjectById(projectId, out var project))
             {
-                variable = project.Variables.FirstOrDefault(variable => variable.Id == variableId);
+                channel = project.Channels.FirstOrDefault(channel => channel.Id == channelId);
 
-                if (variable == null)
-                    variable = project.Variables.FirstOrDefault(variable => variable.Name == variableId);
+                if (channel == null)
+                    channel = project.Channels.FirstOrDefault(channel => channel.Name == channelId);
             }
 
-            return variable != null;
+            return channel != null;
         }
 
-        public bool TryFindDatasetById(string projectId, string variableId, string datsetId, out DatasetInfo dataset)
+        public bool TryFindDatasetById(string projectId, string channelId, string datsetId, out DatasetInfo dataset)
         {
             dataset = default;
 
-            if (this.TryFindVariableById(projectId, variableId, out var variable))
+            if (this.TryFindChannelById(projectId, channelId, out var channel))
             {
-                dataset = variable.Datasets.FirstOrDefault(dataset => dataset.Id == datsetId);
+                dataset = channel.Datasets.FirstOrDefault(dataset => dataset.Id == datsetId);
 
                 if (dataset != null)
                     return true;
@@ -74,10 +74,10 @@ namespace OneDas.DataManagement.Database
                 throw new Exception($"The channel name '{path}' is invalid.");
 
             var projectName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
-            var variableName = pathParts[4];
+            var channelName = pathParts[4];
             var datasetName = pathParts[5];
 
-            return this.TryFindDatasetById(projectName, variableName, datasetName, out dataset);
+            return this.TryFindDatasetById(projectName, channelName, datasetName, out dataset);
         }
 
         public bool TryFindDatasetsByGroup(string groupPath, out List<DatasetInfo> datasets)
@@ -102,15 +102,15 @@ namespace OneDas.DataManagement.Database
 
             if (projectContainer != null)
             {
-                var variables = projectContainer.Project.Variables
-                    .Where(variable => variable.Group.Split('\n')
+                var channels = projectContainer.Project.Channels
+                    .Where(channel => channel.Group.Split('\n')
                     .Contains(groupName))
-                    .OrderBy(variable => variable.Name)
+                    .OrderBy(channel => channel.Name)
                     .ToList();
 
                 datasets
-                    .AddRange(variables
-                    .SelectMany(variable => variable.Datasets
+                    .AddRange(channels
+                    .SelectMany(channel => channel.Datasets
                     .Where(dataset => dataset.Id == datasetName)));
 
                 if (datasets.Any())

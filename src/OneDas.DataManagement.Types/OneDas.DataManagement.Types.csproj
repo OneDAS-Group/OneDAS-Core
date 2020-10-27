@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HDF.PInvoke.1.10" Version="1.10.610" />
+    <PackageReference Include="HDF.PInvoke.1.10" Version="1.10.611" />
   </ItemGroup>
 
   <ItemGroup>

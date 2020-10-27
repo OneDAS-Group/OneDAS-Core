@@ -24,8 +24,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.0-rc.2.20478.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0-rc.2.20475.5" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.8.2" />
-    <PackageReference Include="Prism.Core" Version="7.2.0.1422" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20104.2" />
+    <PackageReference Include="Prism.Core" Version="8.0.0.1909" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />
   </ItemGroup>
 
   <ItemGroup>

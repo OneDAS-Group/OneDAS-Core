@@ -192,10 +192,10 @@
   <data name="OneDasUtilities_NameEmpty" xml:space="preserve">
     <value>The name must not be empty.</value>
   </data>
-  <data name="VariableContext_BufferTypeInvalid" xml:space="preserve">
+  <data name="ChannelContext_BufferTypeInvalid" xml:space="preserve">
     <value>The buffer type is invalid.</value>
   </data>
-  <data name="VariableDescription_BufferTypeInvalid" xml:space="preserve">
+  <data name="ChannelDescription_BufferTypeInvalid" xml:space="preserve">
     <value>The provided type must be assignable to IBuffer.</value>
   </data>
 </root>

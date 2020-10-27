@@ -29,20 +29,20 @@ before_build:
 #  - ps: ./init_solution.ps1
 
 build_script:
-#  - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./src/OneDas.DataManagement.Core/OneDas.DataManagement.Core.csproj             -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./src/OneDas.DataManagement.Core/OneDas.DataManagement.Core.csproj             -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
-#  - ps: dotnet build ./extensions/OneDas.Extension.Can/OneDas.Extension.Can.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Csv/OneDas.Extension.Csv.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Ethercat/OneDas.Extension.Ethercat.csproj        -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Famos/OneDas.Extension.Famos.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Hdf/OneDas.Extension.Hdf.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Mat73/OneDas.Extension.Mat73.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Modbus/OneDas.Extension.Modbus.csproj            -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.OpcUa/OneDas.Extension.OpcUa.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.RaspberryPi/OneDas.Extension.RaspberryPi.csproj  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-#  - ps: dotnet build ./extensions/OneDas.Extension.Udp/OneDas.Extension.Udp.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Can/OneDas.Extension.Can.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Csv/OneDas.Extension.Csv.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Ethercat/OneDas.Extension.Ethercat.csproj        -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Famos/OneDas.Extension.Famos.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Hdf/OneDas.Extension.Hdf.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Mat73/OneDas.Extension.Mat73.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Modbus/OneDas.Extension.Modbus.csproj            -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.OpcUa/OneDas.Extension.OpcUa.csproj              -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.RaspberryPi/OneDas.Extension.RaspberryPi.csproj  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ - ps: dotnet build ./extensions/OneDas.Extension.Udp/OneDas.Extension.Udp.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
 #  - ps: if ($isWindows) { dotnet publish .\src\OneDas.Core.WebServer\OneDas.Core.WebServer.csproj   -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:RuntimeIdentifier=win10-x64 /p:BuildProjectReferences=false }
 #  - ps: if ($isWindows) { dotnet publish .\src\OneDas.DataManagement.Explorer\OneDas.DataManagement.Explorer.csproj     -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG /p:BuildProjectReferences=false }
@@ -53,8 +53,8 @@ build_script:
 #  - ps: if ($isWindows) { msbuild .\src\OneDas.DataManagement.Deployment\OneDas.DataManagement.Deployment.wixproj       /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }
 
 test_script:
-#  - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
-#  - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
+ - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
+ - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
 
 artifacts:
   - path: ./artifacts/packages/**/*.nupkg

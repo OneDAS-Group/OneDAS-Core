@@ -35,22 +35,22 @@ namespace OneDas.Extension.Famos
 
         #region "Methods"
 
-        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<ChannelContextGroup> channelContextGroupSet)
         {
             _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.ProjectDescription.PrimaryGroupName}_{this.DataWriterContext.ProjectDescription.SecondaryGroupName}_{this.DataWriterContext.ProjectDescription.ProjectName}_V{ this.DataWriterContext.ProjectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.dat");
 
             if (_famosFile != null)
                 _famosFile.Dispose();
 
-            this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet);
+            this.OpenFile(_dataFilePath, startDateTime, channelContextGroupSet);
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
+        protected override void OnWrite(ChannelContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
             if (length <= 0)
                 throw new Exception(ErrorMessage.FamosWriter_SampleRateTooLow);
 
-            var simpleBuffers = contextGroup.VariableContextSet.Select(variableContext => variableContext.Buffer.ToSimpleBuffer()).ToList();
+            var simpleBuffers = contextGroup.ChannelContextSet.Select(channelContext => channelContext.Buffer.ToSimpleBuffer()).ToList();
 
             var fieldIndex = _spdToFieldIndexMap[contextGroup.SampleRate.SamplesPerDay];
             var field = _famosFile.Fields[fieldIndex];
@@ -67,10 +67,10 @@ namespace OneDas.Extension.Famos
             });
         }
 
-        private void OpenFile(string dataFilePath, DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
+        private void OpenFile(string dataFilePath, DateTime startDateTime, List<ChannelContextGroup> channelContextGroupSet)
         {
             if (File.Exists(dataFilePath))
-                throw new Exception($"The file {dataFilePath} already exists. Extending an already existing file with additional variables is not supported.");
+                throw new Exception($"The file {dataFilePath} already exists. Extending an already existing file with additional channels is not supported.");
 
             var famosFile = new FamosFileHeader();
 
@@ -107,7 +107,7 @@ namespace OneDas.Extension.Famos
             famosFile.Groups.Add(projectGroup);
 
             // for each context group
-            foreach (var contextGroup in variableContextGroupSet)
+            foreach (var contextGroup in channelContextGroupSet)
             {
                 var totalSeconds = (int)Math.Round(_settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
                 var totalLength = (int)(totalSeconds * contextGroup.SampleRate.SamplesPerSecond);
@@ -118,12 +118,12 @@ namespace OneDas.Extension.Famos
                 // file -> project -> channels
                 var field = new FamosFileField(FamosFileFieldType.MultipleYToSingleEquidistantTime);
 
-                foreach (VariableContext variableContext in contextGroup.VariableContextSet)
+                foreach (ChannelContext channelContext in contextGroup.ChannelContextSet)
                 {
                     var dx = contextGroup.SampleRate.Period.TotalSeconds;
-                    var variable = this.PrepareVariable(field, variableContext.VariableDescription, (int)totalLength, startDateTime, dx);
+                    var channel = this.PrepareChannel(field, channelContext.ChannelDescription, (int)totalLength, startDateTime, dx);
 
-                    projectGroup.Channels.Add(variable);
+                    projectGroup.Channels.Add(channel);
                 }
 
                 famosFile.Fields.Add(field);
@@ -135,11 +135,11 @@ namespace OneDas.Extension.Famos
             _famosFile = FamosFile.OpenEditable(dataFilePath);
         }
 
-        private FamosFileChannel PrepareVariable(FamosFileField field, VariableDescription variableDescription, int totalLength, DateTime startDateTme, double dx)
+        private FamosFileChannel PrepareChannel(FamosFileField field, ChannelDescription channelDescription, int totalLength, DateTime startDateTme, double dx)
         {
             // component 
-            var datasetName = $"{variableDescription.VariableName}_{variableDescription.DatasetName.Replace(" ", "_")}";
-            var calibration = new FamosFileCalibration(false, 1, 0, false, variableDescription.Unit);
+            var datasetName = $"{channelDescription.ChannelName}_{channelDescription.DatasetName.Replace(" ", "_")}";
+            var calibration = new FamosFileCalibration(false, 1, 0, false, channelDescription.Unit);
 
             var component = new FamosFileAnalogComponent(datasetName, FamosFileDataType.Float64, totalLength, calibration)
             {
@@ -152,8 +152,8 @@ namespace OneDas.Extension.Famos
 
             channel.PropertyInfo = new FamosFilePropertyInfo(new List<FamosFileProperty>()
             {
-                new FamosFileProperty("name", variableDescription.VariableName),
-                new FamosFileProperty("group", variableDescription.Group),
+                new FamosFileProperty("name", channelDescription.ChannelName),
+                new FamosFileProperty("group", channelDescription.Group),
                 new FamosFileProperty("comment", "yyyy-MM-ddTHH-mm-ssZ: Comment1"),
             });
 

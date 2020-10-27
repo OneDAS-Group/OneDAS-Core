@@ -51,7 +51,7 @@ namespace OneDas.DataManagement.Explorer.Core
             if (_zipArchive == null)
                 _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
 
-            var variableDescriptionSet = projectSettings.Project.ToVariableDescriptions();
+            var channelDescriptionSet = projectSettings.Project.ToChannelDescriptions();
             var singleFile = _exportConfig.FileGranularity == FileGranularity.SingleFile;
 
             TimeSpan filePeriod;
@@ -117,7 +117,7 @@ namespace OneDas.DataManagement.Explorer.Core
             // initialize data writer
             var projectName_splitted = projectSettings.Project.Id.Split('/');
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasProjectDescription(Guid.Empty, 0, projectName_splitted[1], projectName_splitted[2], projectName_splitted[3]), customMetadataEntrySet);
-            dataWriter.Configure(dataWriterContext, variableDescriptionSet);
+            dataWriter.Configure(dataWriterContext, channelDescriptionSet);
 
             // create temp files
             try
@@ -163,7 +163,7 @@ namespace OneDas.DataManagement.Explorer.Core
         {
 #warning: To handle native and aggregated datasets individually will probably lead to strange effects for data writers. Check this.
 
-            var datasets = projectSettings.Project.Variables.SelectMany(variable => variable.Datasets);
+            var datasets = projectSettings.Project.Channels.SelectMany(channel => channel.Datasets);
             var nativeDatasets = datasets.Where(dataset => dataset.IsNative).ToList();
             var aggregatedDatasets = datasets.Where(dataset => !dataset.IsNative).ToList();
             var currentMode = string.Empty;

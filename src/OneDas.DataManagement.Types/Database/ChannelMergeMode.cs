@@ -1,6 +1,6 @@
 ﻿namespace OneDas.DataManagement.Database
 {
-    public enum VariableMergeMode
+    public enum ChannelMergeMode
     {
         OverwriteMissing,
         NewWins

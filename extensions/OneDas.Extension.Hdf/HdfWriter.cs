@@ -61,19 +61,19 @@ namespace OneDas.Extension.Hdf
 
         #region "Methods"
 
-        protected override void OnPrepareFile(DateTime startDateTime, List<VariableContextGroup> variableContextGroupSet)
+        protected override void OnPrepareFile(DateTime startDateTime, List<ChannelContextGroup> channelContextGroupSet)
         {
             _dataFilePath = Path.Combine(this.DataWriterContext.DataDirectoryPath, $"{this.DataWriterContext.ProjectDescription.PrimaryGroupName}_{this.DataWriterContext.ProjectDescription.SecondaryGroupName}_{this.DataWriterContext.ProjectDescription.ProjectName}_V{this.DataWriterContext.ProjectDescription.Version}_{startDateTime.ToString("yyyy-MM-ddTHH-mm-ss")}Z.h5");
 
             if (_fileId > -1)
                 this.CloseHdfFile(_fileId);
 
-            this.OpenFile(_dataFilePath, startDateTime, variableContextGroupSet.SelectMany(contextGroup => contextGroup.VariableContextSet).ToList());
+            this.OpenFile(_dataFilePath, startDateTime, channelContextGroupSet.SelectMany(contextGroup => contextGroup.ChannelContextSet).ToList());
 
             _systemTimeChangedSet.Clear();
         }
 
-        protected override void OnWrite(VariableContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
+        protected override void OnWrite(ChannelContextGroup contextGroup, ulong fileOffset, ulong bufferOffset, ulong length)
         {
             long datasetId = -1;
             long dataspaceId = -1;
@@ -101,9 +101,9 @@ namespace OneDas.Extension.Hdf
                 }
 
                 // write data
-                for (int i = 0; i < contextGroup.VariableContextSet.Count(); i++)
+                for (int i = 0; i < contextGroup.ChannelContextSet.Count(); i++)
                 {
-                    this.WriteData(fileOffset, bufferOffset, length, contextGroup.VariableContextSet[i]);
+                    this.WriteData(fileOffset, bufferOffset, length, contextGroup.ChannelContextSet[i]);
                 }
 
                 // write is_chunk_completed_set
@@ -137,7 +137,7 @@ namespace OneDas.Extension.Hdf
             Marshal.FreeHGlobal(_isChunkCompletedIntPtr);
         }
 
-        private void OpenFile(string filePath, DateTime startDateTime, IList<VariableContext> variableContextSet)
+        private void OpenFile(string filePath, DateTime startDateTime, IList<ChannelContext> channelContextSet)
         {
             long groupId = -1;
             long datasetId = -1;
@@ -193,13 +193,13 @@ namespace OneDas.Extension.Hdf
                 }
 
                 // file -> project -> channels
-                foreach (VariableContext variableContext in variableContextSet)
+                foreach (ChannelContext channelContext in channelContextSet)
                 {
                     var periodInSeconds = (ulong)Math.Round(_settings.FilePeriod.TotalSeconds, MidpointRounding.AwayFromZero);
-                    var samplesPerSecond = variableContext.VariableDescription.SampleRate.SamplesPerSecond;
+                    var samplesPerSecond = channelContext.ChannelDescription.SampleRate.SamplesPerSecond;
                     (var chunkLength, var chunkCount) = GeneralHelper.CalculateChunkParameters(periodInSeconds, samplesPerSecond);
 
-                    this.PrepareVariable(groupId, variableContext.VariableDescription, chunkLength, chunkCount);
+                    this.PrepareChannel(groupId, channelContext.ChannelDescription, chunkLength, chunkCount);
                 }
 
                 // file -> chunk info
@@ -223,7 +223,7 @@ namespace OneDas.Extension.Hdf
             }
         }
 
-        private unsafe void WriteData(ulong fileOffset, ulong bufferOffset, ulong length, VariableContext variableContext)
+        private unsafe void WriteData(ulong fileOffset, ulong bufferOffset, ulong length, ChannelContext channelContext)
         {
             long groupId = -1;
 
@@ -239,15 +239,15 @@ namespace OneDas.Extension.Hdf
 
             try
             {
-                var buffer = variableContext.Buffer;
+                var buffer = channelContext.Buffer;
                 var extendedBuffer = buffer as IExtendedBuffer;
-                var elementType = OneDasUtilities.GetTypeFromOneDasDataType(variableContext.VariableDescription.DataType);
+                var elementType = OneDasUtilities.GetTypeFromOneDasDataType(channelContext.ChannelDescription.DataType);
                 var projectDescription = this.DataWriterContext.ProjectDescription;
 
-                groupId = H5G.open(_fileId, $"/{projectDescription.PrimaryGroupName}/{projectDescription.SecondaryGroupName}/{projectDescription.ProjectName}/{variableContext.VariableDescription.Guid}");
+                groupId = H5G.open(_fileId, $"/{projectDescription.PrimaryGroupName}/{projectDescription.SecondaryGroupName}/{projectDescription.ProjectName}/{channelContext.ChannelDescription.Guid}");
 
                 // dataset
-                var datasetName = variableContext.VariableDescription.DatasetName;
+                var datasetName = channelContext.ChannelDescription.DatasetName;
                 datasetTypeId = TypeConversionHelper.GetHdfTypeIdFromType(elementType);
                 datasetId = H5D.open(groupId, datasetName);
                 dataspaceId = H5D.get_space(datasetId);
@@ -320,7 +320,7 @@ namespace OneDas.Extension.Hdf
             }
         }
 
-        private void PrepareVariable(long locationId, VariableDescription variableDescription, ulong chunkLength, ulong chunkCount)
+        private void PrepareChannel(long locationId, ChannelDescription channelDescription, ulong chunkLength, ulong chunkCount)
         {
             long groupId = -1;
             long datasetId = -1;
@@ -332,24 +332,24 @@ namespace OneDas.Extension.Hdf
             try
             {
                 // group (GUID)
-                groupId = IOHelper.OpenOrCreateGroup(locationId, variableDescription.Guid.ToString()).GroupId;
+                groupId = IOHelper.OpenOrCreateGroup(locationId, channelDescription.Guid.ToString()).GroupId;
 
                 // attributes
-                var transferFunctionSet = variableDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), tf.Type, tf.Option, tf.Argument)).ToArray();
+                var transferFunctionSet = channelDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), tf.Type, tf.Option, tf.Argument)).ToArray();
 
-                IOHelper.PrepareAttribute(groupId, "name_set", new string[] { variableDescription.VariableName }, new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(groupId, "group_set", new string[] { variableDescription.Group }, new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(groupId, "name_set", new string[] { channelDescription.ChannelName }, new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(groupId, "group_set", new string[] { channelDescription.Group }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "comment_set", new string[] { "yyyy-MM-ddTHH-mm-ssZ: Comment1" }, new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(groupId, "unit_set", new string[] { variableDescription.Unit }, new ulong[] { H5S.UNLIMITED }, true);
+                IOHelper.PrepareAttribute(groupId, "unit_set", new string[] { channelDescription.Unit }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "transfer_function_set", transferFunctionSet, new ulong[] { H5S.UNLIMITED }, true);
 
                 // dataset (native)
-                datasetName = variableDescription.DatasetName;
-                datasetTypeId = TypeConversionHelper.GetHdfTypeIdFromType(OneDasUtilities.GetTypeFromOneDasDataType(variableDescription.DataType));
+                datasetName = channelDescription.DatasetName;
+                datasetTypeId = TypeConversionHelper.GetHdfTypeIdFromType(OneDasUtilities.GetTypeFromOneDasDataType(channelDescription.DataType));
                 datasetId = IOHelper.OpenOrCreateDataset(groupId, datasetName, datasetTypeId, chunkLength, chunkCount).DatasetId;
 
                 // dataset (status)
-                if (variableDescription.BufferType == BufferType.Extended)
+                if (channelDescription.BufferType == BufferType.Extended)
                 {
                     datasetName = $"{datasetName}_status";
                     datasetId_status = IOHelper.OpenOrCreateDataset(groupId, datasetName, H5T.NATIVE_UINT8, chunkLength, chunkCount).DatasetId;

@@ -8,7 +8,7 @@ namespace OneDas.Extension.OpcUa
 {
     public static class CertificateManager
     {
-        public static async Task<X509Certificate2> CreateApplicationInstanceCertificate(ApplicationConfiguration configuration, ushort minimumKeySize = CertificateFactory.defaultKeySize, ushort lifeTimeInMonths = CertificateFactory.defaultLifeTime)
+        public static async Task<X509Certificate2> CreateApplicationInstanceCertificate(ApplicationConfiguration configuration, ushort minimumKeySize = 2048, ushort lifeTimeInMonths = 12)
         {
             CertificateIdentifier id;
             IList<string> serverDomainNames;
@@ -39,7 +39,7 @@ namespace OneDas.Extension.OpcUa
                 minimumKeySize,
                 DateTime.UtcNow - TimeSpan.FromDays(1),
                 lifeTimeInMonths,
-                CertificateFactory.defaultHashSize,
+                CertificateFactory.DefaultHashSize,
                 false,
                 null,
                 null

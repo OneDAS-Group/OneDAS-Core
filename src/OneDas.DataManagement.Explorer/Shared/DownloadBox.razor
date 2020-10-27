@@ -3,8 +3,8 @@
 @inherits AppStateComponentBase
 @inject IHttpContextAccessor httpContextAccessor
 
-<div class="variable-box-sub">
-    <div class="selected-variables">
+<div class="channel-box-sub">
+    <div class="selected-channels">
         @if (!this.AppState.SelectedDatasets.Any())
         {
             <span class="small-text">no channels selected</span>
@@ -13,9 +13,9 @@
         {
             @foreach (var dataset in this.AppState.SelectedDatasets)
             {
-                <div class="selected-variable" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
-                    <span class="selected-variable-name">@dataset.Parent.Name (@dataset.Name)</span>
-                    <span class="selected-variable-project">@dataset.Parent.Parent.Id.TrimStart('/').Replace("/", " / ")</span>
+                <div class="selected-channel" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
+                    <span class="selected-channel-name">@dataset.Parent.Name (@dataset.Name)</span>
+                    <span class="selected-channel-project">@dataset.Parent.Parent.Id.TrimStart('/').Replace("/", " / ")</span>
                 </div>
             }
         }

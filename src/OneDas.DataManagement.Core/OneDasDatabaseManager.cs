@@ -176,7 +176,7 @@ namespace OneDas.DataManagement
                         // if data reader is for aggregation data, update dataset`s flag
                         if (!isNativeDataReader)
                         {
-                            var datasets = project.Variables.SelectMany(variable => variable.Datasets).ToList();
+                            var datasets = project.Channels.SelectMany(channel => channel.Datasets).ToList();
 
                             foreach (var dataset in datasets)
                             {
@@ -185,7 +185,7 @@ namespace OneDas.DataManagement
                         }
 
                         //
-                        container.Project.Merge(project, VariableMergeMode.OverwriteMissing);
+                        container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
                     }
                 }
                 finally
@@ -195,17 +195,17 @@ namespace OneDas.DataManagement
             }
 
             // the purpose of this block is to initalize empty properties 
-            // add missing variables and clean up empty variables
+            // add missing channels and clean up empty channels
             foreach (var projectContainer in database.ProjectContainers)
             {
-                // remove all variables where no native datasets are available
+                // remove all channels where no native datasets are available
                 // because only these provide metadata like name and group
-                var variables = projectContainer.Project.Variables;
+                var channels = projectContainer.Project.Channels;
 
-                variables
-                    .Where(variable => string.IsNullOrWhiteSpace(variable.Name))
+                channels
+                    .Where(channel => string.IsNullOrWhiteSpace(channel.Name))
                     .ToList()
-                    .ForEach(variable => variables.Remove(variable));
+                    .ForEach(channel => channels.Remove(channel));
 
                 // initalize project meta
                 projectContainer.ProjectMeta.Initialize(projectContainer.Project);

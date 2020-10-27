@@ -145,7 +145,7 @@ namespace OneDas.DataManagement.Connector
             try
             {
                 await _connection.StartAsync();
-                var variables = await _connection.InvokeAsync<List<VariableInfo>>("GetChannelInfos", channelNames);
+                var channels = await _connection.InvokeAsync<List<ChannelInfo>>("GetChannelInfos", channelNames);
                 var result = new Dictionary<string, ChannelInfo>();
 
                 for (int i = 0; i < channelNames.Count; i++)
@@ -168,7 +168,7 @@ namespace OneDas.DataManagement.Connector
                         totalBuffer = totalBuffer.Concat(buffer).ToArray();
                     }
 
-                    result[channelName] = new ChannelInfo(variables[i], channelName, totalBuffer);
+                    result[channelName] = new ChannelInfo(channels[i], channelName, totalBuffer);
                 }
 
                 return result;

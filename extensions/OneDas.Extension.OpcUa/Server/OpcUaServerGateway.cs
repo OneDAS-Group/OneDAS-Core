@@ -80,10 +80,10 @@ namespace OneDas.Extension.OpcUa
 
                 _opcServer.CustomNodeManager.VariableSet.First().Value = referenceDateTimeUnix;
 
-                foreach (var variable in _opcServer.CustomNodeManager.VariableSet.Skip(1))
+                foreach (var channel in _opcServer.CustomNodeManager.VariableSet.Skip(1))
                 {
-                    variable.Value = buffer[count];
-                    variable.Timestamp = referenceDateTime;
+                    channel.Value = buffer[count];
+                    channel.Timestamp = referenceDateTime;
                     count++;
                 }
 

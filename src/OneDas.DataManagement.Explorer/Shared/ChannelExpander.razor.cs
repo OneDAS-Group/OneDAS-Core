@@ -28,7 +28,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         public bool IsExpanded { get; set; }
 
         [Parameter]
-        public VariableInfoViewModel Variable { get; set; }
+        public ChannelInfoViewModel Channel { get; set; }
 
         #endregion
 
@@ -71,12 +71,12 @@ namespace OneDas.DataManagement.Explorer.Shared
             if (string.IsNullOrWhiteSpace(this.AppState.SampleRate))
                 _filteredDatasets = new List<DatasetInfoViewModel>();
             else
-                _filteredDatasets = this.Variable.Datasets.Where(dataset => dataset.Name.Contains(this.AppState.SampleRate)).ToList();
+                _filteredDatasets = this.Channel.Datasets.Where(dataset => dataset.Name.Contains(this.AppState.SampleRate)).ToList();
         }
 
         private List<string> GetSampleRates()
         {
-            return this.Variable.Datasets
+            return this.Channel.Datasets
                 .Select(dataset => dataset.Name.Split('_')[0])
                 .Distinct()
                 .Where(sampleRate => sampleRate != this.AppState.SampleRate)

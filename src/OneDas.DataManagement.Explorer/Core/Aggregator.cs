@@ -130,15 +130,15 @@ namespace OneDas.DataManagement.Explorer.Core
 
             var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.ProjectName == project.Id).ToList();
 
-            var variableToAggregationConfigMap = project.Variables
-                .ToDictionary(variable => variable, variable => potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(variable, config.Filters)).ToList())
+            var channelToAggregationConfigMap = project.Channels
+                .ToDictionary(channel => channel, channel => potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(channel, config.Filters)).ToList())
                 .Where(entry => entry.Value.Any())
                 .ToDictionary(entry => entry.Key, entry => entry.Value);
 
-            foreach (var entry in variableToAggregationConfigMap)
+            foreach (var entry in channelToAggregationConfigMap)
             {
-                var variable = entry.Key;
-                var dataset = variable.Datasets.First();
+                var channel = entry.Key;
+                var dataset = channel.Datasets.First();
                 var aggregationConfigs = entry.Value;
 
                 OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
@@ -601,43 +601,43 @@ namespace OneDas.DataManagement.Explorer.Core
                 .ToArray();
         }
 
-        private bool ApplyAggregationFilter(VariableInfo variable, Dictionary<string, string> filters)
+        private bool ApplyAggregationFilter(ChannelInfo channel, Dictionary<string, string> filters)
         {
             bool result = true;
 
             // channel
             if (filters.ContainsKey("--include-channel"))
-                result &= Regex.IsMatch(variable.Name, filters["--include-channel"]);
+                result &= Regex.IsMatch(channel.Name, filters["--include-channel"]);
 
             if (filters.ContainsKey("--exclude-channel"))
-                result &= !Regex.IsMatch(variable.Name, filters["--exclude-channel"]);
+                result &= !Regex.IsMatch(channel.Name, filters["--exclude-channel"]);
 
             // group
             if (filters.ContainsKey("--include-group"))
-                result &= variable.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
+                result &= channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
 
             if (filters.ContainsKey("--exclude-group"))
-                result &= !variable.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
+                result &= !channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
 
             // unit
             if (filters.ContainsKey("--include-unit"))
             {
 #warning Remove this special case check.
-                if (variable.Unit == null)
+                if (channel.Unit == null)
                 {
                     _logger.LogWarning("Unit 'null' value detected.");
                     result &= false;
                 }
                 else
                 {
-                    result &= Regex.IsMatch(variable.Unit, filters["--include-unit"]);
+                    result &= Regex.IsMatch(channel.Unit, filters["--include-unit"]);
                 }
             }
 
             if (filters.ContainsKey("--exclude-unit"))
             {
 #warning Remove this special case check.
-                if (variable.Unit == null)
+                if (channel.Unit == null)
                 {
                     _logger.LogWarning("Unit 'null' value detected.");
                     result &= true;
@@ -645,7 +645,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 }
                 else
                 {
-                    result &= !Regex.IsMatch(variable.Unit, filters["--exclude-unit"]);
+                    result &= !Regex.IsMatch(channel.Unit, filters["--exclude-unit"]);
                 }
             }
 

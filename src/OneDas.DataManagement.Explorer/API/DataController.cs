@@ -37,24 +37,24 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// Gets the requested data.
         /// </summary>
         /// <param name="projectId">The project identifier.</param>
-        /// <param name="variableId">The variable identifier.</param>
+        /// <param name="channelId">The channel identifier.</param>
         /// <param name="datasetId">The dataset identifier.</param>
         /// <param name="begin">Start date/time.</param>
         /// <param name="end">End date/time.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns></returns>
 
-        [HttpGet("{project-id}/variables/{variable-id}/datasets/{dataset-id}")]
+        [HttpGet("{project-id}/channels/{channel-id}/datasets/{dataset-id}")]
         public IActionResult GetData(
             [FromRoute(Name = "project-id")] string projectId,
-            [FromRoute(Name = "variable-id")] string variableId,
+            [FromRoute(Name = "channel-id")] string channelId,
             [FromRoute(Name = "dataset-id")] string datasetId,
             [BindRequired] DateTime begin,
             [BindRequired] DateTime end,
             CancellationToken cancellationToken)
         {
             projectId = WebUtility.UrlDecode(projectId);
-            variableId = WebUtility.UrlDecode(variableId);
+            channelId = WebUtility.UrlDecode(channelId);
             datasetId = WebUtility.UrlDecode(datasetId);
 
             var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
@@ -78,7 +78,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _stateManager.CheckState();
 
                 // dataset
-                var path = $"{projectId}/{variableId}/{datasetId}";
+                var path = $"{projectId}/{channelId}/{datasetId}";
 
                 if (!_databaseManager.Database.TryFindDataset(path, out var dataset))
                     return this.NotFound($"Could not find channel with name '{path}'.");

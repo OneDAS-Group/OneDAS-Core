@@ -26,6 +26,7 @@ namespace OneDas.Core.Tests
         {
             // arrange
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            dataReader.InitializeProjects();
 
             // act
             var actual = dataReader.GetProjectNames();
@@ -40,12 +41,13 @@ namespace OneDas.Core.Tests
         {
             // arrange
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            dataReader.InitializeProjects();
 
             // act
             var actual = dataReader.GetProject("/A/B/C");
-            var actualNames = actual.Variables.Select(variable => variable.Name).ToList();
-            var actualGroups = actual.Variables.Select(variable => variable.Group).ToList();
-            var actualUnits = actual.Variables.Select(variable => variable.Unit).ToList();
+            var actualNames = actual.Channels.Select(channel => channel.Name).ToList();
+            var actualGroups = actual.Channels.Select(channel => channel.Group).ToList();
+            var actualUnits = actual.Channels.Select(channel => channel.Unit).ToList();
 
             // assert
             var expectedNames = new List<string>() { "A" };
@@ -66,6 +68,7 @@ namespace OneDas.Core.Tests
         {
             // arrange
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            dataReader.InitializeProjects();
 
             // act
             var actual = dataReader.GetDataAvailabilityStatistics("/A/B/C", new DateTime(2020, 07, 1), new DateTime(2020, 08, 01));
@@ -83,10 +86,11 @@ namespace OneDas.Core.Tests
         {
             // arrange
             var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            dataReader.InitializeProjects();
 
             // act
             var project = dataReader.GetProject("/A/B/C");
-            var dataset = project.Variables.First().Datasets.First();
+            var dataset = project.Channels.First().Datasets.First();
 
             var begin = new DateTime(2020, 07, 07, 23, 00, 00);
             var end = new DateTime(2020, 07, 10, 00, 00, 00);

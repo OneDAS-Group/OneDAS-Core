@@ -83,7 +83,7 @@ class EthercatViewModel extends DataGatewayViewModelBase
                 alert(message)
             }
 
-            this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (x: SlaveInfoViewModel) => x.GetVariables()))
+            this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (x: SlaveInfoViewModel) => x.GetChannels()))
         }     
         else
         {
@@ -164,7 +164,7 @@ class EthercatViewModel extends DataGatewayViewModelBase
     {
         slaveInfo.DynamicData(await this.GetDynamicSlaveInfoDataAsync(slaveInfo))
 
-		this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (slaveInfo: SlaveInfoViewModel) => slaveInfo.GetVariables()))
+		this.DataPortSet(MapMany(this.RootSlaveInfo().GetDescendants(false), (slaveInfo: SlaveInfoViewModel) => slaveInfo.GetChannels()))
         this.SelectedSlaveInfo(null)
     }
 

@@ -280,7 +280,7 @@ namespace OneDas.DataManagement.Extensions
                             var reference = mainCache.FirstOrDefault(current => current.Id == project.Id);
 
                             if (reference != null)
-                                reference.Merge(project, VariableMergeMode.NewWins);
+                                reference.Merge(project, ChannelMergeMode.NewWins);
                             else
                                 mainCache.Add(project);
                         }
@@ -382,7 +382,7 @@ namespace OneDas.DataManagement.Extensions
                         if (H5I.is_valid(fileId) > 0)
                         {
                             var newProject = GeneralHelper.GetProject(fileId, projectId);
-                            project.Merge(newProject, VariableMergeMode.NewWins);
+                            project.Merge(newProject, ChannelMergeMode.NewWins);
                         }
                     }
                     finally

@@ -80,7 +80,7 @@ namespace OneDas.Core.Engine
 
         private List<(DataPort Source, DataPort Target)> _linkedDataPortSet;
         private Dictionary<SampleRateContainer, List<StorageContext>> _sampleRateToStorageContextMap;
-        private Dictionary<DataWriterExtensionLogicBase, List<VariableDescription>> _dataWriterToVariableDescriptionMap;
+        private Dictionary<DataWriterExtensionLogicBase, List<ChannelDescription>> _dataWriterToChannelDescriptionMap;
         private Dictionary<DataWriterExtensionLogicBase, List<List<IBuffer>>> _dataWriterToBuffersMap;
         private Dictionary<DataGatewayExtensionLogicBase, bool> _hasValidDataSet;
 
@@ -505,13 +505,13 @@ namespace OneDas.Core.Engine
                 });
             });
 
-            // prepare _dataWriterToVariableDescriptionMap
-            _dataWriterToVariableDescriptionMap = new Dictionary<DataWriterExtensionLogicBase, List<VariableDescription>>();
+            // prepare _dataWriterToChannelDescriptionMap
+            _dataWriterToChannelDescriptionMap = new Dictionary<DataWriterExtensionLogicBase, List<ChannelDescription>>();
             _dataWriterToBuffersMap = new Dictionary<DataWriterExtensionLogicBase, List<List<IBuffer>>>();
 
             this.Project.DataWriterSet.ForEach(dataWriter =>
             {
-                _dataWriterToVariableDescriptionMap[dataWriter] = new List<VariableDescription>();
+                _dataWriterToChannelDescriptionMap[dataWriter] = new List<ChannelDescription>();
                 _dataWriterToBuffersMap[dataWriter] = new List<List<IBuffer>>();
 
                 Enumerable.Range(0, BUFFER_COUNT).ToList().ForEach(index => _dataWriterToBuffersMap[dataWriter].Add(new List<IBuffer>()));
@@ -545,8 +545,8 @@ namespace OneDas.Core.Engine
                         _dataWriterToBuffersMap[dataWriter][i].Add(buffers[i]);
                     }
 
-                    // _dataWriterToVariableDescriptionMap
-                    _dataWriterToVariableDescriptionMap[dataWriter].Add(new VariableDescription(
+                    // _dataWriterToChannelDescriptionMap
+                    _dataWriterToChannelDescriptionMap[dataWriter].Add(new ChannelDescription(
                         channelHubSettings.Guid,
                         channelHubSettings.Name,
                         sampleRate.ToUnitString(),
@@ -604,7 +604,7 @@ namespace OneDas.Core.Engine
                 Directory.CreateDirectory(baseDirectoryPath);
 
                 dataWriterContext = new DataWriterContext("OneDAS", baseDirectoryPath, this.Project.Settings.Description, customMetadataEntrySet);
-                dataWriter.Configure(dataWriterContext, _dataWriterToVariableDescriptionMap[dataWriter]);
+                dataWriter.Configure(dataWriterContext, _dataWriterToChannelDescriptionMap[dataWriter]);
             });
         }
 

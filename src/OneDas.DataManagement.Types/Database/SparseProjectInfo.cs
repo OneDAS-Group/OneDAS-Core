@@ -19,22 +19,22 @@ namespace OneDas.DataManagement.Database
 
         #region "Methods"
 
-        public List<VariableDescription> ToVariableDescriptions()
+        public List<ChannelDescription> ToChannelDescriptions()
         {
-            return this.Variables.SelectMany(variable =>
+            return this.Channels.SelectMany(channel =>
             {
-                return variable.Datasets.Select(dataset =>
+                return channel.Datasets.Select(dataset =>
                 {
-                    var guid = new Guid(variable.Id);
-                    var displayName = variable.Name;
+                    var guid = new Guid(channel.Id);
+                    var displayName = channel.Name;
                     var datasetName = dataset.Id;
-                    var groupName = variable.Group;
+                    var groupName = channel.Group;
                     var dataType = dataset.DataType;
                     var sampleRate = dataset.GetSampleRate();
-                    var unit = variable.Unit;
-                    var transferFunctions = variable.TransferFunctions;
+                    var unit = channel.Unit;
+                    var transferFunctions = channel.TransferFunctions;
 
-                    return new VariableDescription(guid,
+                    return new ChannelDescription(guid,
                                                    displayName,
                                                    datasetName,
                                                    groupName,

@@ -42,9 +42,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private PropertyChangedEventHandler _propertyChanged;
         private AuthenticationStateProvider _authenticationStateProvider;
 
-        private List<VariableInfoViewModel> _variableGroup;
+        private List<ChannelInfoViewModel> _channelGroup;
         private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
-        private Dictionary<ProjectContainer, List<VariableInfoViewModel>> _projectContainerToVariablesMap;
+        private Dictionary<ProjectContainer, List<ChannelInfoViewModel>> _projectContainerToChannelsMap;
 
         #endregion
 
@@ -78,13 +78,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             this.SampleRateValues = this.ProjectContainersInfo.Accessible.SelectMany(projectContainer =>
             {
-                return projectContainer.Project.Variables.SelectMany(variable =>
+                return projectContainer.Project.Channels.SelectMany(channel =>
                 {
-                    return variable.Datasets.Select(dataset => dataset.Id.Split('_')[0]);
+                    return channel.Datasets.Select(dataset => dataset.Id.Split('_')[0]);
                 });
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
 
-            this.InitializeProjectContainerToVariableMap();
+            this.InitializeProjectContainerToChannelMap();
             this.InitializeSampleRateToDatasetsMap();
 
             // state manager
@@ -216,12 +216,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 if (this.ProjectContainersInfo.Accessible.Contains(value))
                 {
-                    this.UpdateGroupedVariables();
+                    this.UpdateGroupedChannels();
                     this.UpdateAttachments();
                 }
                 else
                 {
-                    this.GroupedVariables = null;
+                    this.GroupedChannels = null;
                     this.Attachments = null;
                 }
             }
@@ -231,12 +231,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public SplittedProjectContainers ProjectContainersInfo { get; }
 
-        public Dictionary<string, List<VariableInfoViewModel>> GroupedVariables { get; private set; }
+        public Dictionary<string, List<ChannelInfoViewModel>> GroupedChannels { get; private set; }
 
-        public List<VariableInfoViewModel> VariableGroup
+        public List<ChannelInfoViewModel> ChannelGroup
         {
-            get { return _variableGroup; }
-            set { base.SetProperty(ref _variableGroup, value); }
+            get { return _channelGroup; }
+            set { base.SetProperty(ref _channelGroup, value); }
         }
 
         public string SearchString
@@ -245,7 +245,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set
             {
                 base.SetProperty(ref _searchString, value);
-                this.UpdateGroupedVariables();
+                this.UpdateGroupedChannels();
             }
         }
 
@@ -449,19 +449,19 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 var pathParts = value.Split('/');
                 var projectName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
-                var variableName = pathParts[4];
+                var channelName = pathParts[4];
                 var datasetName = pathParts[5];
 
                 var projectContainer = this.ProjectContainersInfo.Accessible.FirstOrDefault(current => current.Id == projectName);
 
                 if (projectContainer != null)
                 {
-                    var variables = _projectContainerToVariablesMap[projectContainer];
-                    var variable = variables.FirstOrDefault(current => current.Id == variableName);
+                    var channels = _projectContainerToChannelsMap[projectContainer];
+                    var channel = channels.FirstOrDefault(current => current.Id == channelName);
 
-                    if (variable != null)
+                    if (channel != null)
                     {
-                        var dataset = variable.Datasets.FirstOrDefault(current => current.Name == datasetName);
+                        var dataset = channel.Datasets.FirstOrDefault(current => current.Name == datasetName);
 
                         if (dataset != null)
                             selectedDatasets.Add(dataset);
@@ -517,43 +517,43 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }
         }
 
-        private void UpdateGroupedVariables()
+        private void UpdateGroupedChannels()
         {
             if (this.ProjectContainer != null)
             {
-                this.GroupedVariables = new Dictionary<string, List<VariableInfoViewModel>>();
+                this.GroupedChannels = new Dictionary<string, List<ChannelInfoViewModel>>();
 
-                foreach (var variable in _projectContainerToVariablesMap[this.ProjectContainer])
+                foreach (var channel in _projectContainerToChannelsMap[this.ProjectContainer])
                 {
-                    if (this.VariableMatchesFilter(variable))
+                    if (this.ChannelMatchesFilter(channel))
                     {
-                        var groupNames = variable.Group.Split('\n');
+                        var groupNames = channel.Group.Split('\n');
 
                         foreach (string groupName in groupNames)
                         {
-                            var success = this.GroupedVariables.TryGetValue(groupName, out var group);
+                            var success = this.GroupedChannels.TryGetValue(groupName, out var group);
 
                             if (!success)
                             {
-                                group = new List<VariableInfoViewModel>();
-                                this.GroupedVariables[groupName] = group;
+                                group = new List<ChannelInfoViewModel>();
+                                this.GroupedChannels[groupName] = group;
                             }
 
-                            group.Add(variable);
+                            group.Add(channel);
                         }
                     }
                 }
 
-                foreach (var entry in this.GroupedVariables)
+                foreach (var entry in this.GroupedChannels)
                 {
                     entry.Value.Sort((x, y) => x.Name.CompareTo(y.Name));
                 }
             }
 
-            if (this.GroupedVariables.Any())
-                this.VariableGroup = this.GroupedVariables.OrderBy(entry => entry.Key).First().Value;
+            if (this.GroupedChannels.Any())
+                this.ChannelGroup = this.GroupedChannels.OrderBy(entry => entry.Key).First().Value;
             else
-                this.VariableGroup = null;
+                this.ChannelGroup = null;
         }
 
         private void UpdateExportConfiguration()
@@ -564,28 +564,28 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }).ToList();
         }
 
-        private bool VariableMatchesFilter(VariableInfoViewModel variable)
+        private bool ChannelMatchesFilter(ChannelInfoViewModel channel)
         {
             if (string.IsNullOrWhiteSpace(this.SearchString))
                 return true;
 
-            if (variable.Name.Contains(this.SearchString, StringComparison.OrdinalIgnoreCase) 
-             || variable.Description.Contains(this.SearchString, StringComparison.OrdinalIgnoreCase))
+            if (channel.Name.Contains(this.SearchString, StringComparison.OrdinalIgnoreCase) 
+             || channel.Description.Contains(this.SearchString, StringComparison.OrdinalIgnoreCase))
                 return true;
 
             return false;
         }
 
-        private void InitializeProjectContainerToVariableMap()
+        private void InitializeProjectContainerToChannelMap()
         {
-            _projectContainerToVariablesMap = new Dictionary<ProjectContainer, List<VariableInfoViewModel>>();
+            _projectContainerToChannelsMap = new Dictionary<ProjectContainer, List<ChannelInfoViewModel>>();
 
             foreach (var projectContainer in this.ProjectContainersInfo.Accessible)
             {
-                _projectContainerToVariablesMap[projectContainer] = projectContainer.Project.Variables.Select(variable =>
+                _projectContainerToChannelsMap[projectContainer] = projectContainer.Project.Channels.Select(channel =>
                 {
-                    var variableMeta = projectContainer.ProjectMeta.Variables.First(variableMeta => variableMeta.Id == variable.Id);
-                    return new VariableInfoViewModel(variable, variableMeta);
+                    var channelMeta = projectContainer.ProjectMeta.Channels.First(channelMeta => channelMeta.Id == channel.Id);
+                    return new ChannelInfoViewModel(channel, channelMeta);
                 }).ToList();
             }
         }

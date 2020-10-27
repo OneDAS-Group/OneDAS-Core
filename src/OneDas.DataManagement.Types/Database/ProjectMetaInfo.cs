@@ -13,7 +13,7 @@ namespace OneDas.DataManagement.Database
             this.ResponsiblePerson = string.Empty;
             this.ShortDescription = string.Empty;
             this.LongDescription = string.Empty;
-            this.Variables = new List<VariableMetaInfo>();
+            this.Channels = new List<ChannelMetaInfo>();
         }
 
         private ProjectMetaInfo()
@@ -33,7 +33,7 @@ namespace OneDas.DataManagement.Database
 
         public string LongDescription { get; set; }
 
-        public List<VariableMetaInfo> Variables { get; set; }
+        public List<ChannelMetaInfo> Channels { get; set; }
 
         #endregion
 
@@ -47,19 +47,19 @@ namespace OneDas.DataManagement.Database
             if (string.IsNullOrWhiteSpace(this.LongDescription))
                 this.LongDescription = "<no description available>";
 
-            // create missing variable meta instances
-            var variablesToAdd = new List<VariableMetaInfo>();
+            // create missing channel meta instances
+            var channelsToAdd = new List<ChannelMetaInfo>();
 
-            foreach (var referenceVariable in project.Variables)
+            foreach (var referenceChannel in project.Channels)
             {
-                var exists = this.Variables.Any(variable => variable.Id == referenceVariable.Id);
+                var exists = this.Channels.Any(channel => channel.Id == referenceChannel.Id);
 
                 if (!exists)
-                    variablesToAdd.Add(new VariableMetaInfo(referenceVariable.Id));
+                    channelsToAdd.Add(new ChannelMetaInfo(referenceChannel.Id));
             }
 
-            this.Variables.AddRange(variablesToAdd);
-            this.Variables = this.Variables.OrderBy(variable => variable.Id).ToList();
+            this.Channels.AddRange(channelsToAdd);
+            this.Channels = this.Channels.OrderBy(channel => channel.Id).ToList();
         }
 
         #endregion

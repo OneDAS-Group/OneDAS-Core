@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FamosWriter_DataSizeExceedsLimit" xml:space="preserve">
-    <value>The size of data to write into the variable buffer exceeds the limit of 2e+9 bytes per variable buffer. </value>
+    <value>The size of data to write into the channel buffer exceeds the limit of 2e+9 bytes per channel buffer. </value>
   </data>
   <data name="FamosWriter_SampleRateTooLow" xml:space="preserve">
     <value>The sample rate is too low.</value>

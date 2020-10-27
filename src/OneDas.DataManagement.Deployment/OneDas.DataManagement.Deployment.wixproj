@@ -74,7 +74,7 @@
         <AutogenerateGuids>true</AutogenerateGuids>
         <ComponentGroupName>HeatComponentGroup</ComponentGroupName>
         <DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
-        <PreprocessorVariable>var.WixHarvestPath</PreprocessorVariable>
+        <PreprocessorChannel>var.WixHarvestPath</PreprocessorChannel>
         <SuppressRegistry>true</SuppressRegistry>
         <SuppressRootDirectory>true</SuppressRootDirectory>
         <ToolPath>$(WixToolPath)</ToolPath>
@@ -82,7 +82,7 @@
       </HarvestDirectory>
     </ItemGroup>
 	
-    <!-- <HeatDirectory OutputFile="$(ProjectDir)\ProductInstallFiles.wxs" AutogenerateGuids="true" ComponentGroupName="HeatComponentGroup" Directory="$(WixHarvestPath)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.WixHarvestPath" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" /> -->
+    <!-- <HeatDirectory OutputFile="$(ProjectDir)\ProductInstallFiles.wxs" AutogenerateGuids="true" ComponentGroupName="HeatComponentGroup" Directory="$(WixHarvestPath)" DirectoryRefId="INSTALLFOLDER" PreprocessorChannel="var.WixHarvestPath" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" /> -->
 	
   </Target>
   

@@ -30,15 +30,15 @@ namespace OneDas.DataManagement.Types.Hdf
 
                     if (groupId > -1)
                     {
-                        var currentVariable = project.Variables.FirstOrDefault(variable => variable.Id == name);
+                        var currentChannel = project.Channels.FirstOrDefault(channel => channel.Id == name);
 
-                        if (currentVariable == null)
+                        if (currentChannel == null)
                         {
-                            currentVariable = new VariableInfo(name, project);
-                            project.Variables.Add(currentVariable);
+                            currentChannel = new ChannelInfo(name, project);
+                            project.Channels.Add(currentChannel);
                         }
 
-                        currentVariable.Update(groupId, formatVersion);
+                        currentChannel.Update(groupId, formatVersion);
                     }
                 }
                 finally
@@ -50,7 +50,7 @@ namespace OneDas.DataManagement.Types.Hdf
             }
         }
 
-        public static void Update(this VariableInfo variable, long variableGroupId, int formatVersion)
+        public static void Update(this ChannelInfo channel, long channelGroupId, int formatVersion)
         {
             var idx = 0UL;
 
@@ -60,26 +60,26 @@ namespace OneDas.DataManagement.Types.Hdf
             }
             else
             {
-                variable.Name = IOHelper.ReadAttribute<string>(variableGroupId, "name_set").Last();
-                variable.Group = IOHelper.ReadAttribute<string>(variableGroupId, "group_set").Last();
+                channel.Name = IOHelper.ReadAttribute<string>(channelGroupId, "name_set").Last();
+                channel.Group = IOHelper.ReadAttribute<string>(channelGroupId, "group_set").Last();
 
                 if (formatVersion != 1)
                 {
-                    variable.Unit = IOHelper.ReadAttribute<string>(variableGroupId, "unit_set").LastOrDefault();
+                    channel.Unit = IOHelper.ReadAttribute<string>(channelGroupId, "unit_set").LastOrDefault();
 
                     // sometimes the unit property is null in the HDF file
-                    if (string.IsNullOrWhiteSpace(variable.Unit))
-                        variable.Unit = string.Empty;
+                    if (string.IsNullOrWhiteSpace(channel.Unit))
+                        channel.Unit = string.Empty;
 
                     // hdf_transfer_function_t to TransferFunction
-                    var hdf_transfer_function_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(variableGroupId, "transfer_function_set");
-                    variable.TransferFunctions = hdf_transfer_function_set.Select(tf => tf.ToTransferFunction()).ToList();
+                    var hdf_transfer_function_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(channelGroupId, "transfer_function_set");
+                    channel.TransferFunctions = hdf_transfer_function_set.Select(tf => tf.ToTransferFunction()).ToList();
                 }
             }
 
-            H5L.iterate(variableGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero);
+            H5L.iterate(channelGroupId, H5.index_t.NAME, H5.iter_order_t.INC, ref idx, Callback, IntPtr.Zero);
 
-            int Callback(long variableGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
+            int Callback(long channelGroupId2, IntPtr intPtrName, ref H5L.info_t info, IntPtr userDataPtr)
             {
                 long datasetId = -1;
 
@@ -87,16 +87,16 @@ namespace OneDas.DataManagement.Types.Hdf
                 {
                     var name = Marshal.PtrToStringAnsi(intPtrName);
 
-                    if (H5L.exists(variableGroupId2, name) > 0)
+                    if (H5L.exists(channelGroupId2, name) > 0)
                     {
-                        datasetId = H5D.open(variableGroupId2, name);
+                        datasetId = H5D.open(channelGroupId2, name);
 
-                        var currentDataset = variable.Datasets.FirstOrDefault(dataset => dataset.Id == name);
+                        var currentDataset = channel.Datasets.FirstOrDefault(dataset => dataset.Id == name);
 
                         if (currentDataset == null)
                         {
-                            currentDataset = new DatasetInfo(name, variable);
-                            variable.Datasets.Add(currentDataset);
+                            currentDataset = new DatasetInfo(name, channel);
+                            channel.Datasets.Add(currentDataset);
                         }
 
                         currentDataset.Update(datasetId);

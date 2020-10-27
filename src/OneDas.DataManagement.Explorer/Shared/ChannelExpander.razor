@@ -1,47 +1,47 @@
-﻿<div class="variable-expander" @onclick="this.OnClick" @onmouseover="() => _showSampleRates = true" @onmouseout="() => _showSampleRates = false">
-    <div class="variable-name">
-        @if (string.IsNullOrWhiteSpace(this.Variable.Unit))
+﻿<div class="channel-expander" @onclick="this.OnClick" @onmouseover="() => _showSampleRates = true" @onmouseout="() => _showSampleRates = false">
+    <div class="channel-name">
+        @if (string.IsNullOrWhiteSpace(this.Channel.Unit))
         {
-            @this.Variable.Name
+            @this.Channel.Name
         }
         else
         {
-            <span>@this.Variable.Name / @this.Variable.Unit</span>
+            <span>@this.Channel.Name / @this.Channel.Unit</span>
         }
 
-        <div class="variable-special-info">
+        <div class="channel-special-info">
             @if (this.AppState.IsEditEnabled)
             {
-                <input type="text" @bind-value="this.Variable.SpecialInfo" />
+                <input type="text" @bind-value="this.Channel.SpecialInfo" />
             }
             else
             {
-                @if (!string.IsNullOrWhiteSpace(this.Variable.SpecialInfo))
+                @if (!string.IsNullOrWhiteSpace(this.Channel.SpecialInfo))
                 {
                     <span><i class="fas fa-exclamation-triangle"></i></span>
-                    @this.Variable.SpecialInfo
+                    @this.Channel.SpecialInfo
                 }
             }
         </div>
 
-        <div class="variable-sample-rates">
+        <div class="channel-sample-rates">
             @if (_showSampleRates)
             {
                 @foreach (var sampleRate in this.GetSampleRates())
                 {
-                    <div class="variable-sample-rate" @onclick="() => this.AppState.SampleRate = sampleRate">
+                    <div class="channel-sample-rate" @onclick="() => this.AppState.SampleRate = sampleRate">
                         @sampleRate
                     </div>
                 }
             }
         </div>
 
-        <div class="variable-datasets ml-auto">
+        <div class="channel-datasets ml-auto">
             @if (_filteredDatasets.Any())
             {
                 @foreach (var dataset in _filteredDatasets)
                 {
-                    <div class="variable-dataset @(this.AppState.IsDatasetSeleced(dataset) ? "selected" : "")"
+                    <div class="channel-dataset @(this.AppState.IsDatasetSeleced(dataset) ? "selected" : "")"
                          @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
                         @dataset.Name
                     </div>
@@ -49,14 +49,14 @@
             }
         </div>
     </div>
-    <span class="variable-description">
+    <span class="channel-description">
         @if (this.AppState.IsEditEnabled)
         {
-            <input type="text" @bind-value="this.Variable.Description" />
+            <input type="text" @bind-value="this.Channel.Description" />
         }
         else
         {
-            @this.Variable.Description
+            @this.Channel.Description
         }
     </span>
 </div>

@@ -47,38 +47,38 @@ namespace OneDas.DataManagement.Database
         public SparseProjectInfo ToSparseProject(List<DatasetInfo> datasets)
         {
             var project = new SparseProjectInfo(this.Id);
-            var variables = datasets.Select(dataset => (VariableInfo)dataset.Parent).Distinct().ToList();
+            var channels = datasets.Select(dataset => (ChannelInfo)dataset.Parent).Distinct().ToList();
 
-            project.Variables = variables.Select(reference =>
+            project.Channels = channels.Select(reference =>
             {
-                var variableMeta = this.ProjectMeta.Variables.First(variableMeta => variableMeta.Id == reference.Id);
+                var channelMeta = this.ProjectMeta.Channels.First(channelMeta => channelMeta.Id == reference.Id);
 
-                var variable = new VariableInfo(reference.Id, project)
+                var channel = new ChannelInfo(reference.Id, project)
                 {
                     Name = reference.Name,
                     Group = reference.Group,
 
-                    Unit = !string.IsNullOrWhiteSpace(variableMeta.Unit) 
-                        ? variableMeta.Unit
+                    Unit = !string.IsNullOrWhiteSpace(channelMeta.Unit) 
+                        ? channelMeta.Unit
                         : reference.Unit,
 
-                    TransferFunctions = variableMeta.TransferFunctions.Any()
-                        ? variableMeta.TransferFunctions
+                    TransferFunctions = channelMeta.TransferFunctions.Any()
+                        ? channelMeta.TransferFunctions
                         : reference.TransferFunctions
                 };
 
-                var referenceDatasets = datasets.Where(dataset => (VariableInfo)dataset.Parent == reference);
+                var referenceDatasets = datasets.Where(dataset => (ChannelInfo)dataset.Parent == reference);
 
-                variable.Datasets = referenceDatasets.Select(referenceDataset =>
+                channel.Datasets = referenceDatasets.Select(referenceDataset =>
                 {
-                    return new DatasetInfo(referenceDataset.Id, variable)
+                    return new DatasetInfo(referenceDataset.Id, channel)
                     {
                         DataType = referenceDataset.DataType,
                         IsNative = referenceDataset.IsNative
                     };
                 }).ToList();
 
-                return variable;
+                return channel;
             }).ToList();
 
             return project;

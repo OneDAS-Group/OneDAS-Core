@@ -49,17 +49,17 @@ namespace OneDas.Extension.OpcUa
 
                 //
                 //FolderState myFolder = CreateFolder(root, "/MyFolder", "MyFolder");
-                //this.VariableSet.Add(CreateVariable(root, "/MyFolder/MyNode1", "Var1", BuiltInType.Float, ValueRanks.Scalar));
+                //this.ChannelSet.Add(CreateChannel(root, "/MyFolder/MyNode1", "Var1", BuiltInType.Float, ValueRanks.Scalar));
 
                 _settings.GetOutputModuleSet().ForEach(module =>
                 {
                     string name;
 
-                    this.VariableSet.Add(this.CreateVariable(root, "variable_0", "variable_0", BuiltInType.Int64, ValueRanks.Scalar));
+                    this.VariableSet.Add(this.CreateVariable(root, "channel_0", "channel_0", BuiltInType.Int64, ValueRanks.Scalar));
 
                     for (int i = 0; i < module.Size; i++)
                     {
-                        name = $"variable_{count+1}";
+                        name = $"channel_{count+1}";
                         this.VariableSet.Add(this.CreateVariable(root, $"{name}", name, OpcUaUtilities.GetOpcUaDataTypeFromOneDasDataType(module.DataType), ValueRanks.Scalar));
                         count++;
                     }
@@ -95,47 +95,47 @@ namespace OneDas.Extension.OpcUa
 
         private BaseDataVariableState CreateVariable(NodeState parent, string path, string name, BuiltInType dataType, int valueRank)
         {
-            return CreateVariable(parent, path, name, (uint)dataType, valueRank);
+            return this.CreateVariable(parent, path, name, (uint)dataType, valueRank);
         }
 
         private BaseDataVariableState CreateVariable(NodeState parent, string path, string name, NodeId dataType, int valueRank)
         {
-            BaseDataVariableState variable = new BaseDataVariableState(parent);
+            BaseDataVariableState channel = new BaseDataVariableState(parent);
 
-            variable.SymbolicName = name;
-            variable.ReferenceTypeId = ReferenceTypes.Organizes;
-            variable.TypeDefinitionId = VariableTypeIds.BaseDataVariableType;
-            variable.NodeId = new NodeId(path, NamespaceIndex);
-            variable.BrowseName = new QualifiedName(path, NamespaceIndex);
-            variable.DisplayName = new LocalizedText("en", name);
-            variable.WriteMask = AttributeWriteMask.DisplayName | AttributeWriteMask.Description;
-            variable.UserWriteMask = AttributeWriteMask.DisplayName | AttributeWriteMask.Description;
-            variable.DataType = dataType;
-            variable.ValueRank = valueRank;
-            variable.AccessLevel = AccessLevels.CurrentReadOrWrite;
-            variable.UserAccessLevel = AccessLevels.CurrentReadOrWrite;
-            variable.Historizing = false;
-            variable.StatusCode = StatusCodes.Good;
-            variable.Timestamp = DateTime.UtcNow;
+            channel.SymbolicName = name;
+            channel.ReferenceTypeId = ReferenceTypes.Organizes;
+            channel.TypeDefinitionId = VariableTypeIds.BaseDataVariableType;
+            channel.NodeId = new NodeId(path, NamespaceIndex);
+            channel.BrowseName = new QualifiedName(path, NamespaceIndex);
+            channel.DisplayName = new LocalizedText("en", name);
+            channel.WriteMask = AttributeWriteMask.DisplayName | AttributeWriteMask.Description;
+            channel.UserWriteMask = AttributeWriteMask.DisplayName | AttributeWriteMask.Description;
+            channel.DataType = dataType;
+            channel.ValueRank = valueRank;
+            channel.AccessLevel = AccessLevels.CurrentReadOrWrite;
+            channel.UserAccessLevel = AccessLevels.CurrentReadOrWrite;
+            channel.Historizing = false;
+            channel.StatusCode = StatusCodes.Good;
+            channel.Timestamp = DateTime.UtcNow;
 
             // this will causes errors if e.g. the data type is actually int
-            variable.Value = (float)0.0;
+            channel.Value = (float)0.0;
 
             if (valueRank == ValueRanks.OneDimension)
             {
-                variable.ArrayDimensions = new ReadOnlyList<uint>(new List<uint> { 0 });
+                channel.ArrayDimensions = new ReadOnlyList<uint>(new List<uint> { 0 });
             }
             else if (valueRank == ValueRanks.TwoDimensions)
             {
-                variable.ArrayDimensions = new ReadOnlyList<uint>(new List<uint> { 0, 0 });
+                channel.ArrayDimensions = new ReadOnlyList<uint>(new List<uint> { 0, 0 });
             }
 
             if (parent != null)
             {
-                parent.AddChild(variable);
+                parent.AddChild(channel);
             }
 
-            return variable;
+            return channel;
         }
 
         protected override NodeHandle GetManagerHandle(ServerSystemContext context, NodeId nodeId, IDictionary<NodeId, NodeState> cache)

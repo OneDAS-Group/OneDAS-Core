@@ -288,18 +288,18 @@ namespace OneDas {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The buffer type is invalid. ähnelt.
         /// </summary>
-        internal static string VariableContext_BufferTypeInvalid {
+        internal static string ChannelContext_BufferTypeInvalid {
             get {
-                return ResourceManager.GetString("VariableContext_BufferTypeInvalid", resourceCulture);
+                return ResourceManager.GetString("ChannelContext_BufferTypeInvalid", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IBuffer. ähnelt.
         /// </summary>
-        internal static string VariableDescription_BufferTypeInvalid {
+        internal static string ChannelDescription_BufferTypeInvalid {
             get {
-                return ResourceManager.GetString("VariableDescription_BufferTypeInvalid", resourceCulture);
+                return ResourceManager.GetString("ChannelDescription_BufferTypeInvalid", resourceCulture);
             }
         }
     }

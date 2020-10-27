@@ -61,7 +61,7 @@ namespace OneDas.Extension.Famos {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The size of data to write into the variable buffer exceeds the limit of 2e+9 bytes per variable buffer.  ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die The size of data to write into the channel buffer exceeds the limit of 2e+9 bytes per channel buffer.  ähnelt.
         /// </summary>
         internal static string FamosWriter_DataSizeExceedsLimit {
             get {

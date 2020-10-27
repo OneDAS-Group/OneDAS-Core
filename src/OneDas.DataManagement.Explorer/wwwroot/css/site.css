@@ -491,7 +491,7 @@ app {
     cursor: pointer;
 }
 
-.available-variables {
+.available-channels {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -501,30 +501,30 @@ app {
     margin-top: 15px;
 }
 
-.variable-expander {
+.channel-expander {
     display: flex;
     flex-direction: column;
     height: 2.8rem;
     padding: 2px 2px 2px 2px;
 }
 
-    .variable-expander:hover {
+    .channel-expander:hover {
         color: var(--hover-color) !important;
         background-color: var(--hover-bg-color);
     }
 
-.variable-name {
+.channel-name {
     display: flex;
     flex-direction: row;
 }
 
-.variable-datasets {
+.channel-datasets {
     display: flex;
     flex-direction: row;
     cursor: pointer;
 }
 
-    .variable-datasets div {
+    .channel-datasets div {
         font-size: 0.9rem;
         padding: 2px 4px 2px 4px;
         margin: 0px 2px 0px 2px;
@@ -532,38 +532,38 @@ app {
         color: var(--font-color-subtitle);
     }
 
-        .variable-datasets div:hover {
+        .channel-datasets div:hover {
             color: var(--hover-color);
             border: 1px solid var(--hover-color);
         }
 
-.variable-dataset.selected {
+.channel-dataset.selected {
     color: var(--active-color) !important;
     border: 1px solid var(--active-color) !important;
 }
 
-.variable-sample-rates {
+.channel-sample-rates {
     display: flex;
     flex-direction: row;
     cursor: pointer;
 }
 
-.variable-sample-rate {
+.channel-sample-rate {
     font-size: 0.9rem;
     padding: 0 0.5rem 0 0.5rem;
     color: var(--font-color-subtitle);
 }
 
-    .variable-sample-rate:hover {
+    .channel-sample-rate:hover {
         color: var(--hover-color);
     }
 
-    .variable-sample-rate svg {
+    .channel-sample-rate svg {
         margin-left: 5px;
         margin-right: 2px;
     }
 
-.variable-description {
+.channel-description {
     font-size: 0.9rem;
     color: var(--font-color-subtitle);
     white-space: nowrap;
@@ -571,11 +571,11 @@ app {
     text-overflow: ellipsis;
 }
 
-    .variable-description > input {
+    .channel-description > input {
         width: 98%;
     }
 
-.variable-special-info {
+.channel-special-info {
     font-size: 0.9rem;
     color: var(--font-color-highlight);
     white-space: nowrap;
@@ -583,11 +583,11 @@ app {
     text-overflow: ellipsis;
 }
 
-    .variable-special-info svg {
+    .channel-special-info svg {
         margin-left: 0.5rem;
     }
 
-    .variable-special-info input {
+    .channel-special-info input {
         margin-left: 0.5rem;
     }
 
@@ -636,7 +636,7 @@ app {
         padding-bottom: 5px;
     }
 
-.variable-box {
+.channel-box {
     flex: 2;
     margin: 15px;
     background-color: var(--box-color);
@@ -644,18 +644,18 @@ app {
     min-height: 0;
 }
 
-.variable-box-sub {
+.channel-box-sub {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-    .variable-box-sub button {
+    .channel-box-sub button {
         margin-top: auto;
         margin-right: 15px;
     }
 
-.selected-variables {
+.selected-channels {
     display: flex;
     flex-direction: column;
     cursor: pointer;
@@ -666,14 +666,14 @@ app {
     scrollbar-width: thin;
 }
 
-    .selected-variables > span {
+    .selected-channels > span {
         margin-top: auto;
         margin-bottom: auto;
         margin-right: 10px;
         align-self: center;
     }
 
-.selected-variable {
+.selected-channel {
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -681,18 +681,18 @@ app {
     white-space: nowrap;
 }
 
-    .selected-variable:hover {
+    .selected-channel:hover {
         background-color: rgba(0, 0, 0, 0.05);
     }
 
-.selected-variable-name {
+.selected-channel-name {
     text-overflow: ellipsis;
     overflow: hidden;
     font-weight: 500;
     margin-bottom: 3px;
 }
 
-.selected-variable-project {
+.selected-channel-project {
     font-size: 0.8rem;
     color: var(--font-color-subtitle);
     text-overflow: ellipsis;

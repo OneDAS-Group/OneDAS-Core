@@ -5,11 +5,11 @@ using System.Diagnostics;
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Id,nq}")]
-    public class VariableMetaInfo
+    public class ChannelMetaInfo
     {
         #region "Constructors"
 
-        public VariableMetaInfo(string id)
+        public ChannelMetaInfo(string id)
         {
             this.Id = id;
             this.Description = string.Empty;
@@ -18,7 +18,7 @@ namespace OneDas.DataManagement.Database
             this.TransferFunctions = new List<TransferFunction>();
         }
 
-        private VariableMetaInfo()
+        private ChannelMetaInfo()
         {
             //
         }

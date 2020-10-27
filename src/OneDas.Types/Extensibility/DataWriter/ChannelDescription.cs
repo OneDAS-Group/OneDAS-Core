@@ -5,12 +5,12 @@ using System.Collections.Generic;
 
 namespace OneDas.Extensibility
 {
-    public class VariableDescription
+    public class ChannelDescription
     {
         #region "Constructors"
 
-        public VariableDescription(Guid guid,
-                                   string variableName,
+        public ChannelDescription(Guid guid,
+                                   string channelName,
                                    string datasetName,
                                    string group,
                                    OneDasDataType dataType,
@@ -20,7 +20,7 @@ namespace OneDas.Extensibility
                                    BufferType bufferType)
         {
             this.Guid = guid;
-            this.VariableName = variableName;
+            this.ChannelName = channelName;
             this.DatasetName = datasetName;
             this.Group = group;
             this.DataType = dataType;
@@ -36,7 +36,7 @@ namespace OneDas.Extensibility
 
         public Guid Guid { get; set; }
 
-        public string VariableName { get; private set; }
+        public string ChannelName { get; private set; }
 
         public string DatasetName { get; private set; }
 
