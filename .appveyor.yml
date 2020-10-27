@@ -3,7 +3,7 @@ clone_depth: 1
 stack: node 8
 
 image:
-  - Visual Studio 2019
+  - Visual Studio 2019 Preview
   - Ubuntu
 
 environment:
