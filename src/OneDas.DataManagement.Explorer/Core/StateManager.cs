@@ -7,7 +7,7 @@ namespace OneDas.DataManagement.Explorer.Core
 {
 #warning: stop all running downloads when state changes to inactive
 
-    public class OneDasExplorerStateManager : BindableBase
+    public class StateManager : BindableBase
     {
         #region Fields
 
@@ -25,7 +25,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Constructors
 
-        public OneDasExplorerStateManager(OneDasDatabaseManager databaseManager,
+        public StateManager(OneDasDatabaseManager databaseManager,
                                           ILoggerFactory loggerFactory,
                                           OneDasExplorerUserManager userManager,
                                           OneDasExplorerOptions options)

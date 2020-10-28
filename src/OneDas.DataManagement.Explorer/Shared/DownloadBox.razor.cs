@@ -11,7 +11,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
+				if (e.PropertyName == nameof(AppStateViewModel.ExportParameters))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}

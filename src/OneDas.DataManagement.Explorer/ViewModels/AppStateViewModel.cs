@@ -24,6 +24,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         private string _searchString;
         private string _downloadMessage;
+        private string _sampleRate;
 
         private double _downloadProgress;
         private double _visualizeProgress;
@@ -52,7 +53,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public AppStateViewModel(IJSRuntime jsRuntime,
                                  AuthenticationStateProvider authenticationStateProvider,
-                                 OneDasExplorerStateManager stateManager,
+                                 StateManager stateManager,
                                  OneDasDatabaseManager databaseManager,
                                  OneDasExplorerOptions options,
                                  DataService dataService)
@@ -90,7 +91,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             // state manager
             _propertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(OneDasExplorerStateManager.State))
+                if (e.PropertyName == nameof(Core.StateManager.State))
                 {
                     this.RaisePropertyChanged(e.PropertyName);
                 }
@@ -99,8 +100,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.StateManager = stateManager;
             this.StateManager.PropertyChanged += _propertyChanged;
 
-            // export configuration
-            this.SetExportConfiguration(new ExportConfiguration());
+            // export parameters
+            this.SetExportParameters(new ExportParameters());
         }
 
         #endregion
@@ -145,9 +146,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { this.SetProperty(ref _downloadMessage, value); }
         }
 
-        internal OneDasExplorerStateManager StateManager { get; }
+        internal StateManager StateManager { get; }
 
-        internal ExportConfiguration ExportConfiguration { get; private set; }
+        internal ExportParameters ExportParameters { get; private set; }
 
         #endregion
 
@@ -196,6 +197,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             get { return _visualizeBeginAtZero; }
             set { this.SetProperty(ref _visualizeBeginAtZero, value); }
+        }
+
+        public string SampleRate
+        {
+            get { return _sampleRate; }
+            set { this.SetProperty(ref _sampleRate, value); }
         }
 
         #endregion
@@ -279,54 +286,41 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public DateTime DateTimeBegin
         {
-            get { return this.ExportConfiguration.Begin; }
+            get { return this.ExportParameters.Begin; }
             set
             {
-                this.ExportConfiguration.Begin = value;
+                this.ExportParameters.Begin = value;
                 this.RaisePropertyChanged();
             }
         }
 
         public DateTime DateTimeEnd
         {
-            get { return this.ExportConfiguration.End; }
+            get { return this.ExportParameters.End; }
             set
             {
-                this.ExportConfiguration.End = value;
+                this.ExportParameters.End = value;
                 this.RaisePropertyChanged();
             }
         }
 
         public FileGranularity FileGranularity
         {
-            get { return this.ExportConfiguration.FileGranularity; }
+            get { return this.ExportParameters.FileGranularity; }
             set 
             {
-                this.ExportConfiguration.FileGranularity = value;
+                this.ExportParameters.FileGranularity = value;
                 this.RaisePropertyChanged();
             }
         }
 
         public FileFormat FileFormat
         {
-            get { return this.ExportConfiguration.FileFormat; }
+            get { return this.ExportParameters.FileFormat; }
             set
             {
-                this.ExportConfiguration.FileFormat = value;
+                this.ExportParameters.FileFormat = value;
                 this.RaisePropertyChanged();
-            }
-        }
-
-        public string SampleRate
-        {
-            get { return this.ExportConfiguration.SampleRate; }
-            set
-            {
-                this.ExportConfiguration.SampleRate = value;
-                this.UpdateExportConfiguration();
-                this.RaisePropertyChanged();
-
-                this.RaisePropertyChanged(nameof(AppStateViewModel.SelectedDatasets));
             }
         }
 
@@ -375,8 +369,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 var selectedDatasets = this.GetSelectedDatasets().Select(dataset => dataset.Model).ToList();
 
-                var downloadLink = await _dataService.ExportDataAsync(remoteIpAdress,
-                                                                       this.ExportConfiguration,
+                var downloadLink = await _dataService.ExportDataWithSecurityCheckAsync(remoteIpAdress,
+                                                                       this.ExportParameters,
                                                                        selectedDatasets,
                                                                        _cts_download.Token);
 
@@ -438,14 +432,14 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             return await _dataService.GetDataAvailabilityStatisticsAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
         }
 
-        public void SetExportConfiguration(ExportConfiguration exportConfiguration)
+        public void SetExportParameters(ExportParameters exportParameters)
         {
             this.InitializeSampleRateToDatasetsMap();
 
-            this.ExportConfiguration = exportConfiguration;
+            this.ExportParameters = exportParameters;
             var selectedDatasets = this.GetSelectedDatasets();
 
-            exportConfiguration.Channels.ForEach(value =>
+            exportParameters.ChannelPaths.ForEach(value =>
             {
                 var pathParts = value.Split('/');
                 var projectName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
@@ -469,8 +463,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 }
             });
 
+            // find sample rate
+            var sampleRates = selectedDatasets.Select(dataset => dataset.Model.GetSampleRate());
 
-            this.RaisePropertyChanged(nameof(AppStateViewModel.ExportConfiguration));
+            if (sampleRates.Any())
+                this.SampleRate = sampleRates.First().ToUnitString();
+           
+            this.RaisePropertyChanged(nameof(AppStateViewModel.ExportParameters));
         }
 
         public bool IsDatasetSeleced(DatasetInfoViewModel dataset)
@@ -487,7 +486,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             else
                 this.GetSelectedDatasets().Add(dataset);
 
-            this.UpdateExportConfiguration();
+            this.UpdateExportParameters();
             this.RaisePropertyChanged(nameof(AppStateViewModel.SelectedDatasets));
         }
 
@@ -556,9 +555,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 this.ChannelGroup = null;
         }
 
-        private void UpdateExportConfiguration()
+        private void UpdateExportParameters()
         {
-            this.ExportConfiguration.Channels = this.GetSelectedDatasets().Select(dataset =>
+            this.ExportParameters.ChannelPaths = this.GetSelectedDatasets().Select(dataset =>
             {
                 return $"{dataset.Parent.Parent.Id}/{dataset.Parent.Id}/{dataset.Name}";
             }).ToList();

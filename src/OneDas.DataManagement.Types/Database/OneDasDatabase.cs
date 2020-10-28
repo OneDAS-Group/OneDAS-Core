@@ -71,7 +71,7 @@ namespace OneDas.DataManagement.Database
             var pathParts = path.Split("/");
 
             if (pathParts.Length != 6)
-                throw new Exception($"The channel name '{path}' is invalid.");
+                throw new Exception($"The channel path '{path}' is invalid.");
 
             var projectName = $"/{pathParts[1]}/{pathParts[2]}/{pathParts[3]}";
             var channelName = pathParts[4];

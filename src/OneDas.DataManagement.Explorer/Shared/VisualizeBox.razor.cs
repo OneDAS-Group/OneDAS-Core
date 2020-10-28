@@ -36,7 +36,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 				}
 				else
 				{
-					if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
+					if (e.PropertyName == nameof(AppStateViewModel.ExportParameters))
 					{
 						await this.UpdateChartAsync();
 					}

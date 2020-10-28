@@ -19,7 +19,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private OneDasExplorerStateManager _stateManager;
+        private StateManager _stateManager;
         private SignInManager<IdentityUser> _signInManager;
         private OneDasExplorerOptions _options;
 
@@ -27,7 +27,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Constructors
 
-        public DataService(OneDasExplorerStateManager stateManager,
+        public DataService(StateManager stateManager,
                            OneDasDatabaseManager databaseManager,
                            SignInManager<IdentityUser> signInManager,
                            ILoggerFactory loggerFactory,
@@ -66,8 +66,25 @@ namespace OneDas.DataManagement.Explorer.Core
             });
         }
 
+        public Task<string> ExportDataWithSecurityCheckAsync(IPAddress remoteIpAddress,
+                                                             ExportParameters exportConfig,
+                                                             List<DatasetInfo> datasets,
+                                                             CancellationToken cancellationToken)
+        {
+            // security check
+            var projectIds = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
+
+            foreach (var projectId in projectIds)
+            {
+                if (!Utilities.IsProjectAccessible(_signInManager.Context.User, projectId, _databaseManager.Config.RestrictedProjects))
+                    throw new UnauthorizedAccessException($"The current user is not authorized to access project '{projectId}'.");
+            }
+
+            return this.ExportDataAsync(remoteIpAddress, exportConfig, datasets, cancellationToken);
+        }
+
         public Task<string> ExportDataAsync(IPAddress remoteIpAddress,
-                                            ExportConfiguration exportConfig,
+                                            ExportParameters parameters,
                                             List<DatasetInfo> datasets,
                                             CancellationToken cancellationToken)
         {
@@ -75,10 +92,16 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 _stateManager.CheckState();
 
-                if (!datasets.Any() || exportConfig.Begin == exportConfig.End)
+                if (!datasets.Any() || parameters.Begin == parameters.End)
                     return string.Empty;
 
-                var sampleRate = new SampleRateContainer(exportConfig.SampleRate);
+                // find sample rate
+                var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
+
+                if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
+                    throw new Exception("Channels with different sample rates have been requested.");
+
+                var sampleRate = sampleRates.First();
 
                 // log
                 string userName;
@@ -88,19 +111,18 @@ namespace OneDas.DataManagement.Explorer.Core
                 else
                     userName = "anonymous";
 
-                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {exportConfig.Begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {exportConfig.End.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
+                var message = $"User '{userName}' ({remoteIpAddress}) exports data: {parameters.Begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {parameters.End.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
                 _logger.LogInformation(message);
 
                 // zip file
-                var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{exportConfig.Begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
+                var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{parameters.Begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
 
-                // sample rate
                 try
                 {
                     // convert datasets into projects
-                    var projectNames = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
+                    var projectIds = datasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
                     var projectContainers = _databaseManager.Database.ProjectContainers
-                        .Where(projectContainer => projectNames.Contains(projectContainer.Id));
+                        .Where(projectContainer => projectIds.Contains(projectContainer.Id));
 
                     var sparseProjects = projectContainers.Select(projectContainer =>
                     {
@@ -108,17 +130,10 @@ namespace OneDas.DataManagement.Explorer.Core
                         return projectContainer.ToSparseProject(currentDatasets);
                     });
 
-                    // security check
-                    foreach (var sparseProject in sparseProjects)
-                    {
-                        if (!Utilities.IsProjectAccessible(_signInManager.Context.User, sparseProject.Id, _databaseManager.Config.RestrictedProjects))
-                            throw new UnauthorizedAccessException($"The current user is not authorized to access project '{sparseProject.Id}'.");
-                    }
-
                     // start
                     var blockSizeLimit = 50 * 1000 * 1000UL;
 
-                    using var dataExporter = new DataExporter(zipFilePath, exportConfig, blockSizeLimit);
+                    using var dataExporter = new DataExporter(zipFilePath, parameters, blockSizeLimit);
                     dataExporter.Progress += this.OnProgress;
 
                     try

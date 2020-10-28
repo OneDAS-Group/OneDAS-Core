@@ -2,7 +2,7 @@
   "profiles": {
     "OneDas.WebServer": {
       "commandName": "Project",
-      "environmentChannels": {
+      "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "nativeDebugging": true

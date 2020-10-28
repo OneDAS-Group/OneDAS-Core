@@ -20,18 +20,22 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private OneDasExplorerStateManager _stateManager;
+        private StateManager _stateManager;
 
         #endregion
 
-        public ProjectsController(OneDasExplorerStateManager stateManager,
-                                  OneDasDatabaseManager databaseManager,
-                                  ILoggerFactory loggerFactory)
+        #region Constructors
+
+        public ProjectsController(StateManager stateManager,
+                                 OneDasDatabaseManager databaseManager,
+                                 ILoggerFactory loggerFactory)
         {
             _stateManager = stateManager;
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
+
+        #endregion
 
         #region Methods
 
@@ -39,7 +43,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// Gets a list of all accessible projects.
         /// </summary>
         [HttpGet]
-        public ActionResult<List<Project>> Projects()
+        public ActionResult<List<Project>> GetProjects()
         {
             var projectContainers = _databaseManager.Database.ProjectContainers;
 
@@ -59,7 +63,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="projectId">The project identifier.</param>
         /// <returns></returns>
         [HttpGet("{projectId}")]
-        public ActionResult<Project> Projects(string projectId)
+        public ActionResult<Project> GetProject(string projectId)
         {
             projectId = WebUtility.UrlDecode(projectId);
 
@@ -100,7 +104,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="projectId">The project identifier.</param>
         /// <returns></returns>
         [HttpGet("{projectId}/channels")]
-        public ActionResult<List<Channel>> Channels(
+        public ActionResult<List<Channel>> GetChannels(
             string projectId)
         {
             projectId = WebUtility.UrlDecode(projectId);
@@ -152,7 +156,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="channelId">The channel identifier.</param>
         /// <returns></returns>
         [HttpGet("{projectId}/channels/{channelId}")]
-        public ActionResult<Channel> Channels(
+        public ActionResult<Channel> GetChannel(
             string projectId,
             string channelId)
         {
@@ -211,7 +215,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="channelId">The channel identifier.</param>
         /// <returns></returns>
         [HttpGet("{projectId}/channels/{channelId}/datasets")]
-        public ActionResult<List<Dataset>> Datasets(
+        public ActionResult<List<Dataset>> GetDatasets(
             string projectId,
             string channelId)
         {
@@ -245,7 +249,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
                             channel = project.Channels.FirstOrDefault(
                                 current => current.Name == channelId);
 
-
                         if (channel == null)
                             return this.NotFound($"{projectId}/{channelId}");
 
@@ -271,7 +274,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="datasetId">The dataset identifier.</param>
         /// <returns></returns>
         [HttpGet("{projectId}/channels/{channelId}/datasets/{datasetId}")]
-        public ActionResult<Dataset> Datasets(
+        public ActionResult<Dataset> GetDataset(
             string projectId,
             string channelId,
             string datasetId)
@@ -400,7 +403,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         #region Records
 
-        public record Project()
+        public record Project
         {
             public string Id { get; set; }
             public DateTime ProjectStart { get; set; }

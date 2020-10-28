@@ -17,7 +17,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             this.PropertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(AppStateViewModel.ExportConfiguration))
+                if (e.PropertyName == nameof(AppStateViewModel.ExportParameters))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
@@ -48,7 +48,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task OnSaveExportSettingsAsync()
         {
-			var configuration = this.AppState.ExportConfiguration;
+			var configuration = this.AppState.ExportParameters;
 			var jsonString = JsonSerializer.Serialize(configuration, new JsonSerializerOptions() { WriteIndented = true });
 			await JsInterop.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
 		}
@@ -60,9 +60,9 @@ namespace OneDas.DataManagement.Explorer.Shared
             if (file != null)
             {
                 using var utf8json = file.OpenReadStream();
-                var exportConfiguration = await JsonSerializer.DeserializeAsync<ExportConfiguration>(utf8json);
-                exportConfiguration = ExportConfiguration.UpdateVersion(exportConfiguration);
-                this.AppState.SetExportConfiguration(exportConfiguration);
+                var exportParameters = await JsonSerializer.DeserializeAsync<ExportParameters>(utf8json);
+                exportParameters = exportParameters.UpdateVersion();
+                this.AppState.SetExportParameters(exportParameters);
             }
         }
 

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 
 namespace OneDas.DataManagement.Explorer.Core
@@ -29,16 +30,16 @@ namespace OneDas.DataManagement.Explorer.Core
         private ulong _blockSizeLimit;
         private string _zipFilePath;
         private ZipArchive _zipArchive;
-        private ExportConfiguration _exportConfig;
+        private ExportParameters _parameters;
 
         #endregion
 
         #region Constructors
 
-        public DataExporter(string zipFilePath, ExportConfiguration exportConfig, ulong blockSizeLimit)
+        public DataExporter(string zipFilePath, ExportParameters parameters, ulong blockSizeLimit)
         {
             _zipFilePath = zipFilePath;
-            _exportConfig = exportConfig;
+            _parameters = parameters;
             _blockSizeLimit = blockSizeLimit;
         }
 
@@ -52,19 +53,19 @@ namespace OneDas.DataManagement.Explorer.Core
                 _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
 
             var channelDescriptionSet = projectSettings.Project.ToChannelDescriptions();
-            var singleFile = _exportConfig.FileGranularity == FileGranularity.SingleFile;
+            var singleFile = _parameters.FileGranularity == FileGranularity.SingleFile;
 
             TimeSpan filePeriod;
 
             if (singleFile)
-                filePeriod = _exportConfig.End - _exportConfig.Begin;
+                filePeriod = _parameters.End - _parameters.Begin;
             else
-                filePeriod = TimeSpan.FromSeconds((int)_exportConfig.FileGranularity);
+                filePeriod = TimeSpan.FromSeconds((int)_parameters.FileGranularity);
 
             DataWriterExtensionSettingsBase settings;
             DataWriterExtensionLogicBase dataWriter;
 
-            switch (_exportConfig.FileFormat)
+            switch (_parameters.FileFormat)
             {
                 case FileFormat.CSV:
 
@@ -72,8 +73,8 @@ namespace OneDas.DataManagement.Explorer.Core
                     {
                         FilePeriod = filePeriod,
                         SingleFile = singleFile,
-                        RowIndexFormat = _exportConfig.Extended.CsvRowIndexFormat,
-                        SignificantFigures = _exportConfig.Extended.CsvSignificantFigures,
+                        RowIndexFormat = _parameters.CsvRowIndexFormat,
+                        SignificantFigures = _parameters.CsvSignificantFigures,
                     };
 
                     dataWriter = new CsvWriter((CsvSettings)settings, NullLogger.Instance);
@@ -183,7 +184,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 try
                 {
-                    foreach (var progressRecord in reader.Read(nativeDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, cancellationToken))
+                    foreach (var progressRecord in reader.Read(nativeDatasets, _parameters.Begin, _parameters.End, _blockSizeLimit, cancellationToken))
                     {
                         this.ProcessData(dataWriter, progressRecord);
                     }
@@ -204,7 +205,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 try
                 {
-                    foreach (var progressRecord in reader.Read(aggregatedDatasets, _exportConfig.Begin, _exportConfig.End, _blockSizeLimit, cancellationToken))
+                    foreach (var progressRecord in reader.Read(aggregatedDatasets, _parameters.Begin, _parameters.End, _blockSizeLimit, cancellationToken))
                     {
                         this.ProcessData(dataWriter, progressRecord);
                     }

@@ -44,9 +44,6 @@ namespace OneDas.DataManagement.Explorer
             var appdataFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OneDAS", "Explorer");
             Directory.CreateDirectory(appdataFolderPath);
 
-            var logFolderPath = Path.Combine(appdataFolderPath, "LOGS");
-            Directory.CreateDirectory(logFolderPath);
-
             // configure logging
             _loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -73,20 +70,20 @@ namespace OneDas.DataManagement.Explorer
             // service vs. interactive
             if (isWindowsService)
                 await Program
-                    .CreateHostBuilder(Environment.CurrentDirectory, logFolderPath)
+                    .CreateHostBuilder(Environment.CurrentDirectory)
                     .UseWindowsService()
                     .Build()
                     .RunAsync();
             else
                 await Program
-                    .CreateHostBuilder(Environment.CurrentDirectory, logFolderPath)
+                    .CreateHostBuilder(Environment.CurrentDirectory)
                     .Build()
                     .RunAsync();
 
             return 0;
         }
 
-        public static IHostBuilder CreateHostBuilder(string currentDirectory, string logFolderPath) => 
+        public static IHostBuilder CreateHostBuilder(string currentDirectory) => 
             Host.CreateDefaultBuilder()
                 .ConfigureLogging(logging =>
                 {
@@ -98,7 +95,10 @@ namespace OneDas.DataManagement.Explorer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls(Program.Options.AspBaseUrl);
+
+                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+                        webBuilder.UseUrls(Program.Options.AspBaseUrl);
+
                     webBuilder.UseContentRoot(currentDirectory);
                     webBuilder.SuppressStatusMessages(true);
                 });

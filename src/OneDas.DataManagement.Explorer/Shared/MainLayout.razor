@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@inject OneDasExplorerStateManager StateManager
+@inject StateManager StateManager
 
 @if (this.StateManager.State == OneDasExplorerState.FirstStart)
 {
@@ -22,7 +22,7 @@ else
     {
         this.StateManager.PropertyChanged += (sender, e) =>
         {
-            if (e.PropertyName == nameof(OneDasExplorerStateManager.State))
+            if (e.PropertyName == nameof(StateManager.State))
             {
                 this.InvokeAsync(() =>
                 {

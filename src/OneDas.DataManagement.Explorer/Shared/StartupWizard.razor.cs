@@ -10,7 +10,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         public OneDasExplorerOptions Options { get; set; }
 
         [Inject]
-        public OneDasExplorerStateManager StateManager { get; set; }
+        public StateManager StateManager { get; set; }
 
         public string Error { get; set; }
 

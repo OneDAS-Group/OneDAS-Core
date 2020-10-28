@@ -32,18 +32,18 @@ namespace OneDas.DataManagement.Explorer.Shared
         private void LoadPreset(string filePath)
         {
             var jsonString = File.ReadAllText(filePath);
-            var exportConfiguration = JsonSerializer.Deserialize<ExportConfiguration>(jsonString);
+            var exportParameters = JsonSerializer.Deserialize<ExportParameters>(jsonString);
 
-            var timeSpan = exportConfiguration.End - exportConfiguration.Begin;
-            var dt = exportConfiguration.End;
+            var timeSpan = exportParameters.End - exportParameters.Begin;
+            var dt = exportParameters.End;
             var now = DateTime.UtcNow.AddDays(-1);
 
-            exportConfiguration.End = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
-            exportConfiguration.Begin = exportConfiguration.End - timeSpan;
-            exportConfiguration = ExportConfiguration.UpdateVersion(exportConfiguration);
+            exportParameters.End = new DateTime(now.Year, now.Month, now.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
+            exportParameters.Begin = exportParameters.End - timeSpan;
+            exportParameters = exportParameters.UpdateVersion();
 
             this.OnIsOpenChanged(false);
-            this.AppState.SetExportConfiguration(exportConfiguration);
+            this.AppState.SetExportParameters(exportParameters);
         }
 
         private void OnIsOpenChanged(bool value)

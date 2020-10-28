@@ -43,7 +43,7 @@
         {
             <MatSelectItem class="settings-control"
                            Label="Row index format"
-                           @bind-Value="this.AppState.ExportConfiguration.Extended.CsvRowIndexFormat"
+                           @bind-Value="this.AppState.ExportParameters.CsvRowIndexFormat"
                            Items="this.AppState.CsvRowIndexFormatValues">
                 <ItemTemplate Context="value">
                     @Utilities.GetEnumLocalization(@value)
@@ -53,7 +53,7 @@
             <MatTextField class="settings-control"
                           Type="number"
                           Label="Significant figures"
-                          @bind-Value="this.AppState.ExportConfiguration.Extended.CsvSignificantFigures">
+                          @bind-Value="this.AppState.ExportParameters.CsvSignificantFigures">
             </MatTextField>
         }
 

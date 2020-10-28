@@ -11,10 +11,10 @@ using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using OneDas.DataManagement.Explorer.Core;
-using OneDas.DataManagement.Explorer.Hubs;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer
@@ -87,11 +87,10 @@ namespace OneDas.DataManagement.Explorer
                 options.AddPolicy("RequireAdmin", policy => policy.RequireClaim("IsAdmin", "true"));
             });
 
-            // signalr
-            services.AddSignalR(options => options.EnableDetailedErrors = true)
-                .AddMessagePackProtocol();
-
             // swagger
+            services.AddControllers()
+                .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
             services.AddSwaggerDocument(config =>
             {
                 config.Title = "OneDAS Explorer REST API";
@@ -117,14 +116,15 @@ namespace OneDas.DataManagement.Explorer
             services.AddScoped<JwtService<IdentityUser>>();
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
-            services.AddSingleton<OneDasExplorerStateManager>();
+            services.AddSingleton<StateManager>();
+            services.AddSingleton<JobService>();
             services.AddSingleton<OneDasExplorerUserManager>();
         }
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory,
-                              OneDasExplorerStateManager stateManager, // stateManager is requested to create an instance and let the timers start
+                              StateManager stateManager, // stateManager is requested to create an instance and let the timers start
                               OneDasExplorerOptions options)
         {
             // logger
@@ -192,7 +192,6 @@ namespace OneDas.DataManagement.Explorer
             {
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
-                endpoints.MapHub<DataHub>("datahub");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

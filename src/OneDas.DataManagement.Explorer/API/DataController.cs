@@ -20,11 +20,13 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private OneDasExplorerStateManager _stateManager;
+        private StateManager _stateManager;
 
         #endregion
 
-        public DataController(OneDasExplorerStateManager stateManager,
+        #region Constructors
+
+        public DataController(StateManager stateManager,
                                 OneDasDatabaseManager databaseManager,
                                 ILoggerFactory loggerFactory)
         {
@@ -32,6 +34,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
+
+        #endregion
 
         /// <summary>
         /// Gets the requested data.
@@ -45,7 +49,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <returns></returns>
 
         [HttpGet]
-        public IActionResult GetData(
+        public IActionResult GetStream(
             [BindRequired] string projectId,
             [BindRequired] string channelId,
             [BindRequired] string datasetId,
