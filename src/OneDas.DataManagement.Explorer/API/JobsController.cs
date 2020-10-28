@@ -52,6 +52,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpPost("/jobs/export")]
         public ActionResult<ExportJob> CreateExportJob(ExportParameters parameters)
         {
+            parameters.Begin = parameters.Begin.ToUniversalTime();
+            parameters.End = parameters.End.ToUniversalTime();
+
             // check state
             _stateManager.CheckState();
 
@@ -114,7 +117,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             });
 
             if (_jobService.TryAddExportJob(jobControl))
-                return jobControl.Job;
+                return this.Accepted($"{this.GetBasePath()}/jobs/export/{jobControl.Job.Id}/status", jobControl.Job);
             else
                 return this.Conflict();
         }
@@ -154,18 +157,30 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpGet("/jobs/export/{jobId}/status")]
         public ActionResult<JobStatus> GetJobStatus(Guid jobId)
         {
-            if (_jobService.TryGetExportJob(jobId, out var jobContol))
+            if (_jobService.TryGetExportJob(jobId, out var jobControl))
             {
-                return new JobStatus()
+                if (this.User.Identity.Name == jobControl.Job.Owner ||
+                    jobControl.Job.Owner == null ||
+                    this.User.HasClaim("IsAdmin", "true"))
                 {
-                    Start = jobContol.Start,
-                    Progress = jobContol.Progress,
-                    ProgressMessage = jobContol.ProgressMessage,
-                    Status = jobContol.Task.Status,
-                    ExceptionMessage = (jobContol.Task.Exception != null)
-                        ? jobContol.Task.Exception.GetFullMessage() 
-                        : string.Empty
-                };
+                    return new JobStatus()
+                    {
+                        Start = jobControl.Start,
+                        Progress = jobControl.Progress,
+                        ProgressMessage = jobControl.ProgressMessage,
+                        Status = jobControl.Task.Status,
+                        ExceptionMessage = jobControl.Task.Exception != null
+                            ? jobControl.Task.Exception.GetFullMessage()
+                            : string.Empty,
+                        Result = jobControl.Task.Status == TaskStatus.RanToCompletion 
+                            ? $"{this.GetBasePath()}/{jobControl.Task.Result}"
+                            : null
+                    };
+                }
+                else
+                {
+                    return this.Unauthorized($"The current user is not authorized to cancel the job '{jobControl.Job.Id}'.");
+                }
             }
             else
             {
@@ -199,6 +214,11 @@ namespace OneDas.DataManagement.Explorer.Controllers
             {
                 return this.NotFound(jobId);
             }
+        }
+
+        private string GetBasePath()
+        {
+            return $"{this.Request.Scheme}://{this.Request.Host}";
         }
 
         #endregion

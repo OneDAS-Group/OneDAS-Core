@@ -88,6 +88,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         FilePeriod = filePeriod,
                         SingleFile = singleFile,
                     };
+
                     dataWriter = new FamosWriter((FamosSettings)settings, NullLogger.Instance);
 
                     break;
@@ -99,6 +100,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         FilePeriod = filePeriod,
                         SingleFile = singleFile,
                     };
+
                     dataWriter = new Mat73Writer((Mat73Settings)settings, NullLogger.Instance);
 
                     break;

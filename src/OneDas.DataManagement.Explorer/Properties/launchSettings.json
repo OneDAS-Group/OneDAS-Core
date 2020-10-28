@@ -2,7 +2,6 @@
   "profiles": {
     "OneDas.DataManagement.Explorer": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
