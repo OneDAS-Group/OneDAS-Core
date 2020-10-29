@@ -8,10 +8,10 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public record ExportParameters
     {
-        /// <example>2020-10-01T16:30:00Z</example>
+        /// <example>2020-02-01T00:00:00Z</example>
         public DateTime Begin { get; set; } = DateTime.UtcNow.Date.AddDays(-2);
 
-        /// <example>2020-10-02T19:00:00Z</example>
+        /// <example>2020-02-02T00:00:00Z</example>
         public DateTime End { get; set; } = DateTime.UtcNow.Date.AddDays(-1);
 
         /// <example>Hour</example>
@@ -20,7 +20,7 @@ namespace OneDas.DataManagement.Explorer.Core
         /// <example>CSV</example>
         public FileFormat FileFormat { get; set; } = FileFormat.CSV;
 
-        /// <example>["/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean", "/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean"]</example>
+        /// <example>["/IN_MEMORY/TEST/ACCESSIBLE/T1/1 s_mean", "/IN_MEMORY/TEST/ACCESSIBLE/V1/1 s_mean"]</example>
         public List<string> ChannelPaths { get; set; } = new List<string>();
 
         /// <example>4</example>

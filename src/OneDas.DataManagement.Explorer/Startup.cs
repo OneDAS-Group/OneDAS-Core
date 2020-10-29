@@ -123,14 +123,9 @@ namespace OneDas.DataManagement.Explorer
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              ILoggerFactory loggerFactory,
                               StateManager stateManager, // stateManager is requested to create an instance and let the timers start
                               OneDasExplorerOptions options)
         {
-            // logger
-            var logger = loggerFactory.CreateLogger("OneDAS Explorer");
-            logger.LogInformation($"Listening on: { options.AspBaseUrl }");
-
             // ...
             if (env.IsDevelopment())
             {

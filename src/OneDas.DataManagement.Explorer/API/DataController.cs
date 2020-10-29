@@ -6,6 +6,7 @@ using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.Types;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading;
 using static System.Net.WebRequestMethods;
@@ -102,6 +103,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 _logger.LogInformation($"{message} Done.");
 
                 return this.File(stream, "application/octet-stream", "data.bin");
+            }
+            catch (ValidationException ex)
+            {
+                return this.UnprocessableEntity(ex.GetFullMessage());
             }
             catch (Exception ex)
             {

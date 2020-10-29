@@ -3,6 +3,7 @@ using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -101,6 +102,40 @@ namespace OneDas.DataManagement.Extensibility
             TimeSpan fundamentalPeriod,
             CancellationToken cancellationToken)
         {
+            var basePeriod = TimeSpan.FromMinutes(1);
+            var period = end - begin;
+
+            // sanity checks
+            if (begin >= end)
+                throw new ValidationException("The begin datetime must be less than the end datetime.");
+
+            if (begin.Ticks % basePeriod.Ticks != 0)
+                throw new ValidationException("The begin parameter must be a multiple of 1 minute.");
+
+            if (end.Ticks % basePeriod.Ticks != 0)
+                throw new ValidationException("The end parameter must be a multiple of 1 minute.");
+
+            if (fundamentalPeriod.Ticks % basePeriod.Ticks != 0)
+                throw new ValidationException("The fundamental period parameter must be a multiple of 1 minute.");
+
+            if (period.Ticks % fundamentalPeriod.Ticks != 0)
+                throw new ValidationException("The request period must be a multiple of the fundamental period.");
+
+            if (blockSizeLimit == 0)
+                throw new ValidationException("The upper block size must be > 0 bytes.");
+
+            return this.InternalRead(datasets, begin, end, blockSizeLimit, basePeriod, fundamentalPeriod, cancellationToken);
+        }
+
+        private IEnumerable<DataReaderProgressRecord> InternalRead(
+            List<DatasetInfo> datasets,
+            DateTime begin,
+            DateTime end,
+            ulong blockSizeLimit,
+            TimeSpan basePeriod,
+            TimeSpan fundamentalPeriod,
+            CancellationToken cancellationToken)
+        {
             /* 
              * |....................|
              * |
@@ -128,27 +163,8 @@ namespace OneDas.DataManagement.Extensibility
             if (!datasets.Any() || begin == end)
                 yield break;
 
-            var minute = TimeSpan.FromMinutes(1);
-            var period = end - begin;
-
-            // sanity checks
-            if (begin.Ticks % minute.Ticks != 0)
-                throw new Exception("The begin parameter must be a multiple of 1 minute.");
-
-            if (end.Ticks % minute.Ticks != 0)
-                throw new Exception("The end parameter must be a multiple of 1 minute.");
-
-            if (fundamentalPeriod.Ticks % minute.Ticks != 0)
-                throw new Exception("The fundamental period parameter must be a multiple of 1 minute.");
-
-            if (period.Ticks % fundamentalPeriod.Ticks != 0)
-                throw new Exception("The request period must be a multiple of the fundamental period.");
-
-            if (blockSizeLimit == 0)
-                throw new Exception("The upper block size must be > 0 bytes.");
-
             // calculation
-            var minutesPerFP = fundamentalPeriod.Ticks / minute.Ticks;
+            var minutesPerFP = fundamentalPeriod.Ticks / basePeriod.Ticks;
 
             var bytesPerFP = datasets.Sum(dataset =>
             {
@@ -168,6 +184,7 @@ namespace OneDas.DataManagement.Extensibility
             var maxPeriodPerRequest = TimeSpan.FromTicks(fundamentalPeriod.Ticks * roundedFPCount);
 
             // load data
+            var period = end - begin;
             var currentBegin = begin;
             var remainingPeriod = end - currentBegin;
 

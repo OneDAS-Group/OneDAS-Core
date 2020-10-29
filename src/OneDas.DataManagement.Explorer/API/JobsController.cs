@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.Types;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Controllers
 {
-    [Route("api/v1/data")]
+    [Route("api/v1/jobs")]
     [ApiController]
     public class JobsController : ControllerBase
     {
@@ -49,7 +51,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// </summary>
         /// <param name="parameters">Export parameters.</param>
         /// <returns></returns>
-        [HttpPost("/jobs/export")]
+        [HttpPost("export")]
         public ActionResult<ExportJob> CreateExportJob(ExportParameters parameters)
         {
             parameters.Begin = parameters.Begin.ToUniversalTime();
@@ -59,13 +61,22 @@ namespace OneDas.DataManagement.Explorer.Controllers
             _stateManager.CheckState();
 
             // translate channel paths to datasets
-            var datasets = parameters.ChannelPaths.Select(channelPath =>
-            {
-                if (!_databaseManager.Database.TryFindDataset(channelPath, out var dataset))
-                    throw new Exception($"Could not find the channel with path '{channelPath}'.");
+            List<DatasetInfo> datasets;
 
-                return dataset;
-            }).ToList();
+            try
+            {
+                datasets = parameters.ChannelPaths.Select(channelPath =>
+                {
+                    if (!_databaseManager.Database.TryFindDataset(channelPath, out var dataset))
+                        throw new ValidationException($"Could not find the channel with path '{channelPath}'.");
+
+                    return dataset;
+                }).ToList();
+            }
+            catch (ValidationException ex)
+            {
+                return this.UnprocessableEntity(ex.GetFullMessage());
+            }
 
             // check that there is anything to export
             if (!datasets.Any())
@@ -126,7 +137,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// Gets a list of all export jobs.
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/jobs/export")]
+        [HttpGet("export")]
         public ActionResult<List<ExportJob>> GetJobs()
         {
             return _jobService
@@ -140,7 +151,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// </summary>
         /// <param name="jobId"></param>
         /// <returns></returns>
-        [HttpGet("/jobs/export/{jobId}")]
+        [HttpGet("export/{jobId}")]
         public ActionResult<ExportJob> GetJob(Guid jobId)
         {
             if (_jobService.TryGetExportJob(jobId, out var jobControl))
@@ -154,7 +165,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// </summary>
         /// <param name="jobId"></param>
         /// <returns></returns>
-        [HttpGet("/jobs/export/{jobId}/status")]
+        [HttpGet("export/{jobId}/status")]
         public ActionResult<JobStatus> GetJobStatus(Guid jobId)
         {
             if (_jobService.TryGetExportJob(jobId, out var jobControl))
@@ -193,7 +204,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// </summary>
         /// <param name="jobId"></param>
         /// <returns></returns>
-        [HttpDelete("/jobs/export/{jobId}")]
+        [HttpDelete("export/{jobId}")]
         public ActionResult DeleteJob(Guid jobId)
         {
             if (_jobService.TryGetExportJob(jobId, out var jobControl))

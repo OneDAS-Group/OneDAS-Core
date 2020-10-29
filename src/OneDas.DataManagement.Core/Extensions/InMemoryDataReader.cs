@@ -75,13 +75,13 @@ namespace OneDas.DataManagement.Extensions
             var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
             var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
             var id14 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
-            var project_allowed = this.LoadProject("/IN_MEMORY/ALLOWED/TEST", id11, id12, id13, id14);
+            var project_allowed = this.LoadProject("/IN_MEMORY/TEST/ACCESSIBLE", id11, id12, id13, id14);
 
             var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
             var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
             var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
             var id24 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
-            var project_restricted = this.LoadProject("/IN_MEMORY/RESTRICTED/TEST", id21, id22, id23, id24);
+            var project_restricted = this.LoadProject("/IN_MEMORY/TEST/RESTRICTED", id21, id22, id23, id24);
 
             return new List<ProjectInfo>() { project_allowed, project_restricted };
         }

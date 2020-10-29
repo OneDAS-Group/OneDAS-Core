@@ -16,7 +16,6 @@ namespace OneDas.DataManagement.Extensibility
         private int _offset;
         private int _remaining;
 
-        private long _position;
         private long _length;
         private IEnumerator<DataReaderProgressRecord> _enumerator;
         private CancellationTokenSource _cts;
@@ -50,7 +49,7 @@ namespace OneDas.DataManagement.Extensibility
         {
             get
             {
-                return _position;
+                return _offset;
             }
             set
             {
