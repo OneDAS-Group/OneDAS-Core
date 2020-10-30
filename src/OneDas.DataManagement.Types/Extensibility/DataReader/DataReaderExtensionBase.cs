@@ -49,7 +49,7 @@ namespace OneDas.DataManagement.Extensibility
             this.Projects = projects;
         }
 
-        public DataReaderStream ReadAsStream(
+        public DataReaderDoubleStream ReadAsDoubleStream(
             DatasetInfo dataset,
             DateTime begin,
             DateTime end,
@@ -58,9 +58,11 @@ namespace OneDas.DataManagement.Extensibility
         {
             var progressRecords = this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cancellationToken);
             var samplesPerSecond = new SampleRateContainer(dataset.Id).SamplesPerSecond;
-            var length = (long)Math.Round(samplesPerSecond * (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero) * OneDasUtilities.SizeOf(dataset.DataType);
+            var length = (long)Math.Round(samplesPerSecond * 
+                (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero) * 
+                OneDasUtilities.SizeOf(OneDasDataType.FLOAT64);
 
-            return new DataReaderStream(length, progressRecords);
+            return new DataReaderDoubleStream(length, progressRecords);
         }
 
         public IEnumerable<DataReaderProgressRecord> Read(

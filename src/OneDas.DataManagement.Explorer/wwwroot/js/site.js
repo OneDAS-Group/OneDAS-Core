@@ -24,92 +24,96 @@ var chartContainerId = "visualize-chart-container";
 
 async function UpdateChart(appState, chartEntries, start, end, count, dt, beginAtZero) {  
 
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/datahub")
-        .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
-        .build();
+    var beginDate = new Date(start);
+    var endDate = new Date(end);
 
-    await connection.start().then(async () => {
+    // sanity checks
+    var element = document.getElementById(chartContainerId);
 
-        var beginDate = new Date(start);
-        var endDate = new Date(end);
+    if (!element)
+        return;
 
-        // sanity checks
-        var element = document.getElementById(chartContainerId);
+    // for each chart entry
+    appState.invokeMethodAsync('SetVisualizeProgress', 0);
 
-        if (!element)
-            return;
+    try {
 
-        // for each chart entry
-        appState.invokeMethodAsync('SetVisualizeProgress', 0);
+        for (var i = 0; i < chartEntries.length; i++) {
 
-        connection.on('Downloader.ProgressChanged', progress => {
-            progress = (currentIndex + progress) / chartEntries.length;
-            appState.invokeMethodAsync('SetVisualizeProgress', progress);
-        });
+            var chartEntry = chartEntries[i];
+            var channelData = Array(count);
+            var offset = 0
 
-        try {
+            var channelPathParts = chartEntry.path.split("/");
+            var projectId = encodeURIComponent('/' + channelPathParts[1] + '/' + channelPathParts[2] + '/' + channelPathParts[3]);
+            var channelId = encodeURIComponent(channelPathParts[4]);
+            var datasetId = encodeURIComponent(channelPathParts[5]);
 
-            for (var i = 0; i < chartEntries.length; i++) {
+            url = "/api/v1/data" +
+                  "?projectId=" + projectId +
+                  "&channelId=" + channelId +
+                  "&datasetId=" + datasetId +
+                  "&begin=" + start +
+                  "&end=" + end;
 
-                var chartEntry = chartEntries[i];
-                var channelData = Array(count);
-                var offset = 0;
-                var currentIndex = i;
+            params = {
+                method: "GET"
+            }
 
-                var promise = new Promise(function (resolve, reject) {
+            var response = await fetch(url, params);
+            var contentLength = response.headers.get("Content-Length");
+            var target = new ArrayBuffer(contentLength)
+            var targetOffset = 0
+            var reader = response.body.getReader();
 
-                    connection.stream("StreamData", beginDate, endDate, chartEntry.path)
-                        .subscribe({
-                            next: (item) => {
-                                for (var i = 0; i < item.length; i++) {
-                                    if (isNaN(item[i]))
-                                        channelData[offset + i] = null;
-                                    else
-                                        channelData[offset + i] = item[i];
-                                }
+            while (true) {
+                var chunk = await reader.read();
 
-                                offset += item.length;
-                            },
-                            complete: () => {
-                                chartEntry.data = channelData;
-                                resolve();
-                            },
-                            error: (err) => {
-                                reject();
-                            }
-                        });
-                });
+                if (chunk.done)
+                    break;
 
-                try {
-                    await promise;
-                } catch (e) {
-                    console.log(`Fetching data from server failed with error: '${e}'`);
-                    return;
+                var source = chunk.value
+                var size = source.length;
+
+                for (var j = 0; j < size; j++) {
+                    target[targetOffset + j] = source[j];
                 }
-            }        
-        }
-        finally {
-            appState.invokeMethodAsync('SetVisualizeProgress', -1);
-        }
 
-        var timeZoneOffset = beginDate.getTimezoneOffset();
-        var unixBeginDate = beginDate.getTime() / 1000 + timeZoneOffset * 60;
-        var timeData = Array.from({ length: count }, (x, i) => i * dt + unixBeginDate);
+                targetOffset += size;
+                
+                var progress = (targetOffset / contentLength + i) / chartEntries.length
+                await appState.invokeMethodAsync('SetVisualizeProgress', progress);
+            }
 
-        // plot
-        try {
-            var opts = generateOpts(timeData, chartEntries, beginAtZero);
-            var data = generateDataStructure(timeData, chartEntries);
+            var channelData = new Float64Array(target);
 
-            if (plot)
-                plot.destroy();
+            // replace NaN by null
+            for (var j = 0; j < channelData.length; j++) {
+                if (isNaN(channelData[j]))
+                    channelData[j] = null;
+            }
 
-            plot = new uPlot(opts, data, document.getElementById(chartContainerId));
-        } catch (e) {
-            //
-        }
+            chartEntry.data = channelData;
+        }        
+    }
+    finally {
+        appState.invokeMethodAsync('SetVisualizeProgress', -1);
+    }
 
-        connection.stop();
-    });
+    var timeZoneOffset = beginDate.getTimezoneOffset();
+    var unixBeginDate = beginDate.getTime() / 1000 + timeZoneOffset * 60;
+    var timeData = Array.from({ length: count }, (x, i) => i * dt + unixBeginDate);
+
+    // plot
+    try {
+        var opts = generateOpts(timeData, chartEntries, beginAtZero);
+        var data = generateDataStructure(timeData, chartEntries);
+
+        if (plot)
+            plot.destroy();
+
+        plot = new uPlot(opts, data, document.getElementById(chartContainerId));
+    } catch (e) {
+        //
+    }
 }

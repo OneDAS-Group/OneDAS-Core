@@ -98,7 +98,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 using var dataReader = dataset.IsNative ? _databaseManager.GetNativeDataReader(project.Id) : _databaseManager.GetAggregationDataReader();
 
                 // read data
-                var stream = dataReader.ReadAsStream(dataset, begin, end, 1 * 1000 * 1000UL, cancellationToken);
+                var stream = dataReader.ReadAsDoubleStream(dataset, begin, end, 1 * 1000 * 1000UL, cancellationToken);
 
                 _logger.LogInformation($"{message} Done.");
 

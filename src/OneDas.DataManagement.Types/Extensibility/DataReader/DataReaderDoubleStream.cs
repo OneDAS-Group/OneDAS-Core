@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace OneDas.DataManagement.Extensibility
 {
-    public class DataReaderStream : Stream
+    public class DataReaderDoubleStream : Stream
     {
         #region Fields
 
@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.Extensibility
 
         #region Constructors
 
-        public DataReaderStream(long length, IEnumerable<DataReaderProgressRecord> progressRecords)
+        public DataReaderDoubleStream(long length, IEnumerable<DataReaderProgressRecord> progressRecords)
         {
             _length = length;
             _enumerator = progressRecords.GetEnumerator();
@@ -124,7 +124,7 @@ namespace OneDas.DataManagement.Extensibility
 
             if (success)
             {
-                double[] doubleData = default;
+                double[] doubleData;
 
                 var entry = _enumerator.Current.DatasetToRecordMap.First();
                 var dataset = entry.Key;

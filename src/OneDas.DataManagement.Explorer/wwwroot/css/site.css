@@ -636,7 +636,7 @@ app {
         padding-bottom: 5px;
     }
 
-.channel-box {
+.selected-channel-box {
     flex: 2;
     margin: 15px;
     background-color: var(--box-color);
@@ -644,13 +644,13 @@ app {
     min-height: 0;
 }
 
-.channel-box-sub {
+.selected-channel-box-sub {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-    .channel-box-sub button {
+    .selected-channel-box-sub button {
         margin-top: auto;
         margin-right: 15px;
     }

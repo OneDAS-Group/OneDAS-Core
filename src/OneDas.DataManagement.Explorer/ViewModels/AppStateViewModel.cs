@@ -436,6 +436,14 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             this.InitializeSampleRateToDatasetsMap();
 
+            // find sample rate
+            var sampleRates = exportParameters.ChannelPaths.Select(channelPath 
+                => new SampleRateContainer(channelPath.Split("/").Last()).ToUnitString());
+
+            if (sampleRates.Any())
+                this.SampleRate = sampleRates.First();
+
+            //
             this.ExportParameters = exportParameters;
             var selectedDatasets = this.GetSelectedDatasets();
 
@@ -462,12 +470,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     }
                 }
             });
-
-            // find sample rate
-            var sampleRates = selectedDatasets.Select(dataset => dataset.Model.GetSampleRate());
-
-            if (sampleRates.Any())
-                this.SampleRate = sampleRates.First().ToUnitString();
            
             this.RaisePropertyChanged(nameof(AppStateViewModel.ExportParameters));
         }
