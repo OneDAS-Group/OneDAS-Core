@@ -10,7 +10,7 @@ namespace OneDas.DataManagement.Database
         public ProjectMetaInfo(string id)
         {
             this.Id = id;
-            this.ResponsiblePerson = string.Empty;
+            this.Contact = string.Empty;
             this.ShortDescription = string.Empty;
             this.LongDescription = string.Empty;
             this.Channels = new List<ChannelMetaInfo>();
@@ -27,7 +27,7 @@ namespace OneDas.DataManagement.Database
 
         public string Id { get; set; }
 
-        public string ResponsiblePerson { get; set; }
+        public string Contact { get; set; }
 
         public string ShortDescription { get; set; }
 

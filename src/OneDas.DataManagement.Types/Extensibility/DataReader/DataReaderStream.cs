@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace OneDas.DataManagement.Extensibility
 {
@@ -14,21 +13,20 @@ namespace OneDas.DataManagement.Extensibility
 
         private double[] _buffer;
         private int _offset;
+        private int _position;
         private int _remaining;
 
         private long _length;
         private IEnumerator<DataReaderProgressRecord> _enumerator;
-        private CancellationTokenSource _cts;
 
         #endregion
 
         #region Constructors
 
-        public DataReaderStream(long length, IEnumerable<DataReaderProgressRecord> progressRecords, CancellationTokenSource cts)
+        public DataReaderStream(long length, IEnumerable<DataReaderProgressRecord> progressRecords)
         {
             _length = length;
             _enumerator = progressRecords.GetEnumerator();
-            _cts = cts;
 
             this._buffer = new double[0];
         }
@@ -49,7 +47,7 @@ namespace OneDas.DataManagement.Extensibility
         {
             get
             {
-                return _offset;
+                return _position;
             }
             set
             {
@@ -78,7 +76,7 @@ namespace OneDas.DataManagement.Extensibility
                 // we have some remaining bytes in the buffer
                 if (_remaining > 0)
                 {
-                    var actualCount = Math.Min(_remaining, count);
+                    var actualCount = Math.Min(_remaining, remaining);
                     var source = byteBuffer.Slice(_offset, actualCount);
                     var target = buffer.AsSpan().Slice(offset, actualCount);
 
@@ -87,12 +85,16 @@ namespace OneDas.DataManagement.Extensibility
                     // update counters
                     remaining -= actualCount;
                     _offset += actualCount;
+                    _position += actualCount;
                     _remaining -= actualCount;
                 }
 
                 // load next buffer
                 if (_remaining <= 0)
+                {
                     _buffer = this.GetNext();
+                    _offset = 0;
+                }
 
                 if (_buffer == null)
                     break;
@@ -114,12 +116,6 @@ namespace OneDas.DataManagement.Extensibility
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotImplementedException();
-        }
-
-        public override void Close()
-        {
-            base.Close();
-            _cts.Cancel();
         }
 
         private double[] GetNext()

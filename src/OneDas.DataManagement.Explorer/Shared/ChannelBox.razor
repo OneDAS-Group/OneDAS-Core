@@ -43,5 +43,5 @@
 } 
 else if (this.AppState.ProjectContainer != null) // user has no access to project
 {
-    <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.ResponsiblePerson) ? $" Please contact {this.AppState.ProjectContainer.ProjectMeta.ResponsiblePerson} to request permission." : "")</span>
+    <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.Contact) ? $" Please contact {this.AppState.ProjectContainer.ProjectMeta.Contact} to request permission." : "")</span>
 }

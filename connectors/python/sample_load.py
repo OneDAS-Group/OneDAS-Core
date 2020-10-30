@@ -1,6 +1,6 @@
 # Requires:
+# pip install aiohttp
 # pip install asyncio
-# pip install signalrcore-async
 # pip install matplotlib
 
 import asyncio
@@ -13,27 +13,34 @@ from OneDasConnector import OneDasConnector
 async def main():
 
     # settings
+    scheme = "http"
     host = "localhost"
-    port = 80
-    username = "test@root.org"
+    port = 8080
+    username = "test@onedas.org"
     password = "#test0/User1" # password = input("Please enter your password: ")
-    secure = False # http + ws vs https + wss
 
     begin = datetime(2020, 2, 1, 0, 0, tzinfo=timezone.utc)
-    end   = datetime(2020, 2, 3, 0, 0, tzinfo=timezone.utc)
+    end   = datetime(2020, 2, 2, 0, 0, tzinfo=timezone.utc)
 
-    channels = [
-        "/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean",
-        "/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean"
+    # must all be of the same sample rate
+    channel_paths = [
+        "/IN_MEMORY/TEST/ACCESSIBLE/T1/1 s_mean",
+        "/IN_MEMORY/TEST/ACCESSIBLE/V1/1 s_mean"
     ]
   
     # load data
-    connector = OneDasConnector(host, port, secure, username, password) # or without authentication: ... = OneDasConnector(host, port, secure)
-    data = await connector.load(begin, end, channels)
+    connector = OneDasConnector(scheme, host, port, username, password) 
+    # without authentication: connector = OneDasConnector(scheme, host, port)
+
+    params = {
+        "ChannelPaths": channel_paths,
+    }
+
+    data = await connector.load(begin, end, params)
 
     # prepare plot
-    y1 = data["/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean"]
-    y2 = data["/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean"]
+    y1 = data["/IN_MEMORY/TEST/ACCESSIBLE/T1/1 s_mean"]
+    y2 = data["/IN_MEMORY/TEST/ACCESSIBLE/V1/1 s_mean"]
 
     sampleRate = 1 # 1 Hz (adapt to your needs)
     time = [begin + timedelta(seconds=i/sampleRate) for i in range(len(y1.values))]

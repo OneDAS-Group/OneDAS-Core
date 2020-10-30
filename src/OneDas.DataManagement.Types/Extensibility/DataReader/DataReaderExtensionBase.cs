@@ -53,14 +53,14 @@ namespace OneDas.DataManagement.Extensibility
             DatasetInfo dataset,
             DateTime begin,
             DateTime end,
-            ulong upperBlockSize)
+            ulong upperBlockSize,
+            CancellationToken cancellationToken)
         {
-            var cts = new CancellationTokenSource();
-            var progressRecords = this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cts.Token);
+            var progressRecords = this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cancellationToken);
             var samplesPerSecond = new SampleRateContainer(dataset.Id).SamplesPerSecond;
-            var length = (long)Math.Round(samplesPerSecond * (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero);
+            var length = (long)Math.Round(samplesPerSecond * (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero) * OneDasUtilities.SizeOf(dataset.DataType);
 
-            return new DataReaderStream(length, progressRecords, cts);
+            return new DataReaderStream(length, progressRecords);
         }
 
         public IEnumerable<DataReaderProgressRecord> Read(

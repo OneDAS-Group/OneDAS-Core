@@ -1,34 +1,42 @@
 # Requires:
+# pip install aiohttp
 # pip install asyncio
-# pip install signalrcore-async
 
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from OneDasConnector import FileFormat, FileGranularity, OneDasConnector
+from OneDasConnector import OneDasConnector
 
 
 async def main():
 
     # settings
+    scheme = "http"
     host = "localhost"
-    port = 80
-    username = "test@root.org"
+    port = 8080
+    username = "test@onedas.org"
     password = "#test0/User1" # password = input("Please enter your password: ")
-    secure = False # http + ws vs https + wss
-
-    begin = datetime(2020, 2, 1, 0, 0, tzinfo=timezone.utc)
-    end   = datetime(2020, 2, 3, 0, 0, tzinfo=timezone.utc)
-
-    channels = [
-        "/IN_MEMORY/ALLOWED/TEST/T1/1 s_mean",
-        "/IN_MEMORY/ALLOWED/TEST/V1/1 s_mean"
-    ]
-
     target_folder = "data"
 
+    begin = datetime(2020, 2, 1, 0, 0, tzinfo=timezone.utc)
+    end   = datetime(2020, 2, 2, 0, 0, tzinfo=timezone.utc)
+
+    # must all be of the same sample rate
+    channel_paths = [
+        "/IN_MEMORY/TEST/ACCESSIBLE/T1/1 s_mean",
+        "/IN_MEMORY/TEST/ACCESSIBLE/V1/1 s_mean"
+    ]
+
     # export data
-    connector = OneDasConnector(host, port, secure, username, password) # or without authentication: ... = OneDasConnector(host, port, secure)
-    await connector.export(begin, end, FileFormat.MAT73, FileGranularity.Day, channels, target_folder)   
+    connector = OneDasConnector(scheme, host, port, username, password) # or without authentication: ... = OneDasConnector(host, port, secure)
+    # without authentication: connector = OneDasConnector(scheme, host, port)
+
+    params = {
+        "FileGranularity": "Day",   # Minute_1, Minute_10, Hour, Day, SingleFile
+        "FileFormat": "MAT73",      # CSV, FAMOS, MAT73
+        "ChannelPaths": channel_paths
+    }
+
+    await connector.export(begin, end, params, target_folder)   
 
 asyncio.run(main())

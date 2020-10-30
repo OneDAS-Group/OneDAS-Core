@@ -340,7 +340,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 ProjectEnd = project.ProjectEnd,
                 ShortDescription = projectMeta.ShortDescription,
                 LongDescription = projectMeta.LongDescription,
-                ResponsiblePerson = projectMeta.ResponsiblePerson,
+                Contact = projectMeta.Contact,
             };
         }
 
@@ -410,7 +410,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             public DateTime ProjectEnd { get; set; }
             public string ShortDescription { get; set; }
             public string LongDescription { get; set; }
-            public string ResponsiblePerson { get; set; }
+            public string Contact { get; set; }
         }
 
         public record Channel()

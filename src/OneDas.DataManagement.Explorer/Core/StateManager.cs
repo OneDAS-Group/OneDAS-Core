@@ -5,8 +5,6 @@ using System;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-#warning: stop all running downloads when state changes to inactive
-
     public class StateManager : BindableBase
     {
         #region Fields
@@ -15,6 +13,7 @@ namespace OneDas.DataManagement.Explorer.Core
         private bool _isActive;
         private ILogger _logger;
         private System.Timers.Timer _activityTimer;
+        private JobService _jobService;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerUserManager _userManager;
         private OneDasExplorerOptions _options;
@@ -25,15 +24,17 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Constructors
 
-        public StateManager(OneDasDatabaseManager databaseManager,
-                                          ILoggerFactory loggerFactory,
-                                          OneDasExplorerUserManager userManager,
-                                          OneDasExplorerOptions options)
+        public StateManager(JobService jobService,
+                            OneDasDatabaseManager databaseManager,
+                            OneDasExplorerUserManager userManager,
+                            OneDasExplorerOptions options,
+                            ILoggerFactory loggerFactory)
         {
+            _jobService = jobService;
             _databaseManager = databaseManager;
             _userManager = userManager;
-            _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _options = options;
+            _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _aggregator = new Aggregator(_options.AggregationChunkSizeMB, _logger, loggerFactory);
 
             this.TryRunApp(out var _);
@@ -157,6 +158,7 @@ namespace OneDas.DataManagement.Explorer.Core
             else
             {
                 this.State = OneDasExplorerState.Inactive;
+                _jobService.CancelAll();
                 _logger.LogInformation($"Entered inactive mode.");
             }
         }

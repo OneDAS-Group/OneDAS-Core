@@ -128,7 +128,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             });
 
             if (_jobService.TryAddExportJob(jobControl))
-                return this.Accepted($"{this.GetBasePath()}/jobs/export/{jobControl.Job.Id}/status", jobControl.Job);
+                return this.Accepted($"{this.GetBasePath()}{this.Request.Path}/{jobControl.Job.Id}/status", jobControl.Job);
             else
                 return this.Conflict();
         }

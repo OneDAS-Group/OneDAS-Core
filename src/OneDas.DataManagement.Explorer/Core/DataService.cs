@@ -131,7 +131,7 @@ namespace OneDas.DataManagement.Explorer.Core
                     });
 
                     // start
-                    var blockSizeLimit = 50 * 1000 * 1000UL;
+                    var blockSizeLimit = 5 * 1000 * 1000UL;
 
                     using var dataExporter = new DataExporter(zipFilePath, parameters, blockSizeLimit);
                     dataExporter.Progress += this.OnProgress;

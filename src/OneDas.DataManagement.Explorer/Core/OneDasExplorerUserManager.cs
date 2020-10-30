@@ -30,7 +30,7 @@ namespace OneDas.DataManagement.Explorer.Core
                     _logger.LogInformation($"SQLite database initialized.");
 
                 // ensure there is a root user
-                var defaultRootUsername = "root@root.org";
+                var defaultRootUsername = "root@onedas.org";
                 var defaultRootPassword = "#root0/User1";
 
                 string rootUsername = Environment.GetEnvironmentVariable("ONEDAS_ROOT_USERNAME");
@@ -71,7 +71,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 }
 
                 // ensure there is a test user
-                var defaultTestUsername = "test@root.org";
+                var defaultTestUsername = "test@onedas.org";
                 var defaultTestPassword = "#test0/User1";
 
                 if (userManager.FindByNameAsync(defaultTestUsername).Result == null)
