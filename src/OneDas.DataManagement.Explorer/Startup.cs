@@ -45,6 +45,9 @@ namespace OneDas.DataManagement.Explorer
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.All;
+#warning replace this with proper external configuration
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
             });
 
             // identity (customize: https://docs.microsoft.com/en-us/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-3.1)
