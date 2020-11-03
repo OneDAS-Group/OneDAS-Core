@@ -8,6 +8,7 @@ namespace OneDas.DataManagement.Database
 
         public OneDasDatabaseConfig()
         {
+            this.AggregationDataReaderRootPath = "";
             this.RootPathToDataReaderIdMap = new Dictionary<string, string>();
             this.AggregationConfigs = new List<AggregationConfig>();
             this.RestrictedProjects = new List<string>();
@@ -16,6 +17,8 @@ namespace OneDas.DataManagement.Database
         #endregion
 
         #region Properties
+
+        public string AggregationDataReaderRootPath { get; set; }
 
         public Dictionary<string, string> RootPathToDataReaderIdMap { get; set; }
 

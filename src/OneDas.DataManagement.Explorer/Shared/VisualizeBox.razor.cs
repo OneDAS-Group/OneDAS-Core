@@ -122,7 +122,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 			var count = (int)((end - begin).TotalSeconds * sampleRate);
 
 			await this.InvokeAsync(this.StateHasChanged);
-			await JsInterop.UpdateChartAsync(this.JsRuntime, this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
+			await this.JsRuntime.UpdateChartAsync(this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
 		}
 
 		#endregion

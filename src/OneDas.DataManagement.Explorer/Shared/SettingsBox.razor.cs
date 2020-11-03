@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.ViewModels;
+using System;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -41,6 +42,11 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         #region Methods
 
+        protected override async Task OnInitializedAsync()
+        {
+            //this.AppState.BrowserTimeOffsetMap = await this.JsRuntime.GetBrowserTimeOffsetMap();
+        }
+
         private void OpenPresetsDialog()
         {
             this.PresetsDialogIsOpen = true;
@@ -50,7 +56,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
 			var configuration = this.AppState.ExportParameters;
 			var jsonString = JsonSerializer.Serialize(configuration, new JsonSerializerOptions() { WriteIndented = true });
-			await JsInterop.BlobSaveAs(this.JsRuntime, "export.json", Encoding.UTF8.GetBytes(jsonString));
+			await this.JsRuntime.BlobSaveAs("export.json", Encoding.UTF8.GetBytes(jsonString));
 		}
 
         private async Task OnLoadExportSettingsAsync(InputFileChangeEventArgs e)

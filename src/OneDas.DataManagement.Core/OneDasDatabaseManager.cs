@@ -219,7 +219,11 @@ namespace OneDas.DataManagement
 
         public DataReaderExtensionBase GetAggregationDataReader()
         {
-            return this.InstantiateDataReader(_folderPath, typeof(HdfDataReader));
+            var rootPath = string.IsNullOrWhiteSpace(this.Config.AggregationDataReaderRootPath)
+                ? _folderPath
+                : this.Config.AggregationDataReaderRootPath;
+
+            return this.InstantiateDataReader(rootPath, typeof(HdfDataReader));
         }
 
         public DataReaderExtensionBase GetNativeDataReader(string projectId)

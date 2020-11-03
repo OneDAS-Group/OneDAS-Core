@@ -17,6 +17,21 @@ function FileSaveAs(filename, href) {
     document.body.removeChild(link);
 }
 
+function GetBrowserTimeOffsetMap(dateTime) {
+
+    var timeOffsetMap = {};
+    var start = Date.UTC(2020, 1, 1);
+    var end = Date.UTC(2021, 1, 1);
+    var current = start;
+
+    while (current < end) {
+        timeOffsetMap[current / 1000] = new Date(current).getTimezoneOffset();
+        current += 60000;
+    }
+
+    return timeOffsetMap;
+}
+
 var plot;
 var progress;
 var currentIndex;
@@ -62,7 +77,8 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
 
             var response = await fetch(url, params);
             var contentLength = response.headers.get("Content-Length");
-            var target = new ArrayBuffer(contentLength)
+            var buffer = new ArrayBuffer(contentLength);
+            var target = new Uint8Array(buffer);
             var targetOffset = 0
             var reader = response.body.getReader();
 
@@ -85,7 +101,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
                 await appState.invokeMethodAsync('SetVisualizeProgress', progress);
             }
 
-            var channelData = new Float64Array(target);
+            var channelData = new Float64Array(buffer);
 
             // replace NaN by null
             for (var j = 0; j < channelData.length; j++) {

@@ -62,7 +62,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             _authenticationStateProvider = authenticationStateProvider;
             _databaseManager = databaseManager;
             _options = options;
-            _dataService = dataService;
+            _dataService = dataService;        
 
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
@@ -163,7 +163,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 if (value.Kind == DateTimeKind.Local)
                     this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                 else
+                {
                     this.DateTimeBegin = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
+                }
+                //this.DateTimeBegin = DateTime.SpecifyKind(value.Add(-this.BrowserTimeZoneOffset), DateTimeKind.Utc);
 
                 if (this.DateTimeBegin >= this.DateTimeEnd)
                     this.DateTimeEnd = this.DateTimeBegin;
@@ -377,7 +380,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
                     var fileName = downloadLink.Split("/").Last();
-                    await JsInterop.FileSaveAs(_jsRuntime, fileName, downloadLink);
+                    await _jsRuntime.FileSaveAs(fileName, downloadLink);
                 }
             }
             finally
