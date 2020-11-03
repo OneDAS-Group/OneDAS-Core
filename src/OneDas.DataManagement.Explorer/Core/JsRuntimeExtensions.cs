@@ -20,9 +20,9 @@ namespace OneDas.DataManagement.Explorer.Core
             await jsRuntime.InvokeAsync<object>("FileSaveAs", fileName, href);
         }
 
-        public static ValueTask<Dictionary<long, int>> GetBrowserTimeOffsetMap(this IJSRuntime jsRuntime)
+        public static ValueTask<int> GetBrowserTimeZoneOffset(this IJSRuntime jsRuntime, DateTime value)
         {
-            return jsRuntime.InvokeAsync<Dictionary<long, int>>("GetBrowserTimeOffsetMap");
+            return jsRuntime.InvokeAsync<int>("GetBrowserTimeZoneOffset", value);
         }
 
         public static async Task UpdateChartAsync(this IJSRuntime jsRuntime, AppStateViewModel appState, List<ChartEntry> chartEntries, DateTime begin, DateTime end, int count, double dt, bool beginAtZero)

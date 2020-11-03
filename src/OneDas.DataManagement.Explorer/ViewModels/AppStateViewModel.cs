@@ -22,6 +22,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
     {
         #region Fields
 
+        private DateTime _dateTimeBeginWorkaround;
+        private DateTime _dateTimeEndWorkaround;
+
         private string _searchString;
         private string _downloadMessage;
         private string _sampleRate;
@@ -108,6 +111,85 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - General
 
+        // this is required because MatBlazor converts dates to local representation which is not desired
+        public DateTime DateTimeBeginWorkaround
+        {
+            get
+            {
+                return _dateTimeBeginWorkaround;
+            }
+            set
+            {
+                _dateTimeBeginWorkaround = value;
+
+                Task.Run(async () =>
+                {
+                    // Browser thinks it is local, but it is UTC.
+                    if (value.Kind == DateTimeKind.Local)
+                    {
+                        this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                    }
+                    // Browser thinks it is UTC, but it is nonsense. Trying to revert that.
+                    else
+                    {
+                        // Sending nonsense to GetBrowserTimeZoneOffset has the (small)
+                        // risk of getting the wrong time zone offset back 
+                        var timeZoneOffset = TimeSpan.FromMinutes(await _jsRuntime.GetBrowserTimeZoneOffset(value));
+
+                        // Correct nonsense to get back original UTC value.
+                        this.DateTimeBegin = DateTime.SpecifyKind(value.Add(-timeZoneOffset), DateTimeKind.Utc);
+                    }
+
+                    if (this.DateTimeBegin >= this.DateTimeEnd)
+                    {
+                        // Pretend that UTC time is local time to avoid conversion to nonsense again.
+                        _dateTimeEndWorkaround = DateTime.SpecifyKind(this.DateTimeBegin, DateTimeKind.Local);
+
+                        this.DateTimeEnd = this.DateTimeBegin;
+                    }
+                });
+            }
+        }
+
+        public DateTime DateTimeEndWorkaround
+        {
+            get
+            {
+                return _dateTimeEndWorkaround;
+            }
+            set
+            {
+                _dateTimeEndWorkaround = value;
+
+                Task.Run(async () =>
+                {
+                    // Browser thinks it is local, but it is UTC.
+                    if (value.Kind == DateTimeKind.Local)
+                    {
+                        this.DateTimeEnd = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                    }
+                    // Browser thinks it is UTC, but it is nonsense. Trying to revert that.
+                    else
+                    {
+                        // Sending nonsense to GetBrowserTimeZoneOffset has the (small)
+                        // risk of getting the wrong time zone offset back 
+                        var timeZoneOffset = TimeSpan.FromMinutes(await _jsRuntime.GetBrowserTimeZoneOffset(value));
+
+                        // Correct nonsense to get back original UTC value.
+                        this.DateTimeEnd = DateTime.SpecifyKind(value.Add(-timeZoneOffset), DateTimeKind.Utc);
+                    }
+
+                    if (this.DateTimeEnd <= this.DateTimeBegin)
+                    {
+                        // Pretend that UTC time is local time to avoid conversion to nonsense again.
+                        _dateTimeBeginWorkaround = DateTime.SpecifyKind(this.DateTimeEnd, DateTimeKind.Local);
+
+                        this.DateTimeBegin = this.DateTimeEnd;
+                    }
+                });
+            }
+        }
+
         public string Version { get; }
 
         public bool IsEditEnabled
@@ -153,40 +235,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #endregion
 
         #region Properties - Settings
-
-        // this is required because MatBlazor converts dates to local representation which is not desired
-        public DateTime DateTimeBeginWorkaround
-        {
-            get { return DateTime.SpecifyKind(this.DateTimeBegin, DateTimeKind.Local); }
-            set 
-            { 
-                if (value.Kind == DateTimeKind.Local)
-                    this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
-                else
-                {
-                    this.DateTimeBegin = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
-                }
-                //this.DateTimeBegin = DateTime.SpecifyKind(value.Add(-this.BrowserTimeZoneOffset), DateTimeKind.Utc);
-
-                if (this.DateTimeBegin >= this.DateTimeEnd)
-                    this.DateTimeEnd = this.DateTimeBegin;
-            }
-        }
-
-        public DateTime DateTimeEndWorkaround
-        {
-            get { return DateTime.SpecifyKind(this.DateTimeEnd, DateTimeKind.Local); }
-            set
-            {
-                if (value.Kind == DateTimeKind.Local)
-                    this.DateTimeEnd = DateTime.SpecifyKind(value, DateTimeKind.Utc);
-                else
-                    this.DateTimeEnd = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(value, TimeZoneInfo.Local), DateTimeKind.Utc);
-
-                if (this.DateTimeEnd <= this.DateTimeBegin)
-                    this.DateTimeBegin = this.DateTimeEnd;
-            }
-        }
 
         public List<string> SampleRateValues { get; set; }
 
@@ -333,7 +381,11 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public List<string> GetPresets()
         {
-            var folderPath = "PRESETS";
+            var folderPath = Path.Combine(_options.DataBaseFolderPath, "PRESETS");
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
             return Directory.EnumerateFiles(folderPath, "*.json", SearchOption.TopDirectoryOnly).ToList();
         }
 
@@ -473,7 +525,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     }
                 }
             });
-           
+
+            // Pretend that UTC time is local time to avoid conversion to nonsense.
+            this.DateTimeBeginWorkaround = DateTime.SpecifyKind(exportParameters.Begin, DateTimeKind.Local);
+
+            // Pretend that UTC time is local time to avoid conversion to nonsense.
+            this.DateTimeEndWorkaround = DateTime.SpecifyKind(exportParameters.End, DateTimeKind.Local);
+
             this.RaisePropertyChanged(nameof(AppStateViewModel.ExportParameters));
         }
 

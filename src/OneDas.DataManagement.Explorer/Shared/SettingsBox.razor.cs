@@ -22,6 +22,16 @@ namespace OneDas.DataManagement.Explorer.Shared
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
+                // for workaround
+                else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+                {
+                    this.InvokeAsync(this.StateHasChanged);
+                }
+                // for workaround
+                else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
+                {
+                    this.InvokeAsync(this.StateHasChanged);
+                }
                 else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
                 {
                     this.InvokeAsync(this.StateHasChanged);
@@ -41,11 +51,6 @@ namespace OneDas.DataManagement.Explorer.Shared
         #endregion
 
         #region Methods
-
-        protected override async Task OnInitializedAsync()
-        {
-            //this.AppState.BrowserTimeOffsetMap = await this.JsRuntime.GetBrowserTimeOffsetMap();
-        }
 
         private void OpenPresetsDialog()
         {

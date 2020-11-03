@@ -17,19 +17,8 @@ function FileSaveAs(filename, href) {
     document.body.removeChild(link);
 }
 
-function GetBrowserTimeOffsetMap(dateTime) {
-
-    var timeOffsetMap = {};
-    var start = Date.UTC(2020, 1, 1);
-    var end = Date.UTC(2021, 1, 1);
-    var current = start;
-
-    while (current < end) {
-        timeOffsetMap[current / 1000] = new Date(current).getTimezoneOffset();
-        current += 60000;
-    }
-
-    return timeOffsetMap;
+function GetBrowserTimeZoneOffset(dateTime) {
+    return new Date(dateTime).getTimezoneOffset();
 }
 
 var plot;

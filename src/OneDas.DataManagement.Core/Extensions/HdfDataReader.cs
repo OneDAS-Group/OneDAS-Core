@@ -203,7 +203,7 @@ namespace OneDas.DataManagement.Extensions
 
                 // (4) find corresponding cache file
                 var cacheFilePath = Path.Combine(cacheFolderPath, $"{currentMonth.ToString("yyyy-MM")}.json");
-
+               
                 List<ProjectInfo> cache;
 
                 // (5.a) cache file exists

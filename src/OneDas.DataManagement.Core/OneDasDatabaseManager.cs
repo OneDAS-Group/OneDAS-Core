@@ -128,8 +128,6 @@ namespace OneDas.DataManagement
 
             foreach (var dataReader in dataReaders)
             {
-                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
-
                 try
                 {
                     var isNativeDataReader = dataReader != aggregationDataReader;
@@ -266,6 +264,7 @@ namespace OneDas.DataManagement
             }
             else
             {
+                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
                 dataReader.InitializeProjects();
                 _rootPathToProjectsMap[rootPath] = dataReader.Projects;
             }
