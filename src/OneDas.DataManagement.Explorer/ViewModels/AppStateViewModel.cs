@@ -182,6 +182,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                         // risk of getting the wrong time zone offset back 
                         var timeZoneOffset = TimeSpan.FromMinutes(await _jsRuntime.GetBrowserTimeZoneOffset(value));
 
+                        // Pretend that UTC time is local time to avoid conversion to nonsense again.
+                        _dateTimeBeginWorkaround = DateTime.SpecifyKind(value.Add(-timeZoneOffset), DateTimeKind.Local);
+
                         // Correct nonsense to get back original UTC value.
                         this.DateTimeBegin = DateTime.SpecifyKind(value.Add(-timeZoneOffset), DateTimeKind.Utc);
                     }
@@ -220,6 +223,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                         // Sending nonsense to GetBrowserTimeZoneOffset has the (small)
                         // risk of getting the wrong time zone offset back 
                         var timeZoneOffset = TimeSpan.FromMinutes(await _jsRuntime.GetBrowserTimeZoneOffset(value));
+
+                        // Pretend that UTC time is local time to avoid conversion to nonsense again.
+                        _dateTimeEndWorkaround = DateTime.SpecifyKind(value.Add(-timeZoneOffset), DateTimeKind.Local);
 
                         // Correct nonsense to get back original UTC value.
                         this.DateTimeEnd = DateTime.SpecifyKind(value.Add(-timeZoneOffset), DateTimeKind.Utc);
