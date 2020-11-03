@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,12 @@ namespace OneDas.DataManagement.Explorer
         {
             // database
             services.AddDbContext<ApplicationDbContext>();
+
+            // forwarded headers
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.All;
+            });
 
             // identity (customize: https://docs.microsoft.com/en-us/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-3.1)
             services.AddDefaultIdentity<IdentityUser>()
@@ -153,6 +160,9 @@ namespace OneDas.DataManagement.Explorer
                 FileProvider = new LazyPhysicalFileProvider(options, "EXPORT"),
                 RequestPath = "/export"
             });
+
+            // forwarded headers
+            app.UseForwardedHeaders();
 
             // swagger
             app.UseOpenApi();

@@ -158,7 +158,7 @@ namespace OneDas.DataManagement.Explorer.Core
             else
             {
                 this.State = OneDasExplorerState.Inactive;
-                _jobService.CancelAll();
+                _jobService.Reset();
                 _logger.LogInformation($"Entered inactive mode.");
             }
         }

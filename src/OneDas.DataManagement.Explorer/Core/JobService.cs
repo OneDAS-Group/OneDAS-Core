@@ -44,10 +44,12 @@ namespace OneDas.DataManagement.Explorer.Core
                 .ToList();
         }
 
-        public void CancelAll()
+        public void Reset()
         {
             this.GetExportJobs()
                 .ForEach(job => job.CancellationTokenSource.Cancel());
+
+            _exportJobs.Clear();
         }
 
         #endregion
