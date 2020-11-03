@@ -111,6 +111,52 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - General
 
+        public string Version { get; }
+
+        public bool IsEditEnabled
+        {
+            get { return _isEditEnabled; }
+            set
+            {
+#warning Make this more efficient. Maybe by tracking changes.
+                if (_isEditEnabled && !value)
+                {
+                    _databaseManager.Database.ProjectContainers.ForEach(projectContainer =>
+                    {
+                        _databaseManager.SaveProjectMeta(projectContainer.ProjectMeta);
+                    });
+                }
+
+                this.SetProperty(ref _isEditEnabled, value);
+            }
+        }
+
+        public ClientState ClientState
+        {
+            get { return _clientState; }
+            set { this.SetProperty(ref _clientState, value); }
+        }
+
+        public double DownloadProgress
+        {
+            get { return _downloadProgress; }
+            set { this.SetProperty(ref _downloadProgress, value); }
+        }
+
+        public string DownloadMessage
+        {
+            get { return _downloadMessage; }
+            set { this.SetProperty(ref _downloadMessage, value); }
+        }
+
+        internal StateManager StateManager { get; }
+
+        internal ExportParameters ExportParameters { get; private set; }
+
+        #endregion
+
+        #region Properties - Settings
+
         // this is required because MatBlazor converts dates to local representation which is not desired
         public DateTime DateTimeBeginWorkaround
         {
@@ -189,52 +235,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 });
             }
         }
-
-        public string Version { get; }
-
-        public bool IsEditEnabled
-        {
-            get { return _isEditEnabled; }
-            set
-            {
-#warning Make this more efficient. Maybe by tracking changes.
-                if (_isEditEnabled && !value)
-                {
-                    _databaseManager.Database.ProjectContainers.ForEach(projectContainer =>
-                    {
-                        _databaseManager.SaveProjectMeta(projectContainer.ProjectMeta);
-                    });
-                }
-
-                this.SetProperty(ref _isEditEnabled, value);
-            }
-        }
-
-        public ClientState ClientState
-        {
-            get { return _clientState; }
-            set { this.SetProperty(ref _clientState, value); }
-        }
-
-        public double DownloadProgress
-        {
-            get { return _downloadProgress; }
-            set { this.SetProperty(ref _downloadProgress, value); }
-        }
-
-        public string DownloadMessage
-        {
-            get { return _downloadMessage; }
-            set { this.SetProperty(ref _downloadMessage, value); }
-        }
-
-        internal StateManager StateManager { get; }
-
-        internal ExportParameters ExportParameters { get; private set; }
-
-        #endregion
-
-        #region Properties - Settings
 
         public List<string> SampleRateValues { get; set; }
 
