@@ -91,7 +91,8 @@
         ],
         series: series,
         axes: axes,
-        scales: scales
+        scales: scales,
+        tzDate: ts => uPlot.tzDate(new Date(ts * 1e3), 'Etc/UTC')
     };
 }
 

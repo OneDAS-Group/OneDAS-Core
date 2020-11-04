@@ -105,8 +105,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
         appState.invokeMethodAsync('SetVisualizeProgress', -1);
     }
 
-    var timeZoneOffset = beginDate.getTimezoneOffset();
-    var unixBeginDate = beginDate.getTime() / 1000 + timeZoneOffset * 60;
+    var unixBeginDate = beginDate.getTime() / 1000;
     var timeData = Array.from({ length: count }, (x, i) => i * dt + unixBeginDate);
 
     // plot

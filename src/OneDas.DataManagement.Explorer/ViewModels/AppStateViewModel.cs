@@ -166,13 +166,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }
             set
             {
-                _dateTimeBeginWorkaround = value;
-
                 Task.Run(async () =>
                 {
                     // Browser thinks it is local, but it is UTC.
                     if (value.Kind == DateTimeKind.Local)
                     {
+                        _dateTimeBeginWorkaround = value;
                         this.DateTimeBegin = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                     }
                     // Browser thinks it is UTC, but it is nonsense. Trying to revert that.
@@ -208,13 +207,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }
             set
             {
-                _dateTimeEndWorkaround = value;
-
                 Task.Run(async () =>
                 {
                     // Browser thinks it is local, but it is UTC.
                     if (value.Kind == DateTimeKind.Local)
                     {
+                        _dateTimeEndWorkaround = value;
                         this.DateTimeEnd = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                     }
                     // Browser thinks it is UTC, but it is nonsense. Trying to revert that.

@@ -39,7 +39,7 @@ namespace OneDas.DataManagement.Extensions
             var length = (int)((end - begin).TotalSeconds * (double)dataset.GetSampleRate().SamplesPerSecond);
             var dt = (double)(1 / dataset.GetSampleRate().SamplesPerSecond);
 
-            if (dataset.Parent.Id.Contains("unix_time"))
+            if (((ChannelInfo)dataset.Parent).Name.Contains("unix_time"))
             {
                 dataDouble = Enumerable.Range(0, length).Select(i => i * dt + beginTime).ToArray();
             }
