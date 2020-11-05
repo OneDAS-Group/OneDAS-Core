@@ -1,3 +1,4 @@
+using GraphQL.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -7,9 +8,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using OneDas.DataManagement.Explorer.API;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
@@ -117,6 +120,21 @@ namespace OneDas.DataManagement.Explorer
                 );
             });
 
+            // graphql
+            services
+                .AddSingleton<ProjectSchema>()
+                .AddGraphQL((options, provider) =>
+                {
+                    options.EnableMetrics = true;
+
+                    var logger = provider.GetRequiredService<ILogger<Startup>>();
+                    options.UnhandledExceptionDelegate = ctx
+                        => logger.LogError("{Error} occured", ctx.OriginalException.Message);
+                })
+                .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)
+                .AddSystemTextJson(deserializerSettings => { }, serializerSettings => { })
+                .AddGraphTypes(typeof(ProjectSchema));
+
             // custom
             services.AddHttpContextAccessor();
             services.AddScoped<AppStateViewModel>();
@@ -170,6 +188,10 @@ namespace OneDas.DataManagement.Explorer
             // swagger
             app.UseOpenApi();
             app.UseSwaggerUi3();
+
+            // graphql
+            app.UseGraphQL<ProjectSchema>("/graphql");
+            app.UseGraphQLPlayground();
 
             // routing (for REST API)
             app.UseRouting();
