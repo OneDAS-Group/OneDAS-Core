@@ -30,14 +30,22 @@ namespace OneDas.DataManagement
 
     public class OneDasDatabaseManager
     {
+        #region Records
+
+        public record DatabaseManagerState
+        {
+            public OneDasDatabase Database { get; init; }
+            public Dictionary<string, Type> RootPathToDataReaderTypeMap { get; init; }
+            public Dictionary<string, List<ProjectInfo>> RootPathToProjectsMap { get; init; }
+        }
+
+        #endregion
+
         #region Fields
 
-        private object _lock;
         private string _folderPath;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
-        private Dictionary<string, Type> _rootPathToDataReaderTypeMap;
-        private Dictionary<string, List<ProjectInfo>> _rootPathToProjectsMap;
 
         #endregion
 
@@ -47,17 +55,17 @@ namespace OneDas.DataManagement
         {
             _logger = logger;
             _loggerFactory = loggerFactory;
-
-            _lock = new object();
         }
 
         #endregion
 
         #region Properties
 
-        public OneDasDatabase Database { get; private set; }
+        public OneDasDatabase Database => this.State.Database;
 
         public OneDasDatabaseConfig Config { get; private set; }
+
+        private DatabaseManagerState State { get; set; }
 
         #endregion
 
@@ -98,9 +106,6 @@ namespace OneDas.DataManagement
 
                     // save config to disk
                     this.SaveConfig(folderPath, this.Config);
-
-                    // create empty database
-                    this.Database = new OneDasDatabase();
                 }
                 catch
                 {
@@ -113,6 +118,18 @@ namespace OneDas.DataManagement
 
         public void Update()
         {
+            // Concept:
+            //
+            // 1) rootPathToProjectsMap, rootPathToDataReaderTypeMap and database are instantiated in this method,
+            // combined into a new DatabaseManagerState and then set in an atomic operation to the State propery.
+            // 
+            // 2) Within this method, the rootPathToProjectsMap cache gets filled for both, aggregated and native data 
+            // reader.
+            //
+            // 3) It may happen that during this process, which might take a while, an external caller calls 
+            // GetAggregationDataReader or GetNativeDataReader. To divide both processes (external call vs this method),
+            // the State property is introduced, so external calls use old maps and this method uses the new instances.
+
             var database = new OneDasDatabase();
 
             // create new empty projects map
@@ -122,10 +139,10 @@ namespace OneDas.DataManagement
             var rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
 
             // instantiate data readers
-            using var aggregationDataReader = this.GetAggregationDataReader();
+            using var aggregationDataReader = this.GetAggregationDataReader(rootPathToProjectsMap);
 
             var dataReaders = rootPathToDataReaderTypeMap
-                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value))
+                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, rootPathToProjectsMap))
                                 .Concat(new DataReaderExtensionBase[] { aggregationDataReader })
                                 .ToList();
 
@@ -215,37 +232,39 @@ namespace OneDas.DataManagement
                 this.SaveProjectMeta(projectContainer.ProjectMeta);
             }
 
-            lock (_lock)
+            this.State = new DatabaseManagerState()
             {
-                _rootPathToProjectsMap = rootPathToProjectsMap;
-                _rootPathToDataReaderTypeMap = rootPathToDataReaderTypeMap;
-                this.Database = database;
-            }
+                Database = database,
+                RootPathToProjectsMap = rootPathToProjectsMap,
+                RootPathToDataReaderTypeMap = rootPathToDataReaderTypeMap
+            };
         }
 
-        public DataReaderExtensionBase GetAggregationDataReader()
+        public DataReaderExtensionBase GetAggregationDataReader(
+           Dictionary<string, List<ProjectInfo>> rootPathToProjectsMap = null)
         {
             var rootPath = string.IsNullOrWhiteSpace(this.Config.AggregationDataReaderRootPath)
                 ? _folderPath
                 : this.Config.AggregationDataReaderRootPath;
 
-            return this.InstantiateDataReader(rootPath, typeof(HdfDataReader));
+            if (rootPathToProjectsMap == null)
+                rootPathToProjectsMap = this.State.RootPathToProjectsMap;
+
+            return this.InstantiateDataReader(rootPath, typeof(HdfDataReader), rootPathToProjectsMap);
         }
 
-        public DataReaderExtensionBase GetNativeDataReader(string projectId)
+        public DataReaderExtensionBase GetNativeDataReader(
+            string projectId)
         {
-            var container = this.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
+            var container = this.State.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
 
             if (container == null)
                 throw new KeyNotFoundException("The requested project could not be found.");
 
-            lock (_lock)
-            {
-                if (!_rootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
-                    throw new KeyNotFoundException("The requested data reader could not be found.");
+            if (!this.State.RootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
+                throw new KeyNotFoundException("The requested data reader could not be found.");
 
-                return this.InstantiateDataReader(container.RootPath, dataReaderType);
-            }
+            return this.InstantiateDataReader(container.RootPath, dataReaderType, this.State.RootPathToProjectsMap);
         }
 
         public void SaveProjectMeta(ProjectMetaInfo projectMeta)
@@ -263,24 +282,24 @@ namespace OneDas.DataManagement
             File.WriteAllText(filePath, jsonString);
         }
 
-        private DataReaderExtensionBase InstantiateDataReader(string rootPath, Type type)
+        private DataReaderExtensionBase InstantiateDataReader(
+            string rootPath, 
+            Type type, 
+            Dictionary<string, List<ProjectInfo>> rootPathToProjectsMap)
         {
             var logger = _loggerFactory.CreateLogger(rootPath);
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
 
-            lock (_lock)
+            // initialize projects property
+            if (rootPathToProjectsMap.TryGetValue(rootPath, out var value))
             {
-                // initialize projects property
-                if (_rootPathToProjectsMap.TryGetValue(rootPath, out var value))
-                {
-                    dataReader.InitializeProjects(value);
-                }
-                else
-                {
-                    _logger.LogInformation($"Loading {dataReader.RootPath} ...");
-                    dataReader.InitializeProjects();
-                    _rootPathToProjectsMap[rootPath] = dataReader.Projects;
-                }
+                dataReader.InitializeProjects(value);
+            }
+            else
+            {
+                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
+                dataReader.InitializeProjects();
+                rootPathToProjectsMap[rootPath] = dataReader.Projects;
             }
 
             return dataReader;

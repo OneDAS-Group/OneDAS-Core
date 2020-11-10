@@ -153,6 +153,7 @@ namespace OneDas.DataManagement.Explorer
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
+                              StateManager stateManager, // needs to be called to initialize database
                               OneDasExplorerOptions options)
         {
             // ...

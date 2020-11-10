@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject StateManager StateManager
 
-@if (this.StateManager.IsInitialized)
+@if (!this.StateManager.IsInitialized)
 {
     <StartupWizard />
 }
