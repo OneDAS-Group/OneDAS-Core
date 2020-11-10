@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using Xunit;
 
@@ -28,7 +27,7 @@ namespace OneDas.Core.Tests
         public void CanAggregate1(AggregationMethod method, double nanLimit, double[] data, double expected)
         {
             // Arrange
-            var aggregator = new Aggregator(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
+            var aggregator = new AggregationService(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
             var kernelSize = data.Length;
             var config = new AggregationConfig() { Method = method, Argument = "360" };
 
@@ -49,7 +48,7 @@ namespace OneDas.Core.Tests
         public void CanAggregate2(AggregationMethod method, double nanLimit, int[] data, byte[] statusSet, double expected)
         {
             // Arrange
-            var command = new Aggregator(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
+            var command = new AggregationService(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
             var kernelSize = data.Length;
             var config = new AggregationConfig() { Method = method, Argument = "360" };
 

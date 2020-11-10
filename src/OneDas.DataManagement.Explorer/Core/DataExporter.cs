@@ -6,13 +6,11 @@ using OneDas.Extension.Csv;
 using OneDas.Extension.Famos;
 using OneDas.Extension.Mat73;
 using OneDas.Infrastructure;
-using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 
 namespace OneDas.DataManagement.Explorer.Core

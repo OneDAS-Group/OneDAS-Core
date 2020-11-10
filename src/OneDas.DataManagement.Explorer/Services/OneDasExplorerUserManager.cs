@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Explorer.Core;
 using System;
 using System.Security.Claims;
 
-namespace OneDas.DataManagement.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Services
 {
     public class OneDasExplorerUserManager
     {

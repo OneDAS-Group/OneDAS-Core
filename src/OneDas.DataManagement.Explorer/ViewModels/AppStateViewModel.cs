@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Infrastructure;
 using OneDas.Extension.Csv;
 using OneDas.Infrastructure;
@@ -94,7 +95,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             // state manager
             _propertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(Core.StateManager.State))
+                if (e.PropertyName == nameof(StateManager.IsInitialized))
                 {
                     this.RaisePropertyChanged(e.PropertyName);
                 }
@@ -337,8 +338,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - Relay Properties
 
-        public OneDasExplorerState State => this.StateManager.State;
-
         public DateTime DateTimeBegin
         {
             get { return this.ExportParameters.Begin; }
@@ -402,8 +401,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 return this.DateTimeBegin < this.DateTimeEnd &&
                        this.SelectedDatasets.Count > 0 &&
-                       (ulong)this.FileGranularity >= samplePeriod &&
-                       this.State == OneDasExplorerState.Ready;
+                       (ulong)this.FileGranularity >= samplePeriod;
             }
             else
             {

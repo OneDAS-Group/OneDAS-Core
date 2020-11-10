@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.Types;
@@ -9,7 +8,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading;
-using static System.Net.WebRequestMethods;
 
 namespace OneDas.DataManagement.Explorer.Controllers
 {
@@ -21,17 +19,14 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private StateManager _stateManager;
 
         #endregion
 
         #region Constructors
 
-        public DataController(StateManager stateManager,
-                                OneDasDatabaseManager databaseManager,
-                                ILoggerFactory loggerFactory)
+        public DataController(OneDasDatabaseManager databaseManager,
+                              ILoggerFactory loggerFactory)
         {
-            _stateManager = stateManager;
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
@@ -80,8 +75,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                _stateManager.CheckState();
-
                 // dataset
                 var path = $"{projectId}/{channelId}/{datasetId}";
 

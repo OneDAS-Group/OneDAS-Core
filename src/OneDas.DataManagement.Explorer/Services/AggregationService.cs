@@ -1,10 +1,11 @@
 ﻿using HDF.PInvoke;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Statistics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.Buffers;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.Infrastructure;
@@ -13,66 +14,122 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Services
 {
-    public class Aggregator
+    public class AggregationService
     {
         #region Fields
 
         private uint _aggregationChunkSizeMb;
-        private ILogger _logger;
-        private ILoggerFactory _loggerFactory;
 
+        private ILogger _logger;
+
+        private SignInManager<IdentityUser> _signInManager;
         private OneDasDatabaseManager _databaseManager;
 
         #endregion
 
         #region Constructors
 
-        public Aggregator(uint aggregationChunkSizeMb, ILogger logger, ILoggerFactory loggerFactory)
+        public AggregationService(
+            SignInManager<IdentityUser> signInManager,
+            OneDasDatabaseManager databaseManager, 
+            OneDasExplorerOptions options, 
+            ILoggerFactory loggerFactory)
         {
-            _aggregationChunkSizeMb = aggregationChunkSizeMb;
-            _logger = logger;
-            _loggerFactory = loggerFactory;
+            _signInManager = signInManager;
+            _databaseManager = databaseManager;
+            _aggregationChunkSizeMb = options.AggregationChunkSizeMB;
+            _logger = loggerFactory.CreateLogger("OneDAS Explorer");
+
+            this.Progress = new Progress<ProgressUpdatedEventArgs>();
         }
+
+        #endregion
+
+        #region Properties
+
+        public Progress<ProgressUpdatedEventArgs> Progress { get; }
 
         #endregion
 
         #region Methods
 
-        public void Run(string databaseFolderPath, uint days, bool force)
+        public Task<string> AggregateDataAsync(IPAddress remoteIpAddress, string databaseFolderPath, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
         {
-            _databaseManager = new OneDasDatabaseManager(NullLogger.Instance, _loggerFactory);
-            _databaseManager.Initialize(databaseFolderPath);
-            _databaseManager.Update();
-
-            var projectNames = _databaseManager.Config.AggregationConfigs.Select(config => config.ProjectName).Distinct().ToList();
-            var epochEnd = DateTime.UtcNow.Date;
-            var epochStart = epochEnd.AddDays(-days);
-
-            foreach (var projectName in projectNames)
+            return Task.Run(() =>
             {
-                for (int i = 0; i <= days; i++)
+                // log
+                string userName;
+
+                if (_signInManager.Context.User.Identity.IsAuthenticated)
+                    userName = _signInManager.Context.User.Identity.Name;
+                else
+                    userName = "anonymous";
+
+                var message = $"User '{userName}' ({remoteIpAddress}) aggregates data: {aggregationParameters.Days} days ... ";
+                _logger.LogInformation(message);
+
+                try
                 {
-                    this.CreateAggregatedFiles(databaseFolderPath, projectName, epochStart.AddDays(i), force);
+                    _databaseManager.Update();
+
+                    var projectIds = aggregationParameters.Aggregations
+                        .Select(config => config.ProjectId)
+                        .Distinct().ToList();
+                    var epochEnd = DateTime.UtcNow.Date;
+                    var epochStart = epochEnd.AddDays(-aggregationParameters.Days);
+                    var totalDays = projectIds.Count * aggregationParameters.Days;
+
+                    for (int i = 0; i < projectIds.Count; i++)
+                    {
+                        var projectId = projectIds[i];
+                        var currentDay = epochStart.AddDays(i);
+
+                        if (cancellationToken.IsCancellationRequested)
+                            break;
+
+                        for (int j = 0; j <= aggregationParameters.Days; j++)
+                        {
+                            var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
+                            var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyy-MM-dd")}";
+                            var eventArgs = new ProgressUpdatedEventArgs(i * j / totalDays, progressMessage);
+                            progress.Report(eventArgs);
+
+                            if (cancellationToken.IsCancellationRequested)
+                                break;
+
+                            this.CreateAggregatedFiles(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
+                        }
+                    }
                 }
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.GetFullMessage());
+                    throw;
+                }
+
+                _logger.LogInformation($"{message} Done.");
+
+                return string.Empty;
+            }, cancellationToken);
         }
 
-        private void CreateAggregatedFiles(string databaseFolderPath, string projectName, DateTime date, bool force)
+        private void CreateAggregatedFiles(string databaseFolderPath, string projectId, DateTime date, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
 
-            using var dataReader = _databaseManager.GetNativeDataReader(projectName);
+            using var dataReader = _databaseManager.GetNativeDataReader(projectId);
 
             // get files
-            if (!dataReader.IsDataOfDayAvailable(projectName, date))
+            if (!dataReader.IsDataOfDayAvailable(projectId, date))
                 return;
 
             // process data
@@ -81,13 +138,15 @@ namespace OneDas.DataManagement.Explorer.Core
                 var targetFileId = -1L;
 
                 // project
-                var project = _databaseManager.Database.GetProjects().FirstOrDefault(project => project.Id == projectName);
+                var project = _databaseManager.Database
+                    .GetProjects()
+                    .FirstOrDefault(project => project.Id == projectId);
 
                 if (project is null)
-                    throw new Exception($"The requested project '{projectName}' could not be found.");
+                    throw new Exception($"The requested project '{projectId}' could not be found.");
 
                 // targetFileId
-                var projectFileName = projectName.TrimStart('/').Replace("/", "_");
+                var projectFileName = projectId.TrimStart('/').Replace("/", "_");
                 var dateTimeFileName = date.ToString("yyyy-MM-ddTHH-mm-ssZ");
                 var targetFileName = $"{projectFileName}_{dateTimeFileName}.h5";
                 var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
@@ -111,7 +170,7 @@ namespace OneDas.DataManagement.Explorer.Core
                     }
 
                     // projectInfo
-                    this.AggregateProject(dataReader, project, date, targetFileId, force);
+                    this.AggregateProject(dataReader, project, date, targetFileId, aggregationParameters, cancellationToken);
                 }
                 finally
                 {
@@ -124,41 +183,40 @@ namespace OneDas.DataManagement.Explorer.Core
             }
         }
 
-        private void AggregateProject(DataReaderExtensionBase dataReader, ProjectInfo project, DateTime date, long targetFileId, bool force)
+        private void AggregateProject(DataReaderExtensionBase dataReader, ProjectInfo project, DateTime date, long targetFileId, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... ");
-
-            var potentialAggregationConfigs = _databaseManager.Config.AggregationConfigs.Where(config => config.ProjectName == project.Id).ToList();
+            var potentialAggregationParamerters = aggregationParameters.Aggregations
+                .Where(paramerters => paramerters.ProjectId == project.Id)
+                .ToList();
 
             var channelToAggregationConfigMap = project.Channels
-                .ToDictionary(channel => channel, channel => potentialAggregationConfigs.Where(config => this.ApplyAggregationFilter(channel, config.Filters)).ToList())
+                .ToDictionary(channel => channel, channel => potentialAggregationParamerters.Where(paramerters => this.ApplyAggregationFilter(channel, paramerters.Filters)).ToList())
                 .Where(entry => entry.Value.Any())
                 .ToDictionary(entry => entry.Key, entry => entry.Value);
 
             foreach (var entry in channelToAggregationConfigMap)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
                 var channel = entry.Key;
                 var dataset = channel.Datasets.First();
-                var aggregationConfigs = entry.Value;
+                var aggregationParameterss = entry.Value;
 
                 OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, aggregationConfigs, date, targetFileId, force });
+                                                    new object[] { dataReader, dataset, aggregationParameterss, date, targetFileId, aggregationParameters.Force });
             }
-
-            _logger.LogInformation($"Processing day {date.ToString("yyyy-MM-dd")} ... Done.");
         }
 
         private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader,
                                                DatasetInfo dataset,
-                                               List<AggregationConfig> aggregationConfigs,
+                                               AggregationParameters aggregationParameters,
                                                DateTime date,
                                                long targetFileId,
                                                bool force) where T : unmanaged
         {
-            _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... ");
-
             // value size
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
 
@@ -171,11 +229,11 @@ namespace OneDas.DataManagement.Explorer.Core
             var setupToBufferDataMap = new Dictionary<AggregationSetup, AggregationBufferData>();
             var actualPeriods = new HashSet<AggregationPeriod>();
 
-            var setups = aggregationConfigs.SelectMany(config =>
+            var setups = aggregationParameters.Aggregations.SelectMany(parameters =>
             {
                 return Enum.GetValues(typeof(AggregationPeriod))
                     .Cast<AggregationPeriod>()
-                    .Select(period => new AggregationSetup(config, period));
+                    .Select(period => new AggregationSetup(parameters, period));
             }).ToList();
 
             try
@@ -184,7 +242,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 foreach (var setup in setups)
                 {
                     // translate method name
-                    var methodIdentifier = setup.Config.Method switch
+                    var methodIdentifier = setup.Aggregation.Method switch
                     {
                         AggregationMethod.Mean => "mean",
                         AggregationMethod.MeanPolar => "mean_polar",
@@ -196,7 +254,7 @@ namespace OneDas.DataManagement.Explorer.Core
                         AggregationMethod.MaxBitwise => "max_bitwise",
                         AggregationMethod.SampleAndHold => "sample_and_hold",
                         AggregationMethod.Sum => "sum",
-                        _ => throw new Exception($"The aggregation method '{setup.Config.Method}' is unknown.")
+                        _ => throw new Exception($"The aggregation method '{setup.Aggregation.Method}' is unknown.")
                     };
 
                     var targetDatasetPath = $"{groupPath}/{(int)setup.Period} s_{methodIdentifier}";
@@ -227,10 +285,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 }
 
                 if (!setupToDataMap.Any())
-                {
-                    _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... Skipped.");
                     return;
-                }
 
                 // process data
                 var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions gets data with a multiple length of 10 minutes
@@ -267,8 +322,6 @@ namespace OneDas.DataManagement.Explorer.Core
                     IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
                     H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
                 }
-
-                _logger.LogInformation($"Processing dataset '{dataset.GetPath()}' ... Done.");
             }
             finally
             {
@@ -295,11 +348,11 @@ namespace OneDas.DataManagement.Explorer.Core
             foreach (var item in setupToDataMap)
             {
                 var setup = item.Key;
-                var aggregationConfig = setup.Config;
+                var aggregation = setup.Aggregation;
                 var period = setup.Period;
                 var periodData = item.Value;
 
-                switch (aggregationConfig.Method)
+                switch (aggregation.Method)
                 {
                     case AggregationMethod.Mean:
                     case AggregationMethod.MeanPolar:
@@ -313,20 +366,20 @@ namespace OneDas.DataManagement.Explorer.Core
                         if (dataset_double == null)
                             dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
 
-                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, dataset_double, nanLimit, _logger);
+                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregation, (int)periodData.SampleCount, dataset_double, nanLimit, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregationConfig, (int)periodData.SampleCount, data, statusSet, nanLimit, _logger);
+                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregation, (int)periodData.SampleCount, data, statusSet, nanLimit, _logger);
 
                         break;
 
                     default:
 
-                        _logger.LogWarning($"The aggregation method '{aggregationConfig.Method}' is not known. Skipping period {period}.");
+                        _logger.LogWarning($"The aggregation method '{aggregation.Method}' is not known. Skipping period {period}.");
 
                         continue;
                 }
@@ -335,12 +388,12 @@ namespace OneDas.DataManagement.Explorer.Core
             return setupToPartialBufferMap;
         }
 
-        internal double[] ApplyAggregationFunction(AggregationConfig aggregationConfig, int kernelSize, double[] data, double nanLimit, ILogger logger)
+        internal double[] ApplyAggregationFunction(Aggregation aggregation, int kernelSize, double[] data, double nanLimit, ILogger logger)
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
-            var method = aggregationConfig.Method;
-            var argument = aggregationConfig.Argument;
+            var method = aggregation.Method;
+            var argument = aggregation.Argument;
 
             switch (method)
             {
@@ -500,12 +553,12 @@ namespace OneDas.DataManagement.Explorer.Core
             return result;
         }
 
-        internal double[] ApplyAggregationFunction<T>(AggregationConfig aggregationConfig, int kernelSize, T[] data, byte[] statusSet, double nanLimit, ILogger logger) where T : unmanaged
+        internal double[] ApplyAggregationFunction<T>(Aggregation aggregation, int kernelSize, T[] data, byte[] statusSet, double nanLimit, ILogger logger) where T : unmanaged
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
-            var method = aggregationConfig.Method;
-            var argument = aggregationConfig.Argument;
+            var method = aggregation.Method;
+            var argument = aggregation.Argument;
 
             switch (method)
             {

@@ -14,6 +14,7 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using OneDas.DataManagement.Explorer.API;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.Linq;
@@ -140,17 +141,18 @@ namespace OneDas.DataManagement.Explorer
             services.AddScoped<AppStateViewModel>();
             services.AddScoped<SettingsViewModel>();
             services.AddScoped<DataService>();
+            services.AddScoped<AggregationService>();
             services.AddScoped<JwtService<IdentityUser>>();
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
             services.AddSingleton<StateManager>();
-            services.AddSingleton<JobService>();
+            services.AddSingleton<JobService<ExportJob>>();
+            services.AddSingleton<JobService<AggregationJob>>();
             services.AddSingleton<OneDasExplorerUserManager>();
         }
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              StateManager stateManager, // stateManager is requested to create an instance and let the timers start
                               OneDasExplorerOptions options)
         {
             // ...

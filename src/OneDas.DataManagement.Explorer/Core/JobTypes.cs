@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public record Job
+    public abstract record Job
     {
         /// <example>06f8eb30-5924-4a71-bdff-322f92343f5b</example>
         public Guid Id { get; init; } = Guid.NewGuid();
@@ -15,6 +15,11 @@ namespace OneDas.DataManagement.Explorer.Core
     public record ExportJob : Job
     {
         public ExportParameters Parameters { get; init; }
+    }
+
+    public record AggregationJob : Job
+    {
+        public AggregationParameters Parameters { get; init; }
     }
 
     public record JobStatus

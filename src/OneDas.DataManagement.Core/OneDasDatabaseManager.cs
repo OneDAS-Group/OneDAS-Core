@@ -32,6 +32,7 @@ namespace OneDas.DataManagement
     {
         #region Fields
 
+        private object _lock;
         private string _folderPath;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
@@ -46,6 +47,8 @@ namespace OneDas.DataManagement
         {
             _logger = logger;
             _loggerFactory = loggerFactory;
+
+            _lock = new object();
         }
 
         #endregion
@@ -113,15 +116,15 @@ namespace OneDas.DataManagement
             var database = new OneDasDatabase();
 
             // create new empty projects map
-            _rootPathToProjectsMap = new Dictionary<string, List<ProjectInfo>>();
+            var rootPathToProjectsMap = new Dictionary<string, List<ProjectInfo>>();
 
             // load data readers
-            _rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
+            var rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
 
             // instantiate data readers
             using var aggregationDataReader = this.GetAggregationDataReader();
 
-            var dataReaders = _rootPathToDataReaderTypeMap
+            var dataReaders = rootPathToDataReaderTypeMap
                                 .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value))
                                 .Concat(new DataReaderExtensionBase[] { aggregationDataReader })
                                 .ToList();
@@ -212,7 +215,12 @@ namespace OneDas.DataManagement
                 this.SaveProjectMeta(projectContainer.ProjectMeta);
             }
 
-            this.Database = database;
+            lock (_lock)
+            {
+                _rootPathToProjectsMap = rootPathToProjectsMap;
+                _rootPathToDataReaderTypeMap = rootPathToDataReaderTypeMap;
+                this.Database = database;
+            }
         }
 
         public DataReaderExtensionBase GetAggregationDataReader()
@@ -231,10 +239,13 @@ namespace OneDas.DataManagement
             if (container == null)
                 throw new KeyNotFoundException("The requested project could not be found.");
 
-            if (!_rootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
-                throw new KeyNotFoundException("The requested data reader could not be found.");
+            lock (_lock)
+            {
+                if (!_rootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
+                    throw new KeyNotFoundException("The requested data reader could not be found.");
 
-            return this.InstantiateDataReader(container.RootPath, dataReaderType);
+                return this.InstantiateDataReader(container.RootPath, dataReaderType);
+            }
         }
 
         public void SaveProjectMeta(ProjectMetaInfo projectMeta)
@@ -257,16 +268,19 @@ namespace OneDas.DataManagement
             var logger = _loggerFactory.CreateLogger(rootPath);
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
 
-            // initialize projects property
-            if (_rootPathToProjectsMap.TryGetValue(rootPath, out var value))
+            lock (_lock)
             {
-                dataReader.InitializeProjects(value);
-            }
-            else
-            {
-                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
-                dataReader.InitializeProjects();
-                _rootPathToProjectsMap[rootPath] = dataReader.Projects;
+                // initialize projects property
+                if (_rootPathToProjectsMap.TryGetValue(rootPath, out var value))
+                {
+                    dataReader.InitializeProjects(value);
+                }
+                else
+                {
+                    _logger.LogInformation($"Loading {dataReader.RootPath} ...");
+                    dataReader.InitializeProjects();
+                    _rootPathToProjectsMap[rootPath] = dataReader.Projects;
+                }
             }
 
             return dataReader;

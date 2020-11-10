@@ -1,7 +1,6 @@
 ﻿using GraphQL;
 using GraphQL.Types;
 using System.Linq;
-using static OneDas.DataManagement.Explorer.Controllers.ProjectsController;
 
 namespace OneDas.DataManagement.Explorer.API
 {

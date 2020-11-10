@@ -12,7 +12,7 @@ namespace OneDas.DataManagement.Explorer.API
             this.Field(x => x.Id, type: typeof(IdGraphType))
                 .Description("The channel ID.");
 
-            this.Field(x => x.Name)
+            this.Field(x => x.Name, type: typeof(IdGraphType))
                 .Description("The channel name.");
 
             this.Field(x => x.Group)

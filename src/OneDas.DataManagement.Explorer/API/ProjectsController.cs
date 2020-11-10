@@ -20,17 +20,14 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private StateManager _stateManager;
 
         #endregion
 
         #region Constructors
 
-        public ProjectsController(StateManager stateManager,
-                                 OneDasDatabaseManager databaseManager,
-                                 ILoggerFactory loggerFactory)
+        public ProjectsController(OneDasDatabaseManager databaseManager,
+                                  ILoggerFactory loggerFactory)
         {
-            _stateManager = stateManager;
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
@@ -82,8 +79,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                _stateManager.CheckState();
-
                 return this.ProcessProjectId<Project>(projectId, message,
                     (project, projectMeta) =>
                     {
@@ -124,8 +119,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                _stateManager.CheckState();
-
                 return this.ProcessProjectId<List<Channel>>(projectId, message,
                     (project, projectMeta) =>
                     {
@@ -178,8 +171,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                _stateManager.CheckState();
-
                 return this.ProcessProjectId<Channel>(projectId, message,
                     (project, projectMeta) =>
                     {
@@ -237,8 +228,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                _stateManager.CheckState();
-
                 return this.ProcessProjectId<List<Dataset>>(projectId, message,
                     (project, projectMeta) =>
                     {
@@ -298,8 +287,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                _stateManager.CheckState();
-
                 return this.ProcessProjectId<Dataset>(projectId, message,
                     (project, projectMeta) =>
                     {

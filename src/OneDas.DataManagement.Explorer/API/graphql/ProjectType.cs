@@ -1,4 +1,5 @@
-﻿using GraphQL.Types;
+﻿using GraphQL;
+using GraphQL.Types;
 using OneDas.DataManagement.Database;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,39 @@ namespace OneDas.DataManagement.Explorer.API
 
             this.Field(x => x.Project.ProjectEnd)
                 .Description("The datetime of the newest data available.");
+
+            this.Field<ChannelType>(
+                "Channel",
+                arguments: new QueryArguments(
+                    new QueryArgument<IdGraphType> { Name = "id", Description = "The ID of the channel." }),
+                resolve: context =>
+            {
+                var id = context.GetArgument<string>("id");
+                var project = context.Source.Project;
+                var projectMeta = context.Source.Meta;
+
+                var channel = project.Channels.First(current => current.Id == id);
+                var channelMeta = projectMeta.Channels.First(current => current.Id == id);
+
+#warning taken from ProjectsController, unify this
+                var channel2 = new Channel()
+                {
+                    Id = channel.Id,
+                    Name = channel.Name,
+                    Group = channel.Group,
+                    Unit = !string.IsNullOrWhiteSpace(channelMeta.Unit)
+                            ? channelMeta.Unit
+                            : channel.Unit,
+                    Description = channelMeta.Description,
+                    SpecialInfo = channelMeta.SpecialInfo,
+                    TransferFunctions = channelMeta.TransferFunctions.Any()
+                            ? channelMeta.TransferFunctions
+                            : channel.TransferFunctions
+                };
+
+                return channel2;
+            });
+            //.Description("A list of channels defined in the project.");
 
             this.Field<ListGraphType<ChannelType>>("Channels", resolve: context =>
             {

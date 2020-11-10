@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
-using OneDas.Infrastructure;
+using OneDas.DataManagement.Explorer.Core;
 using OneDas.Types;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Services
 {
     public class DataService
     {
@@ -19,7 +19,6 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private StateManager _stateManager;
         private SignInManager<IdentityUser> _signInManager;
         private OneDasExplorerOptions _options;
 
@@ -27,13 +26,11 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Constructors
 
-        public DataService(StateManager stateManager,
-                           OneDasDatabaseManager databaseManager,
+        public DataService(OneDasDatabaseManager databaseManager,
                            SignInManager<IdentityUser> signInManager,
                            ILoggerFactory loggerFactory,
                            OneDasExplorerOptions options)
         {
-            _stateManager = stateManager;
             _databaseManager = databaseManager;
             _signInManager = signInManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
@@ -56,8 +53,6 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             return Task.Run(() =>
             {
-                _stateManager.CheckState();
-
                 if (!Utilities.IsProjectAccessible(_signInManager.Context.User, projectId, _databaseManager.Config.RestrictedProjects))
                     throw new UnauthorizedAccessException($"The current user is not authorized to access project '{projectId}'.");
 
@@ -90,8 +85,6 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             return Task.Run(() =>
             {
-                _stateManager.CheckState();
-
                 if (!datasets.Any() || parameters.Begin == parameters.End)
                     return string.Empty;
 

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GraphQL.Utilities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.Types;
 using System;
 using System.Collections.Generic;
@@ -19,32 +21,35 @@ namespace OneDas.DataManagement.Explorer.Controllers
         #region Fields
 
         private ILogger _logger;
+        private IServiceProvider _serviceProvider;
         private OneDasDatabaseManager _databaseManager;
-        private StateManager _stateManager;
-        private DataService _dataService;
-        private JobService _jobService;
+        private OneDasExplorerOptions _options;
+        private JobService<ExportJob> _exportJobService;
+        private JobService<AggregationJob> _aggregationJobService;
 
         #endregion
 
         #region Constructors
 
         public JobsController(
-            StateManager stateManager,
             OneDasDatabaseManager databaseManager,
-            DataService dataService,
-            JobService jobService,
+            OneDasExplorerOptions options,
+            JobService<ExportJob> exportJobService,
+            JobService<AggregationJob> aggregationJobService,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory)
         {
-            _stateManager = stateManager;
+            _options = options;
             _databaseManager = databaseManager;
-            _dataService = dataService;
-            _jobService = jobService;
+            _serviceProvider = serviceProvider;
+            _exportJobService = exportJobService;
+            _aggregationJobService = aggregationJobService;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
 
         #endregion
 
-        #region Methods
+        #region Export Jobs
 
         /// <summary>
         /// Creates a new export job.
@@ -56,9 +61,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
         {
             parameters.Begin = parameters.Begin.ToUniversalTime();
             parameters.End = parameters.End.ToUniversalTime();
-
-            // check state
-            _stateManager.CheckState();
 
             // translate channel paths to datasets
             List<DatasetInfo> datasets;
@@ -112,8 +114,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 jobControl.ProgressMessage = e.Message;
             });
 
-            _dataService.Progress.ProgressChanged += handler; // add handler before task starts
-            jobControl.Task = _dataService.ExportDataAsync(remoteIpAddress, parameters, datasets, cancellationTokenSource.Token);
+            var dataService = _serviceProvider.GetRequiredService<DataService>();
+            dataService.Progress.ProgressChanged += handler; // add handler before task starts
+            jobControl.Task = dataService.ExportDataAsync(remoteIpAddress, parameters, datasets, cancellationTokenSource.Token);
 
             Task.Run(async () =>
             {
@@ -123,11 +126,11 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 }
                 finally
                 {
-                    _dataService.Progress.ProgressChanged -= handler;
+                    dataService.Progress.ProgressChanged -= handler;
                 }
             });
 
-            if (_jobService.TryAddExportJob(jobControl))
+            if (_exportJobService.TryAddJob(jobControl))
                 return this.Accepted($"{this.GetBasePath()}{this.Request.Path}/{jobControl.Job.Id}/status", jobControl.Job);
             else
                 return this.Conflict();
@@ -138,10 +141,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("export")]
-        public ActionResult<List<ExportJob>> GetJobs()
+        public ActionResult<List<ExportJob>> GetExportJobs()
         {
-            return _jobService
-                .GetExportJobs()
+            return _exportJobService
+                .GetJobs()
                 .Select(jobControl => jobControl.Job)
                 .ToList();
         }
@@ -152,9 +155,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="jobId"></param>
         /// <returns></returns>
         [HttpGet("export/{jobId}")]
-        public ActionResult<ExportJob> GetJob(Guid jobId)
+        public ActionResult<ExportJob> GetExportJob(Guid jobId)
         {
-            if (_jobService.TryGetExportJob(jobId, out var jobControl))
+            if (_exportJobService.TryGetJob(jobId, out var jobControl))
                 return jobControl.Job;
             else
                 return this.NotFound(jobId);
@@ -166,9 +169,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="jobId"></param>
         /// <returns></returns>
         [HttpGet("export/{jobId}/status")]
-        public ActionResult<JobStatus> GetJobStatus(Guid jobId)
+        public ActionResult<JobStatus> GetExportJobStatus(Guid jobId)
         {
-            if (_jobService.TryGetExportJob(jobId, out var jobControl))
+            if (_exportJobService.TryGetJob(jobId, out var jobControl))
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner ||
                     jobControl.Job.Owner == null ||
@@ -205,9 +208,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="jobId"></param>
         /// <returns></returns>
         [HttpDelete("export/{jobId}")]
-        public ActionResult DeleteJob(Guid jobId)
+        public ActionResult DeleteExportJob(Guid jobId)
         {
-            if (_jobService.TryGetExportJob(jobId, out var jobControl))
+            if (_exportJobService.TryGetJob(jobId, out var jobControl))
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner || 
                     jobControl.Job.Owner == null ||
@@ -226,6 +229,162 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 return this.NotFound(jobId);
             }
         }
+
+        #endregion
+
+        #region Aggregation Jobs
+
+        /// <summary>
+        /// Creates a new aggregation job.
+        /// </summary>
+        /// <param name="parameters">Aggregation parameters.</param>
+        /// <returns></returns>
+        [HttpPost("aggregation")]
+        public ActionResult<AggregationJob> CreateAggregationJob(AggregationParameters parameters)
+        {
+            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var jobControl = new JobControl<AggregationJob>()
+            {
+                Start = DateTime.UtcNow,
+                Job = new AggregationJob()
+                {
+                    Owner = this.User.Identity.Name,
+                    Parameters = parameters
+                },
+                CancellationTokenSource = cancellationTokenSource,
+            };
+
+            var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
+            {
+                jobControl.Progress = e.Progress;
+                jobControl.ProgressMessage = e.Message;
+            });
+
+            var aggregationService = _serviceProvider.GetRequiredService<AggregationService>();
+            aggregationService.Progress.ProgressChanged += handler; // add handler before task starts
+            jobControl.Task = aggregationService.AggregateDataAsync(
+                remoteIpAddress, 
+                _options.DataBaseFolderPath,
+                parameters, 
+                cancellationTokenSource.Token);
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await jobControl.Task;
+                }
+                finally
+                {
+                    aggregationService.Progress.ProgressChanged -= handler;
+                }
+            });
+
+            if (_aggregationJobService.TryAddJob(jobControl))
+                return this.Accepted($"{this.GetBasePath()}{this.Request.Path}/{jobControl.Job.Id}/status", jobControl.Job);
+            else
+                return this.Conflict();
+        }
+
+        /// <summary>
+        /// Gets a list of all aggregation jobs.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("aggregation")]
+        public ActionResult<List<AggregationJob>> GetAggregationJobs()
+        {
+            return _aggregationJobService
+                .GetJobs()
+                .Select(jobControl => jobControl.Job)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the specified aggregation job.
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <returns></returns>
+        [HttpGet("aggregation/{jobId}")]
+        public ActionResult<AggregationJob> GetAggregationJob(Guid jobId)
+        {
+            if (_aggregationJobService.TryGetJob(jobId, out var jobControl))
+                return jobControl.Job;
+            else
+                return this.NotFound(jobId);
+        }
+
+        /// <summary>
+        /// Gets the status of the specified export job.
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <returns></returns>
+        [HttpGet("aggregation/{jobId}/status")]
+        public ActionResult<JobStatus> GetAggregationJobStatus(Guid jobId)
+        {
+            if (_exportJobService.TryGetJob(jobId, out var jobControl))
+            {
+                if (this.User.Identity.Name == jobControl.Job.Owner ||
+                    jobControl.Job.Owner == null ||
+                    this.User.HasClaim("IsAdmin", "true"))
+                {
+                    return new JobStatus()
+                    {
+                        Start = jobControl.Start,
+                        Progress = jobControl.Progress,
+                        ProgressMessage = jobControl.ProgressMessage,
+                        Status = jobControl.Task.Status,
+                        ExceptionMessage = jobControl.Task.Exception != null
+                            ? jobControl.Task.Exception.GetFullMessage()
+                            : string.Empty,
+                        Result = jobControl.Task.Status == TaskStatus.RanToCompletion
+                            ? $"{this.GetBasePath()}/{jobControl.Task.Result}"
+                            : null
+                    };
+                }
+                else
+                {
+                    return this.Unauthorized($"The current user is not authorized to cancel the job '{jobControl.Job.Id}'.");
+                }
+            }
+            else
+            {
+                return this.NotFound(jobId);
+            }
+        }
+
+        /// <summary>
+        /// Cancels the specified job.
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <returns></returns>
+        [HttpDelete("aggregation/{jobId}")]
+        public ActionResult DeleteAggregationJob(Guid jobId)
+        {
+            if (_exportJobService.TryGetJob(jobId, out var jobControl))
+            {
+                if (this.User.Identity.Name == jobControl.Job.Owner ||
+                    jobControl.Job.Owner == null ||
+                    this.User.HasClaim("IsAdmin", "true"))
+                {
+                    jobControl.CancellationTokenSource.Cancel();
+                    return this.Accepted();
+                }
+                else
+                {
+                    return this.Unauthorized($"The current user is not authorized to cancel the job '{jobControl.Job.Id}'.");
+                }
+            }
+            else
+            {
+                return this.NotFound(jobId);
+            }
+        }
+
+        #endregion
+
+        #region Methods
 
         private string GetBasePath()
         {

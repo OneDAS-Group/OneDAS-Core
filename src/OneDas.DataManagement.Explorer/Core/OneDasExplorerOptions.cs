@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,10 +15,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
             // preset, mutable
             this.AggregationChunkSizeMB = 200;
-            this.AggregationPeriodDays = 60;
             this.AspBaseUrl = "http://0.0.0.0:8080";
-            this.InactiveOn = TimeSpan.FromHours(2);
-            this.InactivityPeriod = TimeSpan.FromHours(1);
             this.Language = "en";
         }
 
@@ -30,13 +26,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public uint AggregationChunkSizeMB { get; set; }
 
-        public uint AggregationPeriodDays { get; set; }
-
         public string AspBaseUrl { get; set; }
-
-        public TimeSpan InactiveOn { get; set; }
-
-        public TimeSpan InactivityPeriod { get; set; }
 
         public string Language { get; set; }
 
