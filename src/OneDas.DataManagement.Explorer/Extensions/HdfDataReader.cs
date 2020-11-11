@@ -1,7 +1,7 @@
 ﻿using HDF.PInvoke;
-using IwesOneDas;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 
 namespace OneDas.DataManagement.Extensions
 {
@@ -24,6 +26,12 @@ namespace OneDas.DataManagement.Extensions
         {
             //
         }
+
+        #endregion
+
+        #region Properties
+
+        public FileAccessManager FileAccessManager { get; set; }
 
         #endregion
 
@@ -75,10 +83,11 @@ namespace OneDas.DataManagement.Extensions
 
                 foreach (var filePath in filePaths)
                 {
-                    fileId = H5F.open(filePath, H5F.ACC_RDONLY);
-
                     try
                     {
+                        this.FileAccessManager?.Register(filePath, CancellationToken.None);
+                        fileId = H5F.open(filePath, H5F.ACC_RDONLY);
+
                         if (H5I.is_valid(fileId) > 0)
                         {
                             int lastIndex = -1;
@@ -143,6 +152,7 @@ namespace OneDas.DataManagement.Extensions
                     finally
                     {
                         if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
+                        this.FileAccessManager?.Unregister(filePath);
                     }
                 }
 
@@ -349,8 +359,17 @@ namespace OneDas.DataManagement.Extensions
             return distinctFiles.Select(distinctFile =>
             {
                 var filePath = Directory.EnumerateFiles(dataFolderPath, $"{distinctFile}*.h5").First();
-                var projectId = GeneralHelper.GetProjectIdFromFile(filePath);
-                return projectId;
+
+                try
+                {
+                    this.FileAccessManager?.Register(filePath, CancellationToken.None);
+                    var projectId = GeneralHelper.GetProjectIdFromFile(filePath);
+                    return projectId;
+                }
+                finally
+                {
+                    this.FileAccessManager?.Unregister(filePath);
+                }
             }).Distinct().ToList();
         }
 
@@ -366,19 +385,22 @@ namespace OneDas.DataManagement.Extensions
         {
             var message = $"Scanning files for {Path.GetFileName(dataFolderPath)} ({projectId}) ...";
             var searchPattern = $"{this.ToUnderscoredId(projectId)}*.h5";
-            var files = Directory.EnumerateFiles(dataFolderPath, searchPattern);
+            var filePaths = Directory.EnumerateFiles(dataFolderPath, searchPattern);
             var project = new ProjectInfo(projectId);
 
             this.Logger.LogInformation(message);
 
             try
             {
-                foreach (var file in files)
+                foreach (var filePath in filePaths)
                 {
-                    var fileId = H5F.open(file, H5F.ACC_RDONLY);
+                    long fileId = 0;
 
                     try
                     {
+                        this.FileAccessManager?.Register(filePath, CancellationToken.None);
+                        fileId = H5F.open(filePath, H5F.ACC_RDONLY);
+
                         if (H5I.is_valid(fileId) > 0)
                         {
                             var newProject = GeneralHelper.GetProject(fileId, projectId);
@@ -388,11 +410,12 @@ namespace OneDas.DataManagement.Extensions
                     finally
                     {
                         if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
+                        this.FileAccessManager?.Unregister(filePath);
                     }
                 }
 
                 // update scanned until
-                var scannedUntil = this.GetLastDateTime(files);
+                var scannedUntil = this.GetLastDateTime(filePaths);
 
                 if (versioning.ScannedUntilMap.TryGetValue(projectId, out var value))
                 {

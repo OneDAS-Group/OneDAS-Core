@@ -39,8 +39,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory)
         {
-            _options = options;
             _databaseManager = databaseManager;
+            _options = options;
             _serviceProvider = serviceProvider;
             _exportJobService = exportJobService;
             _aggregationJobService = aggregationJobService;
@@ -94,7 +94,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
 
             //
-            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
             var cancellationTokenSource = new CancellationTokenSource();
 
             var jobControl = new JobControl<ExportJob>()
@@ -114,9 +113,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 jobControl.ProgressMessage = e.Message;
             });
 
+            var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
             var dataService = _serviceProvider.GetRequiredService<DataService>();
             dataService.Progress.ProgressChanged += handler; // add handler before task starts
-            jobControl.Task = dataService.ExportDataAsync(remoteIpAddress, parameters, datasets, cancellationTokenSource.Token);
+            jobControl.Task = dataService.ExportDataAsync(userIdService.GetUserId(), parameters, datasets, cancellationTokenSource.Token);
 
             Task.Run(async () =>
             {
@@ -262,10 +262,12 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 jobControl.ProgressMessage = e.Message;
             });
 
+            var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
             var aggregationService = _serviceProvider.GetRequiredService<AggregationService>();
             aggregationService.Progress.ProgressChanged += handler; // add handler before task starts
+
             jobControl.Task = aggregationService.AggregateDataAsync(
-                remoteIpAddress, 
+                userIdService.GetUserId(), 
                 _options.DataBaseFolderPath,
                 parameters, 
                 cancellationTokenSource.Token);

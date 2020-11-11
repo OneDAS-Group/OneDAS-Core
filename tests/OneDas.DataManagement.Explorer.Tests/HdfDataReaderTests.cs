@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Core.Tests;
-using OneDas.DataManagement.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,7 +7,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OneDas.Core.Tests
+namespace OneDas.DataManagement.Extensions.Tests
 {
     public class HdfDataReaderTests : IClassFixture<HdfDataReaderFixture>
     {

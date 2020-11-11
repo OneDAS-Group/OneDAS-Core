@@ -2,7 +2,7 @@
 using System;
 using Xunit.Abstractions;
 
-namespace OneDas.DataManagement.Core.Tests
+namespace OneDas.DataManagement.Explorer.Tests
 {
     public class XunitLoggerProvider : ILoggerProvider
     {

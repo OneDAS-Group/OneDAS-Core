@@ -12,7 +12,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
     {
         #region Fields
 
-        private OneDasDatabaseManager _databaseManager;
         private JwtService<IdentityUser> _jwtService;
         private ILogger _logger;
 
@@ -20,11 +19,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         #region Constructors
 
-        public AccountController(OneDasDatabaseManager databaseManager,
-                                 JwtService<IdentityUser> jwtService,
+        public AccountController(JwtService<IdentityUser> jwtService,
                                  ILoggerFactory loggerFactory)
         {
-            _databaseManager = databaseManager;
             _jwtService = jwtService;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }

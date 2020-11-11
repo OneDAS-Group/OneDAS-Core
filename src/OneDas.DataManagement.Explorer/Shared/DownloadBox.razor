@@ -1,7 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Http
 
 @inherits AppStateComponentBase
-@inject IHttpContextAccessor httpContextAccessor
 
 <div class="selected-channel-box-sub">
     <div class="selected-channels">
@@ -22,7 +21,7 @@
     </div>
 
     <MatButton Icon="@MatIconNames.Cloud_download"
-               OnClick="() => this.AppState.DownloadAsync(httpContextAccessor.HttpContext.Connection.RemoteIpAddress)"
+               OnClick="this.AppState.DownloadAsync"
                Outlined="true"
                Disabled="!this.AppState.CanDownload()"
                Label="@this.GetDownloadLabel()">

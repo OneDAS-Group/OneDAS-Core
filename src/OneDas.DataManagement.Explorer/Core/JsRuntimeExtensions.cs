@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public static class JsRuntimeExtensions
+    internal static class JsRuntimeExtensions
     {
         #region Methods
 

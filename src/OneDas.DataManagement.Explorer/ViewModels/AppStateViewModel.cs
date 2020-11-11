@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +39,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         private IJSRuntime _jsRuntime;
 
         private DataService _dataService;
+        private UserIdService _userIdService;
         private ProjectContainer _projectContainer;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
@@ -56,6 +56,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Constructors
 
         public AppStateViewModel(IJSRuntime jsRuntime,
+                                 UserIdService userIdService,
                                  AuthenticationStateProvider authenticationStateProvider,
                                  StateManager stateManager,
                                  OneDasDatabaseManager databaseManager,
@@ -63,6 +64,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                                  DataService dataService)
         {
             _jsRuntime = jsRuntime;
+            _userIdService = userIdService;
             _authenticationStateProvider = authenticationStateProvider;
             _databaseManager = databaseManager;
             _options = options;
@@ -150,9 +152,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { this.SetProperty(ref _downloadMessage, value); }
         }
 
-        internal StateManager StateManager { get; }
+        public StateManager StateManager { get; }
 
-        internal ExportParameters ExportParameters { get; private set; }
+        public ExportParameters ExportParameters { get; private set; }
 
         #endregion
 
@@ -409,7 +411,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             }
         }
 
-        public async Task DownloadAsync(IPAddress remoteIpAdress)
+        public async Task DownloadAsync()
         {
             _cts_download = new CancellationTokenSource();
 
@@ -426,10 +428,20 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 var selectedDatasets = this.GetSelectedDatasets().Select(dataset => dataset.Model).ToList();
 
-                var downloadLink = await _dataService.ExportDataWithSecurityCheckAsync(remoteIpAdress,
-                                                                       this.ExportParameters,
-                                                                       selectedDatasets,
-                                                                       _cts_download.Token);
+                // security check
+                var projectIds = selectedDatasets.Select(dataset => dataset.Parent.Parent.Id).Distinct();
+
+                foreach (var projectId in projectIds)
+                {
+                    if (!Utilities.IsProjectAccessible(_userIdService.User, projectId, _databaseManager.Config.RestrictedProjects))
+                        throw new UnauthorizedAccessException($"The current user is not authorized to access project '{projectId}'.");
+                }
+
+                //
+                var downloadLink = await _dataService.ExportDataAsync(_userIdService.GetUserId(),
+                                                                      this.ExportParameters,
+                                                                      selectedDatasets,
+                                                                      _cts_download.Token);
 
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
@@ -486,6 +498,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
         {
+            // security check
+            if (!Utilities.IsProjectAccessible(_userIdService.User, this.ProjectContainer.Id, _databaseManager.Config.RestrictedProjects))
+                throw new UnauthorizedAccessException($"The current user is not authorized to access project '{this.ProjectContainer.Id}'.");
+
             return await _dataService.GetDataAvailabilityStatisticsAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
         }
 

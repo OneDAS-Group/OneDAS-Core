@@ -1,8 +1,7 @@
-﻿using OneDas.DataManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace IwesOneDas
+namespace OneDas.DataManagement.Extensions
 {
     public class HdfVersioning
     {

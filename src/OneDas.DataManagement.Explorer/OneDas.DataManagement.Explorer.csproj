@@ -35,7 +35,6 @@
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Csv\OneDas.Extension.Csv.csproj" />
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Famos\OneDas.Extension.Famos.csproj" />
     <ProjectReference Include="..\..\extensions\OneDas.Extension.Mat73\OneDas.Extension.Mat73.csproj" />
-    <ProjectReference Include="..\OneDas.DataManagement.Core\OneDas.DataManagement.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

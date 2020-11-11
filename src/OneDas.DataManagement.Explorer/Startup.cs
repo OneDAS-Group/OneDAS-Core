@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +18,9 @@ using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -126,11 +129,11 @@ namespace OneDas.DataManagement.Explorer
                 .AddSingleton<ProjectSchema>()
                 .AddGraphQL((options, provider) =>
                 {
-                    options.EnableMetrics = true;
+                    options.EnableMetrics = false;
 
                     var logger = provider.GetRequiredService<ILogger<Startup>>();
                     options.UnhandledExceptionDelegate = ctx
-                        => logger.LogError("{Error} occured", ctx.OriginalException.Message);
+                        => logger.LogError($"{ctx.OriginalException.Message} occured");
                 })
                 .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)
                 .AddSystemTextJson(deserializerSettings => { }, serializerSettings => { })
@@ -138,22 +141,24 @@ namespace OneDas.DataManagement.Explorer
 
             // custom
             services.AddHttpContextAccessor();
+            services.AddScoped<UserIdService>();
             services.AddScoped<AppStateViewModel>();
             services.AddScoped<SettingsViewModel>();
-            services.AddScoped<DataService>();
-            services.AddScoped<AggregationService>();
             services.AddScoped<JwtService<IdentityUser>>();
+            services.AddTransient<DataService>();
+            services.AddTransient<AggregationService>();
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
             services.AddSingleton<StateManager>();
             services.AddSingleton<JobService<ExportJob>>();
             services.AddSingleton<JobService<AggregationJob>>();
-            services.AddSingleton<OneDasExplorerUserManager>();
+            services.AddSingleton<UserManager>();
+            services.AddSingleton<FileAccessManager>();
         }
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              StateManager stateManager, // needs to be called to initialize database
+                              StateManager stateManager, // needs to be called to initialize the database
                               OneDasExplorerOptions options)
         {
             // ...
@@ -205,15 +210,42 @@ namespace OneDas.DataManagement.Explorer
             // custom authentication (to also authenticate via JWT bearer)
             app.Use(async (context, next) =>
             {
+                bool terminate = false;
+
                 if (!context.User.Identity.IsAuthenticated)
                 {
-                    var principal = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                    var authorizationHeader = context.Request.Headers["Authorization"];
+                    
+                    if (authorizationHeader.Any(header => header.StartsWith("Bearer")))
+                    {
+                        var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
 
-                    if (principal.Succeeded)
-                        context.User = principal.Principal;
+                        if (result.Succeeded)
+                        {
+                            context.User = result.Principal;
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+                            var errorCode = result.Failure.Message.Split(':', count: 2).FirstOrDefault();
+
+                            var message = errorCode switch
+                            {
+                                "IDX10230" => "Lifetime validation failed.",
+                                "IDX10503" => "Signature validation failed.",
+                                _ => "The bearer token could not be validated."
+                            };
+
+                            var bytes = Encoding.UTF8.GetBytes(message);
+                            await context.Response.Body.WriteAsync(bytes);
+                            terminate = true;
+                        }
+                    }
                 }
 
-                await next();
+                if (!terminate)
+                    await next();
             });
 
             // authorization

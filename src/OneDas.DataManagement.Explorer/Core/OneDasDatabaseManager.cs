@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using GraphQL.Utilities;
+using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
 using OneDas.Extensibility;
@@ -46,6 +48,7 @@ namespace OneDas.DataManagement
         private string _folderPath;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
+        private IServiceProvider _serviceProvider;
 
         #endregion
 
@@ -71,8 +74,10 @@ namespace OneDas.DataManagement
 
         #region Methods
 
-        public void Initialize(string folderPath)
+        public void Initialize(IServiceProvider serviceProvider, string folderPath)
         {
+            _serviceProvider = serviceProvider;
+
             if (string.IsNullOrWhiteSpace(folderPath))
             {
                 throw new Exception("Could not initialize database. Please check the database folder path and try again.");
@@ -250,7 +255,9 @@ namespace OneDas.DataManagement
             if (rootPathToProjectsMap == null)
                 rootPathToProjectsMap = this.State.RootPathToProjectsMap;
 
-            return this.InstantiateDataReader(rootPath, typeof(HdfDataReader), rootPathToProjectsMap);
+            var dataReader = (HdfDataReader)this.InstantiateDataReader(rootPath, typeof(HdfDataReader), rootPathToProjectsMap);
+
+            return dataReader;
         }
 
         public DataReaderExtensionBase GetNativeDataReader(
@@ -289,6 +296,12 @@ namespace OneDas.DataManagement
         {
             var logger = _loggerFactory.CreateLogger(rootPath);
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
+
+            if (type == typeof(HdfDataReader))
+            {
+                var fileAccessManger = _serviceProvider.GetRequiredService<FileAccessManager>();
+                ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
+            }
 
             // initialize projects property
             if (rootPathToProjectsMap.TryGetValue(rootPath, out var value))

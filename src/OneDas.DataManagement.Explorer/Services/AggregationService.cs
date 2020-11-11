@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -30,6 +29,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private ILogger _logger;
 
+        private FileAccessManager _fileAccessManager;
         private SignInManager<IdentityUser> _signInManager;
         private OneDasDatabaseManager _databaseManager;
 
@@ -38,11 +38,13 @@ namespace OneDas.DataManagement.Explorer.Services
         #region Constructors
 
         public AggregationService(
+            FileAccessManager fileAccessManager,
             SignInManager<IdentityUser> signInManager,
             OneDasDatabaseManager databaseManager, 
             OneDasExplorerOptions options, 
             ILoggerFactory loggerFactory)
         {
+            _fileAccessManager = fileAccessManager;
             _signInManager = signInManager;
             _databaseManager = databaseManager;
             _aggregationChunkSizeMb = options.AggregationChunkSizeMB;
@@ -61,19 +63,12 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
-        public Task<string> AggregateDataAsync(IPAddress remoteIpAddress, string databaseFolderPath, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
+        public Task<string> AggregateDataAsync(string username, string databaseFolderPath, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 // log
-                string userName;
-
-                if (_signInManager.Context.User.Identity.IsAuthenticated)
-                    userName = _signInManager.Context.User.Identity.Name;
-                else
-                    userName = "anonymous";
-
-                var message = $"User '{userName}' ({remoteIpAddress}) aggregates data: {aggregationParameters.Days} days ... ";
+                var message = $"User '{username}' aggregates data: {aggregationParameters.Days} days ... ";
                 _logger.LogInformation(message);
 
                 try
@@ -154,14 +149,16 @@ namespace OneDas.DataManagement.Explorer.Services
                 if (!Directory.Exists(targetDirectoryPath))
                     Directory.CreateDirectory(targetDirectoryPath);
 
-                if (File.Exists(targetFilePath))
-                    targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
-
-                if (targetFileId == -1)
-                    targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
-
                 try
                 {
+                    _fileAccessManager.Register(targetFilePath, cancellationToken);
+
+                    if (File.Exists(targetFilePath))
+                        targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
+
+                    if (targetFileId == -1)
+                        targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
+
                     // create attribute if necessary
                     if (H5A.exists(targetFileId, "date_time") == 0)
                     {
@@ -175,6 +172,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 finally
                 {
                     if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
+                    _fileAccessManager.Unregister(targetFilePath);
                 }
             }
             catch (Exception ex)
@@ -388,7 +386,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return setupToPartialBufferMap;
         }
 
-        internal double[] ApplyAggregationFunction(Aggregation aggregation, int kernelSize, double[] data, double nanLimit, ILogger logger)
+        private double[] ApplyAggregationFunction(Aggregation aggregation, int kernelSize, double[] data, double nanLimit, ILogger logger)
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
@@ -553,7 +551,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return result;
         }
 
-        internal double[] ApplyAggregationFunction<T>(Aggregation aggregation, int kernelSize, T[] data, byte[] statusSet, double nanLimit, ILogger logger) where T : unmanaged
+        private double[] ApplyAggregationFunction<T>(Aggregation aggregation, int kernelSize, T[] data, byte[] statusSet, double nanLimit, ILogger logger) where T : unmanaged
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];

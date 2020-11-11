@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace OneDas.DataManagement.Core.Tests
+namespace OneDas.DataManagement.Extensions.Tests
 {
     public class HdfDataReaderFixture : IDisposable
     {

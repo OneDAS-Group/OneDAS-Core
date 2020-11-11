@@ -7,13 +7,13 @@ using System.Security.Claims;
 
 namespace OneDas.DataManagement.Explorer.Services
 {
-    public class OneDasExplorerUserManager
+    public class UserManager
     {
         private ILogger _logger;
         private IServiceProvider _serviceProvider;
 
         // Both, userDB and userManager, cannot be pulled in here because they are scoped
-        public OneDasExplorerUserManager(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        public UserManager(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.Infrastructure;
 using OneDas.Types;
 using System;
@@ -19,6 +20,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         #region Fields
 
         private ILogger _logger;
+        private UserIdService _userIdService;
         private OneDasDatabaseManager _databaseManager;
 
         #endregion
@@ -26,8 +28,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
         #region Constructors
 
         public ProjectsController(OneDasDatabaseManager databaseManager,
-                                  ILoggerFactory loggerFactory)
+                                    UserIdService userIdService,
+                                    ILoggerFactory loggerFactory)
         {
+            _userIdService = userIdService;
             _databaseManager = databaseManager;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
@@ -64,17 +68,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
         {
             projectId = WebUtility.UrlDecode(projectId);
 
-            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
-
             // log
-            string userName;
-
-            if (this.User.Identity.IsAuthenticated)
-                userName = this.User.Identity.Name;
-            else
-                userName = "anonymous";
-
-            var message = $"User '{userName}' ({remoteIpAddress}) requests project '{projectId}' ...";
+            var message = $"User '{_userIdService.GetUserId()}' requests project '{projectId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -156,17 +151,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             projectId = WebUtility.UrlDecode(projectId);
             channelId = WebUtility.UrlDecode(channelId);
 
-            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
-
             // log
-            string userName;
-
-            if (this.User.Identity.IsAuthenticated)
-                userName = this.User.Identity.Name;
-            else
-                userName = "anonymous";
-
-            var message = $"User '{userName}' ({remoteIpAddress}) requests channel '{projectId}/{channelId}' ...";
+            var message = $"User '{_userIdService.GetUserId()}' requests channel '{projectId}/{channelId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -213,17 +199,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             projectId = WebUtility.UrlDecode(projectId);
             channelId = WebUtility.UrlDecode(channelId);
 
-            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
-
             // log
-            string userName;
-
-            if (this.User.Identity.IsAuthenticated)
-                userName = this.User.Identity.Name;
-            else
-                userName = "anonymous";
-
-            var message = $"User '{userName}' ({remoteIpAddress}) requests datasets for channel '{projectId}/{channelId}' ...";
+            var message = $"User '{_userIdService.GetUserId()}' requests datasets for channel '{projectId}/{channelId}' ...";
             _logger.LogInformation(message);
 
             try
@@ -272,17 +249,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             channelId = WebUtility.UrlDecode(channelId);
             datasetId = WebUtility.UrlDecode(datasetId);
 
-            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
-
             // log
-            string userName;
-
-            if (this.User.Identity.IsAuthenticated)
-                userName = this.User.Identity.Name;
-            else
-                userName = "anonymous";
-
-            var message = $"User '{userName}' ({remoteIpAddress}) requests dataset '{projectId}/{channelId}/{datasetId}' ...";
+            var message = $"User '{_userIdService.GetUserId()}' requests dataset '{projectId}/{channelId}/{datasetId}' ...";
             _logger.LogInformation(message);
 
             try

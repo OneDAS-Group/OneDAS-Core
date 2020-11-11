@@ -30,8 +30,7 @@ before_build:
 
 build_script:
  - ps: dotnet build ./src/OneDas.Core/OneDas.Core.csproj                                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
- - ps: dotnet build ./src/OneDas.DataManagement.Core/OneDas.DataManagement.Core.csproj             -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
-# - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
+ # - ps: dotnet build ./samples/DataGatewaySample/DataGatewaySample.csproj                           -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
 
  - ps: dotnet build ./extensions/OneDas.Extension.Can/OneDas.Extension.Can.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
  - ps: dotnet build ./extensions/OneDas.Extension.Csv/OneDas.Extension.Csv.csproj                  -c $Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG
@@ -54,7 +53,6 @@ build_script:
 
 test_script:
 #  - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
-#  - ps: dotnet test ./tests/OneDas.DataManagement.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
 
 artifacts:
   - path: ./artifacts/packages/**/*.nupkg

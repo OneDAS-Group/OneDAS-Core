@@ -11,8 +11,9 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private ILogger _logger;
         private OneDasDatabaseManager _databaseManager;
-        private OneDasExplorerUserManager _userManager;
+        private UserManager _userManager;
         private OneDasExplorerOptions _options;
+        private IServiceProvider _serviceProvider;
         private bool _state;
 
         #endregion
@@ -20,13 +21,15 @@ namespace OneDas.DataManagement.Explorer.Services
         #region Constructors
 
         public StateManager(OneDasDatabaseManager databaseManager,
-                            OneDasExplorerUserManager userManager,
+                            UserManager userManager,
                             OneDasExplorerOptions options,
+                            IServiceProvider serviceProvider,
                             ILoggerFactory loggerFactory)
         {
             _databaseManager = databaseManager;
             _userManager = userManager;
             _options = options;
+            _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
 
             this.TryRunApp(out var _);
@@ -50,7 +53,7 @@ namespace OneDas.DataManagement.Explorer.Services
         {
             try
             {
-                _databaseManager.Initialize(_options.DataBaseFolderPath);
+                _databaseManager.Initialize(_serviceProvider, _options.DataBaseFolderPath);
                 _databaseManager.Update();
                 _userManager.Initialize();
                 _options.Save(Program.OptionsFilePath);
