@@ -345,7 +345,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                             ? jobControl.Task.Exception.GetFullMessage()
                             : string.Empty,
                         Result = jobControl.Task.Status == TaskStatus.RanToCompletion
-                            ? $"{this.GetBasePath()}/{jobControl.Task.Result}"
+                            ? jobControl.Task.Result
                             : null
                     };
                 }

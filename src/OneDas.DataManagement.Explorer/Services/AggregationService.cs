@@ -85,15 +85,16 @@ namespace OneDas.DataManagement.Explorer.Services
                     for (int i = 0; i < projectIds.Count; i++)
                     {
                         var projectId = projectIds[i];
-                        var currentDay = epochStart.AddDays(i);
 
                         if (cancellationToken.IsCancellationRequested)
                             break;
 
                         for (int j = 0; j <= aggregationParameters.Days; j++)
                         {
+                            var currentDay = epochStart.AddDays(i);
+
                             var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
-                            var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyy-MM-dd")}";
+                            var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyyy-MM-dd")}";
                             var eventArgs = new ProgressUpdatedEventArgs(i * j / totalDays, progressMessage);
                             progress.Report(eventArgs);
 
