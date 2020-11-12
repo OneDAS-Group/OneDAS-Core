@@ -193,7 +193,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 }
                 else
                 {
-                    return this.Unauthorized($"The current user is not authorized to cancel the job '{jobControl.Job.Id}'.");
+                    return this.Unauthorized($"The current user is not authorized to access the status of job '{jobControl.Job.Id}'.");
                 }
             }
             else
@@ -242,7 +242,11 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpPost("aggregation")]
         public ActionResult<AggregationJob> CreateAggregationJob(AggregationParameters parameters)
         {
-            var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
+            // security check
+            if (!this.User.HasClaim("IsAdmin", "true"))
+                return this.Unauthorized($"The current user is not authorized to create an aggregation job.");
+
+            //
             var cancellationTokenSource = new CancellationTokenSource();
 
             var jobControl = new JobControl<AggregationJob>()
@@ -325,7 +329,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpGet("aggregation/{jobId}/status")]
         public ActionResult<JobStatus> GetAggregationJobStatus(Guid jobId)
         {
-            if (_exportJobService.TryGetJob(jobId, out var jobControl))
+            if (_aggregationJobService.TryGetJob(jobId, out var jobControl))
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner ||
                     jobControl.Job.Owner == null ||
@@ -347,7 +351,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 }
                 else
                 {
-                    return this.Unauthorized($"The current user is not authorized to cancel the job '{jobControl.Job.Id}'.");
+                    return this.Unauthorized($"The current user is not authorized to access the status of job '{jobControl.Job.Id}'.");
                 }
             }
             else
@@ -364,6 +368,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpDelete("aggregation/{jobId}")]
         public ActionResult DeleteAggregationJob(Guid jobId)
         {
+            // security check
+            if (!this.User.HasClaim("IsAdmin", "true"))
+                return this.Unauthorized($"The current user is not authorized to cancel aggregation jobs.");
+
             if (_exportJobService.TryGetJob(jobId, out var jobControl))
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner ||
