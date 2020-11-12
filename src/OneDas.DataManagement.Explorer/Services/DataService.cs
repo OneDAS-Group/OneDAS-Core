@@ -129,13 +129,12 @@ namespace OneDas.DataManagement.Explorer.Services
                             NativeDataReader = nativeDataReader
                         };
 
-                        if (!this.WriteZipFileProjectEntry(zipArchive, exportParameters, projectSettings, cancellationToken))
-                            return string.Empty;
+                        this.WriteZipFileProjectEntry(zipArchive, exportParameters, projectSettings, cancellationToken);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.GetFullMessage());
+                    _logger.LogError($"{message} Fail. Reason: {ex.GetFullMessage()}");
                     throw;
                 }
 
@@ -145,7 +144,7 @@ namespace OneDas.DataManagement.Explorer.Services
             }, cancellationToken);
         }
 
-        private bool WriteZipFileProjectEntry(ZipArchive zipArchive,
+        private void WriteZipFileProjectEntry(ZipArchive zipArchive,
                                               ExportParameters exportParameters,
                                               ProjectSettings projectSettings,
                                               CancellationToken cancellationToken)
@@ -223,15 +222,12 @@ namespace OneDas.DataManagement.Explorer.Services
             // create temp files
             try
             {
-                if (!this.CreateFiles(dataWriter, exportParameters, projectSettings, cancellationToken))
-                {
-                    this.CleanUp(directoryPath);
-                    return false;
-                }
+                this.CreateFiles(dataWriter, exportParameters, projectSettings, cancellationToken);
             }
             finally
             {
                 dataWriter.Dispose();
+                this.CleanUp(directoryPath);
             }
 
             // write zip archive entries
@@ -241,8 +237,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
             foreach (string filePath in filePathSet)
             {
-                if (cancellationToken.IsCancellationRequested)
-                    return false;
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
 
@@ -256,11 +251,9 @@ namespace OneDas.DataManagement.Explorer.Services
             }
 
             this.CleanUp(directoryPath);
-
-            return true;
         }
 
-        private bool CreateFiles(DataWriterExtensionLogicBase dataWriter,
+        private void CreateFiles(DataWriterExtensionLogicBase dataWriter,
                                  ExportParameters exportParameters,
                                  ProjectSettings projectSettings,
                                  CancellationToken cancellationToken)
@@ -319,11 +312,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 }
             }
 
-            // cancellation
-            if (cancellationToken.IsCancellationRequested)
-                return false;
-
-            return true;
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
         private void ProcessData(DataWriterExtensionLogicBase dataWriter, DataReaderProgressRecord progressRecord)

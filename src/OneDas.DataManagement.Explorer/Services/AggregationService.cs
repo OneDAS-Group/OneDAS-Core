@@ -86,20 +86,16 @@ namespace OneDas.DataManagement.Explorer.Services
                     {
                         var projectId = projectIds[i];
 
-                        if (cancellationToken.IsCancellationRequested)
-                            break;
-
                         for (int j = 0; j <= aggregationParameters.Days; j++)
                         {
-                            var currentDay = epochStart.AddDays(i);
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            var currentDay = epochStart.AddDays(j);
 
                             var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
                             var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyyy-MM-dd")}";
                             var eventArgs = new ProgressUpdatedEventArgs(i * j / totalDays, progressMessage);
                             progress.Report(eventArgs);
-
-                            if (cancellationToken.IsCancellationRequested)
-                                break;
 
                             this.CreateAggregatedFiles(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
                         }
@@ -195,8 +191,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
             foreach (var entry in channelToAggregationConfigMap)
             {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var channel = entry.Key;
                 var dataset = channel.Datasets.First();
@@ -205,7 +200,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, aggregationParameterss, date, targetFileId, aggregationParameters.Force });
+                                                    new object[] { dataReader, dataset, aggregationParameterss, date, targetFileId, aggregationParameters.Force, cancellationToken });
             }
         }
 
@@ -214,7 +209,8 @@ namespace OneDas.DataManagement.Explorer.Services
                                                AggregationParameters aggregationParameters,
                                                DateTime date,
                                                long targetFileId,
-                                               bool force) where T : unmanaged
+                                               bool force,
+                                               CancellationToken cancellationToken) where T : unmanaged
         {
             // value size
             var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
@@ -292,7 +288,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 var blockSizeLimit = _aggregationChunkSizeMb * 1000 * 1000;
 
                 // read data
-                foreach (var progressRecord in dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, CancellationToken.None))
+                foreach (var progressRecord in dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, cancellationToken))
                 {
                     var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
 
