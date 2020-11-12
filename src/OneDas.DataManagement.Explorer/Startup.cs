@@ -161,14 +161,17 @@ namespace OneDas.DataManagement.Explorer
                               StateManager stateManager, // needs to be called to initialize the database
                               OneDasExplorerOptions options)
         {
-            // ...
+            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-5.0
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseForwardedHeaders();
             }
             else
             {
                 app.UseExceptionHandler("/Error");
+                app.UseForwardedHeaders();
             }
 
             // static files
@@ -189,9 +192,6 @@ namespace OneDas.DataManagement.Explorer
                 FileProvider = new LazyPhysicalFileProvider(options, "EXPORT"),
                 RequestPath = "/export"
             });
-
-            // forwarded headers
-            app.UseForwardedHeaders();
 
             // swagger
             app.UseOpenApi();
