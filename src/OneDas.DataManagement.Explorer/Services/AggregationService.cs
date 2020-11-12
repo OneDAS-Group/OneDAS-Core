@@ -73,28 +73,31 @@ namespace OneDas.DataManagement.Explorer.Services
 
                 try
                 {
+                    var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
+                    progress.Report(new ProgressUpdatedEventArgs(0, "Updating database ..."));
+
                     _databaseManager.Update();
 
                     var projectIds = aggregationParameters.Aggregations
                         .Select(config => config.ProjectId)
                         .Distinct().ToList();
                     var epochEnd = DateTime.UtcNow.Date;
-                    var epochStart = epochEnd.AddDays(-aggregationParameters.Days);
-                    var totalDays = projectIds.Count * aggregationParameters.Days;
+                    var days = aggregationParameters.Days;
+                    var epochStart = epochEnd.AddDays(-days);
+                    var totalDays = projectIds.Count * days;
 
                     for (int i = 0; i < projectIds.Count; i++)
                     {
                         var projectId = projectIds[i];
 
-                        for (int j = 0; j <= aggregationParameters.Days; j++)
+                        for (int j = 0; j <= days; j++)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
                             var currentDay = epochStart.AddDays(j);
-
-                            var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
                             var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyyy-MM-dd")}";
-                            var eventArgs = new ProgressUpdatedEventArgs(i * j / totalDays, progressMessage);
+                            var progressValue = (i * days + j) / (double)totalDays;
+                            var eventArgs = new ProgressUpdatedEventArgs(Math.Round(progressValue * 100, MidpointRounding.AwayFromZero), progressMessage);
                             progress.Report(eventArgs);
 
                             this.CreateAggregatedFiles(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
@@ -180,33 +183,33 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private void AggregateProject(DataReaderExtensionBase dataReader, ProjectInfo project, DateTime date, long targetFileId, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
         {
-            var potentialAggregationParamerters = aggregationParameters.Aggregations
-                .Where(paramerters => paramerters.ProjectId == project.Id)
+            var potentialAggregations = aggregationParameters.Aggregations
+                .Where(parameters => parameters.ProjectId == project.Id)
                 .ToList();
 
-            var channelToAggregationConfigMap = project.Channels
-                .ToDictionary(channel => channel, channel => potentialAggregationParamerters.Where(paramerters => this.ApplyAggregationFilter(channel, paramerters.Filters)).ToList())
+            var channelToAggregationsMap = project.Channels
+                .ToDictionary(channel => channel, channel => potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, current.Filters)).ToList())
                 .Where(entry => entry.Value.Any())
                 .ToDictionary(entry => entry.Key, entry => entry.Value);
 
-            foreach (var entry in channelToAggregationConfigMap)
+            foreach (var entry in channelToAggregationsMap)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var channel = entry.Key;
                 var dataset = channel.Datasets.First();
-                var aggregationParameterss = entry.Value;
+                var aggregations = entry.Value;
 
                 OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
                                                     BindingFlags.Instance | BindingFlags.NonPublic,
                                                     OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, aggregationParameterss, date, targetFileId, aggregationParameters.Force, cancellationToken });
+                                                    new object[] { dataReader, dataset, aggregations, date, targetFileId, aggregationParameters.Force, cancellationToken });
             }
         }
 
         private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader,
                                                DatasetInfo dataset,
-                                               AggregationParameters aggregationParameters,
+                                               List<Aggregation> aggregations,
                                                DateTime date,
                                                long targetFileId,
                                                bool force,
@@ -224,7 +227,7 @@ namespace OneDas.DataManagement.Explorer.Services
             var setupToBufferDataMap = new Dictionary<AggregationSetup, AggregationBufferData>();
             var actualPeriods = new HashSet<AggregationPeriod>();
 
-            var setups = aggregationParameters.Aggregations.SelectMany(parameters =>
+            var setups = aggregations.SelectMany(parameters =>
             {
                 return Enum.GetValues(typeof(AggregationPeriod))
                     .Cast<AggregationPeriod>()
