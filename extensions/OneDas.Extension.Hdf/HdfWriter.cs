@@ -335,7 +335,7 @@ namespace OneDas.Extension.Hdf
                 groupId = IOHelper.OpenOrCreateGroup(locationId, channelDescription.Guid.ToString()).GroupId;
 
                 // attributes
-                var transferFunctionSet = channelDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"), tf.Type, tf.Option, tf.Argument)).ToArray();
+                var transferFunctionSet = channelDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToISO8601(), tf.Type, tf.Option, tf.Argument)).ToArray();
 
                 IOHelper.PrepareAttribute(groupId, "name_set", new string[] { channelDescription.ChannelName }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "group_set", new string[] { channelDescription.Group }, new ulong[] { H5S.UNLIMITED }, true);

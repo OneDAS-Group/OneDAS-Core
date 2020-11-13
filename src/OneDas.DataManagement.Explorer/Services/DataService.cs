@@ -96,7 +96,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 var sampleRate = sampleRates.First();
 
                 // log
-                var message = $"User '{username}' exports data: {exportParameters.Begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {exportParameters.End.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
+                var message = $"User '{username}' exports data: {exportParameters.Begin.ToISO8601()} to {exportParameters.End.ToISO8601()} ... ";
                 _logger.LogInformation(message);
 
                 // zip file path

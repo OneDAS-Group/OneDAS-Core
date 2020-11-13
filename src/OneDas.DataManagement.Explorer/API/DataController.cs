@@ -70,7 +70,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             DateTime.SpecifyKind(begin, DateTimeKind.Utc);
             DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
-            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {end.ToString("yyyy-MM-ddTHH:mm:ssZ")} ...";
+            var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToISO8601()} to {end.ToISO8601()} ...";
             _logger.LogInformation(message);
 
             try

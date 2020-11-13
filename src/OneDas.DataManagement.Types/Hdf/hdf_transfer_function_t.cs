@@ -54,7 +54,7 @@ namespace OneDas.DataManagement.Hdf
         {
             return new hdf_transfer_function_t()
             {
-                date_time = transferFunction.DateTime.ToString("yyyy-MM-ddTHH-mm-ssZ"),
+                date_time = transferFunction.DateTime.ToISO8601(),
                 type = transferFunction.Type,
                 option = transferFunction.Option,
                 argument = transferFunction.Argument,

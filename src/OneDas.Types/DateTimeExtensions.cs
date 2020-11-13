@@ -4,6 +4,11 @@ namespace OneDas
 {
     public static class DateTimeExtensions
     {
+        public static string ToISO8601(this DateTime dateTime)
+        {
+            return dateTime.ToISO8601();
+        }
+
         public static DateTime RoundUp(this DateTime dateTime, TimeSpan timeSpan)
         {
             return new DateTime(dateTime.Ticks + timeSpan.Ticks - (dateTime.Ticks % timeSpan.Ticks), dateTime.Kind);

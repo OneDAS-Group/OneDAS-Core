@@ -58,7 +58,7 @@ namespace OneDas.Extension.Csv
                         // comment
                         streamWriter.WriteLine($"# format_version: { this.FormatVersion };");
                         streamWriter.WriteLine($"# system_name: { this.DataWriterContext.SystemName };");
-                        streamWriter.WriteLine($"# date_time: { startDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ") };");
+                        streamWriter.WriteLine($"# date_time: { startDateTime.ToISO8601() };");
                         streamWriter.WriteLine($"# samples_per_day: { contextGroup.SampleRate.SamplesPerDay };");
 
                         foreach (var customMetadataEntry in this.DataWriterContext.CustomMetadataEntrySet.Where(customMetadataEntry => customMetadataEntry.CustomMetadataEntryLevel == CustomMetadataEntryLevel.File))

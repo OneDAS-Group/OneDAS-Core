@@ -1,13 +1,15 @@
+$hostName = "http://localhost:8080"
+
 # get token
 $credentials = @{
     username = 'root@onedas.org';
     password = '#root0/User1'
 }
 
-$token = Invoke-RestMethod -Uri http://localhost:8080/api/v1/account/token `
-                              -Method POST `
-                              -Body ($credentials | ConvertTo-Json) `
-                              -ContentType "application/json"
+$token = Invoke-RestMethod -Uri "$hostName/api/v1/account/token" `
+                           -Method POST `
+                           -Body ($credentials | ConvertTo-Json) `
+                           -ContentType "application/json"
 
 # go
 $headers = @{
@@ -31,7 +33,7 @@ $aggregationParameters = @{
     )
 }
 
-$response = Invoke-RestMethod -Uri http://localhost:8080/api/v1/jobs/aggregation `
+$response = Invoke-RestMethod -Uri "$hostName/api/v1/jobs/aggregation" `
                               -Method POST `
                               -Headers $headers `
                               -Body ($aggregationParameters | ConvertTo-Json -Depth 3) `

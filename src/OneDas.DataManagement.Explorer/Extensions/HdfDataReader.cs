@@ -67,7 +67,7 @@ namespace OneDas.DataManagement.Extensions
                 var projectId = project.Id;
 
                 /* aggregated data have no version number in file names */
-                var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*{currentBegin.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+                var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*{currentBegin.ToISO8601()}.h5";
                 var currentFolderPath = Path.Combine(folderPath, currentBegin.ToString("yyyy-MM"));
 
                 List<string> filePaths;
@@ -331,7 +331,7 @@ namespace OneDas.DataManagement.Extensions
             if (!this.Projects.Any(project => project.Id == projectId))
                 throw new Exception($"The project '{projectId}' could not be found.");
 
-            var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*_{day.ToString("yyyy-MM-ddTHH-mm-ssZ")}.h5";
+            var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*_{day.ToISO8601()}.h5";
             var folderName = day.ToString("yyyy-MM");
             var folderPath = Path.Combine(this.RootPath, "DATA", folderName);
 

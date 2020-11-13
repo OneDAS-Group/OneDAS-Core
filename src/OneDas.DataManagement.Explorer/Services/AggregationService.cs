@@ -75,7 +75,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return Task.Run(() =>
             {
                 // log
-                var message = $"User '{username}' aggregates data: {aggregationParameters.Begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {aggregationParameters.End.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
+                var message = $"User '{username}' aggregates data: {aggregationParameters.Begin.ToISO8601()} to {aggregationParameters.End.ToISO8601()} ... ";
                 _logger.LogInformation(message);
 
                 try
@@ -147,7 +147,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                 // targetFileId
                 var projectFileName = projectId.TrimStart('/').Replace("/", "_");
-                var dateTimeFileName = date.ToString("yyyy-MM-ddTHH-mm-ssZ");
+                var dateTimeFileName = date.ToISO8601();
                 var targetFileName = $"{projectFileName}_{dateTimeFileName}.h5";
                 var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
 
@@ -172,7 +172,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     // create attribute if necessary
                     if (H5A.exists(targetFileId, "date_time") == 0)
                     {
-                        var dateTimeString = date.ToString("yyyy-MM-ddTHH-mm-ssZ");
+                        var dateTimeString = date.ToISO8601();
                         IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
                     }
 
