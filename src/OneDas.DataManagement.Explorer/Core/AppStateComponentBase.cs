@@ -13,7 +13,7 @@ namespace OneDas.DataManagement.Explorer.Core
 		[Inject]
 		public AppStateViewModel AppState { get; set; }
 
-		protected PropertyChangedEventHandler PropertyChanged {get; set;}
+		protected PropertyChangedEventHandler PropertyChanged { get; set; }
 
 		#endregion
 

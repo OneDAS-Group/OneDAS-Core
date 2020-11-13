@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
@@ -37,13 +38,14 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         private ClientState _clientState;
         private IJSRuntime _jsRuntime;
+        private IServiceProvider _serviceProvider;
 
         private DataService _dataService;
         private UserIdService _userIdService;
         private ProjectContainer _projectContainer;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
-        private CancellationTokenSource _cts_download;
+        private JobControl<ExportJob> _exportJobControl;
         private PropertyChangedEventHandler _propertyChanged;
         private AuthenticationStateProvider _authenticationStateProvider;
 
@@ -56,6 +58,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Constructors
 
         public AppStateViewModel(IJSRuntime jsRuntime,
+                                 IServiceProvider serviceProvider,
                                  UserIdService userIdService,
                                  AuthenticationStateProvider authenticationStateProvider,
                                  StateManager stateManager,
@@ -64,6 +67,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                                  DataService dataService)
         {
             _jsRuntime = jsRuntime;
+            _serviceProvider = serviceProvider;
             _userIdService = userIdService;
             _authenticationStateProvider = authenticationStateProvider;
             _databaseManager = databaseManager;
@@ -413,8 +417,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public async Task DownloadAsync()
         {
-            _cts_download = new CancellationTokenSource();
-
             EventHandler<ProgressUpdatedEventArgs> eventHandler = (sender, e) =>
             {
                 this.DownloadMessage = e.Message;
@@ -438,10 +440,25 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 }
 
                 //
-                var downloadLink = await _dataService.ExportDataAsync(_userIdService.GetUserId(),
-                                                                      this.ExportParameters,
-                                                                      selectedDatasets,
-                                                                      _cts_download.Token);
+                var job = new ExportJob()
+                {
+                    Owner = _userIdService.User.Identity.Name,
+                    Parameters = this.ExportParameters
+                };
+
+                var exportJobService = _serviceProvider.GetRequiredService<JobService<ExportJob>>();
+
+                var jobControl = exportJobService.AddJob(job, _dataService.Progress, (jobControl, cts) =>
+                {
+                    var task = _dataService.ExportDataAsync(_userIdService.GetUserId(),
+                                                            this.ExportParameters,
+                                                            selectedDatasets,
+                                                            cts.Token);
+
+                    return task;
+                });
+
+                var downloadLink = await jobControl.Task;
 
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
@@ -460,7 +477,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public void CancelDownload()
         {
-            _cts_download.Cancel();
+            _exportJobControl?.CancellationTokenSource.Cancel();
         }
 
         public void ToggleDataAvailability()
@@ -725,7 +742,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             {
                 if (disposing)
                 {
-                    _cts_download?.Cancel();
+                    _exportJobControl?.CancellationTokenSource.Cancel();
                     this.StateManager.PropertyChanged -= _propertyChanged;
                 }
 

@@ -94,46 +94,30 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
 
             //
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            var jobControl = new JobControl<ExportJob>()
+            var job = new ExportJob()
             {
-                Start = DateTime.UtcNow,
-                Job = new ExportJob()
-                {
-                    Owner = this.User.Identity.Name,
-                    Parameters = parameters
-                },
-                CancellationTokenSource = cancellationTokenSource,
+                Owner = this.User.Identity.Name,
+                Parameters = parameters
             };
 
-            var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
-            {
-                jobControl.Progress = e.Progress;
-                jobControl.ProgressMessage = e.Message;
-            });
-
-            var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
             var dataService = _serviceProvider.GetRequiredService<DataService>();
-            dataService.Progress.ProgressChanged += handler; // add handler before task starts
-            jobControl.Task = dataService.ExportDataAsync(userIdService.GetUserId(), parameters, datasets, cancellationTokenSource.Token);
 
-            Task.Run(async () =>
+            try
             {
-                try
+                var jobControl = _exportJobService.AddJob(job, dataService.Progress, (jobControl, cts) =>
                 {
-                    await jobControl.Task;
-                }
-                finally
-                {
-                    dataService.Progress.ProgressChanged -= handler;
-                }
-            });
+                    var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
+                    var task = dataService.ExportDataAsync(userIdService.GetUserId(), parameters, datasets, cts.Token);
 
-            if (_exportJobService.TryAddJob(jobControl))
+                    return task;
+                });
+
                 return this.Accepted($"{this.GetBasePath()}{this.Request.Path}/{jobControl.Job.Id}/status", jobControl.Job);
-            else
-                return this.Conflict();
+            }
+            catch (ValidationException ex)
+            {
+                return this.UnprocessableEntity(ex.GetFullMessage());
+            }
         }
 
         /// <summary>
@@ -247,51 +231,34 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 return this.Unauthorized($"The current user is not authorized to create an aggregation job.");
 
             //
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            var jobControl = new JobControl<AggregationJob>()
+            var job = new AggregationJob()
             {
-                Start = DateTime.UtcNow,
-                Job = new AggregationJob()
-                {
-                    Owner = this.User.Identity.Name,
-                    Parameters = parameters
-                },
-                CancellationTokenSource = cancellationTokenSource,
+                Owner = this.User.Identity.Name,
+                Parameters = parameters
             };
 
-            var handler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
-            {
-                jobControl.Progress = e.Progress;
-                jobControl.ProgressMessage = e.Message;
-            });
-
-            var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
             var aggregationService = _serviceProvider.GetRequiredService<AggregationService>();
-            aggregationService.Progress.ProgressChanged += handler; // add handler before task starts
 
-            jobControl.Task = aggregationService.AggregateDataAsync(
-                userIdService.GetUserId(), 
-                _options.DataBaseFolderPath,
-                parameters, 
-                cancellationTokenSource.Token);
-
-            Task.Run(async () =>
+            try
             {
-                try
+                var jobControl = _aggregationJobService.AddJob(job, aggregationService.Progress, (jobControl, cts) =>
                 {
-                    await jobControl.Task;
-                }
-                finally
-                {
-                    aggregationService.Progress.ProgressChanged -= handler;
-                }
-            });
+                    var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
+                    var task = aggregationService.AggregateDataAsync(
+                        userIdService.GetUserId(),
+                        _options.DataBaseFolderPath,
+                        parameters,
+                        cts.Token);
 
-            if (_aggregationJobService.TryAddJob(jobControl))
+                    return task;
+                });
+
                 return this.Accepted($"{this.GetBasePath()}{this.Request.Path}/{jobControl.Job.Id}/status", jobControl.Job);
-            else
-                return this.Conflict();
+            }
+            catch (ValidationException ex)
+            {
+                return this.UnprocessableEntity(ex.GetFullMessage());
+            }
         }
 
         /// <summary>

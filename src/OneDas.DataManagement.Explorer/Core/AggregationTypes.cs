@@ -1,13 +1,17 @@
 ﻿using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
+using System;
 using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
     public record AggregationParameters
     {
-        /// <example>30</example>
-        public uint Days { get; set; }
+        /// <example>2020-02-01T00:00:00Z</example>
+        public DateTime Begin { get; set; } = DateTime.UtcNow.Date.AddDays(-2);
+
+        /// <example>2020-02-02T00:00:00Z</example>
+        public DateTime End { get; set; } = DateTime.UtcNow.Date.AddDays(-1);
 
         /// <example>false</example>
         public bool Force { get; set; }

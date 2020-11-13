@@ -1,12 +1,15 @@
 ﻿using OneDas.DataManagement.Explorer.Core;
+using Prism.Mvvm;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Services
 {
-    public class JobService<T> where T : Job
+    public class JobService<T> : BindableBase where T : Job
     {
         #region Fields
 
@@ -25,9 +28,52 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
-        public bool TryAddJob(JobControl<T> jobControl)
+        public JobControl<T> AddJob(T job, Progress<ProgressUpdatedEventArgs> progress, Func<JobControl<T>, CancellationTokenSource, Task<string>> createTask)
         {
-            return _jobs.TryAdd(jobControl.Job.Id, jobControl);
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var jobControl = new JobControl<T>()
+            {
+                Start = DateTime.UtcNow,
+                Job = job,
+                CancellationTokenSource = cancellationTokenSource,
+            };
+
+            var progressHandler = (EventHandler<ProgressUpdatedEventArgs>)((sender, e) =>
+            {
+                jobControl.OnProgressUpdated(e);
+                this.RaisePropertyChanged("Jobs");
+            });
+
+            progress.ProgressChanged += progressHandler;
+            jobControl.Task = createTask(jobControl, cancellationTokenSource);
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await jobControl.Task;
+                }
+                finally
+                {
+                    jobControl.OnCompleted();
+                    jobControl.ProgressUpdated -= progressHandler;
+                    this.RaisePropertyChanged("Jobs");
+                }
+            });
+
+            this.TryAddJob(jobControl);
+            return jobControl;
+        }
+
+        private bool TryAddJob(JobControl<T> jobControl)
+        {
+            var result = _jobs.TryAdd(jobControl.Job.Id, jobControl);
+
+            if (result)
+                this.RaisePropertyChanged("Jobs");
+
+            return result;
         }
 
         public bool TryGetJob(Guid key, out JobControl<T> jobControl)
@@ -47,10 +93,14 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public void Reset()
         {
-            this.GetJobs()
-                .ForEach(job => job.CancellationTokenSource.Cancel());
+            foreach (var job in this.GetJobs())
+            {
+                job.CancellationTokenSource.Cancel();
+            }
 
             _jobs.Clear();
+
+            this.RaisePropertyChanged("Jobs");
         }
 
         #endregion

@@ -12,6 +12,7 @@ using OneDas.Infrastructure;
 using OneDas.Types;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -65,10 +66,16 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public Task<string> AggregateDataAsync(string username, string databaseFolderPath, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
         {
+            if (aggregationParameters.Begin != aggregationParameters.Begin.Date)
+                throw new ValidationException("The begin parameter must have no time component.");
+
+            if (aggregationParameters.End != aggregationParameters.End.Date)
+                throw new ValidationException("The end parameter must have no time component.");
+
             return Task.Run(() =>
             {
                 // log
-                var message = $"User '{username}' aggregates data: {aggregationParameters.Days} days ... ";
+                var message = $"User '{username}' aggregates data: {aggregationParameters.Begin.ToString("yyyy-MM-ddTHH:mm:ssZ")} to {aggregationParameters.End.ToString("yyyy-MM-ddTHH:mm:ssZ")} ... ";
                 _logger.LogInformation(message);
 
                 try
@@ -81,9 +88,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     var projectIds = aggregationParameters.Aggregations
                         .Select(config => config.ProjectId)
                         .Distinct().ToList();
-                    var epochEnd = DateTime.UtcNow.Date;
-                    var days = aggregationParameters.Days;
-                    var epochStart = epochEnd.AddDays(-days);
+                    var days = (aggregationParameters.End - aggregationParameters.Begin).TotalDays;
                     var totalDays = projectIds.Count * days;
 
                     for (int i = 0; i < projectIds.Count; i++)
@@ -94,10 +99,10 @@ namespace OneDas.DataManagement.Explorer.Services
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            var currentDay = epochStart.AddDays(j);
+                            var currentDay = aggregationParameters.Begin.AddDays(j);
                             var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyyy-MM-dd")}";
-                            var progressValue = (i * days + j) / (double)totalDays;
-                            var eventArgs = new ProgressUpdatedEventArgs(Math.Round(progressValue * 100, MidpointRounding.AwayFromZero), progressMessage);
+                            var progressValue = (i * days + j) / totalDays;
+                            var eventArgs = new ProgressUpdatedEventArgs(progressValue, progressMessage);
                             progress.Report(eventArgs);
 
                             this.CreateAggregatedFiles(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
@@ -153,11 +158,16 @@ namespace OneDas.DataManagement.Explorer.Services
                 {
                     _fileAccessManager.Register(targetFilePath, cancellationToken);
 
+                    var fapl = H5P.create(H5P.FILE_ACCESS);
+                    var res = H5P.set_libver_bounds(fapl, H5F.libver_t.V110, H5F.libver_t.V110);
+
                     if (File.Exists(targetFilePath))
-                        targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR);
+                        targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR, fapl);
 
                     if (targetFileId == -1)
-                        targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC);
+                        targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC, access_plist: fapl);
+
+                    if (H5I.is_valid(fapl) > 0) { H5P.close(fapl); }
 
                     // create attribute if necessary
                     if (H5A.exists(targetFileId, "date_time") == 0)

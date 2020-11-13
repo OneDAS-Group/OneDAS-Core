@@ -13,6 +13,7 @@ using OneDas.Infrastructure;
 using OneDas.Types;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -81,17 +82,17 @@ namespace OneDas.DataManagement.Explorer.Services
                                             List<DatasetInfo> datasets,
                                             CancellationToken cancellationToken)
         {
+            if (!datasets.Any() || exportParameters.Begin == exportParameters.End)
+                return Task.FromResult(string.Empty);
+
+            // find sample rate
+            var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
+
+            if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
+                throw new ValidationException("Channels with different sample rates have been requested.");
+
             return Task.Run(() =>
             {
-                if (!datasets.Any() || exportParameters.Begin == exportParameters.End)
-                    return string.Empty;
-
-                // find sample rate
-                var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
-
-                if (sampleRates.Select(sampleRate => sampleRate.SamplesPerSecond).Distinct().Count() > 1)
-                    throw new Exception("Channels with different sample rates have been requested.");
-
                 var sampleRate = sampleRates.First();
 
                 // log
@@ -219,38 +220,36 @@ namespace OneDas.DataManagement.Explorer.Services
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasProjectDescription(Guid.Empty, 0, projectName_splitted[1], projectName_splitted[2], projectName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, channelDescriptionSet);
 
-            // create temp files
             try
             {
+                // create temp files
                 this.CreateFiles(dataWriter, exportParameters, projectSettings, cancellationToken);
+
+                // write zip archive entries
+                var filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
+                var currentFile = 0;
+                var fileCount = filePathSet.Count();
+
+                foreach (string filePath in filePathSet)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
+
+                    this.OnProgress(new ProgressUpdatedEventArgs(currentFile / (double)fileCount, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));
+
+                    using var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+                    using var zipArchiveEntryStream = zipArchiveEntry.Open();
+
+                    fileStream.CopyTo(zipArchiveEntryStream);
+                    currentFile++;
+                }
             }
             finally
             {
-                dataWriter.Dispose();
                 this.CleanUp(directoryPath);
+                dataWriter.Dispose();
             }
-
-            // write zip archive entries
-            var filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
-            var currentFile = 0;
-            var fileCount = filePathSet.Count();
-
-            foreach (string filePath in filePathSet)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
-
-                this.OnProgress(new ProgressUpdatedEventArgs(currentFile / (double)fileCount, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));
-
-                using var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
-                using var zipArchiveEntryStream = zipArchiveEntry.Open();
-
-                fileStream.CopyTo(zipArchiveEntryStream);
-                currentFile++;
-            }
-
-            this.CleanUp(directoryPath);
         }
 
         private void CreateFiles(DataWriterExtensionLogicBase dataWriter,

@@ -34,11 +34,26 @@ namespace OneDas.DataManagement.Explorer.Core
 
     public record JobControl<T> where T : Job
     {
+        public event EventHandler<ProgressUpdatedEventArgs> ProgressUpdated;
+        public event EventHandler Completed;
+
         public DateTime Start { get; init; }
-        public double Progress { get; set; }
-        public string ProgressMessage { get; set; }
+        public double Progress { get; private set; }
+        public string ProgressMessage { get; private set; }
         public T Job { get; init; }
         public Task<string> Task { get; set; }
         public CancellationTokenSource CancellationTokenSource { get; init; }
+
+        public void OnProgressUpdated(ProgressUpdatedEventArgs e)
+        {
+            this.Progress = e.Progress;
+            this.ProgressMessage = e.Message;
+            this.ProgressUpdated?.Invoke(this, e);
+        }
+
+        public void OnCompleted()
+        {
+            this.Completed?.Invoke(this, EventArgs.Empty);
+        }
     }
 }
