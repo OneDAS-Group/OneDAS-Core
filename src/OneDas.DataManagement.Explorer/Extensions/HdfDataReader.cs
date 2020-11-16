@@ -20,6 +20,13 @@ namespace OneDas.DataManagement.Extensions
     [ExtensionIdentification("OneDas.HDF", "OneDAS HDF", "Provides access to databases with OneDAS HDF files.", "", "")]
     public class HdfDataReader : DataReaderExtensionBase
     {
+        #region Fields
+
+        private List<string> _lastLocalFilePaths;
+        private bool _copyToLocal;
+
+        #endregion
+
         #region Constructors
 
         public HdfDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
@@ -40,6 +47,11 @@ namespace OneDas.DataManagement.Extensions
 #warning Unify this with other readers
         public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
+            // read optional parameters
+            if (this.OptionalParameters != null && this.OptionalParameters.TryGetValue("CopyToLocal", out var value))
+                _copyToLocal = value == "true";
+
+            // 
             long fileId = -1;
 
             var folderPath = Path.Combine(this.RootPath, "DATA");
@@ -81,6 +93,10 @@ namespace OneDas.DataManagement.Extensions
 
                 var compensation = fileLength - fileOffset;
 
+                if (_copyToLocal)
+                    filePaths = this.HandleCopyToLocal(filePaths);
+
+                // go on
                 foreach (var filePath in filePaths)
                 {
                     try
@@ -343,6 +359,75 @@ namespace OneDas.DataManagement.Extensions
                 fileCount = 0;
 
             return fileCount > 0 ? 1 : 0;
+        }
+
+        public override void Dispose()
+        {
+            if (_copyToLocal)
+                this.HandleCopyToLocal(new List<string>());
+
+            base.Dispose();
+        }
+
+        private List<string> HandleCopyToLocal(List<string> filePaths)
+        {
+            if (_lastLocalFilePaths == null)
+                _lastLocalFilePaths = new List<string>();
+
+            var targetDirectory = Path.Combine(Path.GetTempPath(), "OneDAS Explorer", "CopyToLocal");
+            Directory.CreateDirectory(targetDirectory);
+
+            // build target file paths
+            var targetFilePaths = filePaths.Select(current
+                => Path.Combine(targetDirectory, Path.GetFileName(current)));
+
+            // if non of the file paths is contained in the local file list
+            if (!targetFilePaths.Any(current => _lastLocalFilePaths.Contains(current)))
+            {
+                // delete files in that list first
+                foreach (var localFilePath in _lastLocalFilePaths)
+                {
+                    try
+                    {
+                        if (File.Exists(localFilePath))
+                            File.Delete(localFilePath);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+
+                _lastLocalFilePaths.Clear();
+            }
+
+            // no copy each file
+            foreach (var sourceFilePath in filePaths)
+            {
+                var targetFilePath = Path.Combine(targetDirectory, Path.GetFileName(sourceFilePath));
+
+                // if that path is not yet in the list
+                if (!_lastLocalFilePaths.Contains(targetFilePath))
+                {
+                    // then copy file and add it to the list
+                    try
+                    {
+                        if (!File.Exists(targetFilePath))
+                            File.Copy(sourceFilePath, targetFilePath);
+
+                        _lastLocalFilePaths.Add(targetFilePath);
+                    }
+                    catch
+                    {
+                        if (File.Exists(targetFilePath))
+                            File.Delete(targetFilePath);
+
+                        throw;
+                    }
+                }
+            }
+
+            return _lastLocalFilePaths;
         }
 
         private List<string> FindProjectIds(string dataFolderPath)

@@ -1,5 +1,4 @@
 ﻿using OneDas.DataManagement.Database;
-using OneDas.Infrastructure;
 using System;
 using System.Collections.Generic;
 
@@ -14,9 +13,12 @@ namespace OneDas.DataManagement.Explorer.Core
         public DateTime End { get; set; } = DateTime.UtcNow.Date.AddDays(-1);
 
         /// <example>false</example>
-        public bool Force { get; set; }
+        public bool Force { get; set; } = false;
 
-        public List<Aggregation> Aggregations { get; set; }
+        /// <example>{ "/IN_MEMORY/TEST/ACCESSIBLE": { "MySetting": "MyValue" } }</example>
+        public Dictionary<string, Dictionary<string, string>> ReaderParameters { get; set; } = new Dictionary<string, Dictionary<string, string>>();
+
+        public List<Aggregation> Aggregations { get; set; } = new List<Aggregation>();
     }
 
     public record Aggregation
@@ -24,14 +26,14 @@ namespace OneDas.DataManagement.Explorer.Core
         /// <example>/IN_MEMORY/TEST/ACCESSIBLE</example>
         public string ProjectId { get; set; } = string.Empty;
 
-        /// <example>Mean</example>
-        public AggregationMethod Method { get; set; } = AggregationMethod.Mean;
-
-        /// <example>depends on method</example>
-        public string Argument { get; set; } = string.Empty;
+        /// <example>{ Mean: null, MeanPolar: "360" }</example>
+        public Dictionary<AggregationMethod, string> Methods { get; set; } = new Dictionary<AggregationMethod, string>() ;
 
         /// <example>{ "--include-group": "GroupA|GroupB", "--exclude-unit": "deg", "--include-channel": "T1" }</example>
         public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();
+
+        /// <example>[ 1, 60, 600 ]</example>
+        public List<int> Periods { get; set; } = new List<int>();
     }
 
     public enum AggregationMethod
@@ -48,24 +50,18 @@ namespace OneDas.DataManagement.Explorer.Core
         Sum = 9
     }
 
-    public class AggregationPeriodData
+    public record AggregationChannel
     {
-        public AggregationPeriodData(AggregationPeriod period, SampleRateContainer sampleRateContainer, int valueSize)
-        {
-            this.SampleCount = sampleRateContainer.SamplesPerSecondAsUInt64 * (ulong)period;
-            this.ByteCount = this.SampleCount * (ulong)valueSize;
-        }
+        public ChannelInfo Channel { get; init; }
 
-        public ulong SampleCount { get; }
-
-        public ulong ByteCount { get; }
+        public List<Aggregation> Aggregations { get; init; }
     }
 
-    public class AggregationBufferData
+    public record AggregationTargetBufferInfo
     {
-        public AggregationBufferData(AggregationPeriod period)
+        public AggregationTargetBufferInfo(int period)
         {
-            this.Buffer = new double[86400 / (int)period];
+            this.Buffer = new double[86400 / period];
         }
 
         public double[] Buffer { get; }
@@ -75,16 +71,16 @@ namespace OneDas.DataManagement.Explorer.Core
         public long DatasetId { get; set; }
     }
 
-    public class AggregationSetup
+    public record AggregationSetup
     {
-        public AggregationSetup(Aggregation aggregation, AggregationPeriod period)
-        {
-            this.Aggregation = aggregation;
-            this.Period = period;
-        }
+        public Aggregation Aggregation { get; init; }
 
-        public Aggregation Aggregation { get; }
+        public int Period { get; init; }
 
-        public AggregationPeriod Period { get; }
+        public AggregationMethod Method { get; init; }
+
+        public string Argument { get; init; }
+
+        public AggregationTargetBufferInfo TargetBufferInfo { get; init; }
     }
 }

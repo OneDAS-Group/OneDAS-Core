@@ -34,6 +34,8 @@ namespace OneDas.DataManagement.Extensibility
 
         public List<ProjectInfo> Projects { get; private set; }
 
+        public Dictionary<string, string> OptionalParameters { get; set; }
+
         #endregion
 
         #region Methods

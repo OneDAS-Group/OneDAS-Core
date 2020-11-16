@@ -34,9 +34,9 @@ namespace OneDas.DataManagement.Database
 
 #warning Encode SamplesPerDay in DatasetInfo instead of name?
 
-        public SampleRateContainer GetSampleRate()
+        public SampleRateContainer GetSampleRate(bool ensureNonZeroIntegerHz = false)
         {
-            return new SampleRateContainer(this.Id);
+            return new SampleRateContainer(this.Id, ensureNonZeroIntegerHz);
         }
 
         public override string GetPath()

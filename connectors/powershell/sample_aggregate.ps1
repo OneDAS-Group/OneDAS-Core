@@ -24,7 +24,7 @@ $aggregationParameters = @{
         @{
             projectId = '/AIRPORT/AD8_PROTOTYPE/GENERAL_DAQ'
             method = 'Mean'
-            argument = 'None'
+            argument = 'none'
             filters = @{
                 '--include-group' = 'MetMast|PowerTransducer'
                 '--exclude-unit' = 'deg'

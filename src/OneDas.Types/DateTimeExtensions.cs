@@ -6,7 +6,7 @@ namespace OneDas
     {
         public static string ToISO8601(this DateTime dateTime)
         {
-            return dateTime.ToISO8601();
+            return dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH-mm-ssZ");
         }
 
         public static DateTime RoundUp(this DateTime dateTime, TimeSpan timeSpan)

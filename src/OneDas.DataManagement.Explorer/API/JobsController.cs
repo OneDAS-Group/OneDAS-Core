@@ -226,6 +226,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpPost("aggregation")]
         public ActionResult<AggregationJob> CreateAggregationJob(AggregationParameters parameters)
         {
+            parameters.Begin = parameters.Begin.ToUniversalTime();
+            parameters.End = parameters.End.ToUniversalTime();
+
             // security check
             if (!this.User.HasClaim("IsAdmin", "true"))
                 return this.Unauthorized($"The current user is not authorized to create an aggregation job.");

@@ -64,7 +64,10 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
-        public Task<string> AggregateDataAsync(string username, string databaseFolderPath, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
+        public Task<string> AggregateDataAsync(string username,
+                                               string databaseFolderPath,
+                                               AggregationParameters aggregationParameters,
+                                               CancellationToken cancellationToken)
         {
             if (aggregationParameters.Begin != aggregationParameters.Begin.Date)
                 throw new ValidationException("The begin parameter must have no time component.");
@@ -86,7 +89,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     _databaseManager.Update();
 
                     var projectIds = aggregationParameters.Aggregations
-                        .Select(config => config.ProjectId)
+                        .Select(aggregation => aggregation.ProjectId)
                         .Distinct().ToList();
                     var days = (aggregationParameters.End - aggregationParameters.Begin).TotalDays;
                     var totalDays = projectIds.Count * days;
@@ -95,7 +98,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     {
                         var projectId = projectIds[i];
 
-                        for (int j = 0; j <= days; j++)
+                        for (int j = 0; j < days; j++)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -105,7 +108,7 @@ namespace OneDas.DataManagement.Explorer.Services
                             var eventArgs = new ProgressUpdatedEventArgs(progressValue, progressMessage);
                             progress.Report(eventArgs);
 
-                            this.CreateAggregatedFiles(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
+                            this.AggregateProject(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
                         }
                     }
                 }
@@ -121,12 +124,19 @@ namespace OneDas.DataManagement.Explorer.Services
             }, cancellationToken);
         }
 
-        private void CreateAggregatedFiles(string databaseFolderPath, string projectId, DateTime date, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
+        private void AggregateProject(string databaseFolderPath,
+                                      string projectId,
+                                      DateTime date,
+                                      AggregationParameters aggregationParameters,
+                                      CancellationToken cancellationToken)
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
 
             using var dataReader = _databaseManager.GetNativeDataReader(projectId);
+
+            if (aggregationParameters.ReaderParameters.TryGetValue(projectId, out var readerParameters))
+                dataReader.OptionalParameters = readerParameters;
 
             // get files
             if (!dataReader.IsDataOfDayAvailable(projectId, date))
@@ -176,8 +186,37 @@ namespace OneDas.DataManagement.Explorer.Services
                         IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
                     }
 
-                    // projectInfo
-                    this.AggregateProject(dataReader, project, date, targetFileId, aggregationParameters, cancellationToken);
+                    // find aggregations for project ID
+                    var potentialAggregations = aggregationParameters.Aggregations
+                        .Where(parameters => parameters.ProjectId == project.Id)
+                        .ToList();
+
+                    // create channel to aggregations map
+                    var aggregationChannels = project.Channels
+                        // find all aggregations for current channel
+                        .Select(channel =>
+                        {
+                            return new AggregationChannel()
+                            {
+                                Channel = channel,
+                                Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, current.Filters)).ToList()
+                            };
+                        })
+                        // keep all channels with aggregations
+                        .Where(aggregationChannel => aggregationChannel.Aggregations.Any());
+
+                    // for each channel
+                    foreach (var aggregationChannel in aggregationChannels)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var dataset = aggregationChannel.Channel.Datasets.First();
+
+                        OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
+                                                            BindingFlags.Instance | BindingFlags.NonPublic,
+                                                            OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                            new object[] { dataReader, dataset, aggregationChannel.Aggregations, date, targetFileId, aggregationParameters.Force, cancellationToken });
+                    }
                 }
                 finally
                 {
@@ -191,32 +230,6 @@ namespace OneDas.DataManagement.Explorer.Services
             }
         }
 
-        private void AggregateProject(DataReaderExtensionBase dataReader, ProjectInfo project, DateTime date, long targetFileId, AggregationParameters aggregationParameters, CancellationToken cancellationToken)
-        {
-            var potentialAggregations = aggregationParameters.Aggregations
-                .Where(parameters => parameters.ProjectId == project.Id)
-                .ToList();
-
-            var channelToAggregationsMap = project.Channels
-                .ToDictionary(channel => channel, channel => potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, current.Filters)).ToList())
-                .Where(entry => entry.Value.Any())
-                .ToDictionary(entry => entry.Key, entry => entry.Value);
-
-            foreach (var entry in channelToAggregationsMap)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var channel = entry.Key;
-                var dataset = channel.Datasets.First();
-                var aggregations = entry.Value;
-
-                OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
-                                                    BindingFlags.Instance | BindingFlags.NonPublic,
-                                                    OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                    new object[] { dataReader, dataset, aggregations, date, targetFileId, aggregationParameters.Force, cancellationToken });
-            }
-        }
-
         private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader,
                                                DatasetInfo dataset,
                                                List<Aggregation> aggregations,
@@ -225,142 +238,143 @@ namespace OneDas.DataManagement.Explorer.Services
                                                bool force,
                                                CancellationToken cancellationToken) where T : unmanaged
         {
-            // value size
-            var valueSize = OneDasUtilities.SizeOf(dataset.DataType);
-
             // check source sample rate
             var sampleRate = new SampleRateContainer(dataset.Id, ensureNonZeroIntegerHz: true);
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
-            var setupToDataMap = new Dictionary<AggregationSetup, AggregationPeriodData>();
-            var setupToBufferDataMap = new Dictionary<AggregationSetup, AggregationBufferData>();
-            var actualPeriods = new HashSet<AggregationPeriod>();
-
-            var setups = aggregations.SelectMany(parameters =>
-            {
-                return Enum.GetValues(typeof(AggregationPeriod))
-                    .Cast<AggregationPeriod>()
-                    .Select(period => new AggregationSetup(parameters, period));
-            }).ToList();
+            var setups = new List<AggregationSetup>();
 
             try
             {
                 // prepare buffers
-                foreach (var setup in setups)
+                foreach (var aggregation in aggregations)
                 {
-                    // translate method name
-                    var methodIdentifier = setup.Aggregation.Method switch
+                    var periodsToSkip = new List<int>();
+
+                    foreach (var period in aggregation.Periods)
                     {
-                        AggregationMethod.Mean => "mean",
-                        AggregationMethod.MeanPolar => "mean_polar",
-                        AggregationMethod.Min => "min",
-                        AggregationMethod.Max => "max",
-                        AggregationMethod.Std => "std",
-                        AggregationMethod.Rms => "rms",
-                        AggregationMethod.MinBitwise => "min_bitwise",
-                        AggregationMethod.MaxBitwise => "max_bitwise",
-                        AggregationMethod.SampleAndHold => "sample_and_hold",
-                        AggregationMethod.Sum => "sum",
-                        _ => throw new Exception($"The aggregation method '{setup.Aggregation.Method}' is unknown.")
-                    };
+#warning Ensure that period is a sensible value
 
-                    var targetDatasetPath = $"{groupPath}/{(int)setup.Period} s_{methodIdentifier}";
+                        foreach (var entry in aggregation.Methods)
+                        {
+                            var method = entry.Key;
+                            var arguments = entry.Value;
 
-                    if (force || !IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
-                    {
-                        // buffer data
-                        var bufferData = new AggregationBufferData(setup.Period);
-                        var bufferSize = (ulong)bufferData.Buffer.Length;
-                        var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
+                            // translate method name
+                            var methodIdentifier = method switch
+                            {
+                                AggregationMethod.Mean => "mean",
+                                AggregationMethod.MeanPolar => "mean_polar",
+                                AggregationMethod.Min => "min",
+                                AggregationMethod.Max => "max",
+                                AggregationMethod.Std => "std",
+                                AggregationMethod.Rms => "rms",
+                                AggregationMethod.MinBitwise => "min_bitwise",
+                                AggregationMethod.MaxBitwise => "max_bitwise",
+                                AggregationMethod.SampleAndHold => "sample_and_hold",
+                                AggregationMethod.Sum => "sum",
+                                _ => throw new Exception($"The aggregation method '{method}' is unknown.")
+                            };
 
-                        if (!(H5I.is_valid(datasetId) > 0))
-                            throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
+                            var targetDatasetPath = $"{groupPath}/{period} s_{methodIdentifier}";
 
-                        bufferData.DatasetId = datasetId;
-                        setupToBufferDataMap[setup] = bufferData;
+                            if (force || !IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
+                            {
+                                // buffer data
+                                var targetBufferInfo = new AggregationTargetBufferInfo(period);
+                                var bufferSize = (ulong)targetBufferInfo.Buffer.Length;
+                                var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
 
-                        // period data
-                        var periodData = new AggregationPeriodData(setup.Period, sampleRate, valueSize);
-                        setupToDataMap[setup] = periodData;
+                                if (!(H5I.is_valid(datasetId) > 0))
+                                    throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
 
-                        actualPeriods.Add(setup.Period);
-                    }
-                    else
-                    {
-                        // skip period
+                                targetBufferInfo.DatasetId = datasetId;
+
+                                var setup = new AggregationSetup()
+                                {
+                                    Aggregation = aggregation,
+                                    Period = period,
+                                    Method = method,
+                                    Argument = arguments,
+                                    TargetBufferInfo = targetBufferInfo
+                                };
+
+                                setups.Add(setup);
+                            }
+                            else
+                            {
+                                // skip period / method combination
+                            }
+                        }
                     }
                 }
 
-                if (!setupToDataMap.Any())
+                if (!setups.Any())
                     return;
 
                 // process data
-                var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions gets data with a multiple length of 10 minutes
+                var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions get data with a multiple length of 10 minutes
                 var endDate = date.AddDays(1);
                 var blockSizeLimit = _aggregationChunkSizeMb * 1000 * 1000;
 
-                // read data
+                // read raw data
                 foreach (var progressRecord in dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, cancellationToken))
                 {
                     var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
 
                     // aggregate data
-                    var setupToPartialBufferMap = this.ApplyAggregationFunction((T[])dataRecord.Dataset, dataRecord.Status, setupToDataMap);
+                    var partialBuffersMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, setups);
 
-                    foreach (var entry in setupToDataMap)
+                    foreach (var entry in partialBuffersMap)
                     {
-                        var setup = entry.Key;
+                        // copy aggregated data to target buffer
+                        var partialBuffer = entry.Value;
+                        var targetBufferInfo = entry.Key.TargetBufferInfo;
 
-                        // copy aggregated data into buffer
-                        var partialBuffer = setupToPartialBufferMap[setup];
-                        var bufferData = setupToBufferDataMap[setup];
-
-                        Array.Copy(partialBuffer, 0, bufferData.Buffer, bufferData.BufferPosition, partialBuffer.Length);
-                        bufferData.BufferPosition += partialBuffer.Length;
+                        Array.Copy(partialBuffer, 0, targetBufferInfo.Buffer, targetBufferInfo.BufferPosition, partialBuffer.Length);
+                        targetBufferInfo.BufferPosition += partialBuffer.Length;
                     }
                 }
 
                 // write data to file
-                foreach (var entry in setupToDataMap)
+                foreach (var setup in setups)
                 {
-                    var setup = entry.Key;
-                    var bufferData = setupToBufferDataMap[setup];
+                    var targetBufferInfo = setup.TargetBufferInfo;
 
-                    IOHelper.Write(bufferData.DatasetId, bufferData.Buffer, DataContainerType.Dataset);
-                    H5F.flush(bufferData.DatasetId, H5F.scope_t.LOCAL);
+                    IOHelper.Write(targetBufferInfo.DatasetId, targetBufferInfo.Buffer, DataContainerType.Dataset);
+                    H5F.flush(targetBufferInfo.DatasetId, H5F.scope_t.LOCAL);
                 }
             }
             finally
             {
                 foreach (var setup in setups)
                 {
-                    if (setupToBufferDataMap.ContainsKey(setup))
-                    {
-                        var datasetId = setupToBufferDataMap[setup].DatasetId;
+                    var datasetId = setup.TargetBufferInfo.DatasetId;
 
-                        if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-                    }
+                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 }
             }
         }
 
-        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(T[] data,
-                                                                                   byte[] statusSet,
-                                                                                   Dictionary<AggregationSetup, AggregationPeriodData> setupToDataMap) where T : unmanaged
+        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset,
+                                                                              T[] data,
+                                                                              byte[] statusSet,
+                                                                              List<AggregationSetup> aggregationSetups) where T : unmanaged
         {
             var nanLimit = 0.99;
             var dataset_double = default(double[]);
-            var setupToPartialBufferMap = new Dictionary<AggregationSetup, double[]>();
+            var partialBuffersMap = new Dictionary<AggregationSetup, double[]>();
 
-            foreach (var item in setupToDataMap)
+            foreach (var setup in aggregationSetups)
             {
-                var setup = item.Key;
                 var aggregation = setup.Aggregation;
                 var period = setup.Period;
-                var periodData = item.Value;
+                var method = setup.Method;
+                var argument = setup.Argument;
+                var sampleCount = dataset.GetSampleRate(ensureNonZeroIntegerHz: true).SamplesPerSecondAsUInt64 * (ulong)period;
 
-                switch (aggregation.Method)
+                switch (setup.Method)
                 {
                     case AggregationMethod.Mean:
                     case AggregationMethod.MeanPolar:
@@ -374,34 +388,37 @@ namespace OneDas.DataManagement.Explorer.Services
                         if (dataset_double == null)
                             dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
 
-                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregation, (int)periodData.SampleCount, dataset_double, nanLimit, _logger);
+                        partialBuffersMap[setup] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, dataset_double, nanLimit, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        setupToPartialBufferMap[setup] = this.ApplyAggregationFunction(aggregation, (int)periodData.SampleCount, data, statusSet, nanLimit, _logger);
+                        partialBuffersMap[setup] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, data, statusSet, nanLimit, _logger);
 
                         break;
 
                     default:
 
-                        _logger.LogWarning($"The aggregation method '{aggregation.Method}' is not known. Skipping period {period}.");
+                        _logger.LogWarning($"The aggregation method '{setup.Method}' is not known. Skipping period {period}.");
 
                         continue;
                 }
             }
 
-            return setupToPartialBufferMap;
+            return partialBuffersMap;
         }
 
-        private double[] ApplyAggregationFunction(Aggregation aggregation, int kernelSize, double[] data, double nanLimit, ILogger logger)
+        private double[] ApplyAggregationFunction(AggregationMethod method,
+                                                  string argument,
+                                                  int kernelSize,
+                                                  double[] data,
+                                                  double nanLimit,
+                                                  ILogger logger)
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
-            var method = aggregation.Method;
-            var argument = aggregation.Argument;
 
             switch (method)
             {
@@ -561,12 +578,16 @@ namespace OneDas.DataManagement.Explorer.Services
             return result;
         }
 
-        private double[] ApplyAggregationFunction<T>(Aggregation aggregation, int kernelSize, T[] data, byte[] statusSet, double nanLimit, ILogger logger) where T : unmanaged
+        private double[] ApplyAggregationFunction<T>(AggregationMethod method,
+                                                     string argument,
+                                                     int kernelSize,
+                                                     T[] data,
+                                                     byte[] statusSet,
+                                                     double nanLimit,
+                                                     ILogger logger) where T : unmanaged
         {
             var targetDatasetLength = data.Length / kernelSize;
             var result = new double[targetDatasetLength];
-            var method = aggregation.Method;
-            var argument = aggregation.Argument;
 
             switch (method)
             {
