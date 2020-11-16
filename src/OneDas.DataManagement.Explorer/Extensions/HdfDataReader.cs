@@ -155,7 +155,7 @@ namespace OneDas.DataManagement.Extensions
                                     }
                                     else
                                     {
-                                        this.Logger.LogWarning($"Could not find dataset '{datasetPath}'.");
+                                        this.Logger.LogDebug($"Could not find dataset '{datasetPath}'.");
                                     }
                                 }
                             }

@@ -6,6 +6,7 @@ using ChartJs.Blazor.ChartJS.Common.Enums;
 using ChartJs.Blazor.ChartJS.Common.Handlers;
 using ChartJs.Blazor.ChartJS.Common.Properties;
 using ChartJs.Blazor.ChartJS.Common.Time;
+using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,46 +129,57 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task UpdateChart()
         {
-            var axis = (BarTimeAxis)barChart.Config.Options.Scales.XAxes[0];
-            var statistics = await this.AppState.GetDataAvailabilityStatisticsAsync();
-
-            this.Dataset.RemoveRange(0, this.Dataset.Data.Count);
-
-            switch (statistics.Granularity)
+            try
             {
-                case DataAvailabilityGranularity.DayLevel:
+                var axis = (BarTimeAxis)barChart.Config.Options.Scales.XAxes[0];
+                var statistics = await this.AppState.GetDataAvailabilityStatisticsAsync();
 
-                    axis.Time.Unit = TimeMeasurement.Day;
-                    var dateTimeBegin1 = this.AppState.DateTimeBegin.Date;
+                this.Dataset.RemoveRange(0, this.Dataset.Data.Count);
 
-                    this.Dataset.AddRange(statistics.Data
-                        .Select((value, i) =>
-                        {
-                            return new TimeTuple<double>((Moment)dateTimeBegin1.AddDays(i), value);
-                        })
-                    );
+                switch (statistics.Granularity)
+                {
+                    case DataAvailabilityGranularity.DayLevel:
 
-                    break;
+                        axis.Time.Unit = TimeMeasurement.Day;
+                        var dateTimeBegin1 = this.AppState.DateTimeBegin.Date;
 
-                case DataAvailabilityGranularity.MonthLevel:
+                        this.Dataset.AddRange(statistics.Data
+                            .Select((value, i) =>
+                            {
+                                return new TimeTuple<double>((Moment)dateTimeBegin1.AddDays(i), value);
+                            })
+                        );
 
-                    axis.Time.Unit = TimeMeasurement.Month;
-                    var dateTimeBegin2 = this.AppState.DateTimeBegin.Date;
+                        break;
 
-                    this.Dataset.AddRange(statistics.Data
-                        .Select((value, i) =>
-                        {
-                            return new TimeTuple<double>((Moment)dateTimeBegin2.AddMonths(i), value);
-                        })
-                    );
+                    case DataAvailabilityGranularity.MonthLevel:
 
-                    break;
+                        axis.Time.Unit = TimeMeasurement.Month;
+                        var dateTimeBegin2 = this.AppState.DateTimeBegin.Date;
 
-                default:
-                    break;
+                        this.Dataset.AddRange(statistics.Data
+                            .Select((value, i) =>
+                            {
+                                return new TimeTuple<double>((Moment)dateTimeBegin2.AddMonths(i), value);
+                            })
+                        );
+
+                        break;
+
+                    default:
+                        break;
+                }
+
+                await barChart.Update();
             }
-
-            await barChart.Update();
+            catch (TaskCanceledException)
+            {
+                // prevent that the whole app crashes in the followig case:
+                // - OneDAS calculates aggregations and locks current file
+                // GUI wants to load data from that locked file and times out
+                // TaskCanceledException is thrown: app crashes.
+                this.AppState.ClientState = ClientState.Normal;
+            }
         }
 
         #endregion

@@ -113,16 +113,27 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 		private async Task UpdateChartAsync()
 		{
-			var chartEntries = this.BuildChartEntriesAsync();
-			var begin = this.AppState.DateTimeBegin;
-			var end = this.AppState.DateTimeEnd;
-			var sampleRate = (double)new SampleRateContainer(this.AppState.SampleRate).SamplesPerSecond;
-			var dt = 1 / sampleRate;
+            try
+            {
+				var chartEntries = this.BuildChartEntriesAsync();
+				var begin = this.AppState.DateTimeBegin;
+				var end = this.AppState.DateTimeEnd;
+				var sampleRate = (double)new SampleRateContainer(this.AppState.SampleRate).SamplesPerSecond;
+				var dt = 1 / sampleRate;
 
-			var count = (int)((end - begin).TotalSeconds * sampleRate);
+				var count = (int)((end - begin).TotalSeconds * sampleRate);
 
-			await this.InvokeAsync(this.StateHasChanged);
-			await this.JsRuntime.UpdateChartAsync(this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
+				await this.InvokeAsync(this.StateHasChanged);
+				await this.JsRuntime.UpdateChartAsync(this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
+			}
+            catch (TaskCanceledException)
+            {
+				// prevent that the whole app crashes in the followig case:
+				// - OneDAS calculates aggregations and locks current file
+				// GUI wants to load data from that locked file and times out
+				// TaskCanceledException is thrown: app crashes.
+				this.AppState.ClientState = ClientState.Normal;
+			}
 		}
 
 		#endregion
