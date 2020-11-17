@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="EtherCAT.NET" Version="1.0.0-alpha.4.final" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0-rc.2.20475.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
