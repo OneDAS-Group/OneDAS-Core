@@ -1,4 +1,5 @@
 using GraphQL.Server;
+using MatBlazor;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -61,6 +62,17 @@ namespace OneDas.DataManagement.Explorer
             // blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            // matblazor
+            services.AddMatToaster(config =>
+            {
+                config.Position = MatToastPosition.BottomCenter;
+                config.PreventDuplicates = true;
+                config.NewestOnTop = true;
+                config.ShowCloseButton = true;
+                config.MaximumOpacity = 95;
+                config.VisibleStateDuration = 10000;
+            });
 
             // authentication
             services.AddAuthentication(options =>
@@ -137,6 +149,7 @@ namespace OneDas.DataManagement.Explorer
                 .AddGraphTypes(typeof(ProjectSchema));
 
             // custom
+#warning replace httpcontextaccessor by async authenticationStateProvider (https://github.com/dotnet/aspnetcore/issues/17585)
             services.AddHttpContextAccessor();
             services.AddScoped<UserIdService>();
             services.AddScoped<AppStateViewModel>();

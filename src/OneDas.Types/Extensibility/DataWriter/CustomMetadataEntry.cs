@@ -6,7 +6,7 @@
         {
             this.Key = key;
             this.Value = value;
-            this.CustomMetadataEntryLevel = CustomMetadataEntryLevel;
+            this.CustomMetadataEntryLevel = customMetadataEntryLevel;
         }
 
         public string Key { get; private set; }

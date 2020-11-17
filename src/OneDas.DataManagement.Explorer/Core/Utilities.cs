@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OneDas.DataManagement.Database;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -7,21 +8,22 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public static class Utilities
     {
-        public static bool IsProjectAccessible(ClaimsPrincipal principal, string projectId, List<string> restrictedProjects)
+        public static bool IsProjectAccessible(ClaimsPrincipal principal, string projectId, OneDasDatabase database)
         {
-            var identitiy = principal.Identity;
+            var identity = principal.Identity;
+            var projectContainer = database.ProjectContainers.First(current => current.Id == projectId);
 
-            if (!restrictedProjects.Contains(projectId))
+            if (projectContainer.ProjectMeta.License.LicensingScheme == ProjectLicensingScheme.None)
             {
                 return true;
             }
-            else if (identitiy.IsAuthenticated)
+            else if (identity.IsAuthenticated)
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
-                var canAccessProjectContainer = principal.HasClaim(claim => claim.Type == "CanAccessProject"
-                                                                 && claim.Value.Split(";").Any(current => current == projectId));
+                var canAccessProject = principal.HasClaim(claim => claim.Type == "CanAccessProject"
+                                                       && claim.Value.Split(";").Any(current => current == projectId));
 
-                return isAdmin || canAccessProjectContainer;
+                return isAdmin || canAccessProject;
             }
 
             return false;

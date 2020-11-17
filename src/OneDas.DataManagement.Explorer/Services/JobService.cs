@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Timer = System.Timers.Timer;
 
 namespace OneDas.DataManagement.Explorer.Services
 {
@@ -13,6 +14,7 @@ namespace OneDas.DataManagement.Explorer.Services
     {
         #region Fields
 
+        private Timer _timer;
         private ConcurrentDictionary<Guid, JobControl<T>> _jobs;
 
         #endregion
@@ -21,6 +23,32 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public JobService()
         {
+            _timer = new Timer()
+            {
+                AutoReset = true,
+                Enabled = true,
+                Interval = TimeSpan.FromDays(1).TotalMilliseconds
+            };
+
+            _timer.Elapsed += (sender, e) =>
+            {
+                var now = DateTime.UtcNow;
+                var maxRuntime = TimeSpan.FromDays(3);
+
+                foreach (var jobControl in this.GetJobs())
+                {
+                    if (jobControl.Task.IsCompleted)
+                    {
+                        var runtime = now - jobControl.Start;
+
+                        if (runtime > maxRuntime)
+                            _jobs.TryRemove(jobControl.Job.Id, out _);
+                    }
+                }
+
+                this.RaisePropertyChanged("Jobs");
+            };
+
             _jobs = new ConcurrentDictionary<Guid, JobControl<T>>();
         }
 
@@ -89,18 +117,6 @@ namespace OneDas.DataManagement.Explorer.Services
                 .ToArray()
                 .Select(entry => entry.Value)
                 .ToList();
-        }
-
-        public void Reset()
-        {
-            foreach (var job in this.GetJobs())
-            {
-                job.CancellationTokenSource.Cancel();
-            }
-
-            _jobs.Clear();
-
-            this.RaisePropertyChanged("Jobs");
         }
 
         #endregion

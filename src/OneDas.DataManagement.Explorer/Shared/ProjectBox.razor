@@ -11,7 +11,17 @@
                         @projectContainer.Id.TrimStart('/').Replace("/", " / ")
                         @if (this.AppState.ProjectContainersInfo.Restricted.Contains(projectContainer))
                         {
-                            <span>&nbsp; &nbsp;<i class="fas fa-lock"></i></span>
+                            @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                            <MatTooltip Tooltip="You do not have access to this project." Wrap="true" Position="MatTooltipPosition.Top">
+                                <span>&nbsp; &nbsp;<i class="fas fa-lock"></i></span>
+                            </MatTooltip>
+                        }
+                        else if (projectContainer.ProjectMeta.IsQualityControlled)
+                        {
+                            @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                            <MatTooltip Tooltip="This project is quality controlled." Wrap="true" Position="MatTooltipPosition.Top">
+                                <span>&nbsp; &nbsp;<i class="fas fa-check-circle quality-controlled"></i></span>
+                            </MatTooltip>
                         }
                     </div>
                     <div class="small-text">&nbsp;&nbsp;&nbsp;@projectContainer.ProjectMeta.ShortDescription</div>
@@ -36,12 +46,26 @@
             @if (this.AppState.ProjectContainersInfo.Accessible.Contains(this.AppState.ProjectContainer))
             {
                 <div class="project-box-selected-footer-icons">
-                    @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
+                    @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                    <MatTooltip Tooltip="Availability" Position="MatTooltipPosition.Top" Wrap="true">
+                        <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
+                    </MatTooltip>
+
+                    @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                    @if (this.AppState.ProjectContainer.ProjectMeta.Logbook.Any())
                     {
-                        <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />
+                        <MatTooltip Tooltip="Logbook" Position="MatTooltipPosition.Top" Wrap="true">
+                            <MatIconButton Icon="@MatIconNames.Event_note" OnClick="this.OpenLogBookDialog" />
+                        </MatTooltip>
                     }
 
-                    <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
+                    @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                    @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
+                    {
+                        <MatTooltip Tooltip="Attachments" Position="MatTooltipPosition.Top" Wrap="true">
+                            <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />
+                        </MatTooltip>
+                    }
                 </div>
             }
         </div>
@@ -52,4 +76,5 @@
     }
 </div>
 
+<LogBook @bind-IsOpen="this.LogBookDialogIsOpen" />
 <Attachments @bind-IsOpen="this.AttachmentsDialogIsOpen" />

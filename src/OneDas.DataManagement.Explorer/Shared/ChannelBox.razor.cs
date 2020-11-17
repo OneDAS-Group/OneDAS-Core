@@ -44,6 +44,8 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 		#region Properties
 
+		public bool LicenseDialogIsOpen { get; set; }
+
 		public int GroupPageSize { get; set; } = 15;
 
 		public int GroupPage { get; set; } = 0;
@@ -53,5 +55,14 @@ namespace OneDas.DataManagement.Explorer.Shared
 		public int ChannelPage { get; set; } = 0;
 
 		#endregion
-    }
+
+		#region Methods
+
+		private void OpenLicenseDialog()
+		{
+			this.LicenseDialogIsOpen = true;
+		}
+
+		#endregion
+	}
 }

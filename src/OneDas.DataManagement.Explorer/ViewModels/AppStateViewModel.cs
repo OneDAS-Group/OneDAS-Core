@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
@@ -83,9 +83,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             // project containers and dependent init steps
             var projectContainers = databaseManager.Database.ProjectContainers;
-            var restrictedProjects = databaseManager.Config.RestrictedProjects;
 
-            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, restrictedProjects, Constants.HiddenProjects).Result;
+            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, databaseManager.Database, Constants.HiddenProjects).Result;
 
             this.SampleRateValues = this.ProjectContainersInfo.Accessible.SelectMany(projectContainer =>
             {
@@ -435,7 +434,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 foreach (var projectId in projectIds)
                 {
-                    if (!Utilities.IsProjectAccessible(_userIdService.User, projectId, _databaseManager.Config.RestrictedProjects))
+                    if (!Utilities.IsProjectAccessible(_userIdService.User, projectId, _databaseManager.Database))
                         throw new UnauthorizedAccessException($"The current user is not authorized to access project '{projectId}'.");
                 }
 
@@ -448,7 +447,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
                 var exportJobService = _serviceProvider.GetRequiredService<JobService<ExportJob>>();
 
-                var jobControl = exportJobService.AddJob(job, _dataService.Progress, (jobControl, cts) =>
+                _exportJobControl = exportJobService.AddJob(job, _dataService.Progress, (jobControl, cts) =>
                 {
                     var task = _dataService.ExportDataAsync(_userIdService.GetUserId(),
                                                             this.ExportParameters,
@@ -458,7 +457,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                     return task;
                 });
 
-                var downloadLink = await jobControl.Task;
+                var downloadLink = await _exportJobControl.Task;
 
                 if (!string.IsNullOrWhiteSpace(downloadLink))
                 {
@@ -516,7 +515,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
         {
             // security check
-            if (!Utilities.IsProjectAccessible(_userIdService.User, this.ProjectContainer.Id, _databaseManager.Config.RestrictedProjects))
+            if (!Utilities.IsProjectAccessible(_userIdService.User, this.ProjectContainer.Id, _databaseManager.Database))
                 throw new UnauthorizedAccessException($"The current user is not authorized to access project '{this.ProjectContainer.Id}'.");
 
             return await _dataService.GetDataAvailabilityStatisticsAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
@@ -703,7 +702,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         }
 
         private async Task<SplittedProjectContainers> SplitCampainContainersAsync(List<ProjectContainer> projectContainers,
-                                                                                  List<string> restrictedProjects,
+                                                                                  OneDasDatabase database,
                                                                                   List<string> hiddenProjects)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
@@ -711,13 +710,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
             var accessible = projectContainers.Where(projectContainer =>
             {
-                return Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, restrictedProjects)
+                return Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, database)
                     && Utilities.IsProjectVisible(principal, projectContainer.Project.Id, hiddenProjects);
             }).OrderBy(projectContainer => projectContainer.Id).ToList();
 
             var restricted = projectContainers.Where(projectContainer =>
             {
-                return !Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, restrictedProjects)
+                return !Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, database)
                     && Utilities.IsProjectVisible(principal, projectContainer.Project.Id, hiddenProjects);
             }).OrderBy(projectContainer => projectContainer.Id).ToList();
 

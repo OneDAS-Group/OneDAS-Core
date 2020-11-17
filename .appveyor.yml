@@ -51,7 +51,7 @@ build_script:
 #  - ps: if ($isWindows) { msbuild .\src\OneDas.Core.Deployment\OneDas.Core.Deployment.wixproj     /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }
 #  - ps: if ($isWindows) { msbuild .\src\OneDas.DataManagement.Deployment\OneDas.DataManagement.Deployment.wixproj       /p:Configuraton=$Env:CONFIGURATION /p:Build=$Env:APPVEYOR_BUILD_NUMBER /p:IsFinalBuild=$Env:APPVEYOR_REPO_TAG }
 
-test_script:
+# test_script:
 #  - ps: dotnet test ./tests/OneDas.Core.Tests -c $Env:CONFIGURATION /p:BuildProjectReferences=false
 
 artifacts:

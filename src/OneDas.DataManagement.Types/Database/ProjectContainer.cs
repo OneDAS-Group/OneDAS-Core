@@ -46,7 +46,7 @@ namespace OneDas.DataManagement.Database
 
         public SparseProjectInfo ToSparseProject(List<DatasetInfo> datasets)
         {
-            var project = new SparseProjectInfo(this.Id);
+            var project = new SparseProjectInfo(this.Id, this.ProjectMeta.License);
             var channels = datasets.Select(dataset => (ChannelInfo)dataset.Parent).Distinct().ToList();
 
             project.Channels = channels.Select(reference =>

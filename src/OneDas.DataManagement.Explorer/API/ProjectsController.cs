@@ -49,7 +49,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             var projectContainers = _databaseManager.Database.ProjectContainers;
 
             projectContainers = projectContainers.Where(projectContainer
-                => Utilities.IsProjectAccessible(this.User, projectContainer.Id, _databaseManager.Config.RestrictedProjects)
+                => Utilities.IsProjectAccessible(this.User, projectContainer.Id, _databaseManager.Database)
                 && Utilities.IsProjectVisible(this.User, projectContainer.Id, Constants.HiddenProjects))
                 .ToList();
 
@@ -291,11 +291,14 @@ namespace OneDas.DataManagement.Explorer.Controllers
             return new Project()
             {
                 Id = project.Id,
+                Contact = projectMeta.Contact,
                 ProjectStart = project.ProjectStart,
                 ProjectEnd = project.ProjectEnd,
                 ShortDescription = projectMeta.ShortDescription,
                 LongDescription = projectMeta.LongDescription,
-                Contact = projectMeta.Contact,
+                IsQualityControlled = projectMeta.IsQualityControlled,
+                License = projectMeta.License,
+                LogBook = projectMeta.Logbook
             };
         }
 
@@ -332,7 +335,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             string message,
             Func<ProjectInfo, ProjectMetaInfo, ActionResult<T>> action)
         {
-            if (!Utilities.IsProjectAccessible(this.User, projectId, _databaseManager.Config.RestrictedProjects))
+            if (!Utilities.IsProjectAccessible(this.User, projectId, _databaseManager.Database))
                 return this.Unauthorized($"The current user is not authorized to access the project '{projectId}'.");
 
             var projectContainer = _databaseManager
@@ -361,11 +364,14 @@ namespace OneDas.DataManagement.Explorer.Controllers
         public record Project
         {
             public string Id { get; set; }
+            public string Contact { get; set; }
             public DateTime ProjectStart { get; set; }
             public DateTime ProjectEnd { get; set; }
             public string ShortDescription { get; set; }
             public string LongDescription { get; set; }
-            public string Contact { get; set; }
+            public bool IsQualityControlled { get; set; }
+            public ProjectLicense License { get;set;}
+            public List<string> LogBook { get; set; }
         }
 
         public record Channel()

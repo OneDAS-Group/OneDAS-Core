@@ -1,0 +1,19 @@
+﻿<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
+    <MatDialogTitle>Licensing</MatDialogTitle>
+    <MatDialogContent>
+        @if (this.IsOpen)
+        {
+            <div class="licensing">
+                <p>@this.AppState.ProjectContainer.ProjectMeta.License.DisplayMessage</p>
+                @if (!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.License.Url))
+                {
+                    <p><a href="@this.AppState.ProjectContainer.ProjectMeta.License.Url" target="_blank">License</a></p>
+                }
+            </div>
+        }
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="this.Accept" Raised="true">Accept</MatButton>
+        <MatButton OnClick="this.Cancel">Cancel</MatButton>
+    </MatDialogActions>
+</MatDialog>

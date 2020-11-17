@@ -13,6 +13,9 @@ namespace OneDas.DataManagement.Database
             this.Contact = string.Empty;
             this.ShortDescription = string.Empty;
             this.LongDescription = string.Empty;
+            this.IsQualityControlled = false;
+            this.License = new ProjectLicense();
+            this.Logbook = new List<string>();
             this.Channels = new List<ChannelMetaInfo>();
         }
 
@@ -32,6 +35,12 @@ namespace OneDas.DataManagement.Database
         public string ShortDescription { get; set; }
 
         public string LongDescription { get; set; }
+
+        public bool IsQualityControlled { get; set; }
+
+        public ProjectLicense License { get; set; }
+
+        public List<string> Logbook { get; set; }
 
         public List<ChannelMetaInfo> Channels { get; set; }
 

@@ -78,8 +78,13 @@ namespace OneDas.DataManagement.Explorer.Services
                 if (userManager.FindByNameAsync(defaultTestUsername).Result == null)
                 {
                     var user = new IdentityUser(defaultTestUsername);
+                    var result = userManager.CreateAsync(user, defaultTestPassword).Result;
 
-                    var _ = userManager.CreateAsync(user, defaultTestPassword).Result;
+                    if (result.Succeeded)
+                    {
+                        var claim = new Claim("CanAccessProject", "/IN_MEMORY/TEST/ACCESSIBLE;/IN_MEMORY/TEST/RESTRICTED");
+                        userManager.AddClaimAsync(user, claim).Wait();
+                    }
                 }
             }
         }

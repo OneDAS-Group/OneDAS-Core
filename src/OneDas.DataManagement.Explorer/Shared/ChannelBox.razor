@@ -1,5 +1,5 @@
 ﻿@inherits AppStateComponentBase
-
+@inject IHttpContextAccessor ContextAccessor
 
 @if (this.AppState.GroupedChannels != null) // user has access to project
 {
@@ -40,8 +40,26 @@
             <Paginator Length="this.AppState.ChannelGroup.Count" PageSize="this.ChannelPageSize" @bind-Page="this.ChannelPage"></Paginator>
         }
     </div>
-} 
+}
 else if (this.AppState.ProjectContainer != null) // user has no access to project
 {
-    <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.Contact) ? $" Please contact {this.AppState.ProjectContainer.ProjectMeta.Contact} to request permission." : "")</span>
+    <div class="flex-centered h-100 w-100">
+        @if (this.ContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+        {
+            @if (this.AppState.ProjectContainer.ProjectMeta.License.LicensingScheme == Database.ProjectLicensingScheme.ManualRequest)
+            {
+                <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.Contact) ? $" Please contact {this.AppState.ProjectContainer.ProjectMeta.Contact} to request permission." : "")</span>
+            }
+            else if (this.AppState.ProjectContainer.ProjectMeta.License.LicensingScheme == Database.ProjectLicensingScheme.AcceptLicense)
+            {
+                <MatButton Outlined="true" Icon="@MatIconNames.Lock_open" @onclick="this.OpenLicenseDialog">Unlock</MatButton>
+            }
+        }
+        else
+        {
+            <span>You are not logged in. Access to project denied.</span>
+        }
+    </div>
+
+    <Licensing @bind-IsOpen="this.LicenseDialogIsOpen" />
 }

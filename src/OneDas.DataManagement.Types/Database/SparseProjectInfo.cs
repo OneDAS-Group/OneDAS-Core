@@ -10,10 +10,16 @@ namespace OneDas.DataManagement.Database
     {
         #region "Constructors"
 
-        public SparseProjectInfo(string id) : base(id)
+        public SparseProjectInfo(string id, ProjectLicense license) : base(id)
         {
-            //
+            this.License = license;
         }
+
+        #endregion
+
+        #region Properties
+
+        public ProjectLicense License { get; }
 
         #endregion
 

@@ -84,7 +84,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 var project = (ProjectInfo)dataset.Parent.Parent;
 
                 // security check
-                if (!Utilities.IsProjectAccessible(this.User, project.Id, _databaseManager.Config.RestrictedProjects))
+                if (!Utilities.IsProjectAccessible(this.User, project.Id, _databaseManager.Database))
                     return this.Unauthorized($"The current user is not authorized to access the project '{project.Id}'.");
 
                 // dataReader

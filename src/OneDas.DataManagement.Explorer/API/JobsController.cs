@@ -89,7 +89,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             foreach (var projectId in projectIds)
             {
-                if (!Utilities.IsProjectAccessible(this.HttpContext.User, projectId, _databaseManager.Config.RestrictedProjects))
+                if (!Utilities.IsProjectAccessible(this.HttpContext.User, projectId, _databaseManager.Database))
                     return this.Unauthorized($"The current user is not authorized to access project '{projectId}'.");
             }
 

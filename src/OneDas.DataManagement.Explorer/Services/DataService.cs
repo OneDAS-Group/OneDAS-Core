@@ -215,6 +215,9 @@ namespace OneDas.DataManagement.Explorer.Services
             var customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS Explorer", CustomMetadataEntryLevel.File));
 
+            if (!string.IsNullOrWhiteSpace(projectSettings.Project.License.FileMessage))
+                customMetadataEntrySet.Add(new CustomMetadataEntry("license", projectSettings.Project.License.FileMessage, CustomMetadataEntryLevel.Project));
+
             // initialize data writer
             var projectName_splitted = projectSettings.Project.Id.Split('/');
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasProjectDescription(Guid.Empty, 0, projectName_splitted[1], projectName_splitted[2], projectName_splitted[3]), customMetadataEntrySet);

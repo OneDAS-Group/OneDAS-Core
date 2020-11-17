@@ -21,11 +21,18 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 		#region Properties
 
+		public bool LogBookDialogIsOpen { get; set; }
+
 		public bool AttachmentsDialogIsOpen { get; set; }
 
 		#endregion
 
 		#region Methods
+
+		private void OpenLogBookDialog()
+		{
+			this.LogBookDialogIsOpen = true;
+		}
 
 		private void OpenAttachmentsDialog()
 		{

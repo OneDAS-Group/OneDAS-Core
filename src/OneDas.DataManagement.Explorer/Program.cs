@@ -88,7 +88,6 @@ namespace OneDas.DataManagement.Explorer
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-
                     logging.AddConsole();
                     logging.AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.None);
                 })
