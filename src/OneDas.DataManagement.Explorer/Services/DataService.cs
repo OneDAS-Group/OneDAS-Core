@@ -227,6 +227,7 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 // create temp files
                 this.CreateFiles(dataWriter, exportParameters, projectSettings, cancellationToken);
+                dataWriter.Dispose();
 
                 // write zip archive entries
                 var filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
