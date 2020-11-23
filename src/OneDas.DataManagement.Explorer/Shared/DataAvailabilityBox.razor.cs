@@ -129,6 +129,9 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task UpdateChart()
         {
+            if (this.AppState.DateTimeBegin > this.AppState.DateTimeEnd)
+                return;
+
             try
             {
                 var axis = (BarTimeAxis)barChart.Config.Options.Scales.XAxes[0];
