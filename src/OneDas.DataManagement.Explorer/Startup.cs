@@ -151,6 +151,7 @@ namespace OneDas.DataManagement.Explorer
             // custom
 #warning replace httpcontextaccessor by async authenticationStateProvider (https://github.com/dotnet/aspnetcore/issues/17585)
             services.AddHttpContextAccessor();
+            services.AddScoped<MonacoService>();
             services.AddScoped<UserIdService>();
             services.AddScoped<AppStateViewModel>();
             services.AddScoped<SettingsViewModel>();

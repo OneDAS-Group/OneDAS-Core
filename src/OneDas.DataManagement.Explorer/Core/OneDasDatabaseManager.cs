@@ -32,6 +32,12 @@ namespace OneDas.DataManagement
 
     public class OneDasDatabaseManager
     {
+        #region Events
+
+        public event EventHandler<OneDasDatabase> OnDatabaseUpdated;
+
+        #endregion
+
         #region Records
 
         public record DatabaseManagerState
@@ -243,6 +249,8 @@ namespace OneDas.DataManagement
                 RootPathToProjectsMap = rootPathToProjectsMap,
                 RootPathToDataReaderTypeMap = rootPathToDataReaderTypeMap
             };
+
+            this.OnDatabaseUpdated?.Invoke(this, database);
         }
 
         public DataReaderExtensionBase GetAggregationDataReader(

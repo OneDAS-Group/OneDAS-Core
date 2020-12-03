@@ -97,7 +97,7 @@ namespace OneDas
             return string.IsNullOrWhiteSpace(errorDescription);
         }
 
-        public static string EnforceNamingConvention(string value)
+        public static string EnforceNamingConvention(string value, string prefix = "X")
         {
             if (string.IsNullOrWhiteSpace(value))
                 value = "unnamed";
@@ -105,7 +105,7 @@ namespace OneDas
             value = Regex.Replace(value, "[^A-Za-z0-9_]", "_");
 
             if (Regex.IsMatch(value, "^[0-9_]"))
-                value = "X_" + value;
+                value = $"{prefix}_" + value;
 
             return value;
         }
