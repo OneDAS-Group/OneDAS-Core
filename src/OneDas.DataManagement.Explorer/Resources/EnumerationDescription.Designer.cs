@@ -61,6 +61,15 @@ namespace OneDas.DataManagement.Explorer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C# ähnelt.
+        /// </summary>
+        internal static string CodeLanguage_CSharp {
+            get {
+                return ResourceManager.GetString("CodeLanguage_CSharp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Index-based ähnelt.
         /// </summary>
         internal static string CsvRowIndexFormat_Index {

@@ -1,0 +1,35 @@
+﻿@page "/filter-editor"
+@inherits AppStateComponentBase
+@using BlazorMonaco
+
+<div class="left-column">
+    <div class="settings-box mat-elevation-z11">
+        <FilterDescriptionSettingsBox FilterDescription="this.FilterDescription" OnSaveAsync="this.OnSaveAsync" />
+    </div>
+</div>
+<div class="center-column monaco-editor-root-container">
+    <div class="monaco-box mat-elevation-z11">
+        <MonacoEditor @ref="_editor" ConstructionOptions="this.EditorConstructionOptions" OnDidChangeModelContent="this.OnDidChangeModelContent" />
+    </div>
+    <div class="diagnostics-box mat-elevation-z11">
+        @if (this.Diagnostics is not null)
+        {
+            @foreach (var diagnostic in this.Diagnostics)
+            {
+                <div>(@((diagnostic.Start.Line + 1) + ", " + (diagnostic.Start.Character + 1))): @diagnostic.Message</div>
+            }
+        }
+    </div>
+</div>
+<div class="right-column">
+    <div class="selected-channel-box mat-elevation-z11">
+        @foreach (var filterDescription in this.AppState.FilterSettings.FilterDescriptions)
+        {
+            <div @onclick="() => this.SelectFilterDescription(filterDescription)">@(filterDescription.Name) / @(filterDescription.Group)</div>
+        }
+    </div>
+</div>
+
+@code{
+    private MonacoEditor _editor;
+}

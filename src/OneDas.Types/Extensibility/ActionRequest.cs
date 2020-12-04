@@ -31,7 +31,7 @@ namespace OneDas.Extensibility
         {
             string errorMessage;
 
-            if (!OneDasUtilities.CheckNamingConvention(this.ExtensionId, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.ExtensionId, out errorMessage, includeValue: true))
             {
                 throw new Exception($"The extension ID is invalid: { errorMessage }");
             }
@@ -41,7 +41,7 @@ namespace OneDas.Extensibility
                 throw new Exception(ErrorMessage.ActionRequest_InstanceIdInvalid);
             }
 
-            if (!OneDasUtilities.CheckNamingConvention(this.MethodName, out errorMessage))
+            if (!OneDasUtilities.CheckNamingConvention(this.MethodName, out errorMessage, includeValue: true))
             {
                 throw new Exception($"The method name is invalid: { errorMessage }");
             }

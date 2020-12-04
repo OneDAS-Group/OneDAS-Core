@@ -14,7 +14,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
@@ -77,9 +76,14 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
+            this.CodeLanguageValues = Utilities.GetEnumValues<CodeLanguage>();
             this.CsvRowIndexFormatValues = Utilities.GetEnumValues<CsvRowIndexFormat>();
             this.NewsPaper = NewsPaper.Load(Path.Combine(options.DataBaseFolderPath, "news.json"));
             this.VisualizeBeginAtZero = true;
+
+            // load filter settings
+            var filterSettingsFilePath = Path.Combine(options.DataBaseFolderPath, "filters.json");
+            this.FilterSettings = new FilterSettingsViewModel(filterSettingsFilePath);
 
             // project containers and dependent init steps
             var projectContainers = databaseManager.Database.ProjectContainers;
@@ -316,6 +320,14 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 this.UpdateGroupedChannels();
             }
         }
+
+        #endregion
+
+        #region Properties - Filter
+
+        public List<CodeLanguage> CodeLanguageValues { get; set; }
+
+        public FilterSettingsViewModel FilterSettings { get; }
 
         #endregion
 

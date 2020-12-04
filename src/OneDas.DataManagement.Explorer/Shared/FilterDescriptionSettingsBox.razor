@@ -1,0 +1,55 @@
+﻿@inherits AppStateComponentBase
+
+<EditForm class="h-100 flex-column" Model="@this.FilterDescription" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div>
+        <MatTextField class="settings-control"
+                      Label="Name"
+                      @bind-Value="this.FilterDescription.Name">
+        </MatTextField>
+
+        <div class="validation-message-for-settings-control">
+            <ValidationMessage For="@(() => this.FilterDescription.Name)" />
+        </div>
+
+        <MatTextField class="settings-control"
+                      Label="Group"
+                      ReadOnly="true"
+                      @bind-Value="this.FilterDescription.Group">
+        </MatTextField>
+
+        <MatTextField class="settings-control"
+                      Label="Unit"
+                      @bind-Value="this.FilterDescription.Unit">
+        </MatTextField>
+
+        <MatSelectItem class="settings-control"
+                       Label="Sample Rate"
+                       @bind-Value="this.FilterDescription.SampleRate"
+                       Items="this.AppState.SampleRateValues">
+        </MatSelectItem>
+
+        <MatSelectItem class="settings-control"
+                       Label="Code Language"
+                       @bind-Value="this.FilterDescription.CodeLanguage"
+                       Items="this.AppState.CodeLanguageValues">
+            <ItemTemplate Context="value">
+                @Utilities.GetEnumLocalization(@value)
+            </ItemTemplate>
+        </MatSelectItem>
+
+        <MatCheckbox Class="settings-control"
+                     Label="Publish"
+                     @bind-Value="this.FilterDescription.IsPublic">
+        </MatCheckbox>
+    </div>
+
+    <MatButton Class="w-100 mt-auto"
+               Icon="@MatIconNames.Save"
+               Outlined="true"
+               Type="submit"
+               Label="Save">
+    </MatButton>
+
+</EditForm>

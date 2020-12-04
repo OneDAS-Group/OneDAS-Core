@@ -1,0 +1,15 @@
+﻿.monaco-box {
+    flex: 3;
+    height: 100%;
+    background-color: var(--monaco-vscode-color);
+    padding-top: 10px;
+    margin: 15px;
+}
+
+.diagnostics-box {
+    flex: 1;
+    height: 100%;
+    background-color: var(--box-color);
+    padding: 10px;
+    margin: 15px;
+}

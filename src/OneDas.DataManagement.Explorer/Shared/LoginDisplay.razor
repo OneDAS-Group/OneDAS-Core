@@ -11,17 +11,6 @@
                     <div class="mdc-button @(this.AppState.IsEditEnabled ? "active" : "")" @onclick="() => this.AppState.IsEditEnabled = !this.AppState.IsEditEnabled">
                         <i class="far fa-edit" aria-hidden="true"></i> &nbsp; Edit
                     </div>
-                </Authorized>
-            </AuthorizeView>
-
-            <a href="Identity/Account/Manage">
-                <div class="mdc-button">
-                    <i class="fas fa-user" aria-hidden="true"></i> &nbsp; Manage
-                </div>
-            </a>
-
-            <AuthorizeView Policy="RequireAdmin" Context="_">
-                <Authorized>
                     <NavLink href="/settings">
                         <div class="mdc-button">
                             <i class="fas fa-cogs" aria-hidden="true"></i> &nbsp; Settings
@@ -29,6 +18,18 @@
                     </NavLink>
                 </Authorized>
             </AuthorizeView>
+
+            <NavLink href="/filter-editor">
+                <div class="mdc-button">
+                    <i class="fas fa-square-root-alt" aria-hidden="true"></i> &nbsp; Filter Editor
+                </div>
+            </NavLink>
+
+            <a href="Identity/Account/Manage">
+                <div class="mdc-button">
+                    <i class="fas fa-user" aria-hidden="true"></i> &nbsp; Manage
+                </div>
+            </a>
 
             <form method="post" action="Identity/Account/LogOut">
                 <button type="submit" class="submit-button">

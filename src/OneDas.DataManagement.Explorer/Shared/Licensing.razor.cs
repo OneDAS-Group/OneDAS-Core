@@ -64,7 +64,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                 }
             }
 
-            Toaster.Add(
+            this.Toaster.Add(
                 "Please log out and log in again for the changes to take effect.", 
                 MatToastType.Success, 
                 title: "Success!", 

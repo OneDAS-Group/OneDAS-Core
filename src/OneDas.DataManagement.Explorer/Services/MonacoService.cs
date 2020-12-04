@@ -49,12 +49,10 @@ $@"using System;
                  
 namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 {{
-    class Calculator
+    class FilterChannel
     {{
-        public string ChannelName {{ get; }} = ""MyCalculatedChannel"";
-
-        public void Calculate(CodeGenerationDatabase database, double[] result) 
-        {{ 
+        public void Filter(CodeGenerationDatabase database, double[] result)
+        {{
             
         }}
     }}

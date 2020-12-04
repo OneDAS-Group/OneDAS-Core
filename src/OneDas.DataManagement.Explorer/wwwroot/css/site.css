@@ -16,7 +16,10 @@
     --active-color: rgba(136,14,79,1);
     --active-bg-color: rgba(255, 255, 255, 0.8);
     --disabled-color: rgba(0, 0, 0, 0.3);
+    --monaco-vscode-color: rgba(30, 30, 30, 1);
 }
+
+
 
 html, body {
     font-family: 'Roboto';
@@ -44,6 +47,11 @@ app {
     flex-direction: column;
     height: 100%;
     width: 100%;
+}
+
+.monaco-editor-container {
+    flex: 3;
+    height: 100%;
 }
 
 .startup-settings-box {
@@ -165,6 +173,10 @@ app {
         margin-top: 25px;
         margin-bottom: 10px;
     }
+
+.validation-message-for-settings-control > .validation-message {
+    margin-top: -1em;
+}
 
 .settings-control {
     width: 100%;
@@ -875,6 +887,10 @@ app {
     justify-content: space-around;
 }
 
+.align-self-end {
+    align-self: end;
+}
+
 .flex-column {
     display: flex;
     flex-direction: column;
@@ -894,6 +910,14 @@ app {
 
 .w-100 {
     width: 100%;
+}
+
+.mt-auto {
+    margin-top: auto;
+}
+
+.mb-auto {
+    margin-bottom: auto;
 }
 
 .flex-centered {
@@ -947,25 +971,6 @@ app {
 
 .ml-auto {
     margin-left: auto;
-}
-
-.monaco-editor-root-container {
-    display: flex;
-    flex-direction: column;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    height: 100%;
-}
-
-.monaco-editor-container {
-    flex: 3;
-    margin-bottom: 1rem;
-    height: 100%;
-}
-
-.monaco-editor-diagnostics {
-    flex: 1;
-    color: var(--font-color-inverse)
 }
 
 /* workaround for MatBlazor not applying theme colors everywhere */

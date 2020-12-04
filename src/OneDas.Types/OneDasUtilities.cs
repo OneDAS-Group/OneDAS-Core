@@ -84,13 +84,18 @@ namespace OneDas
                 return Convert.ToByte((int)oneDasDataType & 0xff);
         }
 
-        public static bool CheckNamingConvention(string value, out string errorDescription)
+        public static bool CheckNamingConvention(string value, out string errorDescription, bool includeValue = false)
         {
+            var valueAsString = string.Empty;
+
+            if (includeValue)
+                valueAsString = $" (value: '{value}')";
+
             errorDescription = true switch
             {
-                true when string.IsNullOrWhiteSpace(value)      => $"{ErrorMessage.OneDasUtilities_NameEmpty} (value: '{value}')",
-                true when Regex.IsMatch(value, "[^A-Za-z0-9_]") => $"{ErrorMessage.OneDasUtilities_InvalidCharacters} (value: '{value}')",
-                true when Regex.IsMatch(value, "^[0-9_]")       => $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter} (value: '{value}')",
+                true when string.IsNullOrWhiteSpace(value)      => $"{ErrorMessage.OneDasUtilities_NameEmpty}{valueAsString}",
+                true when Regex.IsMatch(value, "[^A-Za-z0-9_]") => $"{ErrorMessage.OneDasUtilities_InvalidCharacters}{valueAsString}",
+                true when Regex.IsMatch(value, "^[0-9_]")       => $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter}{valueAsString}",
                 _                                               => string.Empty
             };
 
