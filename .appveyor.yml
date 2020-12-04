@@ -75,7 +75,7 @@ deploy:
     artifact: /.*\.nupkg/
     on:
       branch: dev
-      CI_WINDOWS: true
+      CI_LINUX: true
 
 # NuGet (master)
   - provider: NuGet
