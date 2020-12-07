@@ -21,7 +21,7 @@
     </div>
 
     <MatButton Icon="@MatIconNames.Cloud_download"
-               OnClick="this.AppState.DownloadAsync"
+               OnClick="this.DownloadAsync"
                Outlined="true"
                Disabled="!this.AppState.CanDownload()"
                Label="@this.GetDownloadLabel()">

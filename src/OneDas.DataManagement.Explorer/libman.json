@@ -28,6 +28,17 @@
       "provider": "unpkg",
       "library": "material-design-icons-iconfont@5.0.1",
       "destination": "wwwroot/lib/material-design-icons-iconfont/"
+    },
+    {
+      "library": "moment.js@2.29.1",
+      "destination": "wwwroot/lib/moment.js/",
+      "files": [
+        "moment.min.js"
+      ]
+    },
+    {
+      "library": "Chart.js@2.9.4",
+      "destination": "wwwroot/lib/Chart.js/"
     }
   ]
 }

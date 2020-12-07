@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
@@ -56,7 +57,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Constructors
 
-        public AppStateViewModel(IJSRuntime jsRuntime,
+        public AppStateViewModel(ILogger<AppStateViewModel> logger,
+                                 IJSRuntime jsRuntime,
                                  IServiceProvider serviceProvider,
                                  UserIdService userIdService,
                                  AuthenticationStateProvider authenticationStateProvider,
@@ -65,6 +67,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                                  OneDasExplorerOptions options,
                                  DataService dataService)
         {
+            this.Logger = logger;
             _jsRuntime = jsRuntime;
             _serviceProvider = serviceProvider;
             _userIdService = userIdService;
@@ -120,6 +123,8 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #endregion
 
         #region Properties - General
+
+        public ILogger<AppStateViewModel> Logger { get; }
 
         public string Version { get; }
 

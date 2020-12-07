@@ -1,13 +1,18 @@
-﻿using ChartJs.Blazor.ChartJS.BarChart;
-using ChartJs.Blazor.ChartJS.BarChart.Axes;
-using ChartJs.Blazor.ChartJS.Common.Axes;
-using ChartJs.Blazor.ChartJS.Common.Axes.Ticks;
-using ChartJs.Blazor.ChartJS.Common.Enums;
-using ChartJs.Blazor.ChartJS.Common.Handlers;
-using ChartJs.Blazor.ChartJS.Common.Properties;
-using ChartJs.Blazor.ChartJS.Common.Time;
+﻿using ChartJs.Blazor.BarChart;
+using ChartJs.Blazor.BarChart.Axes;
+using ChartJs.Blazor.Common;
+using ChartJs.Blazor.Common.Axes;
+using ChartJs.Blazor.Common.Axes.Ticks;
+using ChartJs.Blazor.Common.Enums;
+using ChartJs.Blazor.Common.Time;
+using MatBlazor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
+using OneDas.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,9 +85,12 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         #region Properties
 
+        [Inject]
+        public ToasterService ToasterService { get; set; }
+
         private BarConfig Config { get; set; }
 
-        private BarDataset<TimeTuple<double>> Dataset { get; set; }
+        private BarDataset<TimePoint> Dataset { get; set; }
 
         #endregion
 
@@ -106,7 +114,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                 }
             };
 
-            this.Dataset = new BarDataset<TimeTuple<double>>
+            this.Dataset = new BarDataset<TimePoint>
             {
                 BackgroundColor = "rgba(136, 14, 79, 0.2)",
                 BorderColor = "rgba(136, 14, 79)",
@@ -132,12 +140,13 @@ namespace OneDas.DataManagement.Explorer.Shared
             if (this.AppState.DateTimeBegin > this.AppState.DateTimeEnd)
                 return;
 
+            var axis = (BarTimeAxis)((BarConfig)_barChart.Config).Options.Scales.XAxes[0];
+
             try
             {
-                var axis = (BarTimeAxis)barChart.Config.Options.Scales.XAxes[0];
                 var statistics = await this.AppState.GetDataAvailabilityStatisticsAsync();
 
-                this.Dataset.RemoveRange(0, this.Dataset.Data.Count);
+                this.Dataset.Clear();
 
                 switch (statistics.Granularity)
                 {
@@ -149,7 +158,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                         this.Dataset.AddRange(statistics.Data
                             .Select((value, i) =>
                             {
-                                return new TimeTuple<double>((Moment)dateTimeBegin1.AddDays(i), value);
+                                return new TimePoint(dateTimeBegin1.AddDays(i), value);
                             })
                         );
 
@@ -163,7 +172,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                         this.Dataset.AddRange(statistics.Data
                             .Select((value, i) =>
                             {
-                                return new TimeTuple<double>((Moment)dateTimeBegin2.AddMonths(i), value);
+                                return new TimePoint(dateTimeBegin2.AddMonths(i), value);
                             })
                         );
 
@@ -173,7 +182,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                         break;
                 }
 
-                await barChart.Update();
+                await _barChart.Update();
             }
             catch (TaskCanceledException)
             {
@@ -182,6 +191,11 @@ namespace OneDas.DataManagement.Explorer.Shared
                 // GUI wants to load data from that locked file and times out
                 // TaskCanceledException is thrown: app crashes.
                 this.AppState.ClientState = ClientState.Normal;
+            }
+            catch (Exception ex)
+            {
+                this.AppState.Logger.LogError(ex.GetFullMessage());
+                this.ToasterService.ShowError(message: "Unable to load availability data.", icon: MatIconNames.Error_outline);
             }
         }
 

@@ -52,7 +52,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         #region Properties
 
         [Inject]
-        protected IMatToaster Toaster { get; set; }
+        public ToasterService ToasterService { get; set; }
 
         [Inject]
         private IJSRuntime JS { get; set; }
@@ -97,12 +97,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         {
             this.FilterDescription.Code = await _editor.GetValue();
             this.AppState.FilterSettings.AddOrUpdateFilterDescription(this.FilterDescription);
-
-            this.Toaster.Add(
-                "The filter has been saved.",
-                MatToastType.Success,
-                title: "Success!",
-                icon: MatIconNames.Thumb_up);
+            this.ToasterService.ShowSuccess(message: "The filter has been saved.", icon: MatIconNames.Thumb_up);
         }
 
         private void SelectFilterDescription(FilterDescription filterDescription)

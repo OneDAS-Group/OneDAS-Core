@@ -1,13 +1,12 @@
 ﻿@inherits AppStateComponentBase
-
-@using ChartJs.Blazor.Charts
+@using ChartJs.Blazor;
 
 <div class="data-availability">
 
     <div class="data-availability-chart-container">
         <span>Availability&nbsp;in&nbsp;%</span>
         <div class="data-availability-chart">
-            <ChartJsBarChart @ref="barChart" Config="this.Config"></ChartJsBarChart>
+            <Chart @ref="_barChart" Config="this.Config"></Chart>
         </div>
     </div>
 
@@ -19,5 +18,5 @@
 </div>
 
 @code {
-    private ChartJsBarChart barChart;
+    private Chart _barChart;
 }

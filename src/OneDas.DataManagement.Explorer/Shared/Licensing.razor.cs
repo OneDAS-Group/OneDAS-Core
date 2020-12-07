@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System.Linq;
 using System.Security.Claims;
@@ -20,7 +21,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
         [Inject]
-        protected IMatToaster Toaster { get; set; }
+        public ToasterService ToasterService { get; set; }
 
         [Inject]
         public UserManager<IdentityUser> UserManager { get; set; }
@@ -64,12 +65,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                 }
             }
 
-            this.Toaster.Add(
-                "Please log out and log in again for the changes to take effect.", 
-                MatToastType.Success, 
-                title: "Success!", 
-                icon: MatIconNames.Lock_open);
-
+            this.ToasterService.ShowSuccess(message: "Please log out and log in again for the changes to take effect.", icon: MatIconNames.Lock_open);
             this.OnIsOpenChanged(false);
         }
 

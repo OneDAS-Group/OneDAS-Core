@@ -16,12 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlazorMonaco" Version="1.5.0" />
-    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
-    <PackageReference Include="GraphQL" Version="3.1.4" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="4.3.0" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="4.3.0" />
-    <PackageReference Include="GraphQL.Server.Ui.Playground" Version="4.3.0" />
+    <PackageReference Include="BlazorMonaco" Version="1.6.0" />
+    <PackageReference Include="ChartJs.Blazor.Fork" Version="2.0.0" />
+    <PackageReference Include="GraphQL" Version="3.1.6" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="4.3.1" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="4.3.1" />
+    <PackageReference Include="GraphQL.Server.Ui.Playground" Version="4.3.1" />
     <PackageReference Include="MathNet.Numerics" Version="4.12.0" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
     <PackageReference Include="MatBlazor" Version="2.8.0" />
@@ -35,7 +35,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="NSwag.AspNetCore" Version="13.9.2" />
+    <PackageReference Include="NSwag.AspNetCore" Version="13.9.4" />
     <PackageReference Include="OmniSharp.Roslyn.CSharp" Version="1.37.4" />
     <PackageReference Include="Prism.Core" Version="8.0.0.1909" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />

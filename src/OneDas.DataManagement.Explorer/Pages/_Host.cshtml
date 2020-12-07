@@ -29,9 +29,6 @@
 
     <!-- BlazorMonaco -->
     <link rel="stylesheet" href="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.css" />
-
-    <!-- ChartJS -->
-    <link rel="stylesheet" href="_content/ChartJs.Blazor/ChartJSBlazor.css" />
 </head>
 <body>
     <app>
@@ -58,15 +55,14 @@
     <script src="~/lib/font-awesome/js/fontawesome.min.js"></script>
     <script src="~/lib/font-awesome/js/all.min.js"></script>
 
+    <!-- ChartJs (must come before BlazorMonaco due to loader conflicts (redefinition of "define" function?) -->
+    <script src="~/lib/Chart.js/Chart.bundle.min.js" type="text/javascript" language="javascript"></script>
+    <script src="_content/ChartJs.Blazor.Fork/ChartJsBlazorInterop.js" type="text/javascript" language="javascript"></script>
+
     <!-- BlazorMonaco -->
     <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
     <script>require.config({ paths: { 'vs': '_content/BlazorMonaco/lib/monaco-editor/min/vs' } });</script>
     <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
     <script src="_content/BlazorMonaco/jsInterop.js"></script>
-
-    <!-- ChartJs -->
-    <script src="_content/ChartJs.Blazor/moment-with-locales.min.js" type="text/javascript" language="javascript"></script>
-    <script src="_content/ChartJs.Blazor/Chart.min.js" type="text/javascript" language="javascript"></script>
-    <script src="_content/ChartJs.Blazor/ChartJsBlazorInterop.js" type="text/javascript" language="javascript"></script>
 </body>
 </html>

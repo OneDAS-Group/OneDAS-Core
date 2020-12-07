@@ -57,6 +57,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             channelId = WebUtility.UrlDecode(channelId);
             datasetId = WebUtility.UrlDecode(datasetId);
 
+            throw new Exception();
+
             var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
 
             // log

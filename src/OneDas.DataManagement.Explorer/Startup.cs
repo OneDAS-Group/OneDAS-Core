@@ -151,13 +151,17 @@ namespace OneDas.DataManagement.Explorer
             // custom
 #warning replace httpcontextaccessor by async authenticationStateProvider (https://github.com/dotnet/aspnetcore/issues/17585)
             services.AddHttpContextAccessor();
+
             services.AddScoped<MonacoService>();
             services.AddScoped<UserIdService>();
             services.AddScoped<AppStateViewModel>();
             services.AddScoped<SettingsViewModel>();
+            services.AddScoped<ToasterService>();
             services.AddScoped<JwtService<IdentityUser>>();
+
             services.AddTransient<DataService>();
             services.AddTransient<AggregationService>();
+
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
             services.AddSingleton<StateManager>();

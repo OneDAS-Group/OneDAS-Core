@@ -1,9 +1,16 @@
-﻿using OneDas.DataManagement.Explorer.Core;
+﻿using MatBlazor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
+using OneDas.Types;
+using System;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-	public partial class DownloadBox
+    public partial class DownloadBox
     {
         #region Constructors
 
@@ -36,7 +43,27 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 		#endregion
 
+		#region Properties - Injected
+
+		[Inject]
+		public ToasterService ToasterService { get; set; }
+
+		#endregion
+
 		#region Methods
+
+		private async Task DownloadAsync()
+        {
+            try
+            {
+				await this.AppState.DownloadAsync();
+			}
+            catch (Exception ex)
+            {
+				this.AppState.Logger.LogError(ex.GetFullMessage());
+				this.ToasterService.ShowError(message: "Unable to download data.", icon: MatIconNames.Error_outline);
+			}
+        }
 
 		private string GetDownloadLabel()
 		{

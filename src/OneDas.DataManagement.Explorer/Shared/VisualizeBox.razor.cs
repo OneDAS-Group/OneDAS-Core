@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using MatBlazor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.Infrastructure;
+using OneDas.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -69,6 +74,9 @@ namespace OneDas.DataManagement.Explorer.Shared
 		#region Properties
 
 		[Inject]
+		public ToasterService ToasterService { get; set; }
+
+		[Inject]
 		public IJSRuntime JsRuntime { get; set; }
 
 		#endregion
@@ -132,6 +140,12 @@ namespace OneDas.DataManagement.Explorer.Shared
 				// - OneDAS calculates aggregations and locks current file
 				// GUI wants to load data from that locked file and times out
 				// TaskCanceledException is thrown: app crashes.
+				this.AppState.ClientState = ClientState.Normal;
+			}
+			catch (Exception ex)
+			{
+				this.AppState.Logger.LogError(ex.GetFullMessage());
+				this.ToasterService.ShowError(message: "Unable to stream data.", icon: MatIconNames.Error_outline);
 				this.AppState.ClientState = ClientState.Normal;
 			}
 		}
