@@ -22,7 +22,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public AppStateViewModel AppState { get; set; }
+        public UserStateViewModel UserState { get; set; }
 
         [Parameter]
         public bool IsExpanded { get; set; }
@@ -38,7 +38,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             _propertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(AppStateViewModel.SampleRate))
+                if (e.PropertyName == nameof(UserStateViewModel.SampleRate))
                 {
                     this.InvokeAsync(() =>
                     {
@@ -46,7 +46,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                         this.StateHasChanged();
                     });
                 }
-                else if (e.PropertyName == nameof(AppStateViewModel.IsEditEnabled))
+                else if (e.PropertyName == nameof(UserStateViewModel.IsEditEnabled))
                 {
                     this.InvokeAsync(() =>
                     {
@@ -56,7 +56,7 @@ namespace OneDas.DataManagement.Explorer.Shared
             };
 
             this.UpdateFilteredDatasets();
-            this.AppState.PropertyChanged += _propertyChanged;
+            this.UserState.PropertyChanged += _propertyChanged;
 
             return base.OnParametersSetAsync();
         }
@@ -68,10 +68,10 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private void UpdateFilteredDatasets()
         {
-            if (string.IsNullOrWhiteSpace(this.AppState.SampleRate))
+            if (string.IsNullOrWhiteSpace(this.UserState.SampleRate))
                 _filteredDatasets = new List<DatasetInfoViewModel>();
             else
-                _filteredDatasets = this.Channel.Datasets.Where(dataset => dataset.Name.Contains(this.AppState.SampleRate)).ToList();
+                _filteredDatasets = this.Channel.Datasets.Where(dataset => dataset.Name.Contains(this.UserState.SampleRate)).ToList();
         }
 
         private List<string> GetSampleRates()
@@ -79,7 +79,7 @@ namespace OneDas.DataManagement.Explorer.Shared
             return this.Channel.Datasets
                 .Select(dataset => dataset.Name.Split('_')[0])
                 .Distinct()
-                .Where(sampleRate => sampleRate != this.AppState.SampleRate)
+                .Where(sampleRate => sampleRate != this.UserState.SampleRate)
                 .OrderBy(x => x, new SampleRateStringComparer()).ToList();
         }
 
@@ -95,7 +95,7 @@ namespace OneDas.DataManagement.Explorer.Shared
             {
                 if (disposing)
                 {
-                    this.AppState.PropertyChanged -= _propertyChanged;
+                    this.UserState.PropertyChanged -= _propertyChanged;
                 }
 
                 disposedValue = true;

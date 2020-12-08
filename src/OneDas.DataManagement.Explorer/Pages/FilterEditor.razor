@@ -1,6 +1,5 @@
 ﻿@page "/filter-editor"
-@inherits AppStateComponentBase
-@using BlazorMonaco
+@inherits UserStateComponentBase
 
 <div class="left-column">
     <div class="settings-box mat-elevation-z11">
@@ -9,7 +8,7 @@
 </div>
 <div class="center-column monaco-editor-root-container">
     <div class="monaco-box mat-elevation-z11">
-        <MonacoEditor @ref="_editor" ConstructionOptions="this.EditorConstructionOptions" OnDidChangeModelContent="this.OnDidChangeModelContent" />
+        <div id="monaco-editor" class="monaco-editor-container"></div>
     </div>
     <div class="diagnostics-box mat-elevation-z11">
         @if (this.Diagnostics is not null)
@@ -29,7 +28,3 @@
         }
     </div>
 </div>
-
-@code{
-    private MonacoEditor _editor;
-}

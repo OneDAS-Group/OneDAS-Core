@@ -12,7 +12,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public AppStateViewModel AppState { get; set; }
+        public UserStateViewModel UserState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }
@@ -43,7 +43,7 @@ namespace OneDas.DataManagement.Explorer.Shared
             exportParameters = exportParameters.UpdateVersion();
 
             this.OnIsOpenChanged(false);
-            this.AppState.SetExportParameters(exportParameters);
+            this.UserState.SetExportParameters(exportParameters);
         }
 
         private void OnIsOpenChanged(bool value)

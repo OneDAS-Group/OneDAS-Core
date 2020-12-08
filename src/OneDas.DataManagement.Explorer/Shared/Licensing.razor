@@ -4,10 +4,10 @@
         @if (this.IsOpen)
         {
             <div class="licensing">
-                <p>@this.AppState.ProjectContainer.ProjectMeta.License.DisplayMessage</p>
-                @if (!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.License.Url))
+                <p>@this.UserState.ProjectContainer.ProjectMeta.License.DisplayMessage</p>
+                @if (!string.IsNullOrWhiteSpace(this.UserState.ProjectContainer.ProjectMeta.License.Url))
                 {
-                    <p><a href="@this.AppState.ProjectContainer.ProjectMeta.License.Url" target="_blank">License</a></p>
+                    <p><a href="@this.UserState.ProjectContainer.ProjectMeta.License.Url" target="_blank">License</a></p>
                 }
             </div>
         }

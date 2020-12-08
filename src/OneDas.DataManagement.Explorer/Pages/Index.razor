@@ -1,7 +1,7 @@
 ﻿@page "/"
-@inherits AppStateComponentBase
+@inherits UserStateComponentBase
 
-@if (this.AppState.ClientState != ClientState.PrepareDownload)
+@if (this.UserState.ClientState != ClientState.PrepareDownload)
 {
     <div class="left-column">
         <div class="settings-box mat-elevation-z11">
@@ -9,13 +9,13 @@
         </div>
     </div>
     <div class="center-column">
-        @if (this.AppState.ClientState != ClientState.DataVisualizing)
+        @if (this.UserState.ClientState != ClientState.DataVisualizing)
         {
             <div class="project-box mat-elevation-z11">
                 <ProjectBox />
             </div>
             <div class="channel-box mat-elevation-z11">
-                @if (this.AppState.ClientState != ClientState.DataAvailability)
+                @if (this.UserState.ClientState != ClientState.DataAvailability)
                 {
                     <ChannelBox />
                 }

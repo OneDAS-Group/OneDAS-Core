@@ -5,7 +5,7 @@
         {
             <div class="attachments">
 
-                @foreach (var preset in this.AppState.GetPresets())
+                @foreach (var preset in this.UserState.GetPresets())
                 {
                     <div class="attachment" @onclick="() => this.LoadPreset(preset)">
                         <div class="attachment-icon">

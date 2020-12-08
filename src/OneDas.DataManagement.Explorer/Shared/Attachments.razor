@@ -5,7 +5,7 @@
         {
             <div class="attachments">
 
-                @foreach (var attachment in this.AppState.Attachments)
+                @foreach (var attachment in this.UserState.Attachments)
                 {
                     <a class="attachment" href="@this.GetHref(attachment)" target="_blank">
                         <div class="attachment-icon">

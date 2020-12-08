@@ -17,6 +17,12 @@ namespace OneDas.DataManagement.Explorer.Services
 {
     public class MonacoService
     {
+        #region "Events"
+
+        public event EventHandler<List<Diagnostic>> DiagnosticsUpdated;
+
+        #endregion
+
         #region Fields
 
         RoslynProject _completionProject;
@@ -51,7 +57,7 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 {{
     class FilterChannel
     {{
-        public void Filter(CodeGenerationDatabase database, double[] result)
+        public void Filter(DateTime begin, DateTime end, CodeGenerationDatabase database, double[] result)
         {{
             
         }}
@@ -130,6 +136,7 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
             return quickInfoResponse;
         }
 
+        [JSInvokable]
         public async Task<List<Diagnostic>> GetDiagnosticsAsync(string code)
         {
             Solution updatedSolution;
@@ -155,7 +162,14 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
                 };
             }).ToList();
 
+            this.OnDiagnosticsUpdated(diagnostics);
+
             return diagnostics;
+        }
+
+        private void OnDiagnosticsUpdated(List<Diagnostic> diagnostics)
+        {
+            this.DiagnosticsUpdated?.Invoke(this, diagnostics);
         }
 
         private int GetSeverity(DiagnosticSeverity severity)

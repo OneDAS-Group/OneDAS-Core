@@ -100,15 +100,15 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             this.PropertyChanged = async (sender, e) =>
             {
-                if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+                if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
                 {
                     await this.UpdateChart();
                 }
-                else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
+                else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
                 {
                     await this.UpdateChart();
                 }
-                else if (e.PropertyName == nameof(AppStateViewModel.ProjectContainer))
+                else if (e.PropertyName == nameof(UserStateViewModel.ProjectContainer))
                 {
                     await this.UpdateChart();
                 }
@@ -137,14 +137,14 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task UpdateChart()
         {
-            if (this.AppState.DateTimeBegin > this.AppState.DateTimeEnd)
+            if (this.UserState.DateTimeBegin > this.UserState.DateTimeEnd)
                 return;
 
             var axis = (BarTimeAxis)((BarConfig)_barChart.Config).Options.Scales.XAxes[0];
 
             try
             {
-                var statistics = await this.AppState.GetDataAvailabilityStatisticsAsync();
+                var statistics = await this.UserState.GetDataAvailabilityStatisticsAsync();
 
                 this.Dataset.Clear();
 
@@ -153,7 +153,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                     case DataAvailabilityGranularity.DayLevel:
 
                         axis.Time.Unit = TimeMeasurement.Day;
-                        var dateTimeBegin1 = this.AppState.DateTimeBegin.Date;
+                        var dateTimeBegin1 = this.UserState.DateTimeBegin.Date;
 
                         this.Dataset.AddRange(statistics.Data
                             .Select((value, i) =>
@@ -167,7 +167,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                     case DataAvailabilityGranularity.MonthLevel:
 
                         axis.Time.Unit = TimeMeasurement.Month;
-                        var dateTimeBegin2 = this.AppState.DateTimeBegin.Date;
+                        var dateTimeBegin2 = this.UserState.DateTimeBegin.Date;
 
                         this.Dataset.AddRange(statistics.Data
                             .Select((value, i) =>
@@ -190,11 +190,11 @@ namespace OneDas.DataManagement.Explorer.Shared
                 // - OneDAS calculates aggregations and locks current file
                 // GUI wants to load data from that locked file and times out
                 // TaskCanceledException is thrown: app crashes.
-                this.AppState.ClientState = ClientState.Normal;
+                this.UserState.ClientState = ClientState.Normal;
             }
             catch (Exception ex)
             {
-                this.AppState.Logger.LogError(ex.GetFullMessage());
+                this.UserState.Logger.LogError(ex.GetFullMessage());
                 this.ToasterService.ShowError(message: "Unable to load availability data.", icon: MatIconNames.Error_outline);
             }
         }

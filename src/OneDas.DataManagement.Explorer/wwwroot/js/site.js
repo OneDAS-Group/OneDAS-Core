@@ -28,7 +28,7 @@ var chartContainerId = "visualize-chart-container";
 
 window.addEventListener("resize", () => DotNet.invokeMethodAsync("OneDas.DataManagement.Explorer", 'RaiseOnWindowResizeAsync'));
 
-async function UpdateChart(appState, chartEntries, start, end, count, dt, beginAtZero) {  
+async function UpdateChart(userState, chartEntries, start, end, count, dt, beginAtZero) {  
 
     var beginDate = new Date(start);
     var endDate = new Date(end);
@@ -40,7 +40,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
         return;
 
     // for each chart entry
-    appState.invokeMethodAsync('SetVisualizeProgress', 0);
+    userState.invokeMethodAsync('SetVisualizeProgress', 0);
 
     try {
 
@@ -89,7 +89,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
                 targetOffset += size;
                 
                 var progress = (targetOffset / contentLength + i) / chartEntries.length
-                await appState.invokeMethodAsync('SetVisualizeProgress', progress);
+                await userState.invokeMethodAsync('SetVisualizeProgress', progress);
             }
 
             var channelData = new Float64Array(buffer);
@@ -104,7 +104,7 @@ async function UpdateChart(appState, chartEntries, start, end, count, dt, beginA
         }        
     }
     finally {
-        appState.invokeMethodAsync('SetVisualizeProgress', -1);
+        userState.invokeMethodAsync('SetVisualizeProgress', -1);
     }
 
     var unixBeginDate = beginDate.getTime() / 1000;

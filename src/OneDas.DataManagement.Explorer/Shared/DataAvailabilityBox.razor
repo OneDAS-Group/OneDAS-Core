@@ -1,4 +1,4 @@
-﻿@inherits AppStateComponentBase
+﻿@inherits UserStateComponentBase
 @using ChartJs.Blazor;
 
 <div class="data-availability">
@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <MatButton OnClick="this.AppState.ToggleDataAvailability"
+    <MatButton OnClick="this.UserState.ToggleDataAvailability"
                Outlined="true"
                Label="Back">
     </MatButton>

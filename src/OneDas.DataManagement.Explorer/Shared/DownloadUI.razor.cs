@@ -10,11 +10,11 @@ namespace OneDas.DataManagement.Explorer.Shared
 		{
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(AppStateViewModel.DownloadMessage))
+				if (e.PropertyName == nameof(UserStateViewModel.DownloadMessage))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.DownloadProgress))
+				else if (e.PropertyName == nameof(UserStateViewModel.DownloadProgress))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
@@ -34,7 +34,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 		public void CancelDownload()
 		{
 			this.IsCancelling = true;
-			this.AppState.CancelDownload();
+			this.UserState.CancelDownload();
 		}
 		
 		#endregion

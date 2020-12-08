@@ -19,9 +19,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Constructors
 
-        public SettingsViewModel(AppStateViewModel appState, UserManager<IdentityUser> userManager)
+        public SettingsViewModel(UserStateViewModel userState, UserManager<IdentityUser> userManager)
         {
-            this.AppState = appState;
+            this.UserState = userState;
             _userManager = userManager;
         }
 
@@ -29,7 +29,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - General
 
-        public AppStateViewModel AppState { get; }
+        public UserStateViewModel UserState { get; }
 
         public IdentityUser User
         {

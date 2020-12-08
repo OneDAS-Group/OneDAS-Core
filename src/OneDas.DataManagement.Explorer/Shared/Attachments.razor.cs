@@ -9,7 +9,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public AppStateViewModel AppState { get; set; }
+        public UserStateViewModel UserState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }
@@ -46,7 +46,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         public string GetHref(string filePath)
         {
-            return $"/attachments/{this.AppState.ProjectContainer.PhysicalName}/{this.GetFileName(filePath)}";
+            return $"/attachments/{this.UserState.ProjectContainer.PhysicalName}/{this.GetFileName(filePath)}";
         }
 
         private void OnIsOpenChanged(bool value)

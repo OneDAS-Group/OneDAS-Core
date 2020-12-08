@@ -1,15 +1,15 @@
-﻿@inherits AppStateComponentBase
+﻿@inherits UserStateComponentBase
 
 <div class="project-box-available">
     <MatHeadline5>Available Projects</MatHeadline5>
     <ul>
-        @foreach (var projectContainer in this.AppState.ProjectContainersInfo.Accessible.Concat(this.AppState.ProjectContainersInfo.Restricted))
+        @foreach (var projectContainer in this.UserState.ProjectContainersInfo.Accessible.Concat(this.UserState.ProjectContainersInfo.Restricted))
         {
-            <li @onclick="() => this.AppState.ProjectContainer = projectContainer">
-                <div class="project-item @(this.AppState.ProjectContainer == projectContainer ? "active" : "")">
+            <li @onclick="() => this.UserState.ProjectContainer = projectContainer">
+                <div class="project-item @(this.UserState.ProjectContainer == projectContainer ? "active" : "")">
                     <div class="project-item-name">
                         @projectContainer.Id.TrimStart('/').Replace("/", " / ")
-                        @if (this.AppState.ProjectContainersInfo.Restricted.Contains(projectContainer))
+                        @if (this.UserState.ProjectContainersInfo.Restricted.Contains(projectContainer))
                         {
                             @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
                             <MatTooltip Tooltip="You do not have access to this project." Wrap="true" Position="MatTooltipPosition.Top">
@@ -32,27 +32,27 @@
 </div>
 <div class="project-box-selected">
 
-    @if (this.AppState.ProjectContainer != null)
+    @if (this.UserState.ProjectContainer != null)
     {
-        <MatHeadline5>@this.AppState.ProjectContainer.Id.TrimStart('/').Replace("/", " / ")</MatHeadline5>
+        <MatHeadline5>@this.UserState.ProjectContainer.Id.TrimStart('/').Replace("/", " / ")</MatHeadline5>
         <p class="long-description small-text">
-            @this.AppState.ProjectContainer.ProjectMeta.LongDescription
+            @this.UserState.ProjectContainer.ProjectMeta.LongDescription
         </p>
         <div class="project-box-selected-footer">
             <div class="project-box-selected-footer-date">
-                <b>Start:&nbsp;</b> @this.AppState.ProjectContainer.Project.ProjectStart.ToString("dd.MM.yyyy") &nbsp;&nbsp;&nbsp; <b>End:&nbsp;</b> @this.AppState.ProjectContainer.Project.ProjectEnd.ToString("dd.MM.yyyy")
+                <b>Start:&nbsp;</b> @this.UserState.ProjectContainer.Project.ProjectStart.ToString("dd.MM.yyyy") &nbsp;&nbsp;&nbsp; <b>End:&nbsp;</b> @this.UserState.ProjectContainer.Project.ProjectEnd.ToString("dd.MM.yyyy")
             </div>
 
-            @if (this.AppState.ProjectContainersInfo.Accessible.Contains(this.AppState.ProjectContainer))
+            @if (this.UserState.ProjectContainersInfo.Accessible.Contains(this.UserState.ProjectContainer))
             {
                 <div class="project-box-selected-footer-icons">
                     @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
                     <MatTooltip Tooltip="Availability" Position="MatTooltipPosition.Top" Wrap="true">
-                        <MatIconButton Class="@(this.AppState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.AppState.ToggleDataAvailability" />
+                        <MatIconButton Class="@(this.UserState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.UserState.ToggleDataAvailability" />
                     </MatTooltip>
 
                     @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
-                    @if (this.AppState.ProjectContainer.ProjectMeta.Logbook.Any())
+                    @if (this.UserState.ProjectContainer.ProjectMeta.Logbook.Any())
                     {
                         <MatTooltip Tooltip="Logbook" Position="MatTooltipPosition.Top" Wrap="true">
                             <MatIconButton Icon="@MatIconNames.Event_note" OnClick="this.OpenLogBookDialog" />
@@ -60,7 +60,7 @@
                     }
 
                     @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
-                    @if (this.AppState.Attachments != null && this.AppState.Attachments.Any())
+                    @if (this.UserState.Attachments != null && this.UserState.Attachments.Any())
                     {
                         <MatTooltip Tooltip="Attachments" Position="MatTooltipPosition.Top" Wrap="true">
                             <MatIconButton Icon="@MatIconNames.Attach_file" OnClick="this.OpenAttachmentsDialog" />

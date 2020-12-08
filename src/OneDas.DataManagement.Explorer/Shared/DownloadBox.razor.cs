@@ -18,23 +18,23 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(AppStateViewModel.ExportParameters))
+				if (e.PropertyName == nameof(UserStateViewModel.ExportParameters))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+				else if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
+				else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.FileGranularity))
+				else if (e.PropertyName == nameof(UserStateViewModel.FileGranularity))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
+				else if (e.PropertyName == nameof(UserStateViewModel.SelectedDatasets))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
@@ -56,18 +56,18 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             try
             {
-				await this.AppState.DownloadAsync();
+				await this.UserState.DownloadAsync();
 			}
             catch (Exception ex)
             {
-				this.AppState.Logger.LogError(ex.GetFullMessage());
+				this.UserState.Logger.LogError(ex.GetFullMessage());
 				this.ToasterService.ShowError(message: "Unable to download data.", icon: MatIconNames.Error_outline);
 			}
         }
 
 		private string GetDownloadLabel()
 		{
-			var byteCount = this.AppState.GetByteCount();
+			var byteCount = this.UserState.GetByteCount();
 
 			if (byteCount > 0)
 				return $"Download ({Utilities.FormatByteCount(byteCount)})";

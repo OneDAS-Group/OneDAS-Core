@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-	public abstract class AppStateComponentBase : ComponentBase, IDisposable
+	public abstract class UserStateComponentBase : ComponentBase, IDisposable
 	{
 		#region Properties
 
 		[Inject]
 		public AppStateViewModel AppState { get; set; }
+
+		[Inject]
+		public UserStateViewModel UserState { get; set; }
 
 		protected PropertyChangedEventHandler PropertyChanged { get; set; }
 
@@ -22,6 +25,7 @@ namespace OneDas.DataManagement.Explorer.Core
 		protected override Task OnParametersSetAsync()
 		{
 			this.AppState.PropertyChanged += this.PropertyChanged;
+			this.UserState.PropertyChanged += this.PropertyChanged;
 
 			return base.OnParametersSetAsync();
 		}
@@ -39,6 +43,7 @@ namespace OneDas.DataManagement.Explorer.Core
 				if (disposing)
 				{
 					this.AppState.PropertyChanged -= this.PropertyChanged;
+					this.UserState.PropertyChanged -= this.PropertyChanged;
 				}
 
 				disposedValue = true;

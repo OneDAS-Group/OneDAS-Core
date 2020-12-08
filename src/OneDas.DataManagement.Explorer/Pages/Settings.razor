@@ -1,7 +1,7 @@
 ﻿@page "/settings"
 
 @attribute [Authorize(policy: "RequireAdmin")]
-@inherits AppStateComponentBase
+@inherits UserStateComponentBase
 
 <div class="left-column">
     <SettingsNavBox />

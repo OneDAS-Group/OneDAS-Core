@@ -1,6 +1,4 @@
-﻿using BlazorMonaco;
-using BlazorMonaco.Bridge;
-using MatBlazor;
+﻿using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
@@ -8,51 +6,32 @@ using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using static OneDas.DataManagement.Explorer.Services.MonacoService;
 
 namespace OneDas.DataManagement.Explorer.Pages
 {
     public partial class FilterEditor : IDisposable
     {
-		#region Fields
+        #region Fields
 
-		private bool _hasRegistered = false;
+        private string _editorId;
 		private DotNetObjectReference<MonacoService> _objRef;
-        private EventHandler _windowResizedHandler;
-
-        #endregion
-
-        #region Constructors
-
-        public FilterEditor()
-        {
-            _windowResizedHandler = (sender, e) =>
-            {
-                // not yet fully working
-                _editor?.Layout();
-            };
-
-            WindowResizeService.OnResize += _windowResizedHandler;
-
-            this.PropertyChanged = (sender, e) =>
-            {
-                if (e.PropertyName == nameof(FilterSettingsViewModel.FilterDescriptions))
-                {
-                    this.InvokeAsync(() =>
-                    {
-                        this.StateHasChanged();
-                    });
-                }
-            };
-        }
 
         #endregion
 
         #region Properties
 
+        public List<Diagnostic> Diagnostics { get; set; }
+
+        protected PropertyChangedEventHandler FilterSettingsPropertyChangedHandler { get; set; }
+
+        protected EventHandler<List<Diagnostic>> DiagnosticsUpdatedHandler { get; set; }
+
         [Inject]
-        public ToasterService ToasterService { get; set; }
+        private ToasterService ToasterService { get; set; }
 
         [Inject]
         private IJSRuntime JS { get; set; }
@@ -63,8 +42,6 @@ namespace OneDas.DataManagement.Explorer.Pages
         [Inject]
         private UserIdService UserIdService { get; set; }
 
-		private List<MonacoService.Diagnostic> Diagnostics { get; set; }
-
         private FilterDescriptionViewModel FilterDescription { get; set; }
 
         #endregion
@@ -74,28 +51,51 @@ namespace OneDas.DataManagement.Explorer.Pages
         public void Dispose()
         {
             _objRef?.Dispose();
-            WindowResizeService.OnResize -= _windowResizedHandler;
+            this.AppState.FilterSettings.PropertyChanged -= this.FilterSettingsPropertyChangedHandler;
+            this.MonacoService.DiagnosticsUpdated -= this.DiagnosticsUpdatedHandler;
         }
 
         protected override void OnParametersSet()
         {
             this.CreateNewFilterDescription();
-            base.OnInitialized();
+            base.OnParametersSet();
+
+            // filter settings changed
+            this.FilterSettingsPropertyChangedHandler = (sender, e) =>
+            {
+                if (e.PropertyName == nameof(FilterSettingsViewModel.FilterDescriptions))
+                {
+                    this.InvokeAsync(() => { this.StateHasChanged(); });
+                }
+            };
+
+            this.AppState.FilterSettings.PropertyChanged += this.FilterSettingsPropertyChangedHandler;
+
+            // diagnostics updates
+            this.DiagnosticsUpdatedHandler = (sender, e) =>
+            {
+                this.Diagnostics = e;
+                this.InvokeAsync(() => { this.StateHasChanged(); });
+            };
+
+            this.MonacoService.DiagnosticsUpdated += this.DiagnosticsUpdatedHandler;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (!_hasRegistered)
+            if (firstRender)
             {
                 _objRef = DotNetObjectReference.Create(this.MonacoService);
-                await JS.InvokeAsync<string>("registerProviders", _objRef);
-                _hasRegistered = true;
+                _editorId = "1";
+
+                await JS.CreateMonacoEditorAsync(_editorId, this.MonacoEditorOptions);
+                await JS.RegisterMonacoProvidersAsync(_editorId, _objRef);
             }
         }
 
         private async Task OnSaveAsync()
         {
-            this.FilterDescription.Code = await _editor.GetValue();
+            this.FilterDescription.Code = await JS.GetMonacoValueAsync(_editorId);
             this.AppState.FilterSettings.AddOrUpdateFilterDescription(this.FilterDescription);
             this.ToasterService.ShowSuccess(message: "The filter has been saved.", icon: MatIconNames.Thumb_up);
         }
@@ -103,7 +103,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         private void SelectFilterDescription(FilterDescription filterDescription)
         {
             this.FilterDescription = new FilterDescriptionViewModel(filterDescription);
-            _editor.SetValue(this.FilterDescription.Code);
+            JS.SetMonacoValueAsync(_editorId, this.FilterDescription.Code);
         }
 
         private void CreateNewFilterDescription()
@@ -113,32 +113,24 @@ namespace OneDas.DataManagement.Explorer.Pages
                 Name = "NewFilter",
                 Group = this.UserIdService.User.Identity.Name,
                 Unit = "-",
-                SampleRate = this.AppState.SampleRateValues.First(),
+                SampleRate = this.UserState.SampleRateValues.FirstOrDefault(),
                 Code = this.MonacoService.DefaultCode
             });
         }
 
-        private StandaloneEditorConstructionOptions EditorConstructionOptions(MonacoEditor editor)
+        private Dictionary<string, object> MonacoEditorOptions
         {
-            return new StandaloneEditorConstructionOptions
+            get
             {
-                AutomaticLayout = true,
-                Language = "csharp",
-                Value = this.MonacoService.DefaultCode,
-                Theme = "vs-dark"
-            };
-        }
-
-        private async Task OnDidChangeModelContent(ModelContentChangedEvent e)
-        {
-            var uri = (await _editor.GetModel()).Uri;
-            var code = this.FilterDescription.Code;
-
-            this.FilterDescription.Code = code;
-            this.Diagnostics = await this.MonacoService.GetDiagnosticsAsync(code);
-
-            await JS.InvokeAsync<string>("setDiagnostics", this.Diagnostics, uri);
-            await this.InvokeAsync(() => this.StateHasChanged());
+                return new Dictionary<string, object>
+                {
+                    ["automaticLayout"] = true,
+                    ["language"] = "csharp",
+                    ["scrollBeyondLastLine"] = false,
+                    ["value"] = this.MonacoService.DefaultCode,
+                    ["theme"] = "vs-dark"
+                };
+            }
         }
 
         #endregion

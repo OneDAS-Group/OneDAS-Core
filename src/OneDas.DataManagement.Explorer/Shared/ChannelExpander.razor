@@ -10,7 +10,7 @@
         }
 
         <div class="channel-special-info">
-            @if (this.AppState.IsEditEnabled)
+            @if (this.UserState.IsEditEnabled)
             {
                 <input type="text" @bind-value="this.Channel.SpecialInfo" />
             }
@@ -29,7 +29,7 @@
             {
                 @foreach (var sampleRate in this.GetSampleRates())
                 {
-                    <div class="channel-sample-rate" @onclick="() => this.AppState.SampleRate = sampleRate">
+                    <div class="channel-sample-rate" @onclick="() => this.UserState.SampleRate = sampleRate">
                         @sampleRate
                     </div>
                 }
@@ -41,8 +41,8 @@
             {
                 @foreach (var dataset in _filteredDatasets)
                 {
-                    <div class="channel-dataset @(this.AppState.IsDatasetSeleced(dataset) ? "selected" : "")"
-                         @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
+                    <div class="channel-dataset @(this.UserState.IsDatasetSeleced(dataset) ? "selected" : "")"
+                         @onclick="() => this.UserState.ToggleDatasetSelection(dataset)">
                         @dataset.Name
                     </div>
                 }
@@ -50,7 +50,7 @@
         </div>
     </div>
     <span class="channel-description">
-        @if (this.AppState.IsEditEnabled)
+        @if (this.UserState.IsEditEnabled)
         {
             <input type="text" @bind-value="this.Channel.Description" />
         }

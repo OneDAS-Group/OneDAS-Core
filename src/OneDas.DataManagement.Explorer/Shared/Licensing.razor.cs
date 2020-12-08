@@ -15,7 +15,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public AppStateViewModel AppState { get; set; }
+        public UserStateViewModel UserState { get; set; }
 
         [Inject]
         public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
@@ -47,7 +47,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                 var user = await this.UserManager.GetUserAsync(principal);
                 var claims = await this.UserManager.GetClaimsAsync(user);
                 var claim = claims.FirstOrDefault(claim => claim.Type == claimType);
-                var projectId = this.AppState.ProjectContainer.Id;
+                var projectId = this.UserState.ProjectContainer.Id;
 
                 if (claim == null)
                 {

@@ -1,4 +1,80 @@
-﻿/* MIT License
+﻿window.monacoEditors = [];
+
+function CreateMonacoEditor(editorId, options) {
+    var editor = monaco.editor.create(document.getElementById("monaco-editor"), options);
+    window.monacoEditors.push({ id: editorId, editor: editor });
+}
+
+function RegisterMonacoProviders(editorId, dotnetHelper) {
+
+    // completionItem provider
+    window.monaco.languages.registerCompletionItemProvider("csharp", {
+        triggerCharacters: ["."],
+        resolveCompletionItem: (item) => {
+            return this.resolveCompletionItem(item, dotnetHelper)
+        },
+        provideCompletionItems: (model, position, context) => {
+            return this.provideCompletionItems(model, position, context, dotnetHelper)
+        }
+    });
+
+    // signatureHelp provider
+    window.monaco.languages.registerSignatureHelpProvider("csharp", {
+        signatureHelpTriggerCharacters: ['('],
+        provideSignatureHelp: (model, position) => {
+            return this.provideSignatureHelp(model, position, dotnetHelper)
+        }
+    });
+
+    // hover provider
+    window.monaco.languages.registerHoverProvider("csharp", {
+        provideHover: (model, position) => {
+            return this.provideHover(model, position, dotnetHelper)
+        }
+    });
+
+    // diagnostics
+    var editor = this._getEditor(editorId);
+
+    editor.onDidChangeModelContent(async e => {
+
+        var code = editor.getValue();
+        var diagnostics = await dotnetHelper.invokeMethodAsync("GetDiagnosticsAsync", code);
+
+        diagnostics.forEach(diagnostic => {
+            diagnostic.startLineNumber = diagnostic.start.line + 1;
+            diagnostic.startColumn = diagnostic.start.character + 1;
+
+            diagnostic.endLineNumber = diagnostic.end.line + 1;
+            diagnostic.endColumn = diagnostic.end.character + 1;
+        });
+
+        window.monaco.editor.setModelMarkers(editor.getModel(), "owner", diagnostics);
+    })
+}
+
+function SetMonacoValue(editorId, value) {
+    var editor = this._getEditor(editorId);
+    editor.setValue(value);
+}
+
+function GetMonacoValue(editorId, value) {
+    var editor = this._getEditor(editorId);
+    return editor.getValue();
+}
+
+function _getEditor(editorId)
+{
+    let editorEntry = window.monacoEditors.find(editor => editor.id === editorId);
+
+    if (!editorEntry) {
+        throw `Could not find editor with id ${editorId}.`;
+    }
+
+    return editorEntry.editor;
+}
+
+/* MIT License
  *
  * Copyright (c) .NET Foundation and Contributors All Rights Reserved
  *
@@ -13,44 +89,17 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
-function registerProviders(dotnetHelper) {
-
-    window.monaco.languages.registerCompletionItemProvider("csharp", {
-        triggerCharacters: ["."],
-        // this signature is outdated, actually it is resolveCompletionItem: (item, token)
-        // https://github.com/microsoft/vscode/commit/ce850e02d56cd3ff5b5a93ce23c2272d3bac0fa2
-        resolveCompletionItem: (model, position, item) => {
-            return this.resolveCompletionItem(item, dotnetHelper)
-        },
-        provideCompletionItems: (model, position, context) => {
-            return this.provideCompletionItems(model, position, context, dotnetHelper)
-        }
-    });
-
-    window.monaco.languages.registerSignatureHelpProvider("csharp", {
-        signatureHelpTriggerCharacters: ['('],
-        provideSignatureHelp: (model, position) => {
-            return this.provideSignatureHelp(model, position, dotnetHelper)
-        }
-    });
-
-    window.monaco.languages.registerHoverProvider("csharp", {
-        provideHover: (model, position) => {
-            return this.provideHover(model, position, dotnetHelper)
-        }
-    });
-}
-
 let _lastCompletions;
 
 async function provideCompletionItems(model, position, context, dotnetHelper) {
+    
     let request = this._createRequest(position);
     request.CompletionTrigger = (context.triggerKind + 1);
     request.TriggerCharacter = context.triggerCharacter;
 
     try {
-        const code = model.getValue();
+
+        let code = model.getValue();
         const response = await dotnetHelper.invokeMethodAsync("GetCompletionAsync", code, request);
         const mappedItems = response.items.map(this._convertToVscodeCompletionItem);
 
@@ -61,7 +110,7 @@ async function provideCompletionItems(model, position, context, dotnetHelper) {
         }
 
         this._lastCompletions = lastCompletions;
-
+        
         return { suggestions: mappedItems };
     }
     catch (error) {
@@ -71,17 +120,21 @@ async function provideCompletionItems(model, position, context, dotnetHelper) {
 }
 
 async function resolveCompletionItem(item, dotnetHelper) {
+    
     const lastCompletions = this._lastCompletions;
-    if(!lastCompletions) {
+
+    if (!lastCompletions) {
         return item;
     }
 
     const lspItem = lastCompletions.get(item);
-    if(!lspItem) {
+
+    if (!lspItem) {
         return item;
     }
 
     const request = { Item: lspItem };
+
     try {
         const response = await dotnetHelper.invokeMethodAsync("GetCompletionResolveAsync", request);
         return this._convertToVscodeCompletionItem(response.item);
@@ -93,10 +146,10 @@ async function resolveCompletionItem(item, dotnetHelper) {
 }
 
 async function provideSignatureHelp(model, position, dotnetHelper) {
-
     let req = this._createRequest(position);
 
     try {
+
         let code = model.getValue();
         let res = await dotnetHelper.invokeMethodAsync("GetSignatureHelpAsync", code, req);
 
@@ -142,6 +195,7 @@ async function provideSignatureHelp(model, position, dotnetHelper) {
 }
 
 async function provideHover(document, position, dotnetHelper) {
+
     let request = this._createRequest(position);
     try {
         const response = await dotnetHelper.invokeMethodAsync("GetQuickInfoAsync", request);
@@ -163,23 +217,9 @@ async function provideHover(document, position, dotnetHelper) {
     }
 }
 
-function setDiagnostics(diagnostics, uri) {
-
-    var model = monaco.editor.getModel(uri)
-
-    diagnostics.forEach(diagnostic => {
-        diagnostic.startLineNumber = diagnostic.start.line + 1;
-        diagnostic.startColumn = diagnostic.start.character + 1;
-
-        diagnostic.endLineNumber = diagnostic.end.line + 1;
-        diagnostic.endColumn = diagnostic.end.character + 1;
-    });
-
-    window.monaco.editor.setModelMarkers(model, "owner", diagnostics);
-}
-
 function _getParameterDocumentation(parameter) {
     let summary = parameter.documentation;
+
     if (summary.length > 0) {
         let paramText = `**${parameter.name}**: ${summary}`;
         return {

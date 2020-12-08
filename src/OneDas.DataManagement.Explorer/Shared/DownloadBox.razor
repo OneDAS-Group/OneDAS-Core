@@ -1,18 +1,18 @@
 ﻿@using Microsoft.AspNetCore.Http
 
-@inherits AppStateComponentBase
+@inherits UserStateComponentBase
 
 <div class="selected-channel-box-sub">
     <div class="selected-channels">
-        @if (!this.AppState.SelectedDatasets.Any())
+        @if (!this.UserState.SelectedDatasets.Any())
         {
             <span class="small-text">no channels selected</span>
         }
         else
         {
-            @foreach (var dataset in this.AppState.SelectedDatasets)
+            @foreach (var dataset in this.UserState.SelectedDatasets)
             {
-                <div class="selected-channel" @onclick="() => this.AppState.ToggleDatasetSelection(dataset)">
+                <div class="selected-channel" @onclick="() => this.UserState.ToggleDatasetSelection(dataset)">
                     <span class="selected-channel-name">@dataset.Parent.Name (@dataset.Name)</span>
                     <span class="selected-channel-project">@dataset.Parent.Parent.Id.TrimStart('/').Replace("/", " / ")</span>
                 </div>
@@ -23,7 +23,7 @@
     <MatButton Icon="@MatIconNames.Cloud_download"
                OnClick="this.DownloadAsync"
                Outlined="true"
-               Disabled="!this.AppState.CanDownload()"
+               Disabled="!this.UserState.CanDownload()"
                Label="@this.GetDownloadLabel()">
     </MatButton>
 

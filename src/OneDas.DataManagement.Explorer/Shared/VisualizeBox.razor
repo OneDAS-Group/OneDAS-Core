@@ -1,4 +1,4 @@
-﻿@inherits AppStateComponentBase
+﻿@inherits UserStateComponentBase
 
 @if (_showWarning)
 {
@@ -8,11 +8,11 @@
 }
 else
 {
-    if (this.AppState.VisualizeProgress > -1)
+    if (this.UserState.VisualizeProgress > -1)
     {
         <div class="visualize-box-progress">
             <MatHeadline4>Loading data ...</MatHeadline4>
-            <MatProgressBar Progress="this.AppState.VisualizeProgress" />
+            <MatProgressBar Progress="this.UserState.VisualizeProgress" />
         </div>
     }
 

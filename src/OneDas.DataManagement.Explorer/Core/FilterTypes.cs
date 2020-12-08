@@ -27,6 +27,8 @@ namespace OneDas.DataManagement.Explorer.Core
         public CodeLanguage CodeLanguage { get; set; } = CodeLanguage.CSharp;
 
         public bool IsPublic { get; set; }
+
+        public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     }
 
     public record FilterSettings

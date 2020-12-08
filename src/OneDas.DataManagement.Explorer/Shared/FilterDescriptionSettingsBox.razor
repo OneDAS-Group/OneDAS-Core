@@ -1,4 +1,4 @@
-﻿@inherits AppStateComponentBase
+﻿@inherits UserStateComponentBase
 
 <EditForm class="h-100 flex-column" Model="@this.FilterDescription" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -27,7 +27,7 @@
         <MatSelectItem class="settings-control"
                        Label="Sample Rate"
                        @bind-Value="this.FilterDescription.SampleRate"
-                       Items="this.AppState.SampleRateValues">
+                       Items="this.UserState.SampleRateValues">
         </MatSelectItem>
 
         <MatSelectItem class="settings-control"

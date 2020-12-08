@@ -1,56 +1,56 @@
-﻿@inherits AppStateComponentBase
+﻿@inherits UserStateComponentBase
 @inject IHttpContextAccessor ContextAccessor
 
-@if (this.AppState.GroupedChannels != null) // user has access to project
+@if (this.UserState.GroupedChannels != null) // user has access to project
 {
     <div class="available-groups">
 
-        <MatTextField @bind-Value="this.AppState.SearchString"
-                      OnInput="e => this.AppState.SearchString = e.Value.ToString()"
+        <MatTextField @bind-Value="this.UserState.SearchString"
+                      OnInput="e => this.UserState.SearchString = e.Value.ToString()"
                       Label="Search"
                       Icon="@_searchIcon"
-                      IconOnClick="@(() => this.AppState.SearchString = "")"
+                      IconOnClick="@(() => this.UserState.SearchString = "")"
                       IconTrailing="true">
         </MatTextField>
 
         <div class="available-groups-list">
-            @foreach (var entry in this.AppState.GroupedChannels.OrderBy(entry => entry.Key).Skip(this.GroupPage * this.GroupPageSize).Take(this.GroupPageSize))
+            @foreach (var entry in this.UserState.GroupedChannels.OrderBy(entry => entry.Key).Skip(this.GroupPage * this.GroupPageSize).Take(this.GroupPageSize))
             {
-                <div @onclick="() => this.AppState.ChannelGroup = entry.Value"
-                     class="group-entry @(this.AppState.ChannelGroup == entry.Value? "selected" : "")">
+                <div @onclick="() => this.UserState.ChannelGroup = entry.Value"
+                     class="group-entry @(this.UserState.ChannelGroup == entry.Value? "selected" : "")">
                     <span class="group-entry-name">@entry.Key</span>
                     <span class="group-entry-count">@entry.Value.Count</span>
                 </div>
             }
         </div>
 
-        <Paginator Length="this.AppState.GroupedChannels.Count" PageSize="this.GroupPageSize" @bind-Page="this.GroupPage"></Paginator>
+        <Paginator Length="this.UserState.GroupedChannels.Count" PageSize="this.GroupPageSize" @bind-Page="this.GroupPage"></Paginator>
     </div>
 
     <div class="available-channels">
-        @if (this.AppState.ChannelGroup != null)
+        @if (this.UserState.ChannelGroup != null)
         {
             <div>
-                @foreach (var channel in this.AppState.ChannelGroup.Skip(this.ChannelPage * this.ChannelPageSize).Take(this.ChannelPageSize))
+                @foreach (var channel in this.UserState.ChannelGroup.Skip(this.ChannelPage * this.ChannelPageSize).Take(this.ChannelPageSize))
                 {
                     <ChannelExpander Channel="channel" />
                 }
             </div>
 
-            <Paginator Length="this.AppState.ChannelGroup.Count" PageSize="this.ChannelPageSize" @bind-Page="this.ChannelPage"></Paginator>
+            <Paginator Length="this.UserState.ChannelGroup.Count" PageSize="this.ChannelPageSize" @bind-Page="this.ChannelPage"></Paginator>
         }
     </div>
 }
-else if (this.AppState.ProjectContainer != null) // user has no access to project
+else if (this.UserState.ProjectContainer != null) // user has no access to project
 {
     <div class="flex-centered h-100 w-100">
         @if (this.ContextAccessor.HttpContext.User.Identity.IsAuthenticated)
         {
-            @if (this.AppState.ProjectContainer.ProjectMeta.License.LicensingScheme == Database.ProjectLicensingScheme.ManualRequest)
+            @if (this.UserState.ProjectContainer.ProjectMeta.License.LicensingScheme == Database.ProjectLicensingScheme.ManualRequest)
             {
-                <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.AppState.ProjectContainer.ProjectMeta.Contact) ? $" Please contact {this.AppState.ProjectContainer.ProjectMeta.Contact} to request permission." : "")</span>
+                <span>You do not have access to this project.@(!string.IsNullOrWhiteSpace(this.UserState.ProjectContainer.ProjectMeta.Contact) ? $" Please contact {this.UserState.ProjectContainer.ProjectMeta.Contact} to request permission." : "")</span>
             }
-            else if (this.AppState.ProjectContainer.ProjectMeta.License.LicensingScheme == Database.ProjectLicensingScheme.AcceptLicense)
+            else if (this.UserState.ProjectContainer.ProjectMeta.License.LicensingScheme == Database.ProjectLicensingScheme.AcceptLicense)
             {
                 <MatButton Outlined="true" Icon="@MatIconNames.Lock_open" @onclick="this.OpenLicenseDialog">Unlock</MatButton>
             }

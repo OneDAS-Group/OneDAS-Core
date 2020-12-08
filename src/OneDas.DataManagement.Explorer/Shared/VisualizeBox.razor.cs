@@ -30,38 +30,38 @@ namespace OneDas.DataManagement.Explorer.Shared
 			{
 				_showWarning = false;
 
-				if (this.AppState.IsSizeLimitExceeded())
+				if (this.UserState.IsSizeLimitExceeded())
 				{
 					_showWarning = true;
 					await this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (!this.AppState.CanVisualize())
+				else if (!this.UserState.CanVisualize())
 				{
-					this.AppState.ClientState = ClientState.Normal;
+					this.UserState.ClientState = ClientState.Normal;
 				}
 				else
 				{
-					if (e.PropertyName == nameof(AppStateViewModel.ExportParameters))
+					if (e.PropertyName == nameof(UserStateViewModel.ExportParameters))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+					else if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
+					else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
+					else if (e.PropertyName == nameof(UserStateViewModel.SelectedDatasets))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(AppStateViewModel.VisualizeBeginAtZero))
+					else if (e.PropertyName == nameof(UserStateViewModel.VisualizeBeginAtZero))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(AppStateViewModel.VisualizeProgress))
+					else if (e.PropertyName == nameof(UserStateViewModel.VisualizeProgress))
 					{
 						await this.InvokeAsync(this.StateHasChanged);
 					}
@@ -85,7 +85,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
 		protected override void OnInitialized()
 		{
-			if (this.AppState.IsSizeLimitExceeded())
+			if (this.UserState.IsSizeLimitExceeded())
 				_showWarning = true;
 
 			base.OnInitialized();
@@ -103,7 +103,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 		{
 			var chartEntries = new List<ChartEntry>();
 
-			foreach (var dataset in this.AppState.SelectedDatasets.ToList())
+			foreach (var dataset in this.UserState.SelectedDatasets.ToList())
 			{
 				var name = dataset.Parent.Name;
 				var datasetNameParts = dataset.Name.Split('_');
@@ -124,15 +124,15 @@ namespace OneDas.DataManagement.Explorer.Shared
             try
             {
 				var chartEntries = this.BuildChartEntriesAsync();
-				var begin = this.AppState.DateTimeBegin;
-				var end = this.AppState.DateTimeEnd;
-				var sampleRate = (double)new SampleRateContainer(this.AppState.SampleRate).SamplesPerSecond;
+				var begin = this.UserState.DateTimeBegin;
+				var end = this.UserState.DateTimeEnd;
+				var sampleRate = (double)new SampleRateContainer(this.UserState.SampleRate).SamplesPerSecond;
 				var dt = 1 / sampleRate;
 
 				var count = (int)((end - begin).TotalSeconds * sampleRate);
 
 				await this.InvokeAsync(this.StateHasChanged);
-				await this.JsRuntime.UpdateChartAsync(this.AppState, chartEntries, begin, end, count, dt, this.AppState.VisualizeBeginAtZero);
+				await this.JsRuntime.UpdateChartAsync(this.UserState, chartEntries, begin, end, count, dt, this.UserState.VisualizeBeginAtZero);
 			}
             catch (TaskCanceledException)
             {
@@ -140,13 +140,13 @@ namespace OneDas.DataManagement.Explorer.Shared
 				// - OneDAS calculates aggregations and locks current file
 				// GUI wants to load data from that locked file and times out
 				// TaskCanceledException is thrown: app crashes.
-				this.AppState.ClientState = ClientState.Normal;
+				this.UserState.ClientState = ClientState.Normal;
 			}
 			catch (Exception ex)
 			{
-				this.AppState.Logger.LogError(ex.GetFullMessage());
+				this.UserState.Logger.LogError(ex.GetFullMessage());
 				this.ToasterService.ShowError(message: "Unable to stream data.", icon: MatIconNames.Error_outline);
-				this.AppState.ClientState = ClientState.Normal;
+				this.UserState.ClientState = ClientState.Normal;
 			}
 		}
 

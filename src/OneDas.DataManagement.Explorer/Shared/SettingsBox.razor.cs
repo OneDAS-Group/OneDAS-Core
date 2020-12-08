@@ -17,21 +17,21 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             this.PropertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(AppStateViewModel.ExportParameters))
+                if (e.PropertyName == nameof(UserStateViewModel.ExportParameters))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
                 // for workaround
-                else if (e.PropertyName == nameof(AppStateViewModel.DateTimeBegin))
+                else if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
                 // for workaround
-                else if (e.PropertyName == nameof(AppStateViewModel.DateTimeEnd))
+                else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
-                else if (e.PropertyName == nameof(AppStateViewModel.SelectedDatasets))
+                else if (e.PropertyName == nameof(UserStateViewModel.SelectedDatasets))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
@@ -58,7 +58,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task OnSaveExportSettingsAsync()
         {
-			var configuration = this.AppState.ExportParameters;
+			var configuration = this.UserState.ExportParameters;
 			var jsonString = JsonSerializer.Serialize(configuration, new JsonSerializerOptions() { WriteIndented = true });
 			await this.JsRuntime.BlobSaveAs("export.json", Encoding.UTF8.GetBytes(jsonString));
 		}
@@ -72,7 +72,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                 using var utf8json = file.OpenReadStream();
                 var exportParameters = await JsonSerializer.DeserializeAsync<ExportParameters>(utf8json);
                 exportParameters = exportParameters.UpdateVersion();
-                this.AppState.SetExportParameters(exportParameters);
+                this.UserState.SetExportParameters(exportParameters);
             }
         }
 

@@ -8,7 +8,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public AppStateViewModel AppState { get; set; }
+        public UserStateViewModel UserState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }

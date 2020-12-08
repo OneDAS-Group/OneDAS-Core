@@ -1,4 +1,4 @@
-﻿@inject AppStateViewModel AppState
+﻿@inject UserStateViewModel UserState
 
 <div class="login-display">
     <AuthorizeView>
@@ -8,7 +8,7 @@
 
             <AuthorizeView Policy="RequireAdmin" Context="_">
                 <Authorized>
-                    <div class="mdc-button @(this.AppState.IsEditEnabled ? "active" : "")" @onclick="() => this.AppState.IsEditEnabled = !this.AppState.IsEditEnabled">
+                    <div class="mdc-button @(this.UserState.IsEditEnabled ? "active" : "")" @onclick="() => this.UserState.IsEditEnabled = !this.UserState.IsEditEnabled">
                         <i class="far fa-edit" aria-hidden="true"></i> &nbsp; Edit
                     </div>
                     <NavLink href="/settings">

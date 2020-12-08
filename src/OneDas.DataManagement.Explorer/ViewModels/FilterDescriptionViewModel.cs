@@ -1,8 +1,9 @@
 ﻿using OneDas.DataManagement.Explorer.Core;
+using System.ComponentModel.DataAnnotations;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
-    public class FilterDescriptionViewModel
+    public class FilterDescriptionViewModel /* Must be a class to ensure reference equality! Otherwise there would be created a new copy with every modification. */
     {
         #region Constructors
 
@@ -42,6 +43,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { this.Model.Unit = value; }
         }
 
+        [Required]
         public string SampleRate
         {
             get { return this.Model.SampleRate; }
