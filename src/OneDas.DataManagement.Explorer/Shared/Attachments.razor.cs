@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using OneDas.DataManagement.Explorer.ViewModels;
+using OneDas.DataManagement.Explorer.Core;
 using System.IO;
 
 namespace OneDas.DataManagement.Explorer.Shared
@@ -9,7 +9,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public UserStateViewModel UserState { get; set; }
+        public UserState UserState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }

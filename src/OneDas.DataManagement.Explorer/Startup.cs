@@ -154,7 +154,7 @@ namespace OneDas.DataManagement.Explorer
 
             services.AddScoped<MonacoService>();
             services.AddScoped<UserIdService>();
-            services.AddScoped<UserStateViewModel>();
+            services.AddScoped<UserState>();
             services.AddScoped<SettingsViewModel>();
             services.AddScoped<ToasterService>();
             services.AddScoped<JwtService<IdentityUser>>();
@@ -162,7 +162,7 @@ namespace OneDas.DataManagement.Explorer
             services.AddTransient<DataService>();
             services.AddTransient<AggregationService>();
 
-            services.AddSingleton<AppStateViewModel>();
+            services.AddSingleton<AppState>();
             services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
             services.AddSingleton<StateManager>();

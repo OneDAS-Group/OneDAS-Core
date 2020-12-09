@@ -19,8 +19,6 @@
     --monaco-vscode-color: rgba(30, 30, 30, 1);
 }
 
-
-
 html, body {
     font-family: 'Roboto';
 }
@@ -875,6 +873,10 @@ app {
     height: 100%;
     width: 100%;
     margin: 15px;
+}
+
+.diagnostics-box {
+    overflow: scroll;
 }
 
 .clear-margin {

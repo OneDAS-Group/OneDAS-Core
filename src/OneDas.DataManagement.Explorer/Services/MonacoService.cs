@@ -25,11 +25,11 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Fields
 
-        RoslynProject _completionProject;
-        RoslynProject _diagnosticProject;
-        OmniSharpCompletionService _completionService;
-        OmniSharpSignatureHelpService _signatureService;
-        OmniSharpQuickInfoProvider _quickInfoProvider;
+        private RoslynProject _completionProject;
+        private RoslynProject _diagnosticProject;
+        private OmniSharpCompletionService _completionService;
+        private OmniSharpSignatureHelpService _signatureService;
+        private OmniSharpQuickInfoProvider _quickInfoProvider;
 
         #endregion
 
@@ -137,14 +137,17 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
         }
 
         [JSInvokable]
-        public async Task<List<Diagnostic>> GetDiagnosticsAsync(string code)
+        public async Task UpdateDiagnosticsAsync(string code = null)
         {
-            Solution updatedSolution;
+            Solution updatedSolution = _diagnosticProject.Workspace.CurrentSolution;
 
-            do
+            if (code is not null)
             {
-                updatedSolution = _diagnosticProject.Workspace.CurrentSolution.WithDocumentText(_diagnosticProject.DocumentId, SourceText.From(code));
-            } while (!_diagnosticProject.Workspace.TryApplyChanges(updatedSolution));
+                do
+                {
+                    updatedSolution = _diagnosticProject.Workspace.CurrentSolution.WithDocumentText(_diagnosticProject.DocumentId, SourceText.From(code));
+                } while (!_diagnosticProject.Workspace.TryApplyChanges(updatedSolution));
+            }          
 
             var compilation = await updatedSolution.Projects.First().GetCompilationAsync();
             var dotnetDiagnostics = compilation.GetDiagnostics();
@@ -163,8 +166,14 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
             }).ToList();
 
             this.OnDiagnosticsUpdated(diagnostics);
+        }
 
-            return diagnostics;
+        public void SetSampleRate(string sampleRate)
+        {
+            _completionProject.SampleRate = sampleRate;
+            _diagnosticProject.SampleRate = sampleRate;
+
+            _ = this.UpdateDiagnosticsAsync();
         }
 
         private void OnDiagnosticsUpdated(List<Diagnostic> diagnostics)

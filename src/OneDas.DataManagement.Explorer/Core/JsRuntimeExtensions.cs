@@ -4,6 +4,7 @@ using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static OneDas.DataManagement.Explorer.Services.MonacoService;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
@@ -26,7 +27,7 @@ namespace OneDas.DataManagement.Explorer.Core
             return jsRuntime.InvokeAsync<int>("GetBrowserTimeZoneOffset", value);
         }
 
-        public static async Task UpdateChartAsync(this IJSRuntime jsRuntime, UserStateViewModel userState, List<ChartEntry> chartEntries, DateTime begin, DateTime end, int count, double dt, bool beginAtZero)
+        public static async Task UpdateChartAsync(this IJSRuntime jsRuntime, UserState userState, List<ChartEntry> chartEntries, DateTime begin, DateTime end, int count, double dt, bool beginAtZero)
         {
             var userStateRef = DotNetObjectReference.Create(userState);
             await jsRuntime.InvokeVoidAsync("UpdateChart", userStateRef, chartEntries, begin, end, count, dt, beginAtZero);
@@ -50,6 +51,11 @@ namespace OneDas.DataManagement.Explorer.Core
         public static ValueTask<string> GetMonacoValueAsync(this IJSRuntime jsRuntime, string editorId)
         {
             return jsRuntime.InvokeAsync<string>("GetMonacoValue", editorId);
+        }
+
+        public static async Task SetMonacoDiagnosticsAsync(this IJSRuntime jsRuntime, string editorId, List<Diagnostic> diagnostics)
+        {
+            await jsRuntime.InvokeVoidAsync("SetMonacoDiagnostics", editorId, diagnostics);
         }
 
         #endregion

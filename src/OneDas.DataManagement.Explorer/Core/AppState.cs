@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.DataManagement.Infrastructure;
 using OneDas.Extension.Csv;
 using OneDas.Infrastructure;
@@ -8,13 +9,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace OneDas.DataManagement.Explorer.ViewModels
+namespace OneDas.DataManagement.Explorer.Core
 {
-    public class AppStateViewModel : BindableBase
+    public class AppState : BindableBase
     {
         #region Constructors
 
-        public AppStateViewModel(ILogger<AppStateViewModel> logger,
+        public AppState(ILogger<AppState> logger,
                                  OneDasExplorerOptions options)
         {
             this.Logger = logger; 
@@ -35,7 +36,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - General
 
-        public ILogger<AppStateViewModel> Logger { get; }
+        public ILogger<AppState> Logger { get; }
 
         public string Version { get; }
 

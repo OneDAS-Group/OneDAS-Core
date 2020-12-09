@@ -1,9 +1,10 @@
 ﻿using OneDas.DataManagement.Explorer.Core;
+using Prism.Mvvm;
 using System.ComponentModel.DataAnnotations;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
-    public class FilterDescriptionViewModel /* Must be a class to ensure reference equality! Otherwise there would be created a new copy with every modification. */
+    public class FilterDescriptionViewModel : BindableBase /* Must be a class to ensure reference equality! Otherwise there would be created a new copy with every modification. */
     {
         #region Constructors
 
@@ -46,8 +47,15 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         [Required]
         public string SampleRate
         {
-            get { return this.Model.SampleRate; }
-            set { this.Model.SampleRate = value; }
+            get 
+            {
+                return this.Model.SampleRate; 
+            }
+            set 
+            {
+                this.Model.SampleRate = value;
+                this.RaisePropertyChanged();
+            }
         }
 
         public string Code

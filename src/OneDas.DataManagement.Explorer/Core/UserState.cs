@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
-using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
+using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.DataManagement.Infrastructure;
 using OneDas.Infrastructure;
 using Prism.Mvvm;
@@ -15,9 +15,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OneDas.DataManagement.Explorer.ViewModels
+namespace OneDas.DataManagement.Explorer.Core
 {
-    public class UserStateViewModel : BindableBase, IDisposable
+    public class UserState : BindableBase, IDisposable
     {
         #region Fields
 
@@ -55,15 +55,15 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Constructors
 
-        public UserStateViewModel(ILogger<UserStateViewModel> logger,
-                                 IJSRuntime jsRuntime,
-                                 IServiceProvider serviceProvider,
-                                 UserIdService userIdService,
-                                 AuthenticationStateProvider authenticationStateProvider,
-                                 StateManager stateManager,
-                                 OneDasDatabaseManager databaseManager,
-                                 OneDasExplorerOptions options,
-                                 DataService dataService)
+        public UserState(ILogger<UserState> logger,
+                         IJSRuntime jsRuntime,
+                         IServiceProvider serviceProvider,
+                         UserIdService userIdService,
+                         AuthenticationStateProvider authenticationStateProvider,
+                         StateManager stateManager,
+                         OneDasDatabaseManager databaseManager,
+                         OneDasExplorerOptions options,
+                         DataService dataService)
         {
             this.Logger = logger;
             _jsRuntime = jsRuntime;
@@ -72,7 +72,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             _authenticationStateProvider = authenticationStateProvider;
             _databaseManager = databaseManager;
             _options = options;
-            _dataService = dataService;        
+            _dataService = dataService;
 
             this.VisualizeBeginAtZero = true;
 
@@ -112,7 +112,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties - General
 
-        public ILogger<UserStateViewModel> Logger { get; }
+        public ILogger<UserState> Logger { get; }
 
         public bool IsEditEnabled
         {
@@ -549,7 +549,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             // Pretend that UTC time is local time to avoid conversion to nonsense.
             this.DateTimeEndWorkaround = DateTime.SpecifyKind(exportParameters.End, DateTimeKind.Local);
 
-            this.RaisePropertyChanged(nameof(UserStateViewModel.ExportParameters));
+            this.RaisePropertyChanged(nameof(UserState.ExportParameters));
         }
 
         public bool IsDatasetSeleced(DatasetInfoViewModel dataset)
@@ -567,7 +567,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 this.GetSelectedDatasets().Add(dataset);
 
             this.UpdateExportParameters();
-            this.RaisePropertyChanged(nameof(UserStateViewModel.SelectedDatasets));
+            this.RaisePropertyChanged(nameof(UserState.SelectedDatasets));
         }
 
         public long GetByteCount()

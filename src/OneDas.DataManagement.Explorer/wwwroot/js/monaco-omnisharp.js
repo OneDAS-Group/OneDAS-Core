@@ -39,17 +39,7 @@ function RegisterMonacoProviders(editorId, dotnetHelper) {
     editor.onDidChangeModelContent(async e => {
 
         var code = editor.getValue();
-        var diagnostics = await dotnetHelper.invokeMethodAsync("GetDiagnosticsAsync", code);
-
-        diagnostics.forEach(diagnostic => {
-            diagnostic.startLineNumber = diagnostic.start.line + 1;
-            diagnostic.startColumn = diagnostic.start.character + 1;
-
-            diagnostic.endLineNumber = diagnostic.end.line + 1;
-            diagnostic.endColumn = diagnostic.end.character + 1;
-        });
-
-        window.monaco.editor.setModelMarkers(editor.getModel(), "owner", diagnostics);
+        await dotnetHelper.invokeMethodAsync("UpdateDiagnosticsAsync", code);
     })
 }
 
@@ -61,6 +51,21 @@ function SetMonacoValue(editorId, value) {
 function GetMonacoValue(editorId, value) {
     var editor = this._getEditor(editorId);
     return editor.getValue();
+}
+
+function SetMonacoDiagnostics(editorId, diagnostics) {
+
+    var editor = this._getEditor(editorId);
+
+    diagnostics.forEach(diagnostic => {
+        diagnostic.startLineNumber = diagnostic.start.line + 1;
+        diagnostic.startColumn = diagnostic.start.character + 1;
+
+        diagnostic.endLineNumber = diagnostic.end.line + 1;
+        diagnostic.endColumn = diagnostic.end.character + 1;
+    });
+
+    window.monaco.editor.setModelMarkers(editor.getModel(), "owner", diagnostics);
 }
 
 function _getEditor(editorId)

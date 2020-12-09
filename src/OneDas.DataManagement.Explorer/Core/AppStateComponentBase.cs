@@ -11,10 +11,10 @@ namespace OneDas.DataManagement.Explorer.Core
 		#region Properties
 
 		[Inject]
-		public AppStateViewModel AppState { get; set; }
+		public AppState AppState { get; set; }
 
 		[Inject]
-		public UserStateViewModel UserState { get; set; }
+		public UserState UserState { get; set; }
 
 		protected PropertyChangedEventHandler PropertyChanged { get; set; }
 

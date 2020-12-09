@@ -12,7 +12,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public UserStateViewModel UserState { get; set; }
+        public UserState UserState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }

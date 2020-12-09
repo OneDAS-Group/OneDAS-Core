@@ -10,7 +10,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 		{
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(UserStateViewModel.ClientState))
+				if (e.PropertyName == nameof(UserState.ClientState))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}

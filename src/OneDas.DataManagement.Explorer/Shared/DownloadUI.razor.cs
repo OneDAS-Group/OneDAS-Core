@@ -10,11 +10,11 @@ namespace OneDas.DataManagement.Explorer.Shared
 		{
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(UserStateViewModel.DownloadMessage))
+				if (e.PropertyName == nameof(UserState.DownloadMessage))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
-				else if (e.PropertyName == nameof(UserStateViewModel.DownloadProgress))
+				else if (e.PropertyName == nameof(UserState.DownloadProgress))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}

@@ -15,14 +15,13 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private bool _showSampleRates;
         private List<DatasetInfoViewModel> _filteredDatasets;
-        private PropertyChangedEventHandler _propertyChanged;
 
         #endregion
 
         #region Properties
 
         [Inject]
-        public UserStateViewModel UserState { get; set; }
+        public UserState UserState { get; set; }
 
         [Parameter]
         public bool IsExpanded { get; set; }
@@ -34,29 +33,15 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         #region Methods
 
+        public void Dispose()
+        {
+            this.UserState.PropertyChanged -= this.OnUserStatePropertyChanged;
+        }
+
         protected override Task OnParametersSetAsync()
         {
-            _propertyChanged = (sender, e) =>
-            {
-                if (e.PropertyName == nameof(UserStateViewModel.SampleRate))
-                {
-                    this.InvokeAsync(() =>
-                    {
-                        this.UpdateFilteredDatasets();
-                        this.StateHasChanged();
-                    });
-                }
-                else if (e.PropertyName == nameof(UserStateViewModel.IsEditEnabled))
-                {
-                    this.InvokeAsync(() =>
-                    {
-                        this.StateHasChanged();
-                    });
-                }
-            };
-
             this.UpdateFilteredDatasets();
-            this.UserState.PropertyChanged += _propertyChanged;
+            this.UserState.PropertyChanged += this.OnUserStatePropertyChanged;
 
             return base.OnParametersSetAsync();
         }
@@ -85,26 +70,15 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         #endregion
 
-        #region IDisposable Support
+        #region Callbacks
 
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
+        private void OnUserStatePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    this.UserState.PropertyChanged -= _propertyChanged;
-                }
+            if (e.PropertyName == nameof(UserState.SampleRate))
+                this.InvokeAsync(() => { this.StateHasChanged(); });
 
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
+            else if (e.PropertyName == nameof(UserState.IsEditEnabled))
+                this.InvokeAsync(() => { this.StateHasChanged(); });
         }
 
         #endregion

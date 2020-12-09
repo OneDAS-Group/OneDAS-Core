@@ -13,8 +13,8 @@ namespace OneDas.DataManagement.Explorer.Core
     {
         #region Fields
 
+        private string _sampleRate;
         private OneDasDatabaseManager _databaseManager;
-        private EventHandler<OneDasDatabase> _handler;
         private DocumentId _databaseCodeId;
 
         #endregion
@@ -24,8 +24,8 @@ namespace OneDas.DataManagement.Explorer.Core
         public RoslynProject(OneDasDatabaseManager databaseManager, string defaultCode)
         {
             _databaseManager = databaseManager;
-            _handler = (sender, e) => this.UpdateDatabaseCode();
-            _databaseManager.OnDatabaseUpdated += _handler;
+            _databaseManager.OnDatabaseUpdated += this.OnDatabaseUpdated;
+            _sampleRate = "NaN";
 
             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
 
@@ -49,7 +49,7 @@ namespace OneDas.DataManagement.Explorer.Core
             // database code
             var databaseCode = this.Workspace.AddDocument(project.Id, "DatabaseCode.cs", SourceText.From(string.Empty));
             _databaseCodeId = databaseCode.Id;
-            this.UpdateDatabaseCode();
+            this.UpdateDatabaseCode(this.SampleRate);
 
             // code
             this.UseOnlyOnceDocument = this.Workspace.AddDocument(project.Id, "Code.cs", SourceText.From(defaultCode));
@@ -59,6 +59,19 @@ namespace OneDas.DataManagement.Explorer.Core
         #endregion
 
         #region Properties
+
+        public string SampleRate
+        {
+            get
+            {
+                return _sampleRate;
+            }
+            set
+            {
+                _sampleRate = value;
+                this.UpdateDatabaseCode(_sampleRate);
+            }
+        }
 
         public AdhocWorkspace Workspace { get; init; }
 
@@ -70,51 +83,69 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        private void UpdateDatabaseCode()
+        private void UpdateDatabaseCode(string sampleRate)
         {
             // generate code
-            var stringBuilder = new StringBuilder();
+            var classStringBuilder = new StringBuilder();
 
-            stringBuilder.AppendLine($"namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}");
-            stringBuilder.AppendLine($"{{");
+            classStringBuilder.AppendLine($"namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}");
+            classStringBuilder.AppendLine($"{{");
 
-            stringBuilder.AppendLine($"public class CodeGenerationDatabase");
-            stringBuilder.AppendLine($"{{");
+            classStringBuilder.AppendLine($"public class CodeGenerationDatabase");
+            classStringBuilder.AppendLine($"{{");
 
-            foreach (var projectContainer in _databaseManager.Database.ProjectContainers)
+            if (sampleRate is not null)
             {
-                // project class definition
-                stringBuilder.AppendLine($"public class {projectContainer.PhysicalName}_TYPE");
-                stringBuilder.AppendLine($"{{");
-
-                foreach (var channel in projectContainer.Project.Channels)
+                foreach (var projectContainer in _databaseManager.Database.ProjectContainers)
                 {
-                    // channel class definition
-                    stringBuilder.AppendLine($"public class {channel.Name}_TYPE");
-                    stringBuilder.AppendLine($"{{");
+                    var addProject = false;
+                    var projectStringBuilder = new StringBuilder();
 
-                    foreach (var dataset in channel.Datasets.Where(dataset => dataset.Id.Contains("600 s")))
+                    // project class definition
+                    projectStringBuilder.AppendLine($"public class {projectContainer.PhysicalName}_TYPE");
+                    projectStringBuilder.AppendLine($"{{");
+
+                    foreach (var channel in projectContainer.Project.Channels)
                     {
-                        // dataset property
-                        stringBuilder.AppendLine($"public double[] {OneDasUtilities.EnforceNamingConvention(dataset.Id, prefix: "DATASET")} {{ get; set; }}");
+                        var addChannel = false;
+                        var channelStringBuilder = new StringBuilder();
+
+                        // channel class definition
+                        channelStringBuilder.AppendLine($"public class {channel.Name}_TYPE");
+                        channelStringBuilder.AppendLine($"{{");
+
+                        foreach (var dataset in channel.Datasets.Where(dataset => dataset.Id.Contains(sampleRate)))
+                        {
+                            // dataset property
+                            channelStringBuilder.AppendLine($"public double[] {OneDasUtilities.EnforceNamingConvention(dataset.Id, prefix: "DATASET")} {{ get; set; }}");
+
+                            addChannel = true;
+                            addProject = true;
+                        }
+
+                        channelStringBuilder.AppendLine($"}}");
+
+                        // channel property
+                        channelStringBuilder.AppendLine($"public {channel.Name}_TYPE {channel.Name} {{ get; }}");
+
+                        if (addChannel)
+                            projectStringBuilder.AppendLine(channelStringBuilder.ToString());
                     }
 
-                    stringBuilder.AppendLine($"}}");
+                    projectStringBuilder.AppendLine($"}}");
 
-                    // channel property
-                    stringBuilder.AppendLine($"public {channel.Name}_TYPE {channel.Name} {{ get; }}");
+                    // project property
+                    projectStringBuilder.AppendLine($"public {projectContainer.PhysicalName}_TYPE {projectContainer.PhysicalName} {{ get; }}");
+
+                    if (addProject)
+                        classStringBuilder.AppendLine(projectStringBuilder.ToString());
                 }
-
-                stringBuilder.AppendLine($"}}");
-
-                // project property
-                stringBuilder.AppendLine($"public {projectContainer.PhysicalName}_TYPE {projectContainer.PhysicalName} {{ get; }}");
             }
 
-            stringBuilder.AppendLine($"}}");
+            classStringBuilder.AppendLine($"}}");
 
-            stringBuilder.AppendLine($"}}");
-            var code = stringBuilder.ToString();
+            classStringBuilder.AppendLine($"}}");
+            var code = classStringBuilder.ToString();
 
             // update code
             Solution updatedSolution;
@@ -127,7 +158,16 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public void Dispose()
         {
-            _databaseManager.OnDatabaseUpdated -= _handler;
+            _databaseManager.OnDatabaseUpdated -= this.OnDatabaseUpdated;
+        }
+
+        #endregion
+
+        #region Callbacks
+
+        private void OnDatabaseUpdated(object sender, OneDasDatabase database)
+        {
+            this.UpdateDatabaseCode(this.SampleRate);
         }
 
         #endregion

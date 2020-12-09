@@ -41,27 +41,27 @@ namespace OneDas.DataManagement.Explorer.Shared
 				}
 				else
 				{
-					if (e.PropertyName == nameof(UserStateViewModel.ExportParameters))
+					if (e.PropertyName == nameof(UserState.ExportParameters))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
+					else if (e.PropertyName == nameof(UserState.DateTimeBegin))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
+					else if (e.PropertyName == nameof(UserState.DateTimeEnd))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(UserStateViewModel.SelectedDatasets))
+					else if (e.PropertyName == nameof(UserState.SelectedDatasets))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(UserStateViewModel.VisualizeBeginAtZero))
+					else if (e.PropertyName == nameof(UserState.VisualizeBeginAtZero))
 					{
 						await this.UpdateChartAsync();
 					}
-					else if (e.PropertyName == nameof(UserStateViewModel.VisualizeProgress))
+					else if (e.PropertyName == nameof(UserState.VisualizeProgress))
 					{
 						await this.InvokeAsync(this.StateHasChanged);
 					}

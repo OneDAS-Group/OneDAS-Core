@@ -18,6 +18,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         #region Fields
 
         private string _editorId;
+        private FilterDescriptionViewModel _filterDescription;
 		private DotNetObjectReference<MonacoService> _objRef;
 
         #endregion
@@ -25,10 +26,6 @@ namespace OneDas.DataManagement.Explorer.Pages
         #region Properties
 
         public List<Diagnostic> Diagnostics { get; set; }
-
-        protected PropertyChangedEventHandler FilterSettingsPropertyChangedHandler { get; set; }
-
-        protected EventHandler<List<Diagnostic>> DiagnosticsUpdatedHandler { get; set; }
 
         [Inject]
         private ToasterService ToasterService { get; set; }
@@ -42,7 +39,23 @@ namespace OneDas.DataManagement.Explorer.Pages
         [Inject]
         private UserIdService UserIdService { get; set; }
 
-        private FilterDescriptionViewModel FilterDescription { get; set; }
+        private FilterDescriptionViewModel FilterDescription
+        {
+            get
+            {
+                return _filterDescription;
+            }
+            set
+            {
+                if (_filterDescription is not null)
+                    _filterDescription.PropertyChanged -= this.OnFilterDescriptionPropertyChanged;
+
+                _filterDescription = value;
+                _filterDescription.PropertyChanged += this.OnFilterDescriptionPropertyChanged;
+
+                this.MonacoService.SetSampleRate(_filterDescription.SampleRate);
+            }
+        }
 
         #endregion
 
@@ -51,8 +64,8 @@ namespace OneDas.DataManagement.Explorer.Pages
         public void Dispose()
         {
             _objRef?.Dispose();
-            this.AppState.FilterSettings.PropertyChanged -= this.FilterSettingsPropertyChangedHandler;
-            this.MonacoService.DiagnosticsUpdated -= this.DiagnosticsUpdatedHandler;
+            this.AppState.FilterSettings.PropertyChanged -= this.OnFilterSettingsPropertyChanged;
+            this.MonacoService.DiagnosticsUpdated -= this.OnDiagnosticsUpdated;
         }
 
         protected override void OnParametersSet()
@@ -60,25 +73,8 @@ namespace OneDas.DataManagement.Explorer.Pages
             this.CreateNewFilterDescription();
             base.OnParametersSet();
 
-            // filter settings changed
-            this.FilterSettingsPropertyChangedHandler = (sender, e) =>
-            {
-                if (e.PropertyName == nameof(FilterSettingsViewModel.FilterDescriptions))
-                {
-                    this.InvokeAsync(() => { this.StateHasChanged(); });
-                }
-            };
-
-            this.AppState.FilterSettings.PropertyChanged += this.FilterSettingsPropertyChangedHandler;
-
-            // diagnostics updates
-            this.DiagnosticsUpdatedHandler = (sender, e) =>
-            {
-                this.Diagnostics = e;
-                this.InvokeAsync(() => { this.StateHasChanged(); });
-            };
-
-            this.MonacoService.DiagnosticsUpdated += this.DiagnosticsUpdatedHandler;
+            this.AppState.FilterSettings.PropertyChanged += this.OnFilterSettingsPropertyChanged;
+            this.MonacoService.DiagnosticsUpdated += this.OnDiagnosticsUpdated;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -88,22 +84,9 @@ namespace OneDas.DataManagement.Explorer.Pages
                 _objRef = DotNetObjectReference.Create(this.MonacoService);
                 _editorId = "1";
 
-                await JS.CreateMonacoEditorAsync(_editorId, this.MonacoEditorOptions);
-                await JS.RegisterMonacoProvidersAsync(_editorId, _objRef);
+                await this.JS.CreateMonacoEditorAsync(_editorId, this.MonacoEditorOptions);
+                await this.JS.RegisterMonacoProvidersAsync(_editorId, _objRef);
             }
-        }
-
-        private async Task OnSaveAsync()
-        {
-            this.FilterDescription.Code = await JS.GetMonacoValueAsync(_editorId);
-            this.AppState.FilterSettings.AddOrUpdateFilterDescription(this.FilterDescription);
-            this.ToasterService.ShowSuccess(message: "The filter has been saved.", icon: MatIconNames.Thumb_up);
-        }
-
-        private void SelectFilterDescription(FilterDescription filterDescription)
-        {
-            this.FilterDescription = new FilterDescriptionViewModel(filterDescription);
-            JS.SetMonacoValueAsync(_editorId, this.FilterDescription.Code);
         }
 
         private void CreateNewFilterDescription()
@@ -131,6 +114,49 @@ namespace OneDas.DataManagement.Explorer.Pages
                     ["theme"] = "vs-dark"
                 };
             }
+        }
+
+        #endregion
+
+        #region EventHandlers
+
+        private void OnFilterDescriptionPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FilterDescriptionViewModel.SampleRate))
+            {
+                this.MonacoService.SetSampleRate(this.FilterDescription.SampleRate);
+            }
+        }
+
+        private void OnFilterSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FilterSettingsViewModel.FilterDescriptions))
+                this.InvokeAsync(() => { this.StateHasChanged(); });
+        }
+
+        private void OnDiagnosticsUpdated(object sender, List<Diagnostic> diagnostics)
+        {
+            this.Diagnostics = diagnostics;
+            this.InvokeAsync(() => { this.StateHasChanged(); });
+
+            _ = this.JS.SetMonacoDiagnosticsAsync(_editorId, diagnostics);
+        }
+
+        #endregion
+
+        #region Commands
+
+        private async Task SaveAsync()
+        {
+            this.FilterDescription.Code = await JS.GetMonacoValueAsync(_editorId);
+            this.AppState.FilterSettings.AddOrUpdateFilterDescription(this.FilterDescription);
+            this.ToasterService.ShowSuccess(message: "The filter has been saved.", icon: MatIconNames.Thumb_up);
+        }
+
+        private async Task SelectFilterDescriptionAsync(FilterDescription filterDescription)
+        {
+            this.FilterDescription = new FilterDescriptionViewModel(filterDescription);
+            await JS.SetMonacoValueAsync(_editorId, this.FilterDescription.Code);
         }
 
         #endregion

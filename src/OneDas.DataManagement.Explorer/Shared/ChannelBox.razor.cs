@@ -17,15 +17,15 @@ namespace OneDas.DataManagement.Explorer.Shared
 		{
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(UserStateViewModel.SearchString))
+				if (e.PropertyName == nameof(UserState.SearchString))
 				{
 					this.InvokeAsync(() =>
 					{
-						_searchIcon = string.IsNullOrWhiteSpace(this.UserState.SearchString) ? MatIconNames.Search : MatIconNames.Close;
+                        _searchIcon = string.IsNullOrWhiteSpace(this.UserState.SearchString) ? MatIconNames.Search : MatIconNames.Close;
 						this.StateHasChanged();
 					});
 				}
-				else if (e.PropertyName == nameof(UserStateViewModel.ProjectContainer))
+				else if (e.PropertyName == nameof(UserState.ProjectContainer))
 				{
 					this.InvokeAsync(() =>
 					{
@@ -33,7 +33,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 						this.StateHasChanged();
 					});
 				}
-				else if (e.PropertyName == nameof(UserStateViewModel.ChannelGroup))
+				else if (e.PropertyName == nameof(UserState.ChannelGroup))
 				{
 					this.ChannelPage = 0;
 				}

@@ -17,21 +17,21 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             this.PropertyChanged = (sender, e) =>
             {
-                if (e.PropertyName == nameof(UserStateViewModel.ExportParameters))
+                if (e.PropertyName == nameof(UserState.ExportParameters))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
                 // for workaround
-                else if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
+                else if (e.PropertyName == nameof(UserState.DateTimeBegin))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
                 // for workaround
-                else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
+                else if (e.PropertyName == nameof(UserState.DateTimeEnd))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
-                else if (e.PropertyName == nameof(UserStateViewModel.SelectedDatasets))
+                else if (e.PropertyName == nameof(UserState.SelectedDatasets))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }

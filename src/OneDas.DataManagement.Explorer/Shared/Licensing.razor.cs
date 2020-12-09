@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
-using OneDas.DataManagement.Explorer.ViewModels;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
-        public UserStateViewModel UserState { get; set; }
+        public UserState UserState { get; set; }
 
         [Inject]
         public AuthenticationStateProvider AuthenticationStateProvider { get; set; }

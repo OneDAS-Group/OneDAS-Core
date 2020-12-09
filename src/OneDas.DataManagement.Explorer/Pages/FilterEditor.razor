@@ -3,7 +3,7 @@
 
 <div class="left-column">
     <div class="settings-box mat-elevation-z11">
-        <FilterDescriptionSettingsBox FilterDescription="this.FilterDescription" OnSaveAsync="this.OnSaveAsync" />
+        <FilterDescriptionSettingsBox FilterDescription="this.FilterDescription" OnSaveAsync="this.SaveAsync" />
     </div>
 </div>
 <div class="center-column monaco-editor-root-container">
@@ -24,7 +24,7 @@
     <div class="selected-channel-box mat-elevation-z11">
         @foreach (var filterDescription in this.AppState.FilterSettings.FilterDescriptions)
         {
-            <div @onclick="() => this.SelectFilterDescription(filterDescription)">@(filterDescription.Name) / @(filterDescription.Group)</div>
+            <div @onclick="async () => await this.SelectFilterDescriptionAsync(filterDescription)">@(filterDescription.Name) / @(filterDescription.Group)</div>
         }
     </div>
 </div>

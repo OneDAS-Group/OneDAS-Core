@@ -100,15 +100,15 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             this.PropertyChanged = async (sender, e) =>
             {
-                if (e.PropertyName == nameof(UserStateViewModel.DateTimeBegin))
+                if (e.PropertyName == nameof(UserState.DateTimeBegin))
                 {
                     await this.UpdateChart();
                 }
-                else if (e.PropertyName == nameof(UserStateViewModel.DateTimeEnd))
+                else if (e.PropertyName == nameof(UserState.DateTimeEnd))
                 {
                     await this.UpdateChart();
                 }
-                else if (e.PropertyName == nameof(UserStateViewModel.ProjectContainer))
+                else if (e.PropertyName == nameof(UserState.ProjectContainer))
                 {
                     await this.UpdateChart();
                 }

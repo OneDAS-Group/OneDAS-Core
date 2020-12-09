@@ -1,6 +1,4 @@
-﻿using OneDas.DataManagement.Explorer.ViewModels;
-
-namespace OneDas.DataManagement.Explorer.Pages
+﻿namespace OneDas.DataManagement.Explorer.Pages
 {
     public partial class Index
 	{
@@ -10,7 +8,7 @@ namespace OneDas.DataManagement.Explorer.Pages
 		{
 			this.PropertyChanged = (sender, e) =>
 			{
-				if (e.PropertyName == nameof(UserStateViewModel.ClientState))
+				if (e.PropertyName == nameof(UserState.ClientState))
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
