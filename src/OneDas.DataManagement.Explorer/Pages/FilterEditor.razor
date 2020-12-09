@@ -24,7 +24,7 @@
     <div class="selected-channel-box mat-elevation-z11">
         @foreach (var filterDescription in this.AppState.FilterSettings.FilterDescriptions)
         {
-            <div @onclick="async () => await this.SelectFilterDescriptionAsync(filterDescription)">@(filterDescription.Name) / @(filterDescription.Group)</div>
+            <div @onclick="() => this.FilterDescription = new FilterDescriptionViewModel(filterDescription)">@(filterDescription.Name) / @(filterDescription.Group)</div>
         }
     </div>
 </div>

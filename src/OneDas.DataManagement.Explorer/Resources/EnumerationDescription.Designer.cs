@@ -70,6 +70,33 @@ namespace OneDas.DataManagement.Explorer {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Single filter ähnelt.
+        /// </summary>
+        internal static string CodeType_Channel {
+            get {
+                return ResourceManager.GetString("CodeType_Channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Project filter ähnelt.
+        /// </summary>
+        internal static string CodeType_Project {
+            get {
+                return ResourceManager.GetString("CodeType_Project", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Shared code ähnelt.
+        /// </summary>
+        internal static string CodeType_Shared {
+            get {
+                return ResourceManager.GetString("CodeType_Shared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Index-based ähnelt.
         /// </summary>
         internal static string CsvRowIndexFormat_Index {

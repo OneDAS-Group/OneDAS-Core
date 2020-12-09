@@ -5,6 +5,13 @@ using System.Text.Json;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
+    public enum CodeType
+    {
+        Channel = 1,
+        Project = 2,
+        Shared = 3
+    }
+
     public enum CodeLanguage
     {
         CSharp = 1
@@ -12,7 +19,15 @@ namespace OneDas.DataManagement.Explorer.Core
 
     public record FilterDescription
     {
+        public CodeType CodeType { get; set; } = CodeType.Channel;
+
+        public CodeLanguage CodeLanguage { get; set; } = CodeLanguage.CSharp;
+
+        public string Code { get; set; } = string.Empty;
+
         public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        public bool IsPublic { get; set; }
 
         public string Name { get; set; } = string.Empty;
 
@@ -21,12 +36,6 @@ namespace OneDas.DataManagement.Explorer.Core
         public string Unit { get; set; } = string.Empty;
 
         public string SampleRate { get; set; }
-
-        public string Code { get; set; } = string.Empty;
-
-        public CodeLanguage CodeLanguage { get; set; } = CodeLanguage.CSharp;
-
-        public bool IsPublic { get; set; }
 
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     }

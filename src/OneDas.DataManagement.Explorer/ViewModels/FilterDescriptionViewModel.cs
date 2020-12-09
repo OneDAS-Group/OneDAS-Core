@@ -19,10 +19,41 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public FilterDescription Model { get; }
 
+        public CodeType CodeType
+        {
+            get
+            {
+                return this.Model.CodeType;
+            }
+            set
+            {
+                this.Model.CodeType = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public CodeLanguage CodeLanguage
+        {
+            get { return this.Model.CodeLanguage; }
+            set { this.Model.CodeLanguage = value; }
+        }
+
+        public string Code
+        {
+            get { return this.Model.Code; }
+            set { this.Model.Code = value; }
+        }
+
         public string Id 
         {
             get { return this.Model.Id; } 
             set { this.Model.Id = value; }
+        }
+
+        public bool IsPublic
+        {
+            get { return this.Model.IsPublic; }
+            set { this.Model.IsPublic = value; }
         }
 
         [IsValidName]
@@ -56,24 +87,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
                 this.Model.SampleRate = value;
                 this.RaisePropertyChanged();
             }
-        }
-
-        public string Code
-        {
-            get { return this.Model.Code; }
-            set { this.Model.Code = value; }
-        }
-
-        public CodeLanguage CodeLanguage
-        {
-            get { return this.Model.CodeLanguage; }
-            set { this.Model.CodeLanguage = value; }
-        }
-
-        public bool IsPublic
-        {
-            get { return this.Model.IsPublic; }
-            set { this.Model.IsPublic = value; }
         }
 
         #endregion

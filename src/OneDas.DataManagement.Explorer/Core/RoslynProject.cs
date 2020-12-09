@@ -49,7 +49,7 @@ namespace OneDas.DataManagement.Explorer.Core
             // database code
             var databaseCode = this.Workspace.AddDocument(project.Id, "DatabaseCode.cs", SourceText.From(string.Empty));
             _databaseCodeId = databaseCode.Id;
-            this.UpdateDatabaseCode(this.SampleRate);
+            this.UpdateDatabaseCode(_sampleRate);
 
             // code
             this.UseOnlyOnceDocument = this.Workspace.AddDocument(project.Id, "Code.cs", SourceText.From(defaultCode));
@@ -60,19 +60,6 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Properties
 
-        public string SampleRate
-        {
-            get
-            {
-                return _sampleRate;
-            }
-            set
-            {
-                _sampleRate = value;
-                this.UpdateDatabaseCode(_sampleRate);
-            }
-        }
-
         public AdhocWorkspace Workspace { get; init; }
 
         public Document UseOnlyOnceDocument { get; init; }
@@ -82,6 +69,21 @@ namespace OneDas.DataManagement.Explorer.Core
         #endregion
 
         #region Methods
+
+        public void SetValues(string code, string sampleRate)
+        {
+            // update code
+            Solution updatedSolution;
+
+            do
+            {
+                updatedSolution = this.Workspace.CurrentSolution.WithDocumentText(this.DocumentId, SourceText.From(code));
+            } while (!this.Workspace.TryApplyChanges(updatedSolution));
+
+            // sample rate
+            _sampleRate = sampleRate;
+            this.UpdateDatabaseCode(sampleRate);
+        }
 
         private void UpdateDatabaseCode(string sampleRate)
         {
@@ -167,7 +169,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private void OnDatabaseUpdated(object sender, OneDasDatabase database)
         {
-            this.UpdateDatabaseCode(this.SampleRate);
+            this.UpdateDatabaseCode(_sampleRate);
         }
 
         #endregion

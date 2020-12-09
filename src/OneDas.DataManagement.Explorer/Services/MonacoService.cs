@@ -49,8 +49,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public MonacoService(OneDasDatabaseManager databaseManager)
         {
-            // default code
-            this.DefaultCode =
+            this.DefaultChannelCode =
 $@"using System; 
                  
 namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
@@ -65,8 +64,43 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 }};
 ";
 
-            _completionProject = new RoslynProject(databaseManager, this.DefaultCode);
-            _diagnosticProject = new RoslynProject(databaseManager, this.DefaultCode);
+            this.DefaultProjectCode =
+$@"using System; 
+                 
+namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
+{{
+    class FilterProject
+    {{
+        public void AppliesTo()
+        {{
+            
+        }}
+
+        public void Filter(DateTime begin, DateTime end, string channel, double[] result)
+        {{
+            
+        }}
+    }}
+}};
+";
+
+            this.DefaultSharedCode =
+$@"using System; 
+                 
+namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
+{{
+    static class Shared
+    {{
+        public static void MySharedFunction(string myParameter1)
+        {{
+            
+        }}
+    }}
+}};
+";
+
+            _completionProject = new RoslynProject(databaseManager, this.DefaultChannelCode);
+            _diagnosticProject = new RoslynProject(databaseManager, this.DefaultChannelCode);
 
             var loggerFactory = LoggerFactory.Create(configure => { });
             var formattingOptions = new FormattingOptions();
@@ -80,7 +114,11 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 
         #region Properties
 
-        public string DefaultCode { get; init; }
+        public string DefaultChannelCode { get; init; }
+
+        public string DefaultProjectCode { get; init; }
+
+        public string DefaultSharedCode { get; init; }
 
         #endregion
 
@@ -168,10 +206,10 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
             this.OnDiagnosticsUpdated(diagnostics);
         }
 
-        public void SetSampleRate(string sampleRate)
+        public void SetValues(string code, string sampleRate)
         {
-            _completionProject.SampleRate = sampleRate;
-            _diagnosticProject.SampleRate = sampleRate;
+            _completionProject.SetValues(code, sampleRate);
+            _diagnosticProject.SetValues(code, sampleRate);
 
             _ = this.UpdateDiagnosticsAsync();
         }

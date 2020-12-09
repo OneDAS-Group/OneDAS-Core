@@ -53,7 +53,8 @@ namespace OneDas.DataManagement.Explorer.Pages
                 _filterDescription = value;
                 _filterDescription.PropertyChanged += this.OnFilterDescriptionPropertyChanged;
 
-                this.MonacoService.SetSampleRate(_filterDescription.SampleRate);
+                this.MonacoService.SetValues(_filterDescription.Code, _filterDescription.SampleRate);
+                _ = this.JS.SetMonacoValueAsync(_editorId, this.FilterDescription.Code);
             }
         }
 
@@ -70,7 +71,15 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         protected override void OnParametersSet()
         {
-            this.CreateNewFilterDescription();
+            this.FilterDescription = new FilterDescriptionViewModel(new FilterDescription()
+            {
+                Name = "NewFilter",
+                Group = this.UserIdService.User.Identity.Name,
+                Unit = "-",
+                SampleRate = this.UserState.SampleRateValues.FirstOrDefault(),
+                Code = this.MonacoService.DefaultChannelCode
+            });
+
             base.OnParametersSet();
 
             this.AppState.FilterSettings.PropertyChanged += this.OnFilterSettingsPropertyChanged;
@@ -84,35 +93,17 @@ namespace OneDas.DataManagement.Explorer.Pages
                 _objRef = DotNetObjectReference.Create(this.MonacoService);
                 _editorId = "1";
 
-                await this.JS.CreateMonacoEditorAsync(_editorId, this.MonacoEditorOptions);
-                await this.JS.RegisterMonacoProvidersAsync(_editorId, _objRef);
-            }
-        }
-
-        private void CreateNewFilterDescription()
-        {
-            this.FilterDescription = new FilterDescriptionViewModel(new FilterDescription()
-            {
-                Name = "NewFilter",
-                Group = this.UserIdService.User.Identity.Name,
-                Unit = "-",
-                SampleRate = this.UserState.SampleRateValues.FirstOrDefault(),
-                Code = this.MonacoService.DefaultCode
-            });
-        }
-
-        private Dictionary<string, object> MonacoEditorOptions
-        {
-            get
-            {
-                return new Dictionary<string, object>
+                var options = new Dictionary<string, object>
                 {
                     ["automaticLayout"] = true,
                     ["language"] = "csharp",
                     ["scrollBeyondLastLine"] = false,
-                    ["value"] = this.MonacoService.DefaultCode,
+                    ["value"] = this.FilterDescription.Code,
                     ["theme"] = "vs-dark"
                 };
+
+                await this.JS.CreateMonacoEditorAsync(_editorId, options);
+                await this.JS.RegisterMonacoProvidersAsync(_editorId, _objRef);
             }
         }
 
@@ -122,9 +113,23 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private void OnFilterDescriptionPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(FilterDescriptionViewModel.SampleRate))
+            if (e.PropertyName == nameof(FilterDescriptionViewModel.CodeType))
             {
-                this.MonacoService.SetSampleRate(this.FilterDescription.SampleRate);
+                this.FilterDescription.Code = this.FilterDescription.CodeType switch
+                {
+                    CodeType.Channel    => this.MonacoService.DefaultChannelCode,
+                    CodeType.Project    => this.MonacoService.DefaultProjectCode,
+                    CodeType.Shared     => this.MonacoService.DefaultSharedCode,
+                    _                   => throw new Exception($"The code type '{this.FilterDescription.CodeType}' is not supported.")
+                };
+
+                this.MonacoService.SetValues(this.FilterDescription.Code, this.FilterDescription.SampleRate);
+                _ = this.JS.SetMonacoValueAsync(_editorId, this.FilterDescription.Code);
+            }
+
+            else if (e.PropertyName == nameof(FilterDescriptionViewModel.SampleRate))
+            {
+                this.MonacoService.SetValues(this.FilterDescription.Code, this.FilterDescription.SampleRate);
             }
         }
 
@@ -148,15 +153,9 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private async Task SaveAsync()
         {
-            this.FilterDescription.Code = await JS.GetMonacoValueAsync(_editorId);
+            this.FilterDescription.Code = await this.JS.GetMonacoValueAsync(_editorId);
             this.AppState.FilterSettings.AddOrUpdateFilterDescription(this.FilterDescription);
             this.ToasterService.ShowSuccess(message: "The filter has been saved.", icon: MatIconNames.Thumb_up);
-        }
-
-        private async Task SelectFilterDescriptionAsync(FilterDescription filterDescription)
-        {
-            this.FilterDescription = new FilterDescriptionViewModel(filterDescription);
-            await JS.SetMonacoValueAsync(_editorId, this.FilterDescription.Code);
         }
 
         #endregion

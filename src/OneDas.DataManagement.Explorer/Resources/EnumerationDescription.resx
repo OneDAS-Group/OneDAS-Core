@@ -120,6 +120,15 @@
   <data name="CodeLanguage_CSharp" xml:space="preserve">
     <value>C#</value>
   </data>
+  <data name="CodeType_Channel" xml:space="preserve">
+    <value>Single filter</value>
+  </data>
+  <data name="CodeType_Project" xml:space="preserve">
+    <value>Project filter</value>
+  </data>
+  <data name="CodeType_Shared" xml:space="preserve">
+    <value>Shared code</value>
+  </data>
   <data name="CsvRowIndexFormat_Index" xml:space="preserve">
     <value>Index-based</value>
   </data>

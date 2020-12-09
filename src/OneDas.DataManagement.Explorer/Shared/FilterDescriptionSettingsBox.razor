@@ -4,30 +4,13 @@
     <DataAnnotationsValidator />
 
     <div>
-        <MatTextField class="settings-control"
-                      Label="Name"
-                      @bind-Value="this.FilterDescription.Name">
-        </MatTextField>
-
-        <div class="validation-message-for-settings-control">
-            <ValidationMessage For="@(() => this.FilterDescription.Name)" />
-        </div>
-
-        <MatTextField class="settings-control"
-                      Label="Group"
-                      ReadOnly="true"
-                      @bind-Value="this.FilterDescription.Group">
-        </MatTextField>
-
-        <MatTextField class="settings-control"
-                      Label="Unit"
-                      @bind-Value="this.FilterDescription.Unit">
-        </MatTextField>
-
         <MatSelectItem class="settings-control"
-                       Label="Sample Rate"
-                       @bind-Value="this.FilterDescription.SampleRate"
-                       Items="this.UserState.SampleRateValues">
+                       Label="Code Type"
+                       @bind-Value="this.FilterDescription.CodeType"
+                       Items="this.AppState.CodeTypeValues">
+            <ItemTemplate Context="value">
+                @Utilities.GetEnumLocalization(@value)
+            </ItemTemplate>
         </MatSelectItem>
 
         <MatSelectItem class="settings-control"
@@ -43,6 +26,38 @@
                      Label="Publish"
                      @bind-Value="this.FilterDescription.IsPublic">
         </MatCheckbox>
+
+        <MatTextField class="settings-control"
+                      Label="Name"
+                      @bind-Value="this.FilterDescription.Name">
+        </MatTextField>
+
+        <div class="validation-message-for-settings-control">
+            <ValidationMessage For="@(() => this.FilterDescription.Name)" />
+        </div>
+
+        @if (this.FilterDescription.CodeType == CodeType.Channel)
+        {
+            <MatTextField class="settings-control"
+                          Label="Group"
+                          ReadOnly="true"
+                          @bind-Value="this.FilterDescription.Group">
+            </MatTextField>
+
+            <MatTextField class="settings-control"
+                          Label="Unit"
+                          @bind-Value="this.FilterDescription.Unit">
+            </MatTextField>
+        }
+
+        @if (this.FilterDescription.CodeType == CodeType.Channel || this.FilterDescription.CodeType == CodeType.Project)
+        {
+            <MatSelectItem class="settings-control"
+                           Label="Sample Rate"
+                           @bind-Value="this.FilterDescription.SampleRate"
+                           Items="this.UserState.SampleRateValues">
+            </MatSelectItem>
+        }
     </div>
 
     <MatButton Class="w-100 mt-auto"

@@ -23,6 +23,7 @@ namespace OneDas.DataManagement.Explorer.Core
             this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
             this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
+            this.CodeTypeValues = Utilities.GetEnumValues<CodeType>();
             this.CodeLanguageValues = Utilities.GetEnumValues<CodeLanguage>();
             this.CsvRowIndexFormatValues = Utilities.GetEnumValues<CsvRowIndexFormat>();
             this.NewsPaper = NewsPaper.Load(Path.Combine(options.DataBaseFolderPath, "news.json"));
@@ -53,6 +54,8 @@ namespace OneDas.DataManagement.Explorer.Core
         #endregion
 
         #region Properties - Filter
+
+        public List<CodeType> CodeTypeValues { get; set; }
 
         public List<CodeLanguage> CodeLanguageValues { get; set; }
 
