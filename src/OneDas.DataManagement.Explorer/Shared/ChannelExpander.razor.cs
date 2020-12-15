@@ -75,10 +75,18 @@ namespace OneDas.DataManagement.Explorer.Shared
         private void OnUserStatePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(UserState.SampleRate))
-                this.InvokeAsync(() => { this.StateHasChanged(); });
+            {
+                this.InvokeAsync(() =>
+                {
+                    this.UpdateFilteredDatasets();
+                    this.StateHasChanged();
+                });
+            }
 
             else if (e.PropertyName == nameof(UserState.IsEditEnabled))
+            {
                 this.InvokeAsync(() => { this.StateHasChanged(); });
+            }
         }
 
         #endregion
