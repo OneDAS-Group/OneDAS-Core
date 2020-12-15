@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
+using NJsonSchema.Annotations;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
@@ -62,7 +64,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// Gets the specified project.
         /// </summary>
         /// <param name="projectId">The project identifier.</param>
-        /// <returns></returns>
         [HttpGet("{projectId}")]
         public ActionResult<Project> GetProject(string projectId)
         {
@@ -79,6 +80,39 @@ namespace OneDas.DataManagement.Explorer.Controllers
                     {
                         _logger.LogInformation($"{message} Done.");
                         return this.CreateProjectResponse(project, projectMeta);
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{message} {ex.GetFullMessage()}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Gets the specified project availability.
+        /// </summary>
+        /// <param name="projectId">The project identifier.</param>
+        /// <param name="begin">Start date.</param>
+        /// <param name="end">End date.</param>
+        [HttpGet("{projectId}/availability")]
+        public ActionResult<DataAvailabilityStatistics> GetProjectAvailability(string projectId,
+                                                                               [BindRequired][JsonSchemaDate] DateTime begin,
+                                                                               [BindRequired][JsonSchemaDate] DateTime end)
+        {
+            projectId = WebUtility.UrlDecode(projectId);
+
+            // log
+            var message = $"User '{_userIdService.GetUserId()}' requests availability of project '{projectId}' ...";
+            _logger.LogInformation(message);
+
+            try
+            {
+                return this.ProcessProjectId<DataAvailabilityStatistics>(projectId, message,
+                    (project, projectMeta) =>
+                    {
+                        _logger.LogInformation($"{message} Done.");
+                        return this.CreateDataAvailabilityResponse(project, begin, end);
                     });
             }
             catch (Exception ex)
@@ -302,6 +336,18 @@ namespace OneDas.DataManagement.Explorer.Controllers
             };
         }
 
+        private DataAvailabilityStatistics CreateDataAvailabilityResponse(ProjectInfo project, DateTime begin, DateTime end)
+        {
+            using var dataReader = _databaseManager.GetNativeDataReader(project.Id);
+            var statistics = dataReader.GetDataAvailabilityStatistics(project.Id, begin, end);
+
+            return new DataAvailabilityStatistics()
+            {
+                Granularity = (DataAvailabilityGranularity)statistics.Granularity,
+                Data = statistics.Data
+            };
+        }
+
         private Channel CreateChannelResponse(ChannelInfo channel, ChannelMetaInfo channelMeta)
         {
             return new Channel()
@@ -359,7 +405,19 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         #endregion
 
-        #region Records
+        #region Types
+
+        public enum DataAvailabilityGranularity
+        {
+            Day,
+            Month
+        }
+
+        public record DataAvailabilityStatistics
+        {
+            public DataAvailabilityGranularity Granularity { get; set; }
+            public int[] Data { get; set; }
+        }
 
         public record Project
         {
