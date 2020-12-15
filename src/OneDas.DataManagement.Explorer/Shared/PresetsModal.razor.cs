@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class Presets
+    public partial class PresetsModal
     {
         #region Properties
 

@@ -237,7 +237,7 @@ namespace OneDas.DataManagement.Extensibility
             var dateEnd = end.Date;
 
             int[] aggregatedData = default;
-            var granularity = DataAvailabilityGranularity.DayLevel;
+            var granularity = DataAvailabilityGranularity.Day;
             var totalDays = (int)(dateEnd - dateBegin).TotalDays;
 
             if (totalDays <= 365)
@@ -252,7 +252,7 @@ namespace OneDas.DataManagement.Extensibility
             }
             else
             {
-                granularity = DataAvailabilityGranularity.MonthLevel;
+                granularity = DataAvailabilityGranularity.Month;
 
                 var months = new DateTime[totalDays];
                 var datasets = new int[totalDays];

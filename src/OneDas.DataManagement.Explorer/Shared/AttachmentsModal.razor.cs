@@ -4,7 +4,7 @@ using System.IO;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class Attachments
+    public partial class AttachmentsModal
     {
         #region Properties
 

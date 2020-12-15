@@ -1,0 +1,32 @@
+﻿<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
+    <MatDialogTitle>Create new code file</MatDialogTitle>
+    <MatDialogContent>
+        <p>Browse code of other users and use it as template:</p>
+        <MatNavMenu>
+            @if (this.Owners != null && this.Owners.Any())
+            {
+                @foreach (var owner in this.Owners)
+                {
+                    <MatNavSubMenu>
+                        <MatNavSubMenuHeader>
+                            <MatNavItem AllowSelection="false"><MatIcon Icon="@MatIconNames.Person"></MatIcon>&nbsp; @owner</MatNavItem>
+                        </MatNavSubMenuHeader>
+                        <MatNavSubMenuList>
+                            @foreach (var filterDescription in this.GetFilterDescriptionsForOwner(owner))
+                            {
+                                <MatNavItem @onclick="() => this.Accept(filterDescription)"><MatIcon Icon="@Utilities.GetEnumIconName(filterDescription.CodeType)"></MatIcon>&nbsp; @filterDescription.Name</MatNavItem>
+                            }
+                        </MatNavSubMenuList>
+                    </MatNavSubMenu>
+                }
+            }
+            else
+            {
+                <MatSubtitle1>Sorry, no channel filters or shared code files are available yet.</MatSubtitle1>
+            }
+        </MatNavMenu>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="this.Cancel">Cancel</MatButton>
+    </MatDialogActions>
+</MatDialog>

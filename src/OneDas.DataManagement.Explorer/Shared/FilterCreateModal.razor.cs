@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OneDas.DataManagement.Explorer.Core;
+using System;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class LogBook
+    public partial class FilterCreateModal
     {
         #region Properties
-
-        [Inject]
-        public UserState UserState { get; set; }
 
         [Parameter]
         public bool IsOpen { get; set; }
@@ -16,9 +14,23 @@ namespace OneDas.DataManagement.Explorer.Shared
         [Parameter]
         public EventCallback<bool> IsOpenChanged { get; set; }
 
+        [Parameter]
+        public Action<CodeType> OnCodeTypeSelected { get; set; }
+
         #endregion
 
         #region Methods
+
+        private void Accept(CodeType codeType)
+        {
+            this.OnIsOpenChanged(false);
+            this.OnCodeTypeSelected?.Invoke(codeType);
+        }
+
+        private void Cancel()
+        {
+            this.OnIsOpenChanged(false);
+        }
 
         private void OnIsOpenChanged(bool value)
         {

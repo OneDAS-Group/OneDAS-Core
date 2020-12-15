@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class Licensing
+    public partial class LicensingModal
     {
         #region Properties
 

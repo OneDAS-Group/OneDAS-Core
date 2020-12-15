@@ -17,8 +17,15 @@ namespace OneDas.DataManagement.Explorer.Core
         CSharp = 1
     }
 
-    public record FilterDescription
+    public record FilterDescription()
     {
+        public FilterDescription(string owner) : this()
+        {
+            this.Owner = owner;
+        }
+
+        public String Owner { get; set; }
+
         public CodeType CodeType { get; set; } = CodeType.Channel;
 
         public CodeLanguage CodeLanguage { get; set; } = CodeLanguage.CSharp;
@@ -36,6 +43,8 @@ namespace OneDas.DataManagement.Explorer.Core
         public string Unit { get; set; } = string.Empty;
 
         public string SampleRate { get; set; }
+
+        public List<string> RequestedProjectIds { get; set; } = new List<string>() { "/IN_MEMORY/TEST/ACCESSIBLE" };
 
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     }

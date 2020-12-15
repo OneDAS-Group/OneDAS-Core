@@ -1,0 +1,15 @@
+﻿<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
+    <MatDialogTitle>Choose project(s)</MatDialogTitle>
+    <MatDialogContent>
+        <p>Select one or more projects you need access to.</p>
+
+        @foreach (var state in this.ProjectContainerStates)
+        {
+            <MatCheckbox @bind-Value="state.IsSelected" Label="@state.Id"></MatCheckbox>
+        }
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="this.OK" Outlined="true">OK</MatButton>
+        <MatButton OnClick="this.Cancel">Cancel</MatButton>
+    </MatDialogActions>
+</MatDialog>

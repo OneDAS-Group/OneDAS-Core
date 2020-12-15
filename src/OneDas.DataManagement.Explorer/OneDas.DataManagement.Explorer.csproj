@@ -47,14 +47,29 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Resources\EnumerationDescription.cs">
+      <DependentUpon>EnumerationDescription.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Resources\EnumerationDescription.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>EnumerationDescription.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\EnumerationIconName.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EnumerationIconName.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Resources\EnumerationIconName.resx">
+      <CustomToolNamespace>OneDas.DataManagement.Explorer</CustomToolNamespace>
+      <LastGenOutput>EnumerationIconName.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\EnumerationDescription.resx">
       <CustomToolNamespace>OneDas.DataManagement.Explorer</CustomToolNamespace>
       <LastGenOutput>EnumerationDescription.Designer.cs</LastGenOutput>

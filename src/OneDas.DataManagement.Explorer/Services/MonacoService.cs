@@ -17,6 +17,35 @@ namespace OneDas.DataManagement.Explorer.Services
 {
     public class MonacoService
     {
+        /// <summary>
+        /// Blazor plus Roslyn - strange behavior:
+        /// 
+        /// 1. it is required to divide completions and diagnostics in separate projects.
+        /// 2. Whenever anything except the code property changes (like the list of requested projects),
+        /// DO NOT UPDATE THE code in one of the previously mentioned projects. Only update the code 
+        /// of other attached files (like the database code file).
+        /// 
+        /// Both issues lead to DEADLOCKS in Blazor. Blazor tasks are chained (task.ContinueWith(...)), 
+        /// and suddenly one of these tasks never completes, and so does the rest of the chain. 
+        /// I have debugged through the SignalR/Blazor code and found only that one tasks never completes.
+        /// Whenever the Roslyn method Workspace.TryApplyChanges() is skipped (i.e. when the 'requested projects 
+        /// modal' windows closes and the code is updated), Blazor continues to work.
+        /// 
+        /// I have tried to add locks and use separate threads to execute the "TryApplyChanges" method but
+        /// nothing helps. Maybe a separate process helps. What could be the relation of Blazor and Roslyn?
+        /// Maybe Roslyn modifies the thread or task the status and then Blazor is unable to complete the 
+        /// current task? I thought the reason could be too many JS->Dotnet and Dotnet->JS calls, but 
+        /// commenting out event callbacks to break that callback ping pong did not change anything.
+        /// 
+        /// Conclusion:
+        ///     - Blazor stops executing user defined callbacks (i.e. "InvokeDotnetFromJS") because of tasks
+        ///     that never complete.
+        ///     - This is only ever caused when Roslyn's Workspace.TryApplyChanges() method is called.
+        ///     
+        /// Strange.
+        /// 
+        /// </summary>
+
         #region "Events"
 
         public event EventHandler<List<Diagnostic>> DiagnosticsUpdated;
@@ -56,12 +85,27 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 {{
     class FilterChannel
     {{
+        /// <summary>
+        /// This method is used to do the calculations for a single filter channel that can be based on the channels 
+        /// of one ore more available and accessible projects.
+        /// </summary>
+        /// <param name=""begin"">Enables the user to choose the right calibration factors for that time period.</param>
+        /// <param name=""end"">Enables the user to choose the right calibration factors for that time period.</param>
+        /// <param name=""database"">Contains a list of all preselected projects.</param>
+        /// <param name=""result"">The resulting double array with length matching the time period and sample rate.</param>
         public void Filter(DateTime begin, DateTime end, CodeGenerationDatabase database, double[] result)
         {{
+            /* This dataset has the same length as the result array. */
+            var t1 = database.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;
             
+            for (int i = 0; i < result.Length; i++)
+            {{
+                /* Example: Square each value. */
+                result[i] = Math.Pow(t1[i], 2);
+            }}
         }}
     }}
-}};
+}}
 ";
 
             this.DefaultProjectCode =
@@ -71,11 +115,13 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 {{
     class FilterProject
     {{
+        // to be implemented - not yet working
         public void AppliesTo()
         {{
             
         }}
 
+        // to be implemented - not yet working
         public void Filter(DateTime begin, DateTime end, string channel, double[] result)
         {{
             
@@ -89,18 +135,26 @@ $@"using System;
                  
 namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
 {{
-    static class Shared
+    /// <summary>
+    /// The purpose of this class is to provide shared code, i.e. predefined and 
+    /// resuable functions. By default this class is static but you may change it
+    /// to be instantiatable. Also, you may rename or create another class within
+    /// this code file. All files of kind 'shared' get linked to other 'normal'
+    /// code files to make their content available there.
+    /// </summary>
+    public static class Shared
     {{
         public static void MySharedFunction(string myParameter1)
         {{
-            
+            /* This is only an example function. You can define functions
+             * with any signature. */
         }}
     }}
 }};
 ";
 
-            _completionProject = new RoslynProject(databaseManager, this.DefaultChannelCode);
-            _diagnosticProject = new RoslynProject(databaseManager, this.DefaultChannelCode);
+            _completionProject = new RoslynProject("completion", databaseManager, this.DefaultChannelCode);
+            _diagnosticProject = new RoslynProject("diagnostics", databaseManager, this.DefaultChannelCode);
 
             var loggerFactory = LoggerFactory.Create(configure => { });
             var formattingOptions = new FormattingOptions();
@@ -127,14 +181,9 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
         [JSInvokable]
         public async Task<CompletionResponse> GetCompletionAsync(string code, CompletionRequest completionRequest)
         {
-            Solution updatedSolution;
+            _completionProject.UpdateCode(_completionProject.DocumentId, code);
 
-            do
-            {
-                updatedSolution = _completionProject.Workspace.CurrentSolution.WithDocumentText(_completionProject.DocumentId, SourceText.From(code));
-            } while (!_completionProject.Workspace.TryApplyChanges(updatedSolution));
-
-            var document = updatedSolution.GetDocument(_completionProject.DocumentId);
+            var document = _completionProject.Workspace.CurrentSolution.GetDocument(_completionProject.DocumentId);
             var completionResponse = await _completionService.Handle(completionRequest, document);
 
             return completionResponse;
@@ -152,14 +201,9 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
         [JSInvokable]
         public async Task<SignatureHelpResponse> GetSignatureHelpAsync(string code, SignatureHelpRequest signatureHelpRequest)
         {
-            Solution updatedSolution;
+            _completionProject.UpdateCode(_completionProject.DocumentId, code);
 
-            do
-            {
-                updatedSolution = _completionProject.Workspace.CurrentSolution.WithDocumentText(_completionProject.DocumentId, SourceText.From(code));
-            } while (!_completionProject.Workspace.TryApplyChanges(updatedSolution));
-
-            var document = updatedSolution.GetDocument(_completionProject.DocumentId);
+            var document = _completionProject.Workspace.CurrentSolution.GetDocument(_completionProject.DocumentId);
             var signatureHelpResponse = await _signatureService.Handle(signatureHelpRequest, document);
 
             return signatureHelpResponse;
@@ -177,17 +221,9 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
         [JSInvokable]
         public async Task UpdateDiagnosticsAsync(string code = null)
         {
-            Solution updatedSolution = _diagnosticProject.Workspace.CurrentSolution;
+            _diagnosticProject.UpdateCode(_diagnosticProject.DocumentId, code);
 
-            if (code is not null)
-            {
-                do
-                {
-                    updatedSolution = _diagnosticProject.Workspace.CurrentSolution.WithDocumentText(_diagnosticProject.DocumentId, SourceText.From(code));
-                } while (!_diagnosticProject.Workspace.TryApplyChanges(updatedSolution));
-            }          
-
-            var compilation = await updatedSolution.Projects.First().GetCompilationAsync();
+            var compilation = await _diagnosticProject.Workspace.CurrentSolution.Projects.First().GetCompilationAsync();
             var dotnetDiagnostics = compilation.GetDiagnostics();
 
             var diagnostics = dotnetDiagnostics.Select(current =>
@@ -203,13 +239,18 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
                 };
             }).ToList();
 
+            // remove warnings
+            diagnostics = diagnostics
+                .Where(diagnostic => diagnostic.Severity > 1)
+                .ToList();
+
             this.OnDiagnosticsUpdated(diagnostics);
         }
 
-        public void SetValues(string code, string sampleRate)
+        public void SetValues(string code, string sampleRate, List<string> requestedProjectIds)
         {
-            _completionProject.SetValues(code, sampleRate);
-            _diagnosticProject.SetValues(code, sampleRate);
+            _completionProject.SetValues(code, sampleRate, requestedProjectIds);
+            _diagnosticProject.SetValues(code, sampleRate, requestedProjectIds);
 
             _ = this.UpdateDiagnosticsAsync();
         }

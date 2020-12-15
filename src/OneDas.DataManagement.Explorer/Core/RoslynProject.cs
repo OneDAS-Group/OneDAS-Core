@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OneDasDatabase = OneDas.DataManagement.Database.OneDasDatabase;
@@ -13,7 +14,9 @@ namespace OneDas.DataManagement.Explorer.Core
     {
         #region Fields
 
+        private string _name;
         private string _sampleRate;
+        private List<string> _requestedProjectIds;
         private OneDasDatabaseManager _databaseManager;
         private DocumentId _databaseCodeId;
 
@@ -21,8 +24,9 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Constructors
 
-        public RoslynProject(OneDasDatabaseManager databaseManager, string defaultCode)
+        public RoslynProject(string name, OneDasDatabaseManager databaseManager, string defaultCode)
         {
+            _name = name;
             _databaseManager = databaseManager;
             _databaseManager.OnDatabaseUpdated += this.OnDatabaseUpdated;
             _sampleRate = "NaN";
@@ -49,7 +53,6 @@ namespace OneDas.DataManagement.Explorer.Core
             // database code
             var databaseCode = this.Workspace.AddDocument(project.Id, "DatabaseCode.cs", SourceText.From(string.Empty));
             _databaseCodeId = databaseCode.Id;
-            this.UpdateDatabaseCode(_sampleRate);
 
             // code
             this.UseOnlyOnceDocument = this.Workspace.AddDocument(project.Id, "Code.cs", SourceText.From(defaultCode));
@@ -70,22 +73,33 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Methods
 
-        public void SetValues(string code, string sampleRate)
+        public void UpdateCode(DocumentId documentId, string code)
         {
-            // update code
+            if (code == null)
+                return;
+
             Solution updatedSolution;
 
             do
             {
-                updatedSolution = this.Workspace.CurrentSolution.WithDocumentText(this.DocumentId, SourceText.From(code));
+                updatedSolution = this.Workspace.CurrentSolution.WithDocumentText(documentId, SourceText.From(code));
             } while (!this.Workspace.TryApplyChanges(updatedSolution));
-
-            // sample rate
-            _sampleRate = sampleRate;
-            this.UpdateDatabaseCode(sampleRate);
         }
 
-        private void UpdateDatabaseCode(string sampleRate)
+        public void SetValues(string code, string sampleRate, List<string> requestedProjectIds)
+        {
+            // update code
+            this.UpdateCode(this.DocumentId, code);
+
+            // database code
+            _sampleRate = sampleRate;
+            _requestedProjectIds = requestedProjectIds;
+
+            var databaseCode = this.GenerateDatabaseCode(sampleRate, requestedProjectIds);
+            this.UpdateCode(_databaseCodeId, databaseCode);
+        }
+
+        private string GenerateDatabaseCode(string sampleRate, List<string> requestedProjectIds)
         {
             // generate code
             var classStringBuilder = new StringBuilder();
@@ -98,7 +112,10 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (sampleRate is not null)
             {
-                foreach (var projectContainer in _databaseManager.Database.ProjectContainers)
+                var filteredProjectContainer = _databaseManager.Database.ProjectContainers
+                    .Where(projectContainer => requestedProjectIds.Contains(projectContainer.Id));
+
+                foreach (var projectContainer in filteredProjectContainer)
                 {
                     var addProject = false;
                     var projectStringBuilder = new StringBuilder();
@@ -147,15 +164,7 @@ namespace OneDas.DataManagement.Explorer.Core
             classStringBuilder.AppendLine($"}}");
 
             classStringBuilder.AppendLine($"}}");
-            var code = classStringBuilder.ToString();
-
-            // update code
-            Solution updatedSolution;
-
-            do
-            {
-                updatedSolution = this.Workspace.CurrentSolution.WithDocumentText(_databaseCodeId, SourceText.From(code));
-            } while (!this.Workspace.TryApplyChanges(updatedSolution));
+            return classStringBuilder.ToString();
         }
 
         public void Dispose()
@@ -169,7 +178,8 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private void OnDatabaseUpdated(object sender, OneDasDatabase database)
         {
-            this.UpdateDatabaseCode(_sampleRate);
+            var databaseCode = this.GenerateDatabaseCode(_sampleRate, _requestedProjectIds);
+            this.UpdateCode(_databaseCodeId, databaseCode);
         }
 
         #endregion

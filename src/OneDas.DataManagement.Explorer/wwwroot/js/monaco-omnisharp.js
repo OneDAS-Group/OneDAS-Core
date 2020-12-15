@@ -1,4 +1,4 @@
-﻿window.monacoEditors = [];
+window.monacoEditors = [];
 
 function CreateMonacoEditor(editorId, options) {
     var editor = monaco.editor.create(document.getElementById("monaco-editor"), options);
@@ -6,6 +6,13 @@ function CreateMonacoEditor(editorId, options) {
 }
 
 function RegisterMonacoProviders(editorId, dotnetHelper) {
+
+    // document semantic tokens provider
+    //window.monaco.languages.registerDocumentSemanticTokensProvider("csharp", {
+    //    provideDocumentSemanticTokens: (model, lastResultId) => {
+    //        return this.provideDocumentSemanticTokens(item, lastResultId, dotnetHelper)
+    //    }
+    //});
 
     // completionItem provider
     window.monaco.languages.registerCompletionItemProvider("csharp", {
@@ -95,6 +102,10 @@ function _getEditor(editorId)
  */
 
 let _lastCompletions;
+
+async function provideDocumentSemanticTokens(item, lastResultId, dotnetHelper) {
+    // todo: implement https://github.com/OmniSharp/omnisharp-vscode/blob/master/src/features/semanticTokensProvider.ts
+}
 
 async function provideCompletionItems(model, position, context, dotnetHelper) {
     

@@ -11,7 +11,6 @@ from urllib.parse import quote, urlunsplit
 from zipfile import ZipFile
 
 import aiohttp
-import requests
 from aiohttp.client import ClientResponseError
 
 

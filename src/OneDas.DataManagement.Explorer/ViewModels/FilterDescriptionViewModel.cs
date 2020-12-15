@@ -1,5 +1,6 @@
 ﻿using OneDas.DataManagement.Explorer.Core;
 using Prism.Mvvm;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
@@ -18,6 +19,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Properties
 
         public FilterDescription Model { get; }
+
+        public string Owner
+        {
+            get { return this.Model.Owner; }
+            set { this.Model.Owner = value; }
+        }
 
         public CodeType CodeType
         {
@@ -85,6 +92,19 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set 
             {
                 this.Model.SampleRate = value;
+                this.RaisePropertyChanged();
+            }
+        }
+
+        public List<string> RequestedProjectIds
+        {
+            get
+            {
+                return this.Model.RequestedProjectIds;
+            }
+            set
+            {
+                this.Model.RequestedProjectIds = value;
                 this.RaisePropertyChanged();
             }
         }

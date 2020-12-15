@@ -67,6 +67,9 @@
                         </MatTooltip>
                     }
                 </div>
+
+                <LogBookModal @bind-IsOpen="this.LogBookDialogIsOpen" />
+                <AttachmentsModal @bind-IsOpen="this.AttachmentsDialogIsOpen" />
             }
         </div>
     }
@@ -75,6 +78,3 @@
         <span class="small-text">no project selected</span>
     }
 </div>
-
-<LogBook @bind-IsOpen="this.LogBookDialogIsOpen" />
-<Attachments @bind-IsOpen="this.AttachmentsDialogIsOpen" />

@@ -1,0 +1,17 @@
+﻿@inject AppState AppState 
+
+<MatDialog @bind-IsOpen="@this.IsOpen" CanBeClosed="false">
+    <MatDialogTitle>Create new code file</MatDialogTitle>
+    <MatDialogContent>
+        <p>Which type of code file would you like to create?</p>
+        <MatNavMenu>
+            @foreach (var codeType in this.AppState.CodeTypeValues)
+            {
+                <MatNavItem OnClick="() => this.Accept(codeType)"><MatIcon Icon="@Utilities.GetEnumIconName(codeType)"></MatIcon>&nbsp; @Utilities.GetEnumLocalization(codeType)</MatNavItem>
+            }
+        </MatNavMenu>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="this.Cancel">Cancel</MatButton>
+    </MatDialogActions>
+</MatDialog>

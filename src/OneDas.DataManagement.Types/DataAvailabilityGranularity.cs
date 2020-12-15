@@ -2,7 +2,7 @@
 {
     public enum DataAvailabilityGranularity
     {
-        DayLevel,
-        MonthLevel
+        Day,
+        Month
     }
 }

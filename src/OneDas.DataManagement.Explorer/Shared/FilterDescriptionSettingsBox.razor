@@ -6,6 +6,7 @@
     <div>
         <MatSelectItem class="settings-control"
                        Label="Code Type"
+                       Disabled="true"
                        @bind-Value="this.FilterDescription.CodeType"
                        Items="this.AppState.CodeTypeValues">
             <ItemTemplate Context="value">
@@ -58,9 +59,27 @@
                            Items="this.UserState.SampleRateValues">
             </MatSelectItem>
         }
+
+        <div class="configuration-panel mt-auto">
+            <div class="flex-row">
+                <div class="configuration-panel-hover">
+                    <div class="icon-button" @onclick="this.OpenFilterProjectRequestDialog">
+                        @this.FilterDescription.RequestedProjectIds.Count
+                        @if (this.FilterDescription.RequestedProjectIds.Count == 1)
+                        {
+                            <MatSubtitle2 class="clear-margin">Project</MatSubtitle2>
+                        }
+                        else
+                        {
+                            <MatSubtitle2 class="clear-margin">Projects</MatSubtitle2>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <MatButton Class="w-100 mt-auto"
+    <MatButton Class="w-100"
                Icon="@MatIconNames.Save"
                Outlined="true"
                Type="submit"
@@ -68,3 +87,9 @@
     </MatButton>
 
 </EditForm>
+
+<!-- Should be outside the form, otherwise there will come the following error:
+ MatBlazor.MatCheckbox`1[System.Boolean] requires a value for the 'ValueExpression' parameter. Normally this is provided automatically when using 'bind-Value'. -->
+<FilterProjectRequestModal OnProjectIdsSelected="this.SelectProjectIds"
+                           @bind-IsOpen="this.FilterProjectRequestDialogIsOpen"
+                           SelectedProjectIds="this.FilterDescription.RequestedProjectIds" />

@@ -150,7 +150,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
                 switch (statistics.Granularity)
                 {
-                    case DataAvailabilityGranularity.DayLevel:
+                    case DataAvailabilityGranularity.Day:
 
                         axis.Time.Unit = TimeMeasurement.Day;
                         var dateTimeBegin1 = this.UserState.DateTimeBegin.Date;
@@ -164,7 +164,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
                         break;
 
-                    case DataAvailabilityGranularity.MonthLevel:
+                    case DataAvailabilityGranularity.Month:
 
                         axis.Time.Unit = TimeMeasurement.Month;
                         var dateTimeBegin2 = this.UserState.DateTimeBegin.Date;

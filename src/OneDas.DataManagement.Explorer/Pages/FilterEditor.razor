@@ -1,30 +1,86 @@
 ﻿@page "/filter-editor"
 @inherits UserStateComponentBase
 
-<div class="left-column">
-    <div class="settings-box mat-elevation-z11">
-        <FilterDescriptionSettingsBox FilterDescription="this.FilterDescription" OnSaveAsync="this.SaveAsync" />
-    </div>
-</div>
-<div class="center-column monaco-editor-root-container">
-    <div class="monaco-box mat-elevation-z11">
-        <div id="monaco-editor" class="monaco-editor-container"></div>
-    </div>
-    <div class="diagnostics-box mat-elevation-z11">
-        @if (this.Diagnostics is not null)
-        {
-            @foreach (var diagnostic in this.Diagnostics)
-            {
-                <div>(@((diagnostic.Start.Line + 1) + ", " + (diagnostic.Start.Character + 1))): @diagnostic.Message</div>
-            }
-        }
-    </div>
-</div>
-<div class="right-column">
-    <div class="selected-channel-box mat-elevation-z11">
-        @foreach (var filterDescription in this.AppState.FilterSettings.FilterDescriptions)
-        {
-            <div @onclick="() => this.FilterDescription = new FilterDescriptionViewModel(filterDescription)">@(filterDescription.Name) / @(filterDescription.Group)</div>
-        }
-    </div>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div class="left-column">
+            <div class="settings-box mat-elevation-z11">
+                <FilterDescriptionSettingsBox @ref="this.FilterDescriptionSettingsBox" FilterDescription="this.FilterDescription" OnSaveAsync="this.AddFilterDescription" />
+
+                <div class="configuration-panel">
+
+                    <div class="flex-row">
+                        <div class="configuration-panel-hover">
+                            <div class="icon-button" @onclick="this.OpenGalleryDialog">
+                                <i class="fas fa-code"></i>
+                                <MatSubtitle2 class="clear-margin">Gallery</MatSubtitle2>
+                            </div>
+                        </div>
+
+                        <div class="configuration-panel-hover">
+                            <div class="icon-button" @onclick="this.OpenFilterCreateDialog">
+                                <i class="fas fa-plus"></i>
+                                <MatSubtitle2 class="clear-margin">New</MatSubtitle2>
+                            </div>
+                        </div>
+
+                        <div class="configuration-panel-hover">
+                            <div class="icon-button" @onclick="this.OpenFilterDeleteDialog">
+                                <i class="fas fa-minus"></i>
+                                <MatSubtitle2 class="clear-margin">Delete</MatSubtitle2>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <FilterGallery @bind-IsOpen="this.FilterGalleryIsOpen" OnFilterDescriptionSelected="this.CopyFilterDescription"/>
+            <FilterCreateModal @bind-IsOpen="this.FilterCreateDialogIsOpen" OnCodeTypeSelected="codeType => this.CreateFilterDescription(codeType, selectProjects: true)" />
+            <FilterDeleteModal @bind-IsOpen="this.FilterDeleteDialogIsOpen" OnDelete="this.DeleteFilterDescription" />
+        </div>
+        <div class="center-column monaco-editor-root-container">
+            <div class="monaco-box mat-elevation-z11">
+                <div id="monaco-editor" class="monaco-editor-container"></div>
+            </div>
+            <div class="diagnostics-box mat-elevation-z11">
+                @if (this.Diagnostics is not null)
+                {
+                    @foreach (var diagnostic in this.Diagnostics)
+                    {
+                        <div>(@((diagnostic.Start.Line + 1) + ", " + (diagnostic.Start.Character + 1))): @diagnostic.Message</div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="right-column">
+            <div class="selected-channel-box mat-elevation-z11">
+                @if (this.FilterDescriptions != null && this.FilterDescriptions.Any())
+                {
+                    <MatNavMenu>
+                        @foreach (var filterDescription in this.FilterDescriptions)
+                        {
+                            <div @onclick="() => this.FilterDescription = filterDescription">
+                                <MatNavItem>
+                                    <MatIcon Icon="@Utilities.GetEnumIconName(filterDescription.CodeType)"></MatIcon>&nbsp; @filterDescription.Name
+                                </MatNavItem>
+                            </div>
+                        }
+                    </MatNavMenu>
+                }
+                else
+                {
+                    <div class="flex-centered h-100">
+                        <MatSubtitle1>You have no filters created yet.</MatSubtitle1>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        You need to log in to access this page.
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private FilterDescriptionSettingsBox FilterDescriptionSettingsBox { get; set; }
+} 

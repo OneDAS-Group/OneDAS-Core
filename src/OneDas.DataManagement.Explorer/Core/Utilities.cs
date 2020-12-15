@@ -51,6 +51,11 @@ namespace OneDas.DataManagement.Explorer.Core
             return EnumerationDescription.ResourceManager.GetString(enumValue.GetType().Name + "_" + enumValue.ToString());
         }
 
+        public static string GetEnumIconName(Enum enumValue)
+        {
+            return EnumerationIconName.ResourceManager.GetString(enumValue.GetType().Name + "_" + enumValue.ToString());
+        }
+
         public static List<T> GetEnumValues<T>()
         {
             return Enum.GetValues(typeof(T)).Cast<T>().ToList();

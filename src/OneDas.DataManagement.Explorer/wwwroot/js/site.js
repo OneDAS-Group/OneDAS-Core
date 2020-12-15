@@ -48,7 +48,6 @@ async function UpdateChart(userState, chartEntries, start, end, count, dt, begin
 
             var chartEntry = chartEntries[i];
             var channelData = Array(count);
-            var offset = 0
 
             var channelPathParts = chartEntry.path.split("/");
             var projectId = encodeURIComponent('/' + channelPathParts[1] + '/' + channelPathParts[2] + '/' + channelPathParts[3]);

@@ -889,6 +889,12 @@ app {
     justify-content: space-around;
 }
 
+.flex-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .align-self-end {
     align-self: end;
 }
@@ -920,12 +926,6 @@ app {
 
 .mb-auto {
     margin-bottom: auto;
-}
-
-.flex-centered {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #blazor-error-ui {

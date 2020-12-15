@@ -1,8 +1,5 @@
-﻿using System.Runtime.Serialization;
-
-namespace OneDas.DataManagement
+﻿namespace OneDas.DataManagement
 {
-    [DataContract]
     public class DataAvailabilityStatistics
     {
         public DataAvailabilityStatistics(DataAvailabilityGranularity granularity, int[] data)
@@ -11,10 +8,8 @@ namespace OneDas.DataManagement
             this.Data = data;
         }
 
-        [DataMember]
         public DataAvailabilityGranularity Granularity { get; private set; }
 
-        [DataMember]
         public int[] Data { get; private set; }
     }
 }

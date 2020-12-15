@@ -355,6 +355,7 @@ namespace OneDas.DataManagement
             // add additional data reader
             types.Add(typeof(HdfDataReader));
             types.Add(typeof(InMemoryDataReader));
+            types.Add(typeof(FilterDataReader));
 
             // get ID for each extension
             foreach (var type in types)
