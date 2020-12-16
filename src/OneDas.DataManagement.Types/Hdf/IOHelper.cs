@@ -333,7 +333,7 @@ namespace OneDas.DataManagement.Hdf
 
                     returnValue = intPtrSet.Select(x =>
                     {
-                        string result = Marshal.PtrToStringAnsi(x);
+                        string result = Marshal.PtrToStringUTF8(x);
                         H5.free_memory(x);
                         return result;
                     }).Cast<T>().ToArray();
@@ -452,7 +452,7 @@ namespace OneDas.DataManagement.Hdf
                 }
                 else if (elementType == typeof(string))
                 {
-                    IntPtr[] intPtrSet = valueSet.Cast<string>().Select(x => Marshal.StringToHGlobalAnsi(x)).ToArray();
+                    IntPtr[] intPtrSet = valueSet.Cast<string>().Select(x => Marshal.StringToHGlobalAnsi(x)).ToArray(); // utf8 ?
 
                     valueSetPointer = Marshal.AllocHGlobal(byteLength);
                     Marshal.Copy(intPtrSet, 0, valueSetPointer, intPtrSet.Count());
