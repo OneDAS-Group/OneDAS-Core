@@ -24,17 +24,6 @@ namespace OneDas.DataManagement.Explorer.Services
 {
     public class DataService
     {
-        #region Records
-
-        public record ProjectSettings
-        {
-            public SparseProjectInfo Project { get; init; }
-            public DataReaderExtensionBase NativeDataReader { get; init; }
-            public DataReaderExtensionBase AggregationDataReader { get; init; }
-        }
-
-        #endregion
-
         #region Fields
 
         private ILogger _logger;
@@ -120,17 +109,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     foreach (var sparseProject in sparseProjects)
                     {
-                        using var nativeDataReader = _databaseManager.GetNativeDataReader(sparseProject.Id);
-                        using var aggregationDataReader = _databaseManager.GetAggregationDataReader();
-
-                        var projectSettings = new ProjectSettings()
-                        {
-                            Project = sparseProject,
-                            AggregationDataReader = aggregationDataReader,
-                            NativeDataReader = nativeDataReader
-                        };
-
-                        this.WriteZipFileProjectEntry(zipArchive, exportParameters, projectSettings, cancellationToken);
+                        this.WriteZipFileProjectEntry(zipArchive, exportParameters, sparseProject, cancellationToken);
                     }
                 }
                 catch (Exception ex)
@@ -147,10 +126,10 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private void WriteZipFileProjectEntry(ZipArchive zipArchive,
                                               ExportParameters exportParameters,
-                                              ProjectSettings projectSettings,
+                                              SparseProjectInfo sparseProject,
                                               CancellationToken cancellationToken)
         {
-            var channelDescriptionSet = projectSettings.Project.ToChannelDescriptions();
+            var channelDescriptionSet = sparseProject.ToChannelDescriptions();
             var singleFile = exportParameters.FileGranularity == FileGranularity.SingleFile;
 
             TimeSpan filePeriod;
@@ -215,18 +194,18 @@ namespace OneDas.DataManagement.Explorer.Services
             var customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS Explorer", CustomMetadataEntryLevel.File));
 
-            if (!string.IsNullOrWhiteSpace(projectSettings.Project.License.FileMessage))
-                customMetadataEntrySet.Add(new CustomMetadataEntry("license", projectSettings.Project.License.FileMessage, CustomMetadataEntryLevel.Project));
+            if (!string.IsNullOrWhiteSpace(sparseProject.License.FileMessage))
+                customMetadataEntrySet.Add(new CustomMetadataEntry("license", sparseProject.License.FileMessage, CustomMetadataEntryLevel.Project));
 
             // initialize data writer
-            var projectName_splitted = projectSettings.Project.Id.Split('/');
+            var projectName_splitted = sparseProject.Id.Split('/');
             var dataWriterContext = new DataWriterContext("OneDAS Explorer", directoryPath, new OneDasProjectDescription(Guid.Empty, 0, projectName_splitted[1], projectName_splitted[2], projectName_splitted[3]), customMetadataEntrySet);
             dataWriter.Configure(dataWriterContext, channelDescriptionSet);
 
             try
             {
                 // create temp files
-                this.CreateFiles(dataWriter, exportParameters, projectSettings, cancellationToken);
+                this.CreateFiles(dataWriter, exportParameters, sparseProject, cancellationToken);
                 dataWriter.Dispose();
 
                 // write zip archive entries
@@ -258,73 +237,59 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private void CreateFiles(DataWriterExtensionLogicBase dataWriter,
                                  ExportParameters exportParameters,
-                                 ProjectSettings projectSettings,
+                                 SparseProjectInfo sparseProject,
                                  CancellationToken cancellationToken)
         {
-#warning: To handle native and aggregated datasets individually will probably lead to strange effects for data writers. Check this.
+            var datasets = sparseProject.Channels.SelectMany(channel => channel.Datasets);
+            var registrationToDatasetsMap = new Dictionary<DataReaderRegistration, List<DatasetInfo>>();
 
-            var datasets = projectSettings.Project.Channels.SelectMany(channel => channel.Datasets);
-            var nativeDatasets = datasets.Where(dataset => dataset.IsNative).ToList();
-            var aggregatedDatasets = datasets.Where(dataset => !dataset.IsNative).ToList();
-            var currentMode = string.Empty;
+            foreach (var dataset in datasets)
+            {
+                if (!registrationToDatasetsMap.ContainsKey(dataset.Registration))
+                    registrationToDatasetsMap[dataset.Registration] = new List<DatasetInfo>();
+
+                registrationToDatasetsMap[dataset.Registration].Add(dataset);
+            }
 
             var progressHandler = (EventHandler<double>)((sender, e) =>
             {
-                this.OnProgress(new ProgressUpdatedEventArgs(e, $"Loading {currentMode} data ..."));
+                this.OnProgress(new ProgressUpdatedEventArgs(e, $"Loading data ..."));
             });
 
-            // native
-            currentMode = "native";
-
-            if (nativeDatasets.Any())
+            foreach (var entry in registrationToDatasetsMap)
             {
-                var reader = projectSettings.NativeDataReader;
-                reader.Progress.ProgressChanged += progressHandler;
-
-                try
+                if (entry.Value.Any())
                 {
-                    foreach (var progressRecord in reader.Read(nativeDatasets, exportParameters.Begin, exportParameters.End, _blockSizeLimit, cancellationToken))
+                    var registration = entry.Key;
+                    var dataReader = _databaseManager.GetDataReader(registration);
+                    dataReader.Progress.ProgressChanged += progressHandler;
+
+                    var applyStatus = dataReader.ApplyStatus;
+
+                    try
                     {
-                        this.ProcessData(dataWriter, progressRecord);
+                        foreach (var progressRecord in dataReader.Read(entry.Value, exportParameters.Begin, exportParameters.End, _blockSizeLimit, cancellationToken))
+                        {
+                            this.ProcessData(dataWriter, progressRecord, applyStatus);
+                        }
                     }
-                }
-                finally
-                {
-                    reader.Progress.ProgressChanged -= progressHandler;
-                }
-            }
-
-            // aggregated
-            currentMode = "aggregated";
-
-            if (aggregatedDatasets.Any())
-            {
-                var reader = projectSettings.AggregationDataReader;
-                reader.Progress.ProgressChanged += progressHandler;
-
-                try
-                {
-                    foreach (var progressRecord in reader.Read(aggregatedDatasets, exportParameters.Begin, exportParameters.End, _blockSizeLimit, cancellationToken))
+                    finally
                     {
-                        this.ProcessData(dataWriter, progressRecord);
+                        dataReader.Progress.ProgressChanged -= progressHandler;
                     }
-                }
-                finally
-                {
-                    reader.Progress.ProgressChanged -= progressHandler;
                 }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        private void ProcessData(DataWriterExtensionLogicBase dataWriter, DataReaderProgressRecord progressRecord)
+        private void ProcessData(DataWriterExtensionLogicBase dataWriter, DataReaderProgressRecord progressRecord, bool applyStatus)
         {
             var buffers = progressRecord.DatasetToRecordMap.Values.Select(dataRecord =>
             {
                 double[] data;
 
-                if (progressRecord.DatasetToRecordMap.Keys.First().IsNative)
+                if (applyStatus)
                     data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
                 else
                     data = (double[])dataRecord.Dataset;

@@ -9,7 +9,7 @@ namespace OneDas.DataManagement.Database
         public OneDasDatabaseConfig()
         {
             this.AggregationDataReaderRootPath = "";
-            this.RootPathToDataReaderIdMap = new Dictionary<string, string>();
+            this.DataReaderRegistrations = new List<DataReaderRegistration>();
         }
 
         #endregion
@@ -18,7 +18,7 @@ namespace OneDas.DataManagement.Database
 
         public string AggregationDataReaderRootPath { get; set; }
 
-        public Dictionary<string, string> RootPathToDataReaderIdMap { get; set; }
+        public List<DataReaderRegistration> DataReaderRegistrations { get; set; }
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace OneDas.DataManagement.Database
 
         public void Initialize()
         {
-            this.RootPathToDataReaderIdMap[":memory:"] = "OneDas.InMemory";
+            //this.DataReaderRegistrations[":memory:"] = "OneDas.InMemory";
         }
 
         #endregion

@@ -371,8 +371,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             return new Dataset()
             {
                 Id = dataset.Id,
-                DataType = dataset.DataType,
-                IsNative = dataset.IsNative
+                DataType = dataset.DataType
             };
         }
 
@@ -447,7 +446,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
         {
             public string Id { get; set; }
             public OneDasDataType DataType { get; set; }
-            public bool IsNative { get; set; }
         }
 
         #endregion

@@ -17,9 +17,9 @@ namespace OneDas.DataManagement.Extensions
     {
         #region Constructors
 
-        public FilterDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
+        public FilterDataReader(DataReaderRegistration registration, ILogger logger) : base(registration, logger)
         {
-            //
+            this.ApplyStatus = false;
         }
 
         #endregion
@@ -66,8 +66,7 @@ namespace OneDas.DataManagement.Extensions
                     {
                         new DatasetInfo(filterDescription.SampleRate, channel)
                         {
-                            DataType = OneDasDataType.FLOAT64,
-                            IsNative = true
+                            DataType = OneDasDataType.FLOAT64
                         }
                     };
 

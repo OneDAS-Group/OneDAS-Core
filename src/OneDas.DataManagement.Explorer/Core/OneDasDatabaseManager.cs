@@ -1,4 +1,4 @@
-﻿using GraphQL.Utilities;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Services;
@@ -43,8 +43,8 @@ namespace OneDas.DataManagement
         public record DatabaseManagerState
         {
             public OneDasDatabase Database { get; init; }
-            public Dictionary<string, Type> RootPathToDataReaderTypeMap { get; init; }
-            public Dictionary<string, List<ProjectInfo>> RootPathToProjectsMap { get; init; }
+            public Dictionary<DataReaderRegistration, Type> RegistrationToDataReaderTypeMap { get; init; }
+            public Dictionary<DataReaderRegistration, List<ProjectInfo>> RegistrationToProjectsMap { get; init; }
         }
 
         #endregion
@@ -144,16 +144,25 @@ namespace OneDas.DataManagement
             var database = new OneDasDatabase();
 
             // create new empty projects map
-            var rootPathToProjectsMap = new Dictionary<string, List<ProjectInfo>>();
+            var registrationToProjectsMap = new Dictionary<DataReaderRegistration, List<ProjectInfo>>();
 
             // load data readers
-            var rootPathToDataReaderTypeMap = this.LoadDataReaders(this.Config.RootPathToDataReaderIdMap);
+            var registrationToDataReaderTypeMap = this.LoadDataReaders(this.Config.DataReaderRegistrations);
+
+            // register aggregation data reader
+            var registration = new DataReaderRegistration()
+            {
+                DataReaderId = Guid.NewGuid().ToString(),
+                RootPath = _folderPath
+            };
+
+            registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);
 
             // instantiate data readers
-            using var aggregationDataReader = this.GetAggregationDataReader(rootPathToProjectsMap);
+            using var aggregationDataReader = this.GetDataReader(registration, registrationToProjectsMap);
 
-            var dataReaders = rootPathToDataReaderTypeMap
-                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, rootPathToProjectsMap))
+            var dataReaders = registrationToDataReaderTypeMap
+                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, registrationToProjectsMap))
                                 .Concat(new DataReaderExtensionBase[] { aggregationDataReader })
                                 .ToList();
 
@@ -202,17 +211,6 @@ namespace OneDas.DataManagement
                         // get up-to-date project from data reader
                         var project = dataReader.GetProject(projectName);
 
-                        // if data reader is for aggregation data, update dataset`s flag
-                        if (!isNativeDataReader)
-                        {
-                            var datasets = project.Channels.SelectMany(channel => channel.Datasets).ToList();
-
-                            foreach (var dataset in datasets)
-                            {
-                                dataset.IsNative = false;
-                            }
-                        }
-
                         //
                         container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
                     }
@@ -246,40 +244,24 @@ namespace OneDas.DataManagement
             this.State = new DatabaseManagerState()
             {
                 Database = database,
-                RootPathToProjectsMap = rootPathToProjectsMap,
-                RootPathToDataReaderTypeMap = rootPathToDataReaderTypeMap
+                RegistrationToProjectsMap = registrationToProjectsMap,
+                RegistrationToDataReaderTypeMap = registrationToDataReaderTypeMap
             };
 
             this.OnDatabaseUpdated?.Invoke(this, database);
         }
 
-        public DataReaderExtensionBase GetAggregationDataReader(
-           Dictionary<string, List<ProjectInfo>> rootPathToProjectsMap = null)
+        public DataReaderExtensionBase GetDataReader(
+            DataReaderRegistration registration,
+            Dictionary<DataReaderRegistration, List<ProjectInfo>> registrationToProjectsMap = null)
         {
-            var rootPath = string.IsNullOrWhiteSpace(this.Config.AggregationDataReaderRootPath)
-                ? _folderPath
-                : this.Config.AggregationDataReaderRootPath;
+            if (registrationToProjectsMap == null)
+                registrationToProjectsMap = this.State.RegistrationToProjectsMap;
 
-            if (rootPathToProjectsMap == null)
-                rootPathToProjectsMap = this.State.RootPathToProjectsMap;
-
-            var dataReader = (HdfDataReader)this.InstantiateDataReader(rootPath, typeof(HdfDataReader), rootPathToProjectsMap);
-
-            return dataReader;
-        }
-
-        public DataReaderExtensionBase GetNativeDataReader(
-            string projectId)
-        {
-            var container = this.State.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
-
-            if (container == null)
-                throw new KeyNotFoundException("The requested project could not be found.");
-
-            if (!this.State.RootPathToDataReaderTypeMap.TryGetValue(container.RootPath, out var dataReaderType))
+            if (!this.State.RegistrationToDataReaderTypeMap.TryGetValue(registration, out var dataReaderType))
                 throw new KeyNotFoundException("The requested data reader could not be found.");
 
-            return this.InstantiateDataReader(container.RootPath, dataReaderType, this.State.RootPathToProjectsMap);
+            return this.InstantiateDataReader(registration, dataReaderType, registrationToProjectsMap);
         }
 
         public void SaveProjectMeta(ProjectMetaInfo projectMeta)
@@ -298,21 +280,22 @@ namespace OneDas.DataManagement
         }
 
         private DataReaderExtensionBase InstantiateDataReader(
-            string rootPath, 
-            Type type, 
-            Dictionary<string, List<ProjectInfo>> rootPathToProjectsMap)
+            DataReaderRegistration registration, Type type,
+            Dictionary<DataReaderRegistration, List<ProjectInfo>> registrationToProjectsMap)
         {
-            var logger = _loggerFactory.CreateLogger(rootPath);
-            var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, rootPath, logger);
+            var logger = _loggerFactory.CreateLogger(registration.RootPath);
+            var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, registration, logger);
 
+            // special case checks
             if (type == typeof(HdfDataReader))
             {
                 var fileAccessManger = _serviceProvider.GetRequiredService<FileAccessManager>();
                 ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
+                ((HdfDataReader)dataReader).ApplyStatus = false;
             }
 
             // initialize projects property
-            if (rootPathToProjectsMap.TryGetValue(rootPath, out var value))
+            if (registrationToProjectsMap.TryGetValue(registration, out var value))
             {
                 dataReader.InitializeProjects(value);
             }
@@ -320,7 +303,7 @@ namespace OneDas.DataManagement
             {
                 _logger.LogInformation($"Loading {dataReader.RootPath} ...");
                 dataReader.InitializeProjects();
-                rootPathToProjectsMap[rootPath] = dataReader.Projects;
+                registrationToProjectsMap[registration] = dataReader.Projects;
             }
 
             return dataReader;
@@ -331,7 +314,7 @@ namespace OneDas.DataManagement
             return Path.Combine(_folderPath, "META", $"{projectName.TrimStart('/').Replace('/', '_')}.json");
         }
 
-        private Dictionary<string, Type> LoadDataReaders(Dictionary<string, string> rootPathToDataReaderIdMap)
+        private Dictionary<DataReaderRegistration, Type> LoadDataReaders(List<DataReaderRegistration> dataReaderRegistrations)
         {
             var extensionDirectoryPath = Path.Combine(_folderPath, "EXTENSION");
 
@@ -365,13 +348,10 @@ namespace OneDas.DataManagement
             }
 
             // return root path to type map
-            return rootPathToDataReaderIdMap.ToDictionary(entry => entry.Key, entry =>
+            return dataReaderRegistrations.ToDictionary(registration => registration, registration =>
             {
-                var rootPath = entry.Key;
-                var dataReaderId = entry.Value;
-
-                if (!idToDataReaderTypeMap.TryGetValue(dataReaderId, out var type))
-                    throw new Exception($"No data reader extension with ID '{dataReaderId}' could be found.");
+                if (!idToDataReaderTypeMap.TryGetValue(registration.DataReaderId, out var type))
+                    throw new Exception($"No data reader extension with ID '{registration.DataReaderId}' could be found.");
 
                 return type;
             });

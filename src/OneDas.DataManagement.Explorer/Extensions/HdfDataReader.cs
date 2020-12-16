@@ -28,7 +28,7 @@ namespace OneDas.DataManagement.Extensions
 
         #region Constructors
 
-        public HdfDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
+        public HdfDataReader(DataReaderRegistration registration, ILogger logger) : base(registration, logger)
         {
             //
         }

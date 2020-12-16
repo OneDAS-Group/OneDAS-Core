@@ -13,11 +13,19 @@ namespace OneDas.DataManagement.Extensibility
 {
     public abstract class DataReaderExtensionBase : IDisposable
     {
+        #region Fields
+
+        private DataReaderRegistration _registration;
+
+        #endregion
+
         #region Constructors
 
-        public DataReaderExtensionBase(string rootPath, ILogger logger)
+        public DataReaderExtensionBase(DataReaderRegistration registration, ILogger logger)
         {
-            this.RootPath = rootPath;
+            _registration = registration;
+
+            this.RootPath = registration.RootPath;
             this.Logger = logger;
             this.Progress = new Progress<double>();
         }
@@ -36,13 +44,28 @@ namespace OneDas.DataManagement.Extensibility
 
         public Dictionary<string, string> OptionalParameters { get; set; }
 
+        internal bool ApplyStatus { get; set; } = true;
+
         #endregion
 
         #region Methods
 
         public void InitializeProjects()
         {
-            this.Projects = this.LoadProjects();
+            var projects = this.LoadProjects();
+
+            foreach (var project in projects)
+            {
+                foreach (var channel in project.Channels)
+                {
+                    foreach (var dataset in channel.Datasets)
+                    {
+                        dataset.Registration = _registration;
+                    }
+                }
+            }
+
+            this.Projects = projects;
         }
 
         public void InitializeProjects(List<ProjectInfo> projects)
@@ -54,6 +77,7 @@ namespace OneDas.DataManagement.Extensibility
             DatasetInfo dataset,
             DateTime begin,
             DateTime end,
+            bool applyStatus,
             ulong upperBlockSize,
             CancellationToken cancellationToken)
         {
@@ -63,7 +87,7 @@ namespace OneDas.DataManagement.Extensibility
                 (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero) * 
                 OneDasUtilities.SizeOf(OneDasDataType.FLOAT64);
 
-            return new DataReaderDoubleStream(length, progressRecords);
+            return new DataReaderDoubleStream(length, applyStatus, progressRecords);
         }
 
         public IEnumerable<DataReaderProgressRecord> Read(

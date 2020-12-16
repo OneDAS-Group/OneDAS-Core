@@ -20,7 +20,7 @@ namespace OneDas.DataManagement.Extensions
 
         #region Constructors
 
-        public InMemoryDataReader(string rootPath, ILogger logger) : base(rootPath, logger)
+        public InMemoryDataReader(DataReaderRegistration registration, ILogger logger) : base(registration, logger)
         {
             _random = new Random();
         }

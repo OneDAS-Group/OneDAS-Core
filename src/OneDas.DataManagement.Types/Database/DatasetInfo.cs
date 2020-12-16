@@ -26,7 +26,7 @@ namespace OneDas.DataManagement.Database
 
         public OneDasDataType DataType { get; set; }
 
-        public bool IsNative { get; set; } = true;
+        internal DataReaderRegistration Registration { get; set; }
 
         #endregion
 
@@ -53,7 +53,7 @@ namespace OneDas.DataManagement.Database
         {
             if (this.Parent.Id != dataset.Parent.Id
                 || this.DataType != dataset.DataType
-                || this.IsNative != dataset.IsNative)
+                || !this.Registration.Equals(dataset.Registration))
                 throw new Exception("The datasets to be merged are not equal.");
         }
 

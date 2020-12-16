@@ -74,7 +74,7 @@ namespace OneDas.DataManagement.Database
                     return new DatasetInfo(referenceDataset.Id, channel)
                     {
                         DataType = referenceDataset.DataType,
-                        IsNative = referenceDataset.IsNative
+                        Registration = referenceDataset.Registration
                     };
                 }).ToList();
 
