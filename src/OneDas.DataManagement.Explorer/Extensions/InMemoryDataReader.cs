@@ -86,7 +86,7 @@ namespace OneDas.DataManagement.Extensions
             return new List<ProjectInfo>() { project_allowed, project_restricted };
         }
 
-        protected override double GetDataAvailability(string projectId, DateTime Day)
+        protected override double GetAvailability(string projectId, DateTime Day)
         {
             if (!this.Projects.Any(project => project.Id == projectId))
                 throw new Exception($"The requested project with name '{projectId}' could not be found.");

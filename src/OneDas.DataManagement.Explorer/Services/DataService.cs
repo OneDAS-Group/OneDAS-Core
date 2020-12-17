@@ -57,12 +57,17 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
-        public Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync(string projectId, DateTime begin, DateTime end)
+        public Task<List<AvailabilityResult>> GetAvailabilityAsync(string projectId, DateTime begin, DateTime end)
         {
             return Task.Run(() =>
             {
-                using var dataReader = _databaseManager.GetNativeDataReader(projectId);
-                return dataReader.GetDataAvailabilityStatistics(projectId, begin, end);
+                var dataReaders = _databaseManager.GetDataReaders(projectId);
+
+                return dataReaders.Select(dataReaderForUsing =>
+                {
+                    using var dataReader = dataReaderForUsing;
+                    return dataReader.GetAvailability(projectId, begin, end);
+                }).ToList();
             });
         }
 

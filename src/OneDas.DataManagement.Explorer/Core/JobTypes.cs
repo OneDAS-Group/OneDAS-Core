@@ -19,7 +19,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
     public record AggregationJob : Job
     {
-        public AggregationParameters Parameters { get; init; }
+        public AggregationSetup Setup { get; init; }
     }
 
     public record JobStatus

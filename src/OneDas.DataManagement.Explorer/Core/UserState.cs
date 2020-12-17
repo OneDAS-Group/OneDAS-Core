@@ -462,10 +462,10 @@ namespace OneDas.DataManagement.Explorer.Core
             _exportJobControl?.CancellationTokenSource.Cancel();
         }
 
-        public void ToggleDataAvailability()
+        public void ToggleAvailability()
         {
-            if (this.ClientState != ClientState.DataAvailability)
-                this.ClientState = ClientState.DataAvailability;
+            if (this.ClientState != ClientState.Availability)
+                this.ClientState = ClientState.Availability;
             else
                 this.ClientState = ClientState.Normal;
         }
@@ -495,13 +495,13 @@ namespace OneDas.DataManagement.Explorer.Core
             this.VisualizeProgress = progress;
         }
 
-        public async Task<DataAvailabilityStatistics> GetDataAvailabilityStatisticsAsync()
+        public async Task<List<AvailabilityResult>> GetAvailabilityAsync()
         {
             // security check
             if (!Utilities.IsProjectAccessible(_userIdService.User, this.ProjectContainer.Id, _databaseManager.Database))
                 throw new UnauthorizedAccessException($"The current user is not authorized to access project '{this.ProjectContainer.Id}'.");
 
-            return await _dataService.GetDataAvailabilityStatisticsAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
+            return await _dataService.GetAvailabilityAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
         }
 
         public void SetExportParameters(ExportParameters exportParameters)

@@ -15,13 +15,13 @@
                 <ProjectBox />
             </div>
             <div class="channel-box mat-elevation-z11">
-                @if (this.UserState.ClientState != ClientState.DataAvailability)
+                @if (this.UserState.ClientState != ClientState.Availability)
                 {
                     <ChannelBox />
                 }
                 else
                 {
-                    <DataAvailabilityBox />
+                    <AvailabilityBox />
                 }
             </div>
         }

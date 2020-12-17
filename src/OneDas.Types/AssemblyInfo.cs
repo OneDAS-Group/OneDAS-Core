@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("OneDas.DataManagement.Core.Tests")]
+[assembly: InternalsVisibleTo("OneDas.DataManagement.Explorer.Tests")]

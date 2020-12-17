@@ -13,19 +13,11 @@ namespace OneDas.DataManagement.Extensibility
 {
     public abstract class DataReaderExtensionBase : IDisposable
     {
-        #region Fields
-
-        private DataReaderRegistration _registration;
-
-        #endregion
-
         #region Constructors
 
         public DataReaderExtensionBase(DataReaderRegistration registration, ILogger logger)
         {
-            _registration = registration;
-
-            this.RootPath = registration.RootPath;
+            this.Registration = registration;
             this.Logger = logger;
             this.Progress = new Progress<double>();
         }
@@ -34,7 +26,7 @@ namespace OneDas.DataManagement.Extensibility
 
         #region Properties
 
-        public string RootPath { get; }
+        public string RootPath => this.Registration.RootPath;
 
         public ILogger Logger { get; }
 
@@ -43,6 +35,8 @@ namespace OneDas.DataManagement.Extensibility
         public List<ProjectInfo> Projects { get; private set; }
 
         public Dictionary<string, string> OptionalParameters { get; set; }
+
+        internal DataReaderRegistration Registration { get; }
 
         internal bool ApplyStatus { get; set; } = true;
 
@@ -60,7 +54,7 @@ namespace OneDas.DataManagement.Extensibility
                 {
                     foreach (var dataset in channel.Datasets)
                     {
-                        dataset.Registration = _registration;
+                        dataset.Registration = this.Registration;
                     }
                 }
             }
@@ -255,13 +249,13 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public DataAvailabilityStatistics GetDataAvailabilityStatistics(string projectId, DateTime begin, DateTime end)
+        public AvailabilityResult GetAvailability(string projectId, DateTime begin, DateTime end)
         {
             var dateBegin = begin.Date;
             var dateEnd = end.Date;
 
             int[] aggregatedData = default;
-            var granularity = DataAvailabilityGranularity.Day;
+            var granularity = AvailabilityGranularity.Day;
             var totalDays = (int)(dateEnd - dateBegin).TotalDays;
 
             if (totalDays <= 365)
@@ -271,12 +265,12 @@ namespace OneDas.DataManagement.Extensibility
                 Parallel.For(0, totalDays, day =>
                 {
                     var date = dateBegin.AddDays(day);
-                    aggregatedData[day] = (int)(this.GetDataAvailability(projectId, date) * 100);
+                    aggregatedData[day] = (int)(this.GetAvailability(projectId, date) * 100);
                 });
             }
             else
             {
-                granularity = DataAvailabilityGranularity.Month;
+                granularity = AvailabilityGranularity.Month;
 
                 var months = new DateTime[totalDays];
                 var datasets = new int[totalDays];
@@ -287,7 +281,7 @@ namespace OneDas.DataManagement.Extensibility
                     var month = new DateTime(date.Year, date.Month, 1);
 
                     months[day] = month;
-                    datasets[day] = (int)(this.GetDataAvailability(projectId, date) * 100);
+                    datasets[day] = (int)(this.GetAvailability(projectId, date) * 100);
                 });
 
                 var uniqueMonths = months.Distinct().OrderBy(month => month).ToList();
@@ -303,13 +297,23 @@ namespace OneDas.DataManagement.Extensibility
                 }
             }
 
-            return new DataAvailabilityStatistics(granularity, aggregatedData);
+            return new AvailabilityResult()
+            {
+                DataReaderRegistration = this.Registration,
+                Granularity = granularity,
+                Data = aggregatedData
+            };
         }
 
-
-        public List<string> GetProjectNames()
+        public List<string> GetProjectIds()
         {
             return this.Projects.Select(project => project.Id).ToList();
+        }
+
+        public bool TryGetProject(string projectId, out ProjectInfo projectInfo)
+        {
+            projectInfo = this.Projects.FirstOrDefault(project => project.Id == projectId);
+            return projectInfo != null;
         }
 
         public ProjectInfo GetProject(string projectId)
@@ -319,7 +323,7 @@ namespace OneDas.DataManagement.Extensibility
 
         public bool IsDataOfDayAvailable(string projectId, DateTime day)
         {
-            return this.GetDataAvailability(projectId, day) > 0;
+            return this.GetAvailability(projectId, day) > 0;
         }
 
         public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
@@ -331,7 +335,7 @@ namespace OneDas.DataManagement.Extensibility
 
         protected abstract List<ProjectInfo> LoadProjects();
 
-        protected abstract double GetDataAvailability(string projectId, DateTime Day);
+        protected abstract double GetAvailability(string projectId, DateTime Day);
 
         private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
         {

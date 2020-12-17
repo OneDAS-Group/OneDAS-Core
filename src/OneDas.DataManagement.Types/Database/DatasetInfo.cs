@@ -52,8 +52,7 @@ namespace OneDas.DataManagement.Database
         public void Merge(DatasetInfo dataset)
         {
             if (this.Parent.Id != dataset.Parent.Id
-                || this.DataType != dataset.DataType
-                || !this.Registration.Equals(dataset.Registration))
+                || this.DataType != dataset.DataType)
                 throw new Exception("The datasets to be merged are not equal.");
         }
 

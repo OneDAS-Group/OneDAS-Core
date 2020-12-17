@@ -1,5 +1,11 @@
 namespace OneDas.DataManagement.Database
 {
+    public enum AvailabilityGranularity
+    {
+        Day,
+        Month
+    }
+
     public enum ProjectLicensingScheme
     {
         None = 0,
@@ -19,5 +25,13 @@ namespace OneDas.DataManagement.Database
     {
         public string RootPath { get; set; }
         public string DataReaderId { get; set; }
+        internal bool IsAggregation { get; set; }
+    }
+
+    public record AvailabilityResult
+    {
+        public DataReaderRegistration DataReaderRegistration { get; set; }
+        public AvailabilityGranularity Granularity { get; set; }
+        public int[] Data { get; set; }
     }
 }

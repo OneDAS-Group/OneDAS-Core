@@ -9,10 +9,9 @@ namespace OneDas.DataManagement.Database
     {
         #region "Constructors"
 
-        public ProjectContainer(string id, string rootPath)
+        public ProjectContainer(string id)
         {
             this.Id = id;
-            this.RootPath = rootPath;
             this.Project = new ProjectInfo(id);
         }
 
@@ -28,8 +27,6 @@ namespace OneDas.DataManagement.Database
         public string Id { get; set; }
 
         public string PhysicalName => this.Id.TrimStart('/').Replace('/', '_');
-
-        public string RootPath { get; set; }
 
         public ProjectInfo Project { get; set; }
 

@@ -42,6 +42,7 @@ namespace OneDas.DataManagement
 
         public record DatabaseManagerState
         {
+            public DataReaderRegistration AggregationRegistration { get; init; }
             public OneDasDatabase Database { get; init; }
             public Dictionary<DataReaderRegistration, Type> RegistrationToDataReaderTypeMap { get; init; }
             public Dictionary<DataReaderRegistration, List<ProjectInfo>> RegistrationToProjectsMap { get; init; }
@@ -152,39 +153,36 @@ namespace OneDas.DataManagement
             // register aggregation data reader
             var registration = new DataReaderRegistration()
             {
-                DataReaderId = Guid.NewGuid().ToString(),
-                RootPath = _folderPath
+                DataReaderId = "OneDas.HDF",
+                RootPath = _folderPath,
+                IsAggregation = true
             };
 
             registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);
 
             // instantiate data readers
-            using var aggregationDataReader = this.GetDataReader(registration, registrationToProjectsMap);
-
             var dataReaders = registrationToDataReaderTypeMap
                                 .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, registrationToProjectsMap))
-                                .Concat(new DataReaderExtensionBase[] { aggregationDataReader })
                                 .ToList();
 
             foreach (var dataReader in dataReaders)
             {
                 try
                 {
-                    var isNativeDataReader = dataReader != aggregationDataReader;
-                    var projectNames = dataReader.GetProjectNames();
+                    var projectIds = dataReader.GetProjectIds();
 
-                    foreach (var projectName in projectNames)
+                    foreach (var projectId in projectIds)
                     {
                         // find project container or create a new one
-                        var container = database.ProjectContainers.FirstOrDefault(container => container.Id == projectName);
+                        var container = database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
 
                         if (container == null)
                         {
-                            container = new ProjectContainer(projectName, dataReader.RootPath);
+                            container = new ProjectContainer(projectId);
                             database.ProjectContainers.Add(container);
 
                             // try to load project meta data
-                            var filePath = this.GetProjectMetaPath(projectName);
+                            var filePath = this.GetProjectMetaPath(projectId);
 
                             ProjectMetaInfo projectMeta;
 
@@ -195,21 +193,14 @@ namespace OneDas.DataManagement
                             }
                             else
                             {
-                                projectMeta = new ProjectMetaInfo(projectName);
+                                projectMeta = new ProjectMetaInfo(projectId);
                             }
 
                             container.ProjectMeta = projectMeta;
                         }
 
-                        // ensure that found project container root path matches that of the data reader
-                        if (isNativeDataReader)
-                        {
-                            if (dataReader.RootPath != container.RootPath) 
-                                throw new Exception("The data reader root path does not match the root path of the project data stored in the database.");
-                        }
-
                         // get up-to-date project from data reader
-                        var project = dataReader.GetProject(projectName);
+                        var project = dataReader.GetProject(projectId);
 
                         //
                         container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
@@ -243,6 +234,7 @@ namespace OneDas.DataManagement
 
             this.State = new DatabaseManagerState()
             {
+                AggregationRegistration = registration,
                 Database = database,
                 RegistrationToProjectsMap = registrationToProjectsMap,
                 RegistrationToDataReaderTypeMap = registrationToDataReaderTypeMap
@@ -251,17 +243,34 @@ namespace OneDas.DataManagement
             this.OnDatabaseUpdated?.Invoke(this, database);
         }
 
+        public List<DataReaderExtensionBase> GetDataReaders(string projectId, bool excludeAggregation = false)
+        {
+            var state = this.State;
+            var except = new List<DataReaderRegistration>();
+
+            if (excludeAggregation)
+                except.Add(state.AggregationRegistration);
+
+            return state.RegistrationToProjectsMap
+                // where registration is not part of exception list and where the project list contains the project ID
+                .Where(entry => !except.Contains(entry.Key) && entry.Value.Any(project => project.Id == projectId))
+                // select the registration and get a brand new data reader from it
+                .Select(entry => this.GetDataReader(entry.Key, state))
+                // to list
+                .ToList();
+        }
+
         public DataReaderExtensionBase GetDataReader(
             DataReaderRegistration registration,
-            Dictionary<DataReaderRegistration, List<ProjectInfo>> registrationToProjectsMap = null)
+            DatabaseManagerState state = null)
         {
-            if (registrationToProjectsMap == null)
-                registrationToProjectsMap = this.State.RegistrationToProjectsMap;
+            if (state == null)
+                state = this.State;
 
-            if (!this.State.RegistrationToDataReaderTypeMap.TryGetValue(registration, out var dataReaderType))
+            if (!state.RegistrationToDataReaderTypeMap.TryGetValue(registration, out var dataReaderType))
                 throw new KeyNotFoundException("The requested data reader could not be found.");
 
-            return this.InstantiateDataReader(registration, dataReaderType, registrationToProjectsMap);
+            return this.InstantiateDataReader(registration, dataReaderType, state.RegistrationToProjectsMap);
         }
 
         public void SaveProjectMeta(ProjectMetaInfo projectMeta)
@@ -301,7 +310,7 @@ namespace OneDas.DataManagement
             }
             else
             {
-                _logger.LogInformation($"Loading {dataReader.RootPath} ...");
+                _logger.LogInformation($"Loading {registration.DataReaderId} on path {registration.RootPath} ...");
                 dataReader.InitializeProjects();
                 registrationToProjectsMap[registration] = dataReader.Projects;
             }

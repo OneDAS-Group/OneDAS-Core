@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OneDas.DataManagement.Extensions.Tests
+namespace OneDas.DataManagement.Explorer.Tests
 {
     public class HdfDataReaderTests : IClassFixture<HdfDataReaderFixture>
     {
@@ -20,14 +21,14 @@ namespace OneDas.DataManagement.Extensions.Tests
         }
 
         [Fact]
-        public void ProvidesProjectNames()
+        public void ProvidesProjectIds()
         {
             // arrange
-            var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            var dataReader = new HdfDataReader(_fixture.DataReaderRegistration, _logger);
             dataReader.InitializeProjects();
 
             // act
-            var actual = dataReader.GetProjectNames();
+            var actual = dataReader.GetProjectIds();
 
             // assert
             var expected = new List<string>() { "/A2/B/C", "/A/B/C" };
@@ -38,7 +39,7 @@ namespace OneDas.DataManagement.Extensions.Tests
         public void ProvidesProject()
         {
             // arrange
-            var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            var dataReader = new HdfDataReader(_fixture.DataReaderRegistration, _logger);
             dataReader.InitializeProjects();
 
             // act
@@ -62,14 +63,14 @@ namespace OneDas.DataManagement.Extensions.Tests
         }
 
         [Fact]
-        public void ProvidesDataAvailabilityStatistics()
+        public void ProvidesAvailability()
         {
             // arrange
-            var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            var dataReader = new HdfDataReader(_fixture.DataReaderRegistration, _logger);
             dataReader.InitializeProjects();
 
             // act
-            var actual = dataReader.GetDataAvailabilityStatistics("/A/B/C", new DateTime(2020, 07, 1), new DateTime(2020, 08, 01));
+            var actual = dataReader.GetAvailability("/A/B/C", new DateTime(2020, 07, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2020, 08, 01, 0, 0, 0, DateTimeKind.Utc));
 
             // assert
             var expected = Enumerable.Range(0, 31).Select(number => 0).ToArray();
@@ -83,15 +84,15 @@ namespace OneDas.DataManagement.Extensions.Tests
         public void CanReadTwoDaysShifted()
         {
             // arrange
-            var dataReader = new HdfDataReader(_fixture.Root, _logger);
+            var dataReader = new HdfDataReader(_fixture.DataReaderRegistration, _logger);
             dataReader.InitializeProjects();
 
             // act
             var project = dataReader.GetProject("/A/B/C");
             var dataset = project.Channels.First().Datasets.First();
 
-            var begin = new DateTime(2020, 07, 07, 23, 00, 00);
-            var end = new DateTime(2020, 07, 10, 00, 00, 00);
+            var begin = new DateTime(2020, 07, 07, 23, 00, 00, DateTimeKind.Utc);
+            var end = new DateTime(2020, 07, 10, 00, 00, 00, DateTimeKind.Utc);
 
             var result = dataReader.ReadSingle<double>(dataset, begin, end);
 

@@ -289,7 +289,7 @@ namespace OneDas.DataManagement.Extensions
                 var cacheFiles = Directory.EnumerateFiles(cacheFolderPath, "*-*.json");
                 mainCache = new List<ProjectInfo>();
 
-                var message = "Merging cache files to main cache ...";
+                var message = "Merging cache files into main cache ...";
 
                 try
                 {
@@ -341,12 +341,12 @@ namespace OneDas.DataManagement.Extensions
             return mainCache;
         }
 
-        protected override double GetDataAvailability(string projectId, DateTime day)
+        protected override double GetAvailability(string projectId, DateTime day)
         {
             if (!this.Projects.Any(project => project.Id == projectId))
                 throw new Exception($"The project '{projectId}' could not be found.");
 
-            var fileNamePattern = $"{this.ToUnderscoredId(projectId)}_*_{day.ToISO8601()}.h5";
+            var fileNamePattern = $"{this.ToUnderscoredId(projectId)}*{day.ToISO8601()}.h5";
             var folderName = day.ToString("yyyy-MM");
             var folderPath = Path.Combine(this.RootPath, "DATA", folderName);
 

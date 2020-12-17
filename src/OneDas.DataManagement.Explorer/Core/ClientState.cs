@@ -4,7 +4,7 @@
     {
         Normal,
         PrepareDownload,
-        DataAvailability,
+        Availability,
         DataVisualizing
     }
 }

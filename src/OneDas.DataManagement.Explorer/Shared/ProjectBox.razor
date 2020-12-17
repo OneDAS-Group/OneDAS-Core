@@ -48,7 +48,7 @@
                 <div class="project-box-selected-footer-icons">
                     @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
                     <MatTooltip Tooltip="Availability" Position="MatTooltipPosition.Top" Wrap="true">
-                        <MatIconButton Class="@(this.UserState.ClientState == ClientState.DataAvailability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.UserState.ToggleDataAvailability" />
+                        <MatIconButton Class="@(this.UserState.ClientState == ClientState.Availability ? "selected" : "")" Icon="@MatIconNames.Bar_chart" OnClick="this.UserState.ToggleAvailability" />
                     </MatTooltip>
 
                     @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@

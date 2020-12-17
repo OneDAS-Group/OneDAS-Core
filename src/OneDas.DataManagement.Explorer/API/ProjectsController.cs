@@ -96,9 +96,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="begin">Start date.</param>
         /// <param name="end">End date.</param>
         [HttpGet("{projectId}/availability")]
-        public ActionResult<DataAvailabilityStatistics> GetProjectAvailability(string projectId,
-                                                                               [BindRequired][JsonSchemaDate] DateTime begin,
-                                                                               [BindRequired][JsonSchemaDate] DateTime end)
+        public ActionResult<List<AvailabilityResult>> GetProjectAvailability(string projectId,
+                                                                             [BindRequired][JsonSchemaDate] DateTime begin,
+                                                                             [BindRequired][JsonSchemaDate] DateTime end)
         {
             projectId = WebUtility.UrlDecode(projectId);
 
@@ -108,11 +108,11 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             try
             {
-                return this.ProcessProjectId<DataAvailabilityStatistics>(projectId, message,
+                return this.ProcessProjectId<List<AvailabilityResult>>(projectId, message,
                     (project, projectMeta) =>
                     {
                         _logger.LogInformation($"{message} Done.");
-                        return this.CreateDataAvailabilityResponse(project, begin, end);
+                        return this.CreateAvailabilityResponse(project, begin, end);
                     });
             }
             catch (Exception ex)
@@ -336,16 +336,28 @@ namespace OneDas.DataManagement.Explorer.Controllers
             };
         }
 
-        private DataAvailabilityStatistics CreateDataAvailabilityResponse(ProjectInfo project, DateTime begin, DateTime end)
+        private List<AvailabilityResult> CreateAvailabilityResponse(ProjectInfo project, DateTime begin, DateTime end)
         {
-            using var dataReader = _databaseManager.GetNativeDataReader(project.Id);
-            var statistics = dataReader.GetDataAvailabilityStatistics(project.Id, begin, end);
+            var dataReaders = _databaseManager.GetDataReaders(project.Id);
 
-            return new DataAvailabilityStatistics()
+            return dataReaders.Select(dataReaderForUsing =>
             {
-                Granularity = (DataAvailabilityGranularity)statistics.Granularity,
-                Data = statistics.Data
-            };
+                using var dataReader = dataReaderForUsing;
+                var availability = dataReader.GetAvailability(project.Id, begin, end);
+
+                var registration = new DataReaderRegistration()
+                {
+                    RootPath = availability.DataReaderRegistration.RootPath,
+                    DataReaderId = availability.DataReaderRegistration.DataReaderId,
+                };
+
+                return new AvailabilityResult()
+                {
+                    DataReaderRegistration = registration,
+                    Granularity = (AvailabilityGranularity)availability.Granularity,
+                    Data = availability.Data
+                };
+            }).ToList();
         }
 
         private Channel CreateChannelResponse(ChannelInfo channel, ChannelMetaInfo channelMeta)
@@ -406,15 +418,22 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         #region Types
 
-        public enum DataAvailabilityGranularity
+        public enum AvailabilityGranularity
         {
             Day,
             Month
         }
 
-        public record DataAvailabilityStatistics
+        public record DataReaderRegistration
         {
-            public DataAvailabilityGranularity Granularity { get; set; }
+            public string RootPath { get; set; }
+            public string DataReaderId { get; set; }
+        }
+
+        public record AvailabilityResult
+        {
+            public DataReaderRegistration DataReaderRegistration { get; set; }
+            public AvailabilityGranularity Granularity { get; set; }
             public int[] Data { get; set; }
         }
 

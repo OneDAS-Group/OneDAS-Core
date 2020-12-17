@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.Buffers;
+using OneDas.DataManagement.Database;
 using OneDas.Extensibility;
 using OneDas.Extension.Hdf;
 using OneDas.Infrastructure;
@@ -7,22 +8,29 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace OneDas.DataManagement.Extensions.Tests
+namespace OneDas.DataManagement.Explorer.Tests
 {
     public class HdfDataReaderFixture : IDisposable
     {
         public HdfDataReaderFixture()
         {
-            this.Root = this.InitializeDatabase();
+            var rootPath = this.InitializeDatabase();
+            var registration = new DataReaderRegistration()
+            {
+                DataReaderId = "",
+                RootPath = rootPath
+            };
+
+            this.DataReaderRegistration = registration;
         }
 
-        public string Root { get; }
+        public DataReaderRegistration DataReaderRegistration { get; }
 
         public void Dispose()
         {
             try
             {
-                Directory.Delete(this.Root, true);
+                Directory.Delete(this.DataReaderRegistration.RootPath, true);
             }
             catch
             {

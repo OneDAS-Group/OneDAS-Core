@@ -8,9 +8,9 @@ using ChartJs.Blazor.Common.Time;
 using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
-using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.Types;
 using System;
 using System.Collections.Generic;
@@ -19,19 +19,41 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class DataAvailabilityBox
+    public partial class AvailabilityBox
     {
+        #region Fields
+
+        private string[] _backgroundColors;
+        private string[] _borderColors;
+
+        #endregion
+
         #region Constructors
 
-        public DataAvailabilityBox()
+        public AvailabilityBox()
         {
+            // https://developer.mozilla.org/de/docs/Web/CSS/CSS_Colors/farbauswahl_werkzeug
+            _backgroundColors = new string[]
+            {
+                "rgba(136, 14, 79, 0.2)",
+                "rgba(14, 75, 133, 0.2)",
+                "rgba(14, 133, 131, 0.2)"
+            };
+
+            _borderColors = new string[]
+            {
+                "rgba(136, 14, 79)",
+                "rgba(14, 75, 133)",
+                "rgba(14, 133, 131)"
+            };
+
             this.Config = new BarConfig
             {
                 Options = new BarOptions
                 {
                     Legend = new Legend
                     {
-                        Display = false
+                        Display = true
                     },
                     MaintainAspectRatio = false,
                     Scales = new BarScales
@@ -90,8 +112,6 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private BarConfig Config { get; set; }
 
-        private BarDataset<TimePoint> Dataset { get; set; }
-
         #endregion
 
         #region Methods
@@ -114,16 +134,6 @@ namespace OneDas.DataManagement.Explorer.Shared
                 }
             };
 
-            this.Dataset = new BarDataset<TimePoint>
-            {
-                BackgroundColor = "rgba(136, 14, 79, 0.2)",
-                BorderColor = "rgba(136, 14, 79)",
-                BorderWidth = 2
-            };
-
-            this.Config.Data.Datasets.Clear();
-            this.Config.Data.Datasets.Add(this.Dataset);
-
             base.OnInitialized();
         }
 
@@ -144,42 +154,72 @@ namespace OneDas.DataManagement.Explorer.Shared
 
             try
             {
-                var statistics = await this.UserState.GetDataAvailabilityStatisticsAsync();
+                var statistics = await this.UserState.GetAvailabilityAsync();
+                var hasCleared = false;
 
-                this.Dataset.Clear();
-
-                switch (statistics.Granularity)
+                if (statistics.Count != this.Config.Data.Datasets.Count)
                 {
-                    case DataAvailabilityGranularity.Day:
+                    this.Config.Data.Datasets.Clear();
+                    hasCleared = true;
+                }
 
-                        axis.Time.Unit = TimeMeasurement.Day;
-                        var dateTimeBegin1 = this.UserState.DateTimeBegin.Date;
+                for (int i = 0; i < statistics.Count; i++)
+                {
+                    BarDataset<TimePoint> dataset;
 
-                        this.Dataset.AddRange(statistics.Data
-                            .Select((value, i) =>
-                            {
-                                return new TimePoint(dateTimeBegin1.AddDays(i), value);
-                            })
-                        );
+                    if (hasCleared)
+                    {
+                        var registration = statistics[i].DataReaderRegistration;
 
-                        break;
+                        dataset = new BarDataset<TimePoint>
+                        {
+                            Label = registration.IsAggregation ? "Aggregations" : $"Raw ({registration.RootPath} - {registration.DataReaderId})",
+                            BackgroundColor = _backgroundColors[i % _backgroundColors.Count()],
+                            BorderColor = _borderColors[i % _borderColors.Count()],
+                            BorderWidth = 2
+                        };
 
-                    case DataAvailabilityGranularity.Month:
+                        this.Config.Data.Datasets.Add(dataset);
+                    }
+                    else
+                    {
+                        dataset = (BarDataset<TimePoint>)this.Config.Data.Datasets[i];
+                        dataset.Clear();
+                    }
 
-                        axis.Time.Unit = TimeMeasurement.Month;
-                        var dateTimeBegin2 = this.UserState.DateTimeBegin.Date;
+                    var dateTimeBegin = this.UserState.DateTimeBegin.Date;
 
-                        this.Dataset.AddRange(statistics.Data
-                            .Select((value, i) =>
-                            {
-                                return new TimePoint(dateTimeBegin2.AddMonths(i), value);
-                            })
-                        );
+                    switch (statistics[i].Granularity)
+                    {
+                        case AvailabilityGranularity.Day:
 
-                        break;
+                            axis.Time.Unit = TimeMeasurement.Day;
 
-                    default:
-                        break;
+                            dataset.AddRange(statistics[i].Data
+                                .Select((value, i) =>
+                                {
+                                    return new TimePoint(dateTimeBegin.AddDays(i), value);
+                                })
+                            );
+
+                            break;
+
+                        case AvailabilityGranularity.Month:
+
+                            axis.Time.Unit = TimeMeasurement.Month;
+
+                            dataset.AddRange(statistics[i].Data
+                                .Select((value, i) =>
+                                {
+                                    return new TimePoint(dateTimeBegin.AddMonths(i), value);
+                                })
+                            );
+
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
 
                 await _barChart.Update();

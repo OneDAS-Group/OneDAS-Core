@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public record AggregationParameters
+    public record AggregationSetup
     {
         /// <example>2020-02-01T00:00:00Z</example>
         public DateTime Begin { get; set; } = DateTime.UtcNow.Date.AddDays(-2);
@@ -15,10 +15,24 @@ namespace OneDas.DataManagement.Explorer.Core
         /// <example>false</example>
         public bool Force { get; set; } = false;
 
-        /// <example>{ "/IN_MEMORY/TEST/ACCESSIBLE": { "MySetting": "MyValue" } }</example>
-        public Dictionary<string, Dictionary<string, string>> ReaderParameters { get; set; } = new Dictionary<string, Dictionary<string, string>>();
+        public List<ReaderConfiguration> ReaderConfigurations { get; set; } = new List<ReaderConfiguration>();
 
         public List<Aggregation> Aggregations { get; set; } = new List<Aggregation>();
+    }
+
+    public record ReaderConfiguration
+    {
+        /// <example>/IN_MEMORY/TEST/ACCESSIBLE</example>
+        public string ProjectId { get; set; } = string.Empty;
+
+        /// <example>OneDas.InMemory</example>
+        public string DataReaderId { get; set; } = string.Empty;
+
+        /// <example>:memory:</example>
+        public string DataReaderRootPath { get; set; } = string.Empty;
+
+        /// <example>{ "myParameter1": "myParameterValue1", "myParameter2": "myParameterValue2" }</example>
+        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
     }
 
     public record Aggregation
@@ -71,7 +85,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public long DatasetId { get; set; }
     }
 
-    public record AggregationSetup
+    public record AggregationUnit
     {
         public Aggregation Aggregation { get; init; }
 

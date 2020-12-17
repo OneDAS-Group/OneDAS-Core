@@ -85,7 +85,7 @@ namespace OneDas.DataManagement.Extensions
             }
         }
 
-        protected override double GetDataAvailability(string projectId, DateTime Day)
+        protected override double GetAvailability(string projectId, DateTime Day)
         {
             return 1;
         }

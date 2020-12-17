@@ -223,10 +223,10 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="parameters">Aggregation parameters.</param>
         /// <returns></returns>
         [HttpPost("aggregation")]
-        public ActionResult<AggregationJob> CreateAggregationJob(AggregationParameters parameters)
+        public ActionResult<AggregationJob> CreateAggregationJob(AggregationSetup setup)
         {
-            parameters.Begin = parameters.Begin.ToUniversalTime();
-            parameters.End = parameters.End.ToUniversalTime();
+            setup.Begin = setup.Begin.ToUniversalTime();
+            setup.End = setup.End.ToUniversalTime();
 
             // security check
             if (!this.User.HasClaim("IsAdmin", "true"))
@@ -236,7 +236,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             var job = new AggregationJob()
             {
                 Owner = this.User.Identity.Name,
-                Parameters = parameters
+                Setup = setup
             };
 
             var aggregationService = _serviceProvider.GetRequiredService<AggregationService>();
@@ -249,7 +249,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                     var task = aggregationService.AggregateDataAsync(
                         userIdService.GetUserId(),
                         _options.DataBaseFolderPath,
-                        parameters,
+                        setup,
                         cts.Token);
 
                     return task;

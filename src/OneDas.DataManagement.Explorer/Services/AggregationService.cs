@@ -66,19 +66,19 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public Task<string> AggregateDataAsync(string username,
                                                string databaseFolderPath,
-                                               AggregationParameters aggregationParameters,
+                                               AggregationSetup setup,
                                                CancellationToken cancellationToken)
         {
-            if (aggregationParameters.Begin != aggregationParameters.Begin.Date)
+            if (setup.Begin != setup.Begin.Date)
                 throw new ValidationException("The begin parameter must have no time component.");
 
-            if (aggregationParameters.End != aggregationParameters.End.Date)
+            if (setup.End != setup.End.Date)
                 throw new ValidationException("The end parameter must have no time component.");
 
             return Task.Run(() =>
             {
                 // log
-                var message = $"User '{username}' aggregates data: {aggregationParameters.Begin.ToISO8601()} to {aggregationParameters.End.ToISO8601()} ... ";
+                var message = $"User '{username}' aggregates data: {setup.Begin.ToISO8601()} to {setup.End.ToISO8601()} ... ";
                 _logger.LogInformation(message);
 
                 try
@@ -88,10 +88,10 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     _databaseManager.Update();
 
-                    var projectIds = aggregationParameters.Aggregations
+                    var projectIds = setup.Aggregations
                         .Select(aggregation => aggregation.ProjectId)
                         .Distinct().ToList();
-                    var days = (aggregationParameters.End - aggregationParameters.Begin).TotalDays;
+                    var days = (setup.End - setup.Begin).TotalDays;
                     var totalDays = projectIds.Count * days;
 
                     for (int i = 0; i < projectIds.Count; i++)
@@ -102,13 +102,13 @@ namespace OneDas.DataManagement.Explorer.Services
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            var currentDay = aggregationParameters.Begin.AddDays(j);
+                            var currentDay = setup.Begin.AddDays(j);
                             var progressMessage = $"Processing project '{projectId}': {currentDay.ToString("yyyy-MM-dd")}";
                             var progressValue = (i * days + j) / totalDays;
                             var eventArgs = new ProgressUpdatedEventArgs(progressValue, progressMessage);
                             progress.Report(eventArgs);
 
-                            this.AggregateProject(databaseFolderPath, projectId, currentDay, aggregationParameters, cancellationToken);
+                            this.AggregateProject(databaseFolderPath, projectId, currentDay, setup, cancellationToken);
                         }
                     }
                 }
@@ -127,106 +127,120 @@ namespace OneDas.DataManagement.Explorer.Services
         private void AggregateProject(string databaseFolderPath,
                                       string projectId,
                                       DateTime date,
-                                      AggregationParameters aggregationParameters,
+                                      AggregationSetup setup,
                                       CancellationToken cancellationToken)
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
+            var dataReaders = _databaseManager.GetDataReaders(projectId, excludeAggregation: true);
 
-            using var dataReader = _databaseManager.GetNativeDataReader(projectId);
-
-            if (aggregationParameters.ReaderParameters.TryGetValue(projectId, out var readerParameters))
-                dataReader.OptionalParameters = readerParameters;
-
-            // get files
-            if (!dataReader.IsDataOfDayAvailable(projectId, date))
-                return;
-
-            // process data
-            try
+            foreach (var dataReaderForUsing in dataReaders)
             {
-                var targetFileId = -1L;
+                using var dataReader = dataReaderForUsing;
 
-                // project
-                var project = _databaseManager.Database
-                    .GetProjects()
-                    .FirstOrDefault(project => project.Id == projectId);
+                // find reader configurations
+                foreach (var configuration in setup.ReaderConfigurations
+                    .Where(configuration => configuration.ProjectId == projectId))
+                {
+                    var registration = new DataReaderRegistration()
+                    {
+                        RootPath = configuration.DataReaderRootPath,
+                        DataReaderId = configuration.DataReaderId
+                    };
 
-                if (project is null)
-                    throw new Exception($"The requested project '{projectId}' could not be found.");
+                    if (dataReader.Registration.Equals(registration))
+                    {
+                        dataReader.OptionalParameters = configuration.Parameters;
+                        break;
+                    }
+                }                   
 
-                // targetFileId
-                var projectFileName = projectId.TrimStart('/').Replace("/", "_");
-                var dateTimeFileName = date.ToISO8601();
-                var targetFileName = $"{projectFileName}_{dateTimeFileName}.h5";
-                var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
+                // get files
+                if (!dataReader.IsDataOfDayAvailable(projectId, date))
+                    return;
 
-                if (!Directory.Exists(targetDirectoryPath))
-                    Directory.CreateDirectory(targetDirectoryPath);
-
+                // process data
                 try
                 {
-                    _fileAccessManager.Register(targetFilePath, cancellationToken);
+                    var targetFileId = -1L;
 
-                    var fapl = H5P.create(H5P.FILE_ACCESS);
-                    var res = H5P.set_libver_bounds(fapl, H5F.libver_t.V110, H5F.libver_t.V110);
+                    // project
+                    if (!dataReader.TryGetProject(projectId, out var project))
+                        throw new Exception($"The requested project '{projectId}' could not be found.");
 
-                    if (File.Exists(targetFilePath))
-                        targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR, fapl);
+                    // targetFileId
+                    var projectFileName = projectId.TrimStart('/').Replace("/", "_");
+                    var dateTimeFileName = date.ToISO8601();
+                    var targetFileName = $"{projectFileName}_{dateTimeFileName}.h5";
+                    var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
 
-                    if (targetFileId == -1)
-                        targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC, access_plist: fapl);
+                    if (!Directory.Exists(targetDirectoryPath))
+                        Directory.CreateDirectory(targetDirectoryPath);
 
-                    if (H5I.is_valid(fapl) > 0) { H5P.close(fapl); }
-
-                    // create attribute if necessary
-                    if (H5A.exists(targetFileId, "date_time") == 0)
+                    try
                     {
-                        var dateTimeString = date.ToISO8601();
-                        IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
-                    }
+                        _fileAccessManager.Register(targetFilePath, cancellationToken);
 
-                    // find aggregations for project ID
-                    var potentialAggregations = aggregationParameters.Aggregations
-                        .Where(parameters => parameters.ProjectId == project.Id)
-                        .ToList();
+                        var fapl = H5P.create(H5P.FILE_ACCESS);
+                        var res = H5P.set_libver_bounds(fapl, H5F.libver_t.V110, H5F.libver_t.V110);
 
-                    // create channel to aggregations map
-                    var aggregationChannels = project.Channels
-                        // find all aggregations for current channel
-                        .Select(channel =>
+                        if (File.Exists(targetFilePath))
+                            targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR, fapl);
+
+                        if (targetFileId == -1)
+                            targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC, access_plist: fapl);
+
+                        if (H5I.is_valid(fapl) > 0) { H5P.close(fapl); }
+
+                        // create attribute if necessary
+                        if (H5A.exists(targetFileId, "date_time") == 0)
                         {
-                            return new AggregationChannel()
+                            var dateTimeString = date.ToISO8601();
+                            IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
+                        }
+
+                        // find aggregations for project ID
+                        var potentialAggregations = setup.Aggregations
+                            .Where(parameters => parameters.ProjectId == project.Id)
+                            .ToList();
+
+                        // create channel to aggregations map
+                        var aggregationChannels = project.Channels
+                            // find all aggregations for current channel
+                            .Select(channel =>
                             {
-                                Channel = channel,
-                                Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, current.Filters)).ToList()
-                            };
-                        })
-                        // keep all channels with aggregations
-                        .Where(aggregationChannel => aggregationChannel.Aggregations.Any());
+                                return new AggregationChannel()
+                                {
+                                    Channel = channel,
+                                    Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, current.Filters)).ToList()
+                                };
+                            })
+                            // keep all channels with aggregations
+                            .Where(aggregationChannel => aggregationChannel.Aggregations.Any());
 
-                    // for each channel
-                    foreach (var aggregationChannel in aggregationChannels)
+                        // for each channel
+                        foreach (var aggregationChannel in aggregationChannels)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            var dataset = aggregationChannel.Channel.Datasets.First();
+
+                            OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
+                                                                BindingFlags.Instance | BindingFlags.NonPublic,
+                                                                OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                                new object[] { dataReader, dataset, aggregationChannel.Aggregations, date, targetFileId, setup.Force, cancellationToken });
+                        }
+                    }
+                    finally
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var dataset = aggregationChannel.Channel.Datasets.First();
-
-                        OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
-                                                            BindingFlags.Instance | BindingFlags.NonPublic,
-                                                            OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                            new object[] { dataReader, dataset, aggregationChannel.Aggregations, date, targetFileId, aggregationParameters.Force, cancellationToken });
+                        if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
+                        _fileAccessManager.Unregister(targetFilePath);
                     }
                 }
-                finally
+                catch (Exception ex)
                 {
-                    if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
-                    _fileAccessManager.Unregister(targetFilePath);
+                    _logger.LogError(ex.GetFullMessage());
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.GetFullMessage());
             }
         }
 
@@ -243,7 +257,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
             // prepare period data
             var groupPath = dataset.Parent.GetPath();
-            var setups = new List<AggregationSetup>();
+            var units = new List<AggregationUnit>();
 
             try
             {
@@ -291,7 +305,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                                 targetBufferInfo.DatasetId = datasetId;
 
-                                var setup = new AggregationSetup()
+                                var unit = new AggregationUnit()
                                 {
                                     Aggregation = aggregation,
                                     Period = period,
@@ -300,7 +314,7 @@ namespace OneDas.DataManagement.Explorer.Services
                                     TargetBufferInfo = targetBufferInfo
                                 };
 
-                                setups.Add(setup);
+                                units.Add(unit);
                             }
                             else
                             {
@@ -310,7 +324,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     }
                 }
 
-                if (!setups.Any())
+                if (!units.Any())
                     return;
 
                 // process data
@@ -324,7 +338,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
 
                     // aggregate data
-                    var partialBuffersMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, setups);
+                    var partialBuffersMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, units);
 
                     foreach (var entry in partialBuffersMap)
                     {
@@ -338,9 +352,9 @@ namespace OneDas.DataManagement.Explorer.Services
                 }
 
                 // write data to file
-                foreach (var setup in setups)
+                foreach (var unit in units)
                 {
-                    var targetBufferInfo = setup.TargetBufferInfo;
+                    var targetBufferInfo = unit.TargetBufferInfo;
 
                     IOHelper.Write(targetBufferInfo.DatasetId, targetBufferInfo.Buffer, DataContainerType.Dataset);
                     H5F.flush(targetBufferInfo.DatasetId, H5F.scope_t.LOCAL);
@@ -348,33 +362,33 @@ namespace OneDas.DataManagement.Explorer.Services
             }
             finally
             {
-                foreach (var setup in setups)
+                foreach (var unit in units)
                 {
-                    var datasetId = setup.TargetBufferInfo.DatasetId;
+                    var datasetId = unit.TargetBufferInfo.DatasetId;
 
                     if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
                 }
             }
         }
 
-        private Dictionary<AggregationSetup, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset,
+        private Dictionary<AggregationUnit, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset,
                                                                               T[] data,
                                                                               byte[] statusSet,
-                                                                              List<AggregationSetup> aggregationSetups) where T : unmanaged
+                                                                              List<AggregationUnit> aggregationUnits) where T : unmanaged
         {
             var nanLimit = 0.99;
             var dataset_double = default(double[]);
-            var partialBuffersMap = new Dictionary<AggregationSetup, double[]>();
+            var partialBuffersMap = new Dictionary<AggregationUnit, double[]>();
 
-            foreach (var setup in aggregationSetups)
+            foreach (var unit in aggregationUnits)
             {
-                var aggregation = setup.Aggregation;
-                var period = setup.Period;
-                var method = setup.Method;
-                var argument = setup.Argument;
+                var aggregation = unit.Aggregation;
+                var period = unit.Period;
+                var method = unit.Method;
+                var argument = unit.Argument;
                 var sampleCount = dataset.GetSampleRate(ensureNonZeroIntegerHz: true).SamplesPerSecondAsUInt64 * (ulong)period;
 
-                switch (setup.Method)
+                switch (unit.Method)
                 {
                     case AggregationMethod.Mean:
                     case AggregationMethod.MeanPolar:
@@ -388,20 +402,20 @@ namespace OneDas.DataManagement.Explorer.Services
                         if (dataset_double == null)
                             dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
 
-                        partialBuffersMap[setup] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, dataset_double, nanLimit, _logger);
+                        partialBuffersMap[unit] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, dataset_double, nanLimit, _logger);
 
                         break;
 
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        partialBuffersMap[setup] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, data, statusSet, nanLimit, _logger);
+                        partialBuffersMap[unit] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, data, statusSet, nanLimit, _logger);
 
                         break;
 
                     default:
 
-                        _logger.LogWarning($"The aggregation method '{setup.Method}' is not known. Skipping period {period}.");
+                        _logger.LogWarning($"The aggregation method '{unit.Method}' is not known. Skipping period {period}.");
 
                         continue;
                 }
