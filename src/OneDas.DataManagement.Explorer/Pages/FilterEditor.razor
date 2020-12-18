@@ -5,7 +5,7 @@
     <Authorized>
         <div class="left-column">
             <div class="settings-box mat-elevation-z11">
-                <FilterDescriptionSettingsBox @ref="this.FilterDescriptionSettingsBox" FilterDescription="this.FilterDescription" OnSaveAsync="this.AddFilterDescription" />
+                <FilterDescriptionSettingsBox @ref="this.FilterDescriptionSettingsBox" FilterDescription="this.Filter" OnSave="async () => await this.SaveFilterAsync()" />
 
                 <div class="configuration-panel">
 
@@ -34,9 +34,9 @@
                     </div>
                 </div>
             </div>
-            <FilterGallery @bind-IsOpen="this.FilterGalleryIsOpen" OnFilterDescriptionSelected="this.CopyFilterDescription"/>
-            <FilterCreateModal @bind-IsOpen="this.FilterCreateDialogIsOpen" OnCodeTypeSelected="codeType => this.CreateFilterDescription(codeType, selectProjects: true)" />
-            <FilterDeleteModal @bind-IsOpen="this.FilterDeleteDialogIsOpen" OnDelete="this.DeleteFilterDescription" />
+            <FilterGallery @bind-IsOpen="this.FilterGalleryIsOpen" OnFilterDescriptionSelected="async (filter) => await this.CopyFilterAsync(filter)" />
+            <FilterCreateModal @bind-IsOpen="this.FilterCreateDialogIsOpen" OnCodeTypeSelected="this.PrepareFilter" />
+            <FilterDeleteModal @bind-IsOpen="this.FilterDeleteDialogIsOpen" OnDelete="async () => await this.DeleteFilterAsync()" />
         </div>
         <div class="center-column monaco-editor-root-container">
             <div class="monaco-box mat-elevation-z11">
@@ -54,12 +54,12 @@
         </div>
         <div class="right-column">
             <div class="selected-channel-box mat-elevation-z11">
-                @if (this.FilterDescriptions != null && this.FilterDescriptions.Any())
+                @if (this.Filters != null && this.Filters.Any())
                 {
                     <MatNavMenu>
-                        @foreach (var filterDescription in this.FilterDescriptions)
+                        @foreach (var filterDescription in this.Filters)
                         {
-                            <div @onclick="() => this.FilterDescription = filterDescription">
+                            <div @onclick="() => this.Filter = filterDescription">
                                 <MatNavItem>
                                     <MatIcon Icon="@Utilities.GetEnumIconName(filterDescription.CodeType)"></MatIcon>&nbsp; @filterDescription.Name
                                 </MatNavItem>

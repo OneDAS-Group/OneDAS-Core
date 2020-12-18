@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace OneDas.DataManagement.Explorer.Core
@@ -59,6 +60,30 @@ namespace OneDas.DataManagement.Explorer.Core
         public static List<T> GetEnumValues<T>()
         {
             return Enum.GetValues(typeof(T)).Cast<T>().ToList();
+        }
+
+        public static IEnumerable<MethodInfo> GetMethodsBySignature(Type type, Type returnType, params Type[] parameterTypes)
+        {
+            return type.GetMethods().Where(method =>
+            {
+                if (method.ReturnType != returnType) return false;
+
+                var parameters = method.GetParameters();
+
+                if (parameterTypes == null || parameterTypes.Length == 0)
+                    return parameters.Length == 0;
+
+                else if (parameters.Length != parameterTypes.Length)
+                    return false;
+
+                for (int i = 0; i < parameterTypes.Length; i++)
+                {
+                    if (parameters[i].ParameterType != parameterTypes[i])
+                        return false;
+                }
+
+                return true;
+            });
         }
 
         public static string FormatByteCount(long byteCount)

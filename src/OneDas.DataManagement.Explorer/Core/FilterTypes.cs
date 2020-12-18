@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace OneDas.DataManagement.Explorer.Core
@@ -55,18 +56,27 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public FilterSettings()
         {
-            this.FilterDescriptions = new List<FilterDescription>();
+            this.Filters = new List<FilterDescription>();
         }
 
         #endregion
 
         #region Properties
 
-        public List<FilterDescription> FilterDescriptions { get; set; }
+        public List<FilterDescription> Filters { get; set; }
 
         #endregion
 
         #region Methods
+
+        public List<FilterDescription> GetSharedFiles(string userName)
+        {
+            return this.Filters
+                   .Where(filterDescription =>
+                          filterDescription.Owner == userName &&
+                          filterDescription.CodeType == CodeType.Shared)
+                   .ToList();
+        }
 
         public static FilterSettings Load(string filePath)
         {

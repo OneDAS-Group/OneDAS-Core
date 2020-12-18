@@ -2,6 +2,7 @@
 using Prism.Mvvm;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
@@ -32,9 +33,9 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties
 
-        private FilterSettings Model { get; }
+        public FilterSettings Model { get; }
 
-        public IReadOnlyList<FilterDescription> FilterDescriptions => this.Model.FilterDescriptions;
+        public IReadOnlyList<FilterDescription> Filters => this.Model.Filters;
 
         #endregion
 
@@ -44,24 +45,24 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             lock (_editLock)
             {
-                if (!this.Model.FilterDescriptions.Contains(description.Model))
-                    this.Model.FilterDescriptions.Add(description.Model);
+                if (!this.Model.Filters.Contains(description.Model))
+                    this.Model.Filters.Add(description.Model);
 
                 this.Model.Save(_filePath);
             }
 
-            this.RaisePropertyChanged(nameof(this.FilterDescriptions));
+            this.RaisePropertyChanged(nameof(this.Filters));
         }
 
-        public void RemoveFilterDescription(FilterDescriptionViewModel description)
+        public void RemoveFilter(FilterDescriptionViewModel description)
         {
             lock (_editLock)
             {
-                this.Model.FilterDescriptions.Remove(description.Model);
+                this.Model.Filters.Remove(description.Model);
                 this.Model.Save(_filePath);
             }
 
-            this.RaisePropertyChanged(nameof(this.FilterDescriptions));
+            this.RaisePropertyChanged(nameof(this.Filters));
         }
 
         #endregion

@@ -160,9 +160,11 @@ namespace OneDas.DataManagement
 
             registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);
 
-            // instantiate data readers
+            // instantiate data readers and put filter data reader at the end
             var dataReaders = registrationToDataReaderTypeMap
-                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, registrationToProjectsMap))
+                                .ToList()
+                                .OrderBy(entry => entry.Key.DataReaderId == "OneDas.Filters")
+                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, #error State.Database is not up to date here))
                                 .ToList();
 
             foreach (var dataReader in dataReaders)
@@ -270,7 +272,7 @@ namespace OneDas.DataManagement
             if (!state.RegistrationToDataReaderTypeMap.TryGetValue(registration, out var dataReaderType))
                 throw new KeyNotFoundException("The requested data reader could not be found.");
 
-            return this.InstantiateDataReader(registration, dataReaderType, state.RegistrationToProjectsMap);
+            return this.InstantiateDataReader(registration, dataReaderType, state);
         }
 
         public void SaveProjectMeta(ProjectMetaInfo projectMeta)
@@ -290,7 +292,7 @@ namespace OneDas.DataManagement
 
         private DataReaderExtensionBase InstantiateDataReader(
             DataReaderRegistration registration, Type type,
-            Dictionary<DataReaderRegistration, List<ProjectInfo>> registrationToProjectsMap)
+            DatabaseManagerState state)
         {
             var logger = _loggerFactory.CreateLogger(registration.RootPath);
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, registration, logger);
@@ -302,9 +304,13 @@ namespace OneDas.DataManagement
                 ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
                 ((HdfDataReader)dataReader).ApplyStatus = false;
             }
+            else if (type == typeof(FilterDataReader))
+            {
+                ((FilterDataReader)dataReader).Database = state.Database;
+            }
 
             // initialize projects property
-            if (registrationToProjectsMap.TryGetValue(registration, out var value))
+            if (state.RegistrationToProjectsMap.TryGetValue(registration, out var value))
             {
                 dataReader.InitializeProjects(value);
             }
@@ -312,7 +318,7 @@ namespace OneDas.DataManagement
             {
                 _logger.LogInformation($"Loading {registration.DataReaderId} on path {registration.RootPath} ...");
                 dataReader.InitializeProjects();
-                registrationToProjectsMap[registration] = dataReader.Projects;
+                state.RegistrationToProjectsMap[registration] = dataReader.Projects;
             }
 
             return dataReader;

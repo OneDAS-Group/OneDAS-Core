@@ -8,12 +8,6 @@ namespace OneDas.DataManagement.Explorer.Shared
 {
     public partial class FilterProjectRequestModal
     {
-        #region Fields
-
-        private HashSet<string> _selectedProjectIds;
-
-        #endregion
-
         #region Records
 
         public record ProjectState()

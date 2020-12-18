@@ -5,23 +5,23 @@ function CreateMonacoEditor(editorId, options) {
     window.monacoEditors.push({ id: editorId, editor: editor });
 }
 
-function RegisterMonacoProviders(editorId, dotnetHelper) {
+function RegisterMonacoProviders(editorId, filterEditor, monacoService) {
 
     // document semantic tokens provider
     //window.monaco.languages.registerDocumentSemanticTokensProvider("csharp", {
     //    provideDocumentSemanticTokens: (model, lastResultId) => {
-    //        return this.provideDocumentSemanticTokens(item, lastResultId, dotnetHelper)
+    //        return this.provideDocumentSemanticTokens(item, lastResultId, monacoService)
     //    }
     //});
-
+    
     // completionItem provider
     window.monaco.languages.registerCompletionItemProvider("csharp", {
         triggerCharacters: ["."],
         resolveCompletionItem: (item) => {
-            return this.resolveCompletionItem(item, dotnetHelper)
+            return this.resolveCompletionItem(item, monacoService)
         },
         provideCompletionItems: (model, position, context) => {
-            return this.provideCompletionItems(model, position, context, dotnetHelper)
+            return this.provideCompletionItems(model, position, context, monacoService)
         }
     });
 
@@ -29,14 +29,14 @@ function RegisterMonacoProviders(editorId, dotnetHelper) {
     window.monaco.languages.registerSignatureHelpProvider("csharp", {
         signatureHelpTriggerCharacters: ['('],
         provideSignatureHelp: (model, position) => {
-            return this.provideSignatureHelp(model, position, dotnetHelper)
+            return this.provideSignatureHelp(model, position, monacoService)
         }
     });
 
     // hover provider
     window.monaco.languages.registerHoverProvider("csharp", {
         provideHover: (model, position) => {
-            return this.provideHover(model, position, dotnetHelper)
+            return this.provideHover(model, position, monacoService)
         }
     });
 
@@ -46,7 +46,7 @@ function RegisterMonacoProviders(editorId, dotnetHelper) {
     editor.onDidChangeModelContent(async e => {
 
         var code = editor.getValue();
-        await dotnetHelper.invokeMethodAsync("UpdateDiagnosticsAsync", code);
+        await filterEditor.invokeMethodAsync("UpdateDiagnosticsAsync", code);
     })
 }
 
@@ -103,11 +103,11 @@ function _getEditor(editorId)
 
 let _lastCompletions;
 
-async function provideDocumentSemanticTokens(item, lastResultId, dotnetHelper) {
+async function provideDocumentSemanticTokens(item, lastResultId, monacoService) {
     // todo: implement https://github.com/OmniSharp/omnisharp-vscode/blob/master/src/features/semanticTokensProvider.ts
 }
 
-async function provideCompletionItems(model, position, context, dotnetHelper) {
+async function provideCompletionItems(model, position, context, monacoService) {
     
     let request = this._createRequest(position);
     request.CompletionTrigger = (context.triggerKind + 1);
@@ -116,7 +116,7 @@ async function provideCompletionItems(model, position, context, dotnetHelper) {
     try {
 
         let code = model.getValue();
-        const response = await dotnetHelper.invokeMethodAsync("GetCompletionAsync", code, request);
+        const response = await monacoService.invokeMethodAsync("GetCompletionAsync", code, request);
         const mappedItems = response.items.map(this._convertToVscodeCompletionItem);
 
         let lastCompletions = new Map();
@@ -135,7 +135,7 @@ async function provideCompletionItems(model, position, context, dotnetHelper) {
     }
 }
 
-async function resolveCompletionItem(item, dotnetHelper) {
+async function resolveCompletionItem(item, monacoService) {
     
     const lastCompletions = this._lastCompletions;
 
@@ -152,7 +152,7 @@ async function resolveCompletionItem(item, dotnetHelper) {
     const request = { Item: lspItem };
 
     try {
-        const response = await dotnetHelper.invokeMethodAsync("GetCompletionResolveAsync", request);
+        const response = await monacoService.invokeMethodAsync("GetCompletionResolveAsync", request);
         return this._convertToVscodeCompletionItem(response.item);
     }
     catch (error) {
@@ -161,13 +161,13 @@ async function resolveCompletionItem(item, dotnetHelper) {
     }
 }
 
-async function provideSignatureHelp(model, position, dotnetHelper) {
+async function provideSignatureHelp(model, position, monacoService) {
     let req = this._createRequest(position);
 
     try {
 
         let code = model.getValue();
-        let res = await dotnetHelper.invokeMethodAsync("GetSignatureHelpAsync", code, req);
+        let res = await monacoService.invokeMethodAsync("GetSignatureHelpAsync", code, req);
 
         if (!res) {
             return undefined;
@@ -210,11 +210,11 @@ async function provideSignatureHelp(model, position, dotnetHelper) {
     }
 }
 
-async function provideHover(document, position, dotnetHelper) {
+async function provideHover(document, position, monacoService) {
 
     let request = this._createRequest(position);
     try {
-        const response = await dotnetHelper.invokeMethodAsync("GetQuickInfoAsync", request);
+        const response = await monacoService.invokeMethodAsync("GetQuickInfoAsync", request);
         if (!response || !response.markdown) {
             return undefined;
         }

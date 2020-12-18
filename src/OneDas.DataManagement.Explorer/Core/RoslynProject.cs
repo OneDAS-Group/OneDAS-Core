@@ -10,27 +10,12 @@ using OneDasDatabase = OneDas.DataManagement.Database.OneDasDatabase;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public class RoslynProject : IDisposable
+    public class RoslynProject
     {
-        #region Fields
-
-        private string _name;
-        private string _sampleRate;
-        private List<string> _requestedProjectIds;
-        private OneDasDatabaseManager _databaseManager;
-        private DocumentId _databaseCodeId;
-
-        #endregion
-
         #region Constructors
 
-        public RoslynProject(string name, OneDasDatabaseManager databaseManager, string defaultCode)
+        public RoslynProject(FilterDescription filter, List<string> additionalCodeFiles, OneDasDatabase database = null)
         {
-            _name = name;
-            _databaseManager = databaseManager;
-            _databaseManager.OnDatabaseUpdated += this.OnDatabaseUpdated;
-            _sampleRate = "NaN";
-
             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
 
             // workspace
@@ -50,13 +35,22 @@ namespace OneDas.DataManagement.Explorer.Core
 
             var project = this.Workspace.AddProject(projectInfo);
 
-            // database code
-            var databaseCode = this.Workspace.AddDocument(project.Id, "DatabaseCode.cs", SourceText.From(string.Empty));
-            _databaseCodeId = databaseCode.Id;
-
             // code
-            this.UseOnlyOnceDocument = this.Workspace.AddDocument(project.Id, "Code.cs", SourceText.From(defaultCode));
-            this.DocumentId = this.UseOnlyOnceDocument.Id;
+            var document = this.Workspace.AddDocument(project.Id, "Code.cs", SourceText.From(filter.Code));
+            this.DocumentId = document.Id;
+
+            // additional code
+            foreach (var additionalCode in additionalCodeFiles)
+            {
+                this.Workspace.AddDocument(project.Id, Guid.NewGuid().ToString(), SourceText.From(additionalCode));
+            }
+
+            // database code
+            if (database is not null)
+            {
+                var databaseCode = this.GenerateDatabaseCode(database, filter.SampleRate, filter.RequestedProjectIds);
+                this.Workspace.AddDocument(project.Id, "DatabaseCode.cs", SourceText.From(databaseCode));
+            }
         }
 
         #endregion
@@ -64,8 +58,6 @@ namespace OneDas.DataManagement.Explorer.Core
         #region Properties
 
         public AdhocWorkspace Workspace { get; init; }
-
-        public Document UseOnlyOnceDocument { get; init; }
 
         public DocumentId DocumentId { get; init; }
 
@@ -86,20 +78,7 @@ namespace OneDas.DataManagement.Explorer.Core
             } while (!this.Workspace.TryApplyChanges(updatedSolution));
         }
 
-        public void SetValues(string code, string sampleRate, List<string> requestedProjectIds)
-        {
-            // update code
-            this.UpdateCode(this.DocumentId, code);
-
-            // database code
-            _sampleRate = sampleRate;
-            _requestedProjectIds = requestedProjectIds;
-
-            var databaseCode = this.GenerateDatabaseCode(sampleRate, requestedProjectIds);
-            this.UpdateCode(_databaseCodeId, databaseCode);
-        }
-
-        private string GenerateDatabaseCode(string sampleRate, List<string> requestedProjectIds)
+        private string GenerateDatabaseCode(OneDasDatabase database, string sampleRate, List<string> requestedProjectIds)
         {
             // generate code
             var classStringBuilder = new StringBuilder();
@@ -107,12 +86,12 @@ namespace OneDas.DataManagement.Explorer.Core
             classStringBuilder.AppendLine($"namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}");
             classStringBuilder.AppendLine($"{{");
 
-            classStringBuilder.AppendLine($"public class CodeGenerationDatabase");
+            classStringBuilder.AppendLine($"public class Database");
             classStringBuilder.AppendLine($"{{");
 
             if (sampleRate is not null)
             {
-                var filteredProjectContainer = _databaseManager.Database.ProjectContainers
+                var filteredProjectContainer = database.ProjectContainers
                     .Where(projectContainer => requestedProjectIds.Contains(projectContainer.Id));
 
                 foreach (var projectContainer in filteredProjectContainer)
@@ -165,21 +144,6 @@ namespace OneDas.DataManagement.Explorer.Core
 
             classStringBuilder.AppendLine($"}}");
             return classStringBuilder.ToString();
-        }
-
-        public void Dispose()
-        {
-            _databaseManager.OnDatabaseUpdated -= this.OnDatabaseUpdated;
-        }
-
-        #endregion
-
-        #region Callbacks
-
-        private void OnDatabaseUpdated(object sender, OneDasDatabase database)
-        {
-            var databaseCode = this.GenerateDatabaseCode(_sampleRate, _requestedProjectIds);
-            this.UpdateCode(_databaseCodeId, databaseCode);
         }
 
         #endregion

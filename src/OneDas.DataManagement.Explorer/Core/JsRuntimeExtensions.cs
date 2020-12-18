@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using OneDas.DataManagement.Explorer.Pages;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
@@ -38,9 +39,9 @@ namespace OneDas.DataManagement.Explorer.Core
             await jsRuntime.InvokeVoidAsync("CreateMonacoEditor", editorId, options);
         }
 
-        public static async Task RegisterMonacoProvidersAsync(this IJSRuntime jsRuntime, string editorId, DotNetObjectReference<MonacoService> dotnetHelper)
+        public static async Task RegisterMonacoProvidersAsync(this IJSRuntime jsRuntime, string editorId, DotNetObjectReference<FilterEditor> filterEditor, DotNetObjectReference<MonacoService> monacoService)
         {
-            await jsRuntime.InvokeVoidAsync("RegisterMonacoProviders", editorId, dotnetHelper);
+            await jsRuntime.InvokeVoidAsync("RegisterMonacoProviders", editorId, filterEditor, monacoService);
         }
 
         public static async Task SetMonacoValueAsync(this IJSRuntime jsRuntime, string editorId, string value)

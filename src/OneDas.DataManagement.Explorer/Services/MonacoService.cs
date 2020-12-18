@@ -46,14 +46,11 @@ namespace OneDas.DataManagement.Explorer.Services
         /// 
         /// </summary>
 
-        #region "Events"
-
-        public event EventHandler<List<Diagnostic>> DiagnosticsUpdated;
-
-        #endregion
-
         #region Fields
 
+        private ILoggerFactory _loggerFactory;
+        private FormattingOptions _formattingOptions;
+        private OneDasDatabaseManager _databaseManager;
         private RoslynProject _completionProject;
         private RoslynProject _diagnosticProject;
         private OmniSharpCompletionService _completionService;
@@ -78,6 +75,10 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public MonacoService(OneDasDatabaseManager databaseManager)
         {
+            _databaseManager = databaseManager;
+            _loggerFactory = LoggerFactory.Create(configure => { });
+            _formattingOptions = new FormattingOptions();
+
             this.DefaultChannelCode =
 $@"using System; 
                  
@@ -93,7 +94,7 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
         /// <param name=""end"">Enables the user to choose the right calibration factors for that time period.</param>
         /// <param name=""database"">Contains a list of all preselected projects.</param>
         /// <param name=""result"">The resulting double array with length matching the time period and sample rate.</param>
-        public void Filter(DateTime begin, DateTime end, CodeGenerationDatabase database, double[] result)
+        public void Filter(DateTime begin, DateTime end, Database database, double[] result)
         {{
             /* This dataset has the same length as the result array. */
             var t1 = database.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;
@@ -152,16 +153,6 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
     }}
 }};
 ";
-
-            _completionProject = new RoslynProject("completion", databaseManager, this.DefaultChannelCode);
-            _diagnosticProject = new RoslynProject("diagnostics", databaseManager, this.DefaultChannelCode);
-
-            var loggerFactory = LoggerFactory.Create(configure => { });
-            var formattingOptions = new FormattingOptions();
-
-            _completionService = new OmniSharpCompletionService(_completionProject.Workspace, formattingOptions, loggerFactory);
-            _signatureService = new OmniSharpSignatureHelpService(_completionProject.Workspace);
-            _quickInfoProvider = new OmniSharpQuickInfoProvider(_completionProject.Workspace, formattingOptions, loggerFactory);
         }
 
         #endregion
@@ -218,8 +209,7 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
             return quickInfoResponse;
         }
 
-        [JSInvokable]
-        public async Task UpdateDiagnosticsAsync(string code = null)
+        public async Task<List<Diagnostic>> GetDiagnosticsAsync(string code = null)
         {
             _diagnosticProject.UpdateCode(_diagnosticProject.DocumentId, code);
 
@@ -244,20 +234,20 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}
                 .Where(diagnostic => diagnostic.Severity > 1)
                 .ToList();
 
-            this.OnDiagnosticsUpdated(diagnostics);
+            return diagnostics;
         }
 
-        public void SetValues(string code, string sampleRate, List<string> requestedProjectIds)
+        public async Task CreateProjectForEditorAsync(FilterDescription filter, List<string> additionalCodeFiles)
         {
-            _completionProject.SetValues(code, sampleRate, requestedProjectIds);
-            _diagnosticProject.SetValues(code, sampleRate, requestedProjectIds);
+            await Task.Run(async () =>
+            {
+                _completionProject = new RoslynProject(filter, additionalCodeFiles, _databaseManager.Database);
+                _diagnosticProject = new RoslynProject(filter, additionalCodeFiles, _databaseManager.Database);
 
-            _ = this.UpdateDiagnosticsAsync();
-        }
-
-        private void OnDiagnosticsUpdated(List<Diagnostic> diagnostics)
-        {
-            this.DiagnosticsUpdated?.Invoke(this, diagnostics);
+                _completionService = new OmniSharpCompletionService(_completionProject.Workspace, _formattingOptions, _loggerFactory);
+                _signatureService = new OmniSharpSignatureHelpService(_completionProject.Workspace);
+                _quickInfoProvider = new OmniSharpQuickInfoProvider(_completionProject.Workspace, _formattingOptions, _loggerFactory);
+            });
         }
 
         private int GetSeverity(DiagnosticSeverity severity)

@@ -14,7 +14,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         public FilterDescriptionViewModel FilterDescription { get; set; }
 
         [Parameter]
-        public Func<Task> OnSaveAsync { get; set; }
+        public Action OnSave { get; set; }
 
         private bool FilterProjectRequestDialogIsOpen { get; set; }
 
@@ -38,7 +38,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private void HandleValidSubmit()
         {
-            this.OnSaveAsync?.Invoke();
+            this.OnSave?.Invoke();
         }
 
         #endregion
