@@ -37,8 +37,6 @@ namespace OneDas.DataManagement.Extensions
 
         public static ConcurrentDictionary<DataReaderRegistration, FilterDataReaderCacheEntry> Cache { get; }
 
-        public OneDasDatabase Database { get; set; }
-
         #endregion
 
         #region Methods
@@ -89,6 +87,7 @@ namespace OneDas.DataManagement.Extensions
                     channel.Datasets.AddRange(datasets);
 
                     // compile channel
+#error assign unique assembly name!!
                     if (!isCached)
                     {
                         var additionalCodeFiles = filterSettings.GetSharedFiles(this.Username)
@@ -99,18 +98,22 @@ namespace OneDas.DataManagement.Extensions
 
                         filter.Code = preparedCode;
                         var roslynProject = new RoslynProject(filter, additionalCodeFiles);
-                        var peStream = new MemoryStream();
+                        using var peStream = new MemoryStream();
 
                         var compilation = roslynProject.Workspace.CurrentSolution.Projects.First()
                             .GetCompilationAsync().Result
                             .Emit(peStream);
 
+                        peStream.Seek(0, SeekOrigin.Begin);
                         var assembly = cacheEntry.LoadContext.LoadFromStream(peStream);
                         var assemblyType = assembly.GetType();
 
-                        var methodInfo = Utilities.GetMethodsBySignature(assemblyType, typeof(void),
-                            new Type[] { typeof(DateTime), typeof(DateTime), typeof(Dictionary<string, double[]>), typeof(double[]) })
-                            .First();
+                        var methodInfo = assembly.GetTypes().SelectMany(type =>
+                        {
+#warning https://stackoverflow.com/questions/4681031/how-do-i-check-if-a-type-provides-a-parameterless-constructor
+                            var parameters = new Type[] { typeof(DateTime), typeof(DateTime), typeof(Dictionary<string, double[]>), typeof(double[]) };
+                            return Utilities.GetMethodsBySignature(type, typeof(void), parameters);
+                        }).First();
 
                         cacheEntry.FilterIdToMethodInfoMap[filter.Id] = methodInfo;
                     }
@@ -134,9 +137,9 @@ namespace OneDas.DataManagement.Extensions
             return 1;
         }
 
-        private (string, Dictionary<string, DatasetInfo>) PrepareCode(string code)
+        private (string, Dictionary<string, Func<OneDasDatabase, DatasetInfo>>) PrepareCode(string code)
         {
-            var replacements = new Dictionary<string, DatasetInfo>();
+            var replacements = new Dictionary<string, Func<OneDasDatabase, DatasetInfo>>();
 
             // change signature
             code = code.Replace(
@@ -146,7 +149,7 @@ namespace OneDas.DataManagement.Extensions
             // matches strings like "= database.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
             var pattern = @"=\s?database\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";
 
-            Regex.Replace(code, pattern, match =>
+            code = Regex.Replace(code, pattern, match =>
             {
                 var projectPhysicalName = match.Groups[1].Value;
                 var channelId = match.Groups[2].Value;
@@ -155,17 +158,22 @@ namespace OneDas.DataManagement.Extensions
                 var regex = new Regex("_");
                 var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
 
-                var project = this.Database.ProjectContainers
-                    .First(container => container.PhysicalName == projectPhysicalName);
+                Func<OneDasDatabase, DatasetInfo> getDatasetAction = database =>
+                {
+                    var project = database.ProjectContainers
+                        .First(container => container.PhysicalName == projectPhysicalName);
 
 #warning improve this
-                if (!this.Database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
-                    throw new Exception();
+                    if (!database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
+                        throw new Exception();
 
-                var id = $"{project.Id}/{channelId}/{datasetId}";
-                replacements[id] = dataset;
+                    return dataset;
+                };
 
-                return $"= database[{id}];";
+                var id = $"{match.Groups[1]}/{match.Groups[2]}/{match.Groups[3]}";
+                replacements[id] = getDatasetAction;
+
+                return $"= database[\"{id}\"];";
             });
 
             return (code, replacements);
