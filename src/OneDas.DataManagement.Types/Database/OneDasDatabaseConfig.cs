@@ -21,14 +21,5 @@ namespace OneDas.DataManagement.Database
         public List<DataReaderRegistration> DataReaderRegistrations { get; set; }
 
         #endregion
-
-        #region Methods
-
-        public void Initialize()
-        {
-            //this.DataReaderRegistrations[":memory:"] = "OneDas.InMemory";
-        }
-
-        #endregion
     }
 }

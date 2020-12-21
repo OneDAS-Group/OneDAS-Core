@@ -219,7 +219,7 @@ namespace OneDas.DataManagement.Extensibility
                     if (cancellationToken.IsCancellationRequested)
                         yield break;
 
-                    (var data, var status) = this.ReadSingle(dataset, begin, end);
+                    (var data, var status) = this.ReadSingle(dataset, currentBegin, currentEnd);
                     datasetToRecordMap[dataset] = new DataRecord(data, status);
 
                     // update progress

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
@@ -52,6 +54,7 @@ namespace OneDas.DataManagement
 
         #region Fields
 
+        private OneDasExplorerOptions _options;
         private string _folderPath;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
@@ -61,10 +64,11 @@ namespace OneDas.DataManagement
 
         #region Constructors
 
-        public OneDasDatabaseManager(ILogger logger, ILoggerFactory loggerFactory)
+        public OneDasDatabaseManager(ILogger logger, ILoggerFactory loggerFactory, OneDasExplorerOptions options)
         {
             _logger = logger;
             _loggerFactory = loggerFactory;
+            _options = options;
         }
 
         #endregion
@@ -113,8 +117,24 @@ namespace OneDas.DataManagement
                         this.Config = new OneDasDatabaseConfig();
                     }
 
-                    // initialize
-                    this.Config.Initialize();
+                    // extend config with more data readers
+                    var inMemoryRegistration = new DataReaderRegistration()
+                    {
+                        DataReaderId = "OneDas.InMemory",
+                        RootPath = ":memory:"
+                    };
+
+                    if (!this.Config.DataReaderRegistrations.Contains(inMemoryRegistration))
+                        this.Config.DataReaderRegistrations.Add(inMemoryRegistration);
+
+                    var filterRegistration = new DataReaderRegistration()
+                    {
+                        DataReaderId = "OneDas.Filters",
+                        RootPath = _options.DataBaseFolderPath
+                    };
+
+                    if (!this.Config.DataReaderRegistrations.Contains(filterRegistration))
+                        this.Config.DataReaderRegistrations.Add(filterRegistration);
 
                     // save config to disk
                     this.SaveConfig(folderPath, this.Config);
