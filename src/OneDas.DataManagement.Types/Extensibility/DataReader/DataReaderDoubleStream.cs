@@ -11,7 +11,6 @@ namespace OneDas.DataManagement.Extensibility
     {
         #region Fields
 
-        private bool _applyStatus;
         private double[] _buffer;
         private int _offset;
         private int _position;
@@ -24,10 +23,9 @@ namespace OneDas.DataManagement.Extensibility
 
         #region Constructors
 
-        public DataReaderDoubleStream(long length, bool applyStatus, IEnumerable<DataReaderProgressRecord> progressRecords)
+        public DataReaderDoubleStream(long length, IEnumerable<DataReaderProgressRecord> progressRecords)
         {
             _length = length;
-            _applyStatus = applyStatus;
             _enumerator = progressRecords.GetEnumerator();
 
             this._buffer = new double[0];
@@ -131,7 +129,7 @@ namespace OneDas.DataManagement.Extensibility
                 var entry = _enumerator.Current.DatasetToRecordMap.First();
                 var dataRecord = entry.Value;
 
-                if (_applyStatus)
+                if (dataRecord.Dataset.GetType().GetElementType() != typeof(double))
                     doubleData = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
                 else
                     doubleData = (double[])dataRecord.Dataset;

@@ -89,10 +89,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
                 // dataReader
                 using var dataReader = _databaseManager.GetDataReader(dataset.Registration);
-                var applyStatus = dataReader.ApplyStatus;
 
                 // read data
-                var stream = dataReader.ReadAsDoubleStream(dataset, begin, end, applyStatus, 1 * 1000 * 1000UL, cancellationToken);
+                var stream = dataReader.ReadAsDoubleStream(dataset, begin, end, 1 * 1000 * 1000UL, cancellationToken);
 
                 _logger.LogInformation($"{message} Done.");
 

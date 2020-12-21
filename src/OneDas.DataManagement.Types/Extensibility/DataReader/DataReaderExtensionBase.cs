@@ -69,7 +69,6 @@ namespace OneDas.DataManagement.Extensibility
             DatasetInfo dataset,
             DateTime begin,
             DateTime end,
-            bool applyStatus,
             ulong upperBlockSize,
             CancellationToken cancellationToken)
         {
@@ -79,7 +78,7 @@ namespace OneDas.DataManagement.Extensibility
                 (decimal)(end - begin).TotalSeconds, MidpointRounding.AwayFromZero) * 
                 OneDasUtilities.SizeOf(OneDasDataType.FLOAT64);
 
-            return new DataReaderDoubleStream(length, applyStatus, progressRecords);
+            return new DataReaderDoubleStream(length, progressRecords);
         }
 
         public IEnumerable<DataReaderProgressRecord> Read(

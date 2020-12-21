@@ -28,7 +28,7 @@ namespace OneDas.DataManagement.Extensions
 
         public FilterDataReader(DataReaderRegistration registration, ILogger logger) : base(registration, logger)
         {
-            this.ApplyStatus = false;
+            //
         }
 
         #endregion
