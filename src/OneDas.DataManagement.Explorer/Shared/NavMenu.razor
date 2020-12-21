@@ -1,7 +1,13 @@
-﻿<div class="nav">
-    <div class="nav-logo">
+﻿@inherits StateComponentBase
+
+<div class="nav">
+    <a class="nav-logo" href="/">
         <img src="images/network_icon.png" />
         OneDAS Explorer
-    </div>
+    </a>
+    @if (this.AppState.IsDatabaseUpdating)
+    {
+        <div class="flex-centered"><i class="pulsate-css"></i>&nbsp;&nbsp; Updating database ...</div>
+    }
     <LoginDisplay />
 </div>

@@ -38,18 +38,17 @@ namespace OneDas.DataManagement.Explorer.Core
         private IJSRuntime _jsRuntime;
         private IServiceProvider _serviceProvider;
 
+        private AppState _appState;
         private DataService _dataService;
         private UserIdService _userIdService;
         private ProjectContainer _projectContainer;
         private OneDasDatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private JobControl<ExportJob> _exportJobControl;
-        private PropertyChangedEventHandler _propertyChanged;
         private AuthenticationStateProvider _authenticationStateProvider;
 
         private List<ChannelInfoViewModel> _channelGroup;
         private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
-        private Dictionary<ProjectContainer, List<ChannelInfoViewModel>> _projectContainerToChannelsMap;
 
         #endregion
 
@@ -58,6 +57,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public UserState(ILogger<UserState> logger,
                          IJSRuntime jsRuntime,
                          IServiceProvider serviceProvider,
+                         AppState appState,
                          UserIdService userIdService,
                          AuthenticationStateProvider authenticationStateProvider,
                          StateManager stateManager,
@@ -68,6 +68,7 @@ namespace OneDas.DataManagement.Explorer.Core
             this.Logger = logger;
             _jsRuntime = jsRuntime;
             _serviceProvider = serviceProvider;
+            _appState = appState;
             _userIdService = userIdService;
             _authenticationStateProvider = authenticationStateProvider;
             _databaseManager = databaseManager;
@@ -76,33 +77,15 @@ namespace OneDas.DataManagement.Explorer.Core
 
             this.VisualizeBeginAtZero = true;
 
-            // project containers and dependent init steps
-            var projectContainers = databaseManager.Database.ProjectContainers;
-
-            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, databaseManager.Database, Constants.HiddenProjects).Result;
-
-            this.SampleRateValues = this.ProjectContainersInfo.Accessible.SelectMany(projectContainer =>
-            {
-                return projectContainer.Project.Channels.SelectMany(channel =>
-                {
-                    return channel.Datasets.Select(dataset => dataset.Id.Split('_')[0]);
-                });
-            }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
-
-            this.InitializeProjectContainerToChannelMap();
+            this.Initialize(_databaseManager.Database);
             this.InitializeSampleRateToDatasetsMap();
 
-            // state manager
-            _propertyChanged = (sender, e) =>
-            {
-                if (e.PropertyName == nameof(StateManager.IsInitialized))
-                {
-                    this.RaisePropertyChanged(e.PropertyName);
-                }
-            };
+            // app state
+            _appState.DatabaseUpdated += this.OnDatabaseUpdated;
 
+            // state manager
             this.StateManager = stateManager;
-            this.StateManager.PropertyChanged += _propertyChanged;
+            this.StateManager.PropertyChanged += this.OnStateManagerPropertyChanged;
 
             // export parameters
             this.SetExportParameters(new ExportParameters());
@@ -286,7 +269,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public List<string> Attachments { get; private set; }
 
-        public SplittedProjectContainers ProjectContainersInfo { get; }
+        public SplittedProjectContainers ProjectContainersInfo { get; private set; }
 
         public Dictionary<string, List<ChannelInfoViewModel>> GroupedChannels { get; private set; }
 
@@ -530,7 +513,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 if (projectContainer != null)
                 {
-                    var channels = _projectContainerToChannelsMap[projectContainer];
+                    var channels = _appState.GetChannels(projectContainer);
                     var channel = channels.FirstOrDefault(current => current.Id == channelName);
 
                     if (channel != null)
@@ -583,6 +566,29 @@ namespace OneDas.DataManagement.Explorer.Core
             });
         }
 
+        private void Initialize(OneDasDatabase database)
+        {
+            var projectContainers = database.ProjectContainers;
+
+            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, database, Constants.HiddenProjects).Result;
+
+            this.SampleRateValues = this.ProjectContainersInfo.Accessible.SelectMany(projectContainer =>
+            {
+                return projectContainer.Project.Channels.SelectMany(channel =>
+                {
+                    return channel.Datasets.Select(dataset => dataset.Id.Split('_')[0]);
+                });
+            }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
+
+            if (_projectContainer is not null)
+            {
+                var newProjectContainer = this.ProjectContainersInfo.Accessible.FirstOrDefault(container => container.Id == _projectContainer.Id);
+
+                if (newProjectContainer is not null)
+                    _projectContainer = newProjectContainer;
+            }
+        }
+
         private void UpdateAttachments()
         {
             this.Attachments = null;
@@ -602,7 +608,7 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 this.GroupedChannels = new Dictionary<string, List<ChannelInfoViewModel>>();
 
-                foreach (var channel in _projectContainerToChannelsMap[this.ProjectContainer])
+                foreach (var channel in _appState.GetChannels(this.ProjectContainer))
                 {
                     if (this.ChannelMatchesFilter(channel))
                     {
@@ -655,20 +661,6 @@ namespace OneDas.DataManagement.Explorer.Core
             return false;
         }
 
-        private void InitializeProjectContainerToChannelMap()
-        {
-            _projectContainerToChannelsMap = new Dictionary<ProjectContainer, List<ChannelInfoViewModel>>();
-
-            foreach (var projectContainer in this.ProjectContainersInfo.Accessible)
-            {
-                _projectContainerToChannelsMap[projectContainer] = projectContainer.Project.Channels.Select(channel =>
-                {
-                    var channelMeta = projectContainer.ProjectMeta.Channels.First(channelMeta => channelMeta.Id == channel.Id);
-                    return new ChannelInfoViewModel(channel, channelMeta);
-                }).ToList();
-            }
-        }
-
         private void InitializeSampleRateToDatasetsMap()
         {
             _sampleRateToSelectedDatasetsMap = this.SampleRateValues.ToDictionary(sampleRate => sampleRate, sampleRate => new List<DatasetInfoViewModel>());
@@ -708,6 +700,23 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #endregion
 
+        #region Callbacks
+
+        public void OnDatabaseUpdated(object sender, OneDasDatabase e)
+        {
+            this.Initialize(e);
+        }
+
+        public void OnStateManagerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(StateManager.IsInitialized))
+            {
+                this.RaisePropertyChanged(e.PropertyName);
+            }
+        }
+
+        #endregion
+
         #region Records
 
         public record SplittedProjectContainers(List<ProjectContainer> Accessible, List<ProjectContainer> Restricted);
@@ -725,7 +734,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 if (disposing)
                 {
                     _exportJobControl?.CancellationTokenSource.Cancel();
-                    this.StateManager.PropertyChanged -= _propertyChanged;
+                    this.StateManager.PropertyChanged -= this.OnStateManagerPropertyChanged;
                 }
 
                 disposedValue = true;

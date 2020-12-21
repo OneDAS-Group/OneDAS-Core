@@ -1,4 +1,4 @@
-﻿@inherits UserStateComponentBase
+﻿@inherits StateComponentBase
 
 <div class="settings-content-box">
 
@@ -38,6 +38,8 @@
         </MatTab>
 
         <MatTab Label="Settings">
+
+            <MatButton Icon="@MatIconNames.Autorenew" @onclick="async () => await this.DatabaseManager.UpdateAsync()">Reload Database</MatButton>
 
             <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
                           Label="Database Location">

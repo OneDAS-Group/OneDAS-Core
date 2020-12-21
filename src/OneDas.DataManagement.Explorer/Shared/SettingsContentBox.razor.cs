@@ -9,6 +9,9 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
+        public OneDasDatabaseManager DatabaseManager { get; set; }
+
+        [Inject]
         public SettingsViewModel Settings { get; set; }
 
         [Inject]

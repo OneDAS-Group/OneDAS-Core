@@ -92,6 +92,11 @@ app {
     width: 100%;
 }
 
+    .nav a {
+        color: inherit;
+        text-decoration: none;
+    }
+
     .nav .nav-logo {
         display: flex;
         flex-direction: row;
@@ -982,4 +987,30 @@ app {
 
 .mdc-select--focused:not(.mdc-select--disabled) .mdc-floating-label {
     color: #880e4f !important;
+}
+
+.pulsate-css {
+    animation: pulsate 1s ease-out;
+    animation-iteration-count: infinite;
+    opacity: 0;
+    border: 3px solid #999;
+    border-radius: 30px;
+    height: 18px;
+    width: 18px;
+}
+
+@keyframes pulsate {
+    0% {
+        transform: scale(0.1, 0.1);
+        opacity: 0.0;
+    }
+
+    50% {
+        opacity: 1.0;
+    }
+
+    100% {
+        transform: scale(1.2, 1.2);
+        opacity: 0.0;
+    }
 }

@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -35,7 +36,7 @@ namespace OneDas.DataManagement.Extensions
 
         #region Properties
 
-        public string Username { get; set; }
+        public ClaimsPrincipal User { get; set; }
 
         public OneDasDatabaseManager DatabaseManager { get; set; }
 
@@ -46,6 +47,12 @@ namespace OneDas.DataManagement.Extensions
         #endregion
 
         #region Methods
+
+        public static void ClearCache()
+        {
+            FilterDataReader.FilterSettingsCache.Clear();
+            FilterDataReader.MethodInfoCache.Clear();
+        }
 
         public override (T[] Dataset, byte[] Status) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
@@ -62,6 +69,10 @@ namespace OneDas.DataManagement.Extensions
             var database = cacheEntry.Replacements.ToDictionary(entry => entry.Key, entry =>
             {
                 var dataset = entry.Value;
+
+                if (!Utilities.IsProjectAccessible(this.User, dataset.Parent.Parent.Id, this.DatabaseManager.Database))
+                    throw new UnauthorizedAccessException("The current user is not allowed to access this filter.");
+
                 var dataReader = this.DatabaseManager.GetDataReader(dataset.Registration);
                 (var rawData, var status) = dataReader.ReadSingle(dataset, begin, end);
                 var data = BufferUtilities.ApplyDatasetStatus2(rawData, status);
@@ -78,9 +89,7 @@ namespace OneDas.DataManagement.Extensions
 
         protected override List<ProjectInfo> LoadProjects()
         {
-            var filterSettings = this.GetFilterSettings();
-            
-            if (filterSettings is not null)
+            if (this.TryGetFilterSettings(out var filterSettings))
             {
                 var project = new ProjectInfo("/IN_MEMORY/FILTERS/SHARED")
                 {
@@ -128,12 +137,14 @@ namespace OneDas.DataManagement.Extensions
             return 1;
         }
 
-        private FilterSettings GetFilterSettings()
+        private bool TryGetFilterSettings(out FilterSettings filterSettings)
         {
-            FilterSettings filterSettings = null;
-
             // search in cache
-            if (!FilterDataReader.FilterSettingsCache.TryGetValue(this.Registration, out filterSettings))
+            if (FilterDataReader.FilterSettingsCache.TryGetValue(this.Registration, out filterSettings))
+            {
+                return true;   
+            }
+            else
             {
                 var filePath = Path.Combine(this.RootPath, "filters.json");
 
@@ -144,11 +155,14 @@ namespace OneDas.DataManagement.Extensions
                     filterSettings = JsonSerializer.Deserialize<FilterSettings>(jsonString);
 
                     // add to cache
-                    FilterDataReader.FilterSettingsCache.AddOrUpdate(this.Registration, filterSettings, (key, value) => filterSettings);
-                }
-            }           
+                    var filterSettings2 = filterSettings; // to make compiler happy
+                    FilterDataReader.FilterSettingsCache.AddOrUpdate(this.Registration, filterSettings, (key, value) => filterSettings2);
 
-            return filterSettings;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private FilterDataReaderCacheEntry GetCacheEntry(string filterId)
@@ -156,17 +170,23 @@ namespace OneDas.DataManagement.Extensions
             // search in cache
             if (!FilterDataReader.MethodInfoCache.TryGetValue((this.Registration, filterId), out var cacheEntry))
             {
-                var filterSettings = this.GetFilterSettings();
+                if (!this.TryGetFilterSettings(out var filterSettings))
+                    throw new Exception("No filter settings available.");
 
                 // compile channel
-                var additionalCodeFiles = filterSettings.GetSharedFiles(this.Username)
+                var additionalCodeFiles = filterSettings.GetSharedFiles(this.User.Identity.Name)
                     .Select(filterDescription => filterDescription.Code)
                     .ToList();
 
-                var filter = filterSettings.Filters.First(current => current.Id == filterId);
+                var filter = filterSettings.Filters.FirstOrDefault(current => current.Id == filterId);
+
+                if (filter is null)
+                    throw new Exception($"No filter found with ID '{filterId}'.");
+
                 (var preparedCode, var replacements) = this.PrepareCode(filter.Code);
 
                 filter.Code = preparedCode;
+
                 var roslynProject = new RoslynProject(filter, additionalCodeFiles);
                 using var peStream = new MemoryStream();
 
@@ -185,7 +205,10 @@ namespace OneDas.DataManagement.Extensions
 #warning https://stackoverflow.com/questions/4681031/how-do-i-check-if-a-type-provides-a-parameterless-constructor
                     var parameters = new Type[] { typeof(DateTime), typeof(DateTime), typeof(Dictionary<string, double[]>), typeof(double[]) };
                     return Utilities.GetMethodsBySignature(type, typeof(void), parameters);
-                }).First();
+                }).FirstOrDefault();
+
+                if (methodInfo is null)
+                    throw new Exception($"No method with matching signature found for filter with ID '{filterId}'.");
 
                 // add to cache
                 cacheEntry = new FilterDataReaderCacheEntry(loadContext, methodInfo, replacements);
@@ -216,17 +239,21 @@ namespace OneDas.DataManagement.Extensions
                 var regex = new Regex("_");
                 var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
 
+#warning improve this (PhysicalName)
                 var project = this.DatabaseManager.Database.ProjectContainers
-                        .First(container => container.PhysicalName == projectPhysicalName);
+                        .FirstOrDefault(container => container.PhysicalName == projectPhysicalName);
 
-#warning improve this
+                if (project == null)
+                    throw new Exception($"Unable to find project with physical name '{projectPhysicalName}'.");
+
+                var path = $"{project.Id}/{channelId}/{datasetId}";
+
                 if (!this.DatabaseManager.Database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
-                    throw new Exception();
+                    throw new Exception($"Unable to find dataset with path 'path'.");
 
-                var id = $"{match.Groups[1]}/{match.Groups[2]}/{match.Groups[3]}";
-                replacements[id] = dataset;
+                replacements[path] = dataset;
 
-                return $"= (double[])database[\"{id}\"];";
+                return $"= (double[])database[\"{path}\"];";
             });
 
             return (code, replacements);

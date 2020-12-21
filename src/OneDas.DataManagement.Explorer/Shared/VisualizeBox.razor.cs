@@ -142,6 +142,12 @@ namespace OneDas.DataManagement.Explorer.Shared
 				// TaskCanceledException is thrown: app crashes.
 				this.UserState.ClientState = ClientState.Normal;
 			}
+			catch (UnauthorizedAccessException ex)
+            {
+				this.UserState.Logger.LogError(ex.GetFullMessage());
+				this.ToasterService.ShowError(message: "Unauthorized.", icon: MatIconNames.Lock);
+				this.UserState.ClientState = ClientState.Normal;
+			}
 			catch (Exception ex)
 			{
 				this.UserState.Logger.LogError(ex.GetFullMessage());

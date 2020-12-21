@@ -1,18 +1,20 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
 using OneDas.Extensibility;
+using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement
 {
@@ -32,11 +34,11 @@ namespace OneDas.DataManagement
      * *******************************************************************************
      */
 
-    public class OneDasDatabaseManager
+    public class OneDasDatabaseManager : BindableBase
     {
         #region Events
 
-        public event EventHandler<OneDasDatabase> OnDatabaseUpdated;
+        public event EventHandler<OneDasDatabase> DatabaseUpdated;
 
         #endregion
 
@@ -54,7 +56,11 @@ namespace OneDas.DataManagement
 
         #region Fields
 
+        private DatabaseManagerState _state;
         private OneDasExplorerOptions _options;
+        private CancellationTokenSource _updateCancellationTokenSource;
+        private bool _isUpdating;
+        private object _updateLock;
         private string _folderPath;
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
@@ -69,6 +75,8 @@ namespace OneDas.DataManagement
             _logger = logger;
             _loggerFactory = loggerFactory;
             _options = options;
+
+            _updateLock = new object();
         }
 
         #endregion
@@ -79,7 +87,24 @@ namespace OneDas.DataManagement
 
         public OneDasDatabaseConfig Config { get; private set; }
 
-        private DatabaseManagerState State { get; set; }
+        public bool IsUpdating
+        {
+            get { return _isUpdating; }
+            set { this.SetProperty(ref _isUpdating, value); }
+        }
+
+        private DatabaseManagerState State
+        {
+            get
+            {
+                return _state;
+            }
+            set
+            {
+                _state = value;
+                this.RaisePropertyChanged(nameof(this.Database));
+            }
+        }
 
         #endregion
 
@@ -148,119 +173,146 @@ namespace OneDas.DataManagement
             _folderPath = folderPath;
         }
 
+        public Task UpdateAsync()
+        {
+            return Task.Run(() =>
+            {
+                this.Update();
+            });
+        }
+
         public void Update()
         {
-            // Concept:
-            //
-            // 1) rootPathToProjectsMap, rootPathToDataReaderTypeMap and database are instantiated in this method,
-            // combined into a new DatabaseManagerState and then set in an atomic operation to the State propery.
-            // 
-            // 2) Within this method, the rootPathToProjectsMap cache gets filled for both, aggregated and native data 
-            // reader.
-            //
-            // 3) It may happen that during this process, which might take a while, an external caller calls 
-            // GetAggregationDataReader or GetNativeDataReader. To divide both processes (external call vs this method),
-            // the State property is introduced, so external calls use old maps and this method uses the new instances.
+            _updateCancellationTokenSource?.Cancel();
+            _updateCancellationTokenSource = new CancellationTokenSource();
 
-            var database = new OneDasDatabase();
-
-            // create new empty projects map
-            var registrationToProjectsMap = new Dictionary<DataReaderRegistration, List<ProjectInfo>>();
-
-            // load data readers
-            var registrationToDataReaderTypeMap = this.LoadDataReaders(this.Config.DataReaderRegistrations);
-
-            // register aggregation data reader
-            var registration = new DataReaderRegistration()
-            {
-                DataReaderId = "OneDas.HDF",
-                RootPath = _folderPath,
-                IsAggregation = true
-            };
-
-            registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);
-
-            // instantiate data readers
-            var dataReaders = registrationToDataReaderTypeMap
-                                .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, registrationToProjectsMap))
-                                .ToList();
-
-            foreach (var dataReader in dataReaders)
+            lock (_updateLock)
             {
                 try
                 {
-                    var projectIds = dataReader.GetProjectIds();
+                    this.IsUpdating = true;
+                    FilterDataReader.ClearCache();
 
-                    foreach (var projectId in projectIds)
+                    // Concept:
+                    //
+                    // 1) rootPathToProjectsMap, rootPathToDataReaderTypeMap and database are instantiated in this method,
+                    // combined into a new DatabaseManagerState and then set in an atomic operation to the State propery.
+                    // 
+                    // 2) Within this method, the rootPathToProjectsMap cache gets filled for both, aggregated and native data 
+                    // reader.
+                    //
+                    // 3) It may happen that during this process, which might take a while, an external caller calls 
+                    // GetAggregationDataReader or GetNativeDataReader. To divide both processes (external call vs this method),
+                    // the State property is introduced, so external calls use old maps and this method uses the new instances.
+
+                    var database = new OneDasDatabase();
+
+                    // create new empty projects map
+                    var registrationToProjectsMap = new Dictionary<DataReaderRegistration, List<ProjectInfo>>();
+
+                    // load data readers
+                    var registrationToDataReaderTypeMap = this.LoadDataReaders(this.Config.DataReaderRegistrations);
+
+                    // register aggregation data reader
+                    var registration = new DataReaderRegistration()
                     {
-                        // find project container or create a new one
-                        var container = database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
+                        DataReaderId = "OneDas.HDF",
+                        RootPath = _folderPath,
+                        IsAggregation = true
+                    };
 
-                        if (container == null)
+                    registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);
+
+                    // instantiate data readers
+                    var dataReaders = registrationToDataReaderTypeMap
+                                        .Select(entry => this.InstantiateDataReader(entry.Key, entry.Value, registrationToProjectsMap))
+                                        .ToList();
+
+                    foreach (var dataReader in dataReaders)
+                    {
+                        try
                         {
-                            container = new ProjectContainer(projectId);
-                            database.ProjectContainers.Add(container);
+                            var projectIds = dataReader.GetProjectIds();
 
-                            // try to load project meta data
-                            var filePath = this.GetProjectMetaPath(projectId);
-
-                            ProjectMetaInfo projectMeta;
-
-                            if (File.Exists(filePath))
+                            foreach (var projectId in projectIds)
                             {
-                                var jsonString = File.ReadAllText(filePath);
-                                projectMeta = JsonSerializer.Deserialize<ProjectMetaInfo>(jsonString);
-                            }
-                            else
-                            {
-                                projectMeta = new ProjectMetaInfo(projectId);
-                            }
+                                if (_updateCancellationTokenSource.IsCancellationRequested)
+                                    return;
 
-                            container.ProjectMeta = projectMeta;
+                                // find project container or create a new one
+                                var container = database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
+
+                                if (container == null)
+                                {
+                                    container = new ProjectContainer(projectId);
+                                    database.ProjectContainers.Add(container);
+
+                                    // try to load project meta data
+                                    var filePath = this.GetProjectMetaPath(projectId);
+
+                                    ProjectMetaInfo projectMeta;
+
+                                    if (File.Exists(filePath))
+                                    {
+                                        var jsonString = File.ReadAllText(filePath);
+                                        projectMeta = JsonSerializer.Deserialize<ProjectMetaInfo>(jsonString);
+                                    }
+                                    else
+                                    {
+                                        projectMeta = new ProjectMetaInfo(projectId);
+                                    }
+
+                                    container.ProjectMeta = projectMeta;
+                                }
+
+                                // get up-to-date project from data reader
+                                var project = dataReader.GetProject(projectId);
+
+                                //
+                                container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
+                            }
                         }
-
-                        // get up-to-date project from data reader
-                        var project = dataReader.GetProject(projectId);
-
-                        //
-                        container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
+                        finally
+                        {
+                            dataReader.Dispose();
+                        }
                     }
+
+                    // the purpose of this block is to initalize empty properties 
+                    // add missing channels and clean up empty channels
+                    foreach (var projectContainer in database.ProjectContainers)
+                    {
+                        // remove all channels where no native datasets are available
+                        // because only these provide metadata like name and group
+                        var channels = projectContainer.Project.Channels;
+
+                        channels
+                            .Where(channel => string.IsNullOrWhiteSpace(channel.Name))
+                            .ToList()
+                            .ForEach(channel => channels.Remove(channel));
+
+                        // initalize project meta
+                        projectContainer.ProjectMeta.Initialize(projectContainer.Project);
+
+                        // save project meta to disk
+                        this.SaveProjectMeta(projectContainer.ProjectMeta);
+                    }
+
+                    this.State = new DatabaseManagerState()
+                    {
+                        AggregationRegistration = registration,
+                        Database = database,
+                        RegistrationToProjectsMap = registrationToProjectsMap,
+                        RegistrationToDataReaderTypeMap = registrationToDataReaderTypeMap
+                    };
+
+                    this.DatabaseUpdated?.Invoke(this, database);
                 }
                 finally
                 {
-                    dataReader.Dispose();
+                    this.IsUpdating = false;
                 }
             }
-
-            // the purpose of this block is to initalize empty properties 
-            // add missing channels and clean up empty channels
-            foreach (var projectContainer in database.ProjectContainers)
-            {
-                // remove all channels where no native datasets are available
-                // because only these provide metadata like name and group
-                var channels = projectContainer.Project.Channels;
-
-                channels
-                    .Where(channel => string.IsNullOrWhiteSpace(channel.Name))
-                    .ToList()
-                    .ForEach(channel => channels.Remove(channel));
-
-                // initalize project meta
-                projectContainer.ProjectMeta.Initialize(projectContainer.Project);
-
-                // save project meta to disk
-                this.SaveProjectMeta(projectContainer.ProjectMeta);
-            }
-
-            this.State = new DatabaseManagerState()
-            {
-                AggregationRegistration = registration,
-                Database = database,
-                RegistrationToProjectsMap = registrationToProjectsMap,
-                RegistrationToDataReaderTypeMap = registrationToDataReaderTypeMap
-            };
-
-            this.OnDatabaseUpdated?.Invoke(this, database);
         }
 
         public List<DataReaderExtensionBase> GetDataReaders(string projectId, bool excludeAggregation = false)

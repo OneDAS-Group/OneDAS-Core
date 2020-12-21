@@ -3,10 +3,12 @@
     <MatDialogContent>
         <p>Select one or more projects you need access to.</p>
 
-        @foreach (var state in this.ProjectContainerStates)
-        {
-            <MatCheckbox @bind-Value="state.IsSelected" Label="@state.Id"></MatCheckbox>
-        }
+        <div class="flex-column">
+            @foreach (var state in this.ProjectContainerStates)
+            {
+                <MatCheckbox @bind-Value="state.IsSelected" Label="@state.Id"></MatCheckbox>
+            }
+        </div>
     </MatDialogContent>
     <MatDialogActions>
         <MatButton OnClick="this.OK" Outlined="true">OK</MatButton>

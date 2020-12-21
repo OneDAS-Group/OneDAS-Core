@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-	public abstract class UserStateComponentBase : ComponentBase, IDisposable
+	public abstract class StateComponentBase : ComponentBase, IDisposable
 	{
 		#region Properties
 
