@@ -38,8 +38,6 @@ namespace OneDas.DataManagement.Extensibility
 
         internal DataReaderRegistration Registration { get; }
 
-        internal bool ApplyStatus { get; set; } = true;
-
         #endregion
 
         #region Methods
@@ -222,15 +220,8 @@ namespace OneDas.DataManagement.Extensibility
                     if (cancellationToken.IsCancellationRequested)
                         yield break;
 
-                    // invoke generic method
-                    var type = typeof(DataReaderExtensionBase);
-                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-                    var genericType = OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType);
-                    var parameters = new object[] { dataset, currentBegin, currentEnd };
-                    var result = OneDasUtilities.InvokeGenericMethod(type, this, nameof(this.InternalReadSingle), flags, genericType, parameters);
-                    (var data, var statusSet) = ((Array data, byte[] statusSet))result;
-
-                    datasetToRecordMap[dataset] = new DataRecord(data, statusSet);
+                    (var data, var status) = this.ReadSingle(dataset, begin, end);
+                    datasetToRecordMap[dataset] = new DataRecord(data, status);
 
                     // update progress
                     var localProgress = TimeSpan.FromTicks(currentPeriod.Ticks * index / count);
@@ -326,7 +317,30 @@ namespace OneDas.DataManagement.Extensibility
             return this.GetAvailability(projectId, day) > 0;
         }
 
-        public abstract (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
+#warning Why generic?
+        public abstract (T[] Dataset, byte[] Status) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged;
+
+        public (Array Dataset, byte[] Status) ReadSingle(DatasetInfo dataset, DateTime begin, DateTime end)
+        {
+            // invoke generic method
+            var type = typeof(DataReaderExtensionBase);
+            var flags = BindingFlags.Instance | BindingFlags.Public;
+            var genericType = OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType);
+            var parameters = new object[] { dataset, begin, end };
+
+            var result = OneDasUtilities.InvokeGenericMethod(type, this, nameof(this.ReadSingle), flags, genericType, parameters);
+
+            // cast result
+            var resultType = result.GetType();
+            var propertyInfo1 = resultType.GetField("Item1");
+            var propertyInfo2 = resultType.GetField("Item2");
+
+            var data = propertyInfo1.GetValue(result) as Array;
+            var status = propertyInfo2.GetValue(result) as byte[];
+
+            // return
+            return (data, status);
+        }
 
         public virtual void Dispose()
         {
@@ -336,12 +350,6 @@ namespace OneDas.DataManagement.Extensibility
         protected abstract List<ProjectInfo> LoadProjects();
 
         protected abstract double GetAvailability(string projectId, DateTime Day);
-
-        private (Array dataset, byte[] statusSet) InternalReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end) where T : unmanaged
-        {
-            (T[] data, byte[] statusSet) = this.ReadSingle<T>(dataset, begin, end);
-            return (data, statusSet);
-        }
 
         #endregion
     }

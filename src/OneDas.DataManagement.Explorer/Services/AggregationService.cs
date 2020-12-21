@@ -373,7 +373,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private Dictionary<AggregationUnit, double[]> ApplyAggregationFunction<T>(DatasetInfo dataset,
                                                                               T[] data,
-                                                                              byte[] statusSet,
+                                                                              byte[] status,
                                                                               List<AggregationUnit> aggregationUnits) where T : unmanaged
         {
             var nanLimit = 0.99;
@@ -400,7 +400,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     case AggregationMethod.Sum:
 
                         if (dataset_double == null)
-                            dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, statusSet);
+                            dataset_double = BufferUtilities.ApplyDatasetStatus<T>(data, status);
 
                         partialBuffersMap[unit] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, dataset_double, nanLimit, _logger);
 
@@ -409,7 +409,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     case AggregationMethod.MinBitwise:
                     case AggregationMethod.MaxBitwise:
 
-                        partialBuffersMap[unit] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, data, statusSet, nanLimit, _logger);
+                        partialBuffersMap[unit] = this.ApplyAggregationFunction(method, argument, (int)sampleCount, data, status, nanLimit, _logger);
 
                         break;
 
@@ -596,7 +596,7 @@ namespace OneDas.DataManagement.Explorer.Services
                                                      string argument,
                                                      int kernelSize,
                                                      T[] data,
-                                                     byte[] statusSet,
+                                                     byte[] status,
                                                      double nanLimit,
                                                      ILogger logger) where T : unmanaged
         {
@@ -611,7 +611,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var chunkData = this.GetNaNFreeData(data, statusSet, x, kernelSize);
+                        var chunkData = this.GetNaNFreeData(data, status, x, kernelSize);
                         var length = chunkData.Length;
                         var isHighQuality = (length / (double)kernelSize) >= nanLimit;
 
@@ -641,7 +641,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     Parallel.For(0, targetDatasetLength, x =>
                     {
-                        var chunkData = this.GetNaNFreeData(data, statusSet, x, kernelSize);
+                        var chunkData = this.GetNaNFreeData(data, status, x, kernelSize);
                         var length = chunkData.Length;
                         var isHighQuality = (length / (double)kernelSize) >= nanLimit;
 
@@ -671,7 +671,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return result;
         }
 
-        private unsafe T[] GetNaNFreeData<T>(T[] data, byte[] statusSet, int index, int kernelSize) where T : unmanaged
+        private unsafe T[] GetNaNFreeData<T>(T[] data, byte[] status, int index, int kernelSize) where T : unmanaged
         {
             var sourceIndex = index * kernelSize;
             var length = data.Length;
@@ -679,7 +679,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
             for (int i = 0; i < length; i++)
             {
-                if (statusSet[sourceIndex + i] == 1)
+                if (status[sourceIndex + i] == 1)
                     chunkData.Add(data[sourceIndex + i]);
             }
 

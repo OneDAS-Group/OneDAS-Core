@@ -31,7 +31,8 @@ namespace OneDas.DataManagement.Explorer.Core
                 {
                     MetadataReference.CreateFromFile(filePath, documentation: documentationProvider)
                 })
-                .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                    optimizationLevel: OptimizationLevel.Release));
 
             var project = this.Workspace.AddProject(projectInfo);
 

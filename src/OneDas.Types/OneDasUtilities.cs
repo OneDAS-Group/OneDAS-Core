@@ -122,7 +122,11 @@ namespace OneDas
 
         public static object InvokeGenericMethod(Type methodParent, object instance, string methodName, BindingFlags bindingFlags, Type genericType, object[] parameters)
         {
-            var methodInfo = methodParent.GetMethod(methodName, bindingFlags);
+            var methodInfo = methodParent
+                .GetMethods(bindingFlags)
+                .Where(methodInfo => methodInfo.IsGenericMethod && methodInfo.Name == methodName)
+                .First();
+
             var genericMethodInfo = methodInfo.MakeGenericMethod(genericType);
 
             return genericMethodInfo.Invoke(instance, parameters);

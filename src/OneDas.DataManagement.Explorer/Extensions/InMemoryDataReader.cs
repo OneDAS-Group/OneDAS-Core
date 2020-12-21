@@ -29,7 +29,7 @@ namespace OneDas.DataManagement.Extensions
 
         #region Methods
 
-        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        public override (T[] Dataset, byte[] Status) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             double[] dataDouble;
 
@@ -64,9 +64,9 @@ namespace OneDas.DataManagement.Extensions
             }
 
             var data = dataDouble.Select(value => (T)Convert.ChangeType(value, typeof(T))).ToArray();
-            var statusSet = Enumerable.Range(0, length).Select(value => (byte)1).ToArray();
+            var status = Enumerable.Range(0, length).Select(value => (byte)1).ToArray();
 
-            return (data, statusSet);
+            return (data, status);
         }
 
         protected override List<ProjectInfo> LoadProjects()

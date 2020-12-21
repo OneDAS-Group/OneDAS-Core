@@ -269,13 +269,11 @@ namespace OneDas.DataManagement.Explorer.Services
                     var dataReader = _databaseManager.GetDataReader(registration);
                     dataReader.Progress.ProgressChanged += progressHandler;
 
-                    var applyStatus = dataReader.ApplyStatus;
-
                     try
                     {
                         foreach (var progressRecord in dataReader.Read(entry.Value, exportParameters.Begin, exportParameters.End, _blockSizeLimit, cancellationToken))
                         {
-                            this.ProcessData(dataWriter, progressRecord, applyStatus);
+                            this.ProcessData(dataWriter, progressRecord, applyStatus: !dataReader.Registration.IsAggregation);
                         }
                     }
                     finally
@@ -294,7 +292,9 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 double[] data;
 
-                if (applyStatus)
+                var elementType = dataRecord.Dataset.GetType().GetElementType();
+
+                if (applyStatus || elementType != typeof(double))
                     data = BufferUtilities.ApplyDatasetStatus2(dataRecord.Dataset, dataRecord.Status);
                 else
                     data = (double[])dataRecord.Dataset;

@@ -44,7 +44,7 @@ namespace OneDas.DataManagement.Extensions
         #region Methods
 
 #warning Unify this with other readers
-        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        public override (T[] Dataset, byte[] Status) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
             // read optional parameters
             if (this.OptionalParameters != null && this.OptionalParameters.TryGetValue("CopyToLocal", out var value))
@@ -57,10 +57,10 @@ namespace OneDas.DataManagement.Extensions
             var samplesPerDay = new SampleRateContainer(dataset.Id).SamplesPerDay;
             var length = (long)Math.Round((end - begin).TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
             var data = new T[length];
-            var statusSet = new byte[length];
+            var status = new byte[length];
 
             if (!Directory.Exists(folderPath))
-                return (data, statusSet);
+                return (data, status);
 
             var periodPerFile = TimeSpan.FromDays(1);
 
@@ -135,16 +135,16 @@ namespace OneDas.DataManagement.Extensions
                                     {
                                         var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
 
-                                        byte[] currentStatusSet = null;
+                                        byte[] currentStatus = null;
 
                                         if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
-                                            currentStatusSet = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
+                                            currentStatus = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
 
                                         // write data
                                         currentDataset.CopyTo(data.AsSpan(bufferOffset));
 
-                                        if (currentStatusSet != null)
-                                            currentStatusSet.CopyTo(statusSet.AsSpan(bufferOffset));
+                                        if (currentStatus != null)
+                                            currentStatus.CopyTo(status.AsSpan(bufferOffset));
 
                                         // update loop state
                                         fileOffset += currentBlock; // file offset
@@ -180,7 +180,7 @@ namespace OneDas.DataManagement.Extensions
                 currentBegin += periodPerFile;
             }
 
-            return (data, statusSet);
+            return (data, status);
         }
 
         protected override List<ProjectInfo> LoadProjects()

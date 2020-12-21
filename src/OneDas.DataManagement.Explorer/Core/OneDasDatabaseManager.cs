@@ -300,7 +300,10 @@ namespace OneDas.DataManagement
             {
                 var fileAccessManger = _serviceProvider.GetRequiredService<FileAccessManager>();
                 ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
-                ((HdfDataReader)dataReader).ApplyStatus = false;
+            }
+            else if (type == typeof(FilterDataReader))
+            {
+                ((FilterDataReader)dataReader).DatabaseManager = this;
             }
 
             // initialize projects property

@@ -105,27 +105,27 @@ namespace OneDas.DataManagement.Explorer.Tests
             var halfHourOffset = hourOffset / 2;
 
             // day 1 V1
-            Assert.True(result.StatusSet[baseOffset + 0] == 1);
-            Assert.True(result.StatusSet[baseOffset + 1] == 0);
-            Assert.True(result.StatusSet[baseOffset + 2] == 1);
-            Assert.True(result.StatusSet[baseOffset + 3] == 0);
+            Assert.True(result.Status[baseOffset + 0] == 1);
+            Assert.True(result.Status[baseOffset + 1] == 0);
+            Assert.True(result.Status[baseOffset + 2] == 1);
+            Assert.True(result.Status[baseOffset + 3] == 0);
             Assert.True(result.Dataset[baseOffset + 0] == 99.27636);
             Assert.True(result.Dataset[baseOffset + 2] == 99.27626);
             Assert.True(result.Dataset[baseOffset + 86400 * 100 - 1] == 2323e-3);
 
             // day 2 V1
-            Assert.True(result.StatusSet[baseOffset + dayOffset - 1] == 1);
-            Assert.True(result.StatusSet[baseOffset + dayOffset + 0] == 1);
-            Assert.True(result.StatusSet[baseOffset + dayOffset + 2] == 1);
-            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - hourOffset - 1] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset - 1] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset + 0] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset + 2] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset + dayOffset - hourOffset - 1] == 1);
             Assert.True(result.Dataset[baseOffset + dayOffset + 0] == 98.27636);
             Assert.True(result.Dataset[baseOffset + dayOffset + 2] == 97.27626);
             Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - hourOffset - 1] == 2323e-6);
 
             // day 2 V2
-            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - halfHourOffset + 0] == 1);
-            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - halfHourOffset + 2] == 1);
-            Assert.True(result.StatusSet[baseOffset + dayOffset + dayOffset - 1] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset + dayOffset - halfHourOffset + 0] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset + dayOffset - halfHourOffset + 2] == 1);
+            Assert.True(result.Status[baseOffset + dayOffset + dayOffset - 1] == 1);
             Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - halfHourOffset + 0] == 90.27636);
             Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - halfHourOffset + 2] == 90.27626);
             Assert.True(result.Dataset[baseOffset + dayOffset + dayOffset - 1] == 2323e-9);

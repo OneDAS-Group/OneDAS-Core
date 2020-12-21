@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OneDas.Buffers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Extensibility;
@@ -21,7 +22,8 @@ namespace OneDas.DataManagement.Extensions
 
         static FilterDataReader()
         {
-            FilterDataReader.Cache = new ConcurrentDictionary<DataReaderRegistration, FilterDataReaderCacheEntry>();
+            FilterDataReader.FilterSettingsCache = new ConcurrentDictionary<DataReaderRegistration, FilterSettings>();
+            FilterDataReader.MethodInfoCache = new ConcurrentDictionary<(DataReaderRegistration, string), FilterDataReaderCacheEntry>();
         }
 
         public FilterDataReader(DataReaderRegistration registration, ILogger logger) : base(registration, logger)
@@ -35,30 +37,52 @@ namespace OneDas.DataManagement.Extensions
 
         public string Username { get; set; }
 
-        public static ConcurrentDictionary<DataReaderRegistration, FilterDataReaderCacheEntry> Cache { get; }
+        public OneDasDatabaseManager DatabaseManager { get; set; }
+
+        public static ConcurrentDictionary<DataReaderRegistration, FilterSettings> FilterSettingsCache { get; }
+
+        public static ConcurrentDictionary<(DataReaderRegistration, string), FilterDataReaderCacheEntry> MethodInfoCache { get; }
 
         #endregion
 
         #region Methods
 
-        public override (T[] Dataset, byte[] StatusSet) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
+        public override (T[] Dataset, byte[] Status) ReadSingle<T>(DatasetInfo dataset, DateTime begin, DateTime end)
         {
-            throw new NotImplementedException();
+            var samplesPerDay = new SampleRateContainer(dataset.Id).SamplesPerDay;
+            var length = (long)Math.Round((end - begin).TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
+            var cacheEntry = this.GetCacheEntry(dataset.Parent.Id);
+
+            // prepare data
+            var result = new double[length];
+            var status = new byte[length];
+            status.AsSpan().Fill(1);
+
+            // fill database
+            var database = cacheEntry.Replacements.ToDictionary(entry => entry.Key, entry =>
+            {
+                var dataset = entry.Value;
+                var dataReader = this.DatabaseManager.GetDataReader(dataset.Registration);
+                (var rawData, var status) = dataReader.ReadSingle(dataset, begin, end);
+                var data = BufferUtilities.ApplyDatasetStatus2(rawData, status);
+
+                return data;
+            });
+
+            // execute
+            var filterInstance = Activator.CreateInstance(cacheEntry.MethodInfo.DeclaringType);
+            cacheEntry.MethodInfo.Invoke(filterInstance, new object[] { begin, end, database, result });
+
+            return ((T[])(object)result, status);
         }
 
         protected override List<ProjectInfo> LoadProjects()
         {
-            var possibleCacheEntry = new FilterDataReaderCacheEntry();
-            var cacheEntry = FilterDataReader.Cache.GetOrAdd(this.Registration, possibleCacheEntry);
-            var isCached = cacheEntry != possibleCacheEntry;
-            var filePath = Path.Combine(this.RootPath, "filters.json");
-
-            if (File.Exists(filePath))
+            var filterSettings = this.GetFilterSettings();
+            
+            if (filterSettings is not null)
             {
-                var jsonString = File.ReadAllText(filePath);
-                var filterSettings = JsonSerializer.Deserialize<FilterSettings>(jsonString);
-
-                var project = new ProjectInfo("FILTERS")
+                var project = new ProjectInfo("/IN_MEMORY/FILTERS/SHARED")
                 {
                     ProjectStart = DateTime.MinValue,
                     ProjectEnd = DateTime.MaxValue
@@ -86,39 +110,6 @@ namespace OneDas.DataManagement.Extensions
 
                     channel.Datasets.AddRange(datasets);
 
-                    // compile channel
-#error assign unique assembly name!!
-                    if (!isCached)
-                    {
-                        var additionalCodeFiles = filterSettings.GetSharedFiles(this.Username)
-                            .Select(filterDescription => filterDescription.Code)
-                            .ToList();
-
-                        (var preparedCode, var replacements) = this.PrepareCode(filter.Code);
-
-                        filter.Code = preparedCode;
-                        var roslynProject = new RoslynProject(filter, additionalCodeFiles);
-                        using var peStream = new MemoryStream();
-
-                        var compilation = roslynProject.Workspace.CurrentSolution.Projects.First()
-                            .GetCompilationAsync().Result
-                            .Emit(peStream);
-
-                        peStream.Seek(0, SeekOrigin.Begin);
-                        var assembly = cacheEntry.LoadContext.LoadFromStream(peStream);
-                        var assemblyType = assembly.GetType();
-
-                        var methodInfo = assembly.GetTypes().SelectMany(type =>
-                        {
-#warning https://stackoverflow.com/questions/4681031/how-do-i-check-if-a-type-provides-a-parameterless-constructor
-                            var parameters = new Type[] { typeof(DateTime), typeof(DateTime), typeof(Dictionary<string, double[]>), typeof(double[]) };
-                            return Utilities.GetMethodsBySignature(type, typeof(void), parameters);
-                        }).First();
-
-                        cacheEntry.FilterIdToMethodInfoMap[filter.Id] = methodInfo;
-                    }
-
-                    // return
                     return channel;
                 });
 
@@ -137,9 +128,76 @@ namespace OneDas.DataManagement.Extensions
             return 1;
         }
 
-        private (string, Dictionary<string, Func<OneDasDatabase, DatasetInfo>>) PrepareCode(string code)
+        private FilterSettings GetFilterSettings()
         {
-            var replacements = new Dictionary<string, Func<OneDasDatabase, DatasetInfo>>();
+            FilterSettings filterSettings = null;
+
+            // search in cache
+            if (!FilterDataReader.FilterSettingsCache.TryGetValue(this.Registration, out filterSettings))
+            {
+                var filePath = Path.Combine(this.RootPath, "filters.json");
+
+                // read from disk
+                if (File.Exists(filePath))
+                {
+                    var jsonString = File.ReadAllText(filePath);
+                    filterSettings = JsonSerializer.Deserialize<FilterSettings>(jsonString);
+
+                    // add to cache
+                    FilterDataReader.FilterSettingsCache.AddOrUpdate(this.Registration, filterSettings, (key, value) => filterSettings);
+                }
+            }           
+
+            return filterSettings;
+        }
+
+        private FilterDataReaderCacheEntry GetCacheEntry(string filterId)
+        {
+            // search in cache
+            if (!FilterDataReader.MethodInfoCache.TryGetValue((this.Registration, filterId), out var cacheEntry))
+            {
+                var filterSettings = this.GetFilterSettings();
+
+                // compile channel
+                var additionalCodeFiles = filterSettings.GetSharedFiles(this.Username)
+                    .Select(filterDescription => filterDescription.Code)
+                    .ToList();
+
+                var filter = filterSettings.Filters.First(current => current.Id == filterId);
+                (var preparedCode, var replacements) = this.PrepareCode(filter.Code);
+
+                filter.Code = preparedCode;
+                var roslynProject = new RoslynProject(filter, additionalCodeFiles);
+                using var peStream = new MemoryStream();
+
+                var compilation = roslynProject.Workspace.CurrentSolution.Projects.First()
+                    .GetCompilationAsync().Result
+                    .Emit(peStream);
+
+                peStream.Seek(0, SeekOrigin.Begin);
+
+                var loadContext = new FilterDataReaderLoadContext();
+                var assembly = loadContext.LoadFromStream(peStream);
+                var assemblyType = assembly.GetType();
+
+                var methodInfo = assembly.GetTypes().SelectMany(type =>
+                {
+#warning https://stackoverflow.com/questions/4681031/how-do-i-check-if-a-type-provides-a-parameterless-constructor
+                    var parameters = new Type[] { typeof(DateTime), typeof(DateTime), typeof(Dictionary<string, double[]>), typeof(double[]) };
+                    return Utilities.GetMethodsBySignature(type, typeof(void), parameters);
+                }).First();
+
+                // add to cache
+                cacheEntry = new FilterDataReaderCacheEntry(loadContext, methodInfo, replacements);
+                FilterDataReader.MethodInfoCache.AddOrUpdate((this.Registration, filterId), cacheEntry, (key, value) => cacheEntry);
+            }
+
+            return cacheEntry;
+        }
+
+        private (string, Dictionary<string, DatasetInfo>) PrepareCode(string code)
+        {
+            var replacements = new Dictionary<string, DatasetInfo>();
 
             // change signature
             code = code.Replace(
@@ -158,22 +216,17 @@ namespace OneDas.DataManagement.Extensions
                 var regex = new Regex("_");
                 var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
 
-                Func<OneDasDatabase, DatasetInfo> getDatasetAction = database =>
-                {
-                    var project = database.ProjectContainers
+                var project = this.DatabaseManager.Database.ProjectContainers
                         .First(container => container.PhysicalName == projectPhysicalName);
 
 #warning improve this
-                    if (!database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
-                        throw new Exception();
-
-                    return dataset;
-                };
+                if (!this.DatabaseManager.Database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
+                    throw new Exception();
 
                 var id = $"{match.Groups[1]}/{match.Groups[2]}/{match.Groups[3]}";
-                replacements[id] = getDatasetAction;
+                replacements[id] = dataset;
 
-                return $"= database[\"{id}\"];";
+                return $"= (double[])database[\"{id}\"];";
             });
 
             return (code, replacements);

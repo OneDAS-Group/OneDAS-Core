@@ -45,7 +45,7 @@ namespace OneDas.DataManagement.Explorer.Tests
 
         [InlineData(AggregationMethod.MaxBitwise, 0.90, new int[] { 2, 2, 2, 3, 2, 3, 65, 2, 98, 14 }, new byte[] { 1, 1, 1, 1, 1, 1, 0, 1, 1, 1 }, 111)]
         [InlineData(AggregationMethod.MaxBitwise, 0.99, new int[] { 2, 2, 2, 3, 2, 3, 65, 2, 98, 14 }, new byte[] { 1, 1, 1, 1, 1, 1, 0, 1, 1, 1 }, double.NaN)]
-        public void CanAggregate2(AggregationMethod method, double nanLimit, int[] data, byte[] statusSet, double expected)
+        public void CanAggregate2(AggregationMethod method, double nanLimit, int[] data, byte[] status, double expected)
         {
             //// Arrange
             //var command = new AggregationService(1, NullLogger.Instance, LoggerFactory.Create(_ => { }));
@@ -53,7 +53,7 @@ namespace OneDas.DataManagement.Explorer.Tests
             //var config = new AggregationUnit() { Method = method, Argument = "360" };
 
             //// Act
-            //var actual = command.ApplyAggregationFunction(config, kernelSize, data, statusSet, nanLimit, NullLogger.Instance);
+            //var actual = command.ApplyAggregationFunction(config, kernelSize, data, status, nanLimit, NullLogger.Instance);
 
             //// Assert
             //Assert.Equal(expected, actual[0]);
