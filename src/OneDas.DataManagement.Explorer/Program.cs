@@ -25,8 +25,6 @@ namespace OneDas.DataManagement.Explorer
 
         public static OneDasExplorerOptions Options { get; private set; }
 
-        public static OneDasDatabaseManager DatabaseManager { get; private set; }
-
         #endregion
 
         #region Methods
@@ -62,10 +60,6 @@ namespace OneDas.DataManagement.Explorer
                 Program.Options = new OneDasExplorerOptions();
                 Program.Options.Save(Program.OptionsFilePath);
             }
-
-            // load and update database
-            var logger = _loggerFactory.CreateLogger("OneDAS Explorer");
-            Program.DatabaseManager = new OneDasDatabaseManager(logger, _loggerFactory, Program.Options);
 
             // service vs. interactive
             if (isWindowsService)

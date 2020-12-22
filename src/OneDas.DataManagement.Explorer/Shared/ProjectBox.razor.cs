@@ -12,6 +12,11 @@
 				{
 					this.InvokeAsync(this.StateHasChanged);
 				}
+				else if (e.PropertyName == nameof(AppState.IsDatabaseInitialized) ||
+				        (e.PropertyName == nameof(AppState.IsDatabaseUpdating) && !this.AppState.IsDatabaseUpdating))
+				{
+					this.InvokeAsync(this.StateHasChanged);
+				}
 			};
 		}
 

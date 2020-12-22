@@ -16,6 +16,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private FileAccessManager _fileAccessManager;
         private SignInManager<IdentityUser> _signInManager;
-        private OneDasDatabaseManager _databaseManager;
+        private DatabaseManager _databaseManager;
 
         #endregion
 
@@ -41,7 +42,7 @@ namespace OneDas.DataManagement.Explorer.Services
         public AggregationService(
             FileAccessManager fileAccessManager,
             SignInManager<IdentityUser> signInManager,
-            OneDasDatabaseManager databaseManager, 
+            DatabaseManager databaseManager, 
             OneDasExplorerOptions options, 
             ILoggerFactory loggerFactory)
         {
@@ -64,7 +65,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
-        public Task<string> AggregateDataAsync(string username,
+        public Task<string> AggregateDataAsync(UserIdService userIdService,
                                                string databaseFolderPath,
                                                AggregationSetup setup,
                                                CancellationToken cancellationToken)
@@ -78,7 +79,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return Task.Run(() =>
             {
                 // log
-                var message = $"User '{username}' aggregates data: {setup.Begin.ToISO8601()} to {setup.End.ToISO8601()} ... ";
+                var message = $"User '{userIdService.GetUserId()}' aggregates data: {setup.Begin.ToISO8601()} to {setup.End.ToISO8601()} ... ";
                 _logger.LogInformation(message);
 
                 try
@@ -86,7 +87,7 @@ namespace OneDas.DataManagement.Explorer.Services
                     var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
                     progress.Report(new ProgressUpdatedEventArgs(0, "Updating database ..."));
 
-                    _databaseManager.Update();
+                    _databaseManager.Update(CancellationToken.None);
 
                     var projectIds = setup.Aggregations
                         .Select(aggregation => aggregation.ProjectId)
@@ -108,7 +109,7 @@ namespace OneDas.DataManagement.Explorer.Services
                             var eventArgs = new ProgressUpdatedEventArgs(progressValue, progressMessage);
                             progress.Report(eventArgs);
 
-                            this.AggregateProject(databaseFolderPath, projectId, currentDay, setup, cancellationToken);
+                            this.AggregateProject(userIdService.User, databaseFolderPath, projectId, currentDay, setup, cancellationToken);
                         }
                     }
                 }
@@ -124,7 +125,8 @@ namespace OneDas.DataManagement.Explorer.Services
             }, cancellationToken);
         }
 
-        private void AggregateProject(string databaseFolderPath,
+        private void AggregateProject(ClaimsPrincipal user,
+                                      string databaseFolderPath,
                                       string projectId,
                                       DateTime date,
                                       AggregationSetup setup,
@@ -132,7 +134,7 @@ namespace OneDas.DataManagement.Explorer.Services
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
-            var dataReaders = _databaseManager.GetDataReaders(projectId, excludeAggregation: true);
+            var dataReaders = _databaseManager.GetDataReaders(user, projectId, excludeAggregation: true);
 
             foreach (var dataReaderForUsing in dataReaders)
             {

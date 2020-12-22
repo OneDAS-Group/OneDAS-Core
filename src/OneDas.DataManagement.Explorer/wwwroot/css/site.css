@@ -894,6 +894,12 @@ app {
     justify-content: space-around;
 }
 
+.flex-centered-vertically {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 .flex-centered {
     display: flex;
     align-items: center;
@@ -974,6 +980,10 @@ app {
     font-weight: 400;
     letter-spacing: 0.01786em;
     color: var(--font-color-subtitle);
+}
+
+.ml-15px {
+    margin-left: 15px;
 }
 
 .ml-auto {

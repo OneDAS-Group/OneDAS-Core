@@ -2,33 +2,41 @@
 
 <div class="project-box-available">
     <MatHeadline5>Available Projects</MatHeadline5>
-    <ul>
-        @foreach (var projectContainer in this.UserState.ProjectContainersInfo.Accessible.Concat(this.UserState.ProjectContainersInfo.Restricted))
-        {
-            <li @onclick="() => this.UserState.ProjectContainer = projectContainer">
-                <div class="project-item @(this.UserState.ProjectContainer == projectContainer ? "active" : "")">
-                    <div class="project-item-name">
-                        @projectContainer.Id.TrimStart('/').Replace("/", " / ")
-                        @if (this.UserState.ProjectContainersInfo.Restricted.Contains(projectContainer))
-                        {
-                            @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
-                            <MatTooltip Tooltip="You do not have access to this project." Wrap="true" Position="MatTooltipPosition.Top">
-                                <span>&nbsp; &nbsp;<i class="fas fa-lock"></i></span>
-                            </MatTooltip>
-                        }
-                        else if (projectContainer.ProjectMeta.IsQualityControlled)
-                        {
-                            @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
-                            <MatTooltip Tooltip="This project is quality controlled." Wrap="true" Position="MatTooltipPosition.Top">
-                                <span>&nbsp; &nbsp;<i class="fas fa-check-circle quality-controlled"></i></span>
-                            </MatTooltip>
-                        }
+
+    @if (this.AppState.IsDatabaseInitialized)
+    {
+        <ul>
+            @foreach (var projectContainer in this.UserState.ProjectContainersInfo.Accessible.Concat(this.UserState.ProjectContainersInfo.Restricted))
+            {
+                <li @onclick="() => this.UserState.ProjectContainer = projectContainer">
+                    <div class="project-item @(this.UserState.ProjectContainer?.Id == projectContainer.Id ? "active" : "")">
+                        <div class="project-item-name">
+                            @projectContainer.Id.TrimStart('/').Replace("/", " / ")
+                            @if (this.UserState.ProjectContainersInfo.Restricted.Contains(projectContainer))
+                            {
+                                @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                                <MatTooltip Tooltip="You do not have access to this project." Wrap="true" Position="MatTooltipPosition.Top">
+                                    <span>&nbsp; &nbsp;<i class="fas fa-lock"></i></span>
+                                </MatTooltip>
+                            }
+                            else if (projectContainer.ProjectMeta.IsQualityControlled)
+                            {
+                                @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                                <MatTooltip Tooltip="This project is quality controlled." Wrap="true" Position="MatTooltipPosition.Top">
+                                    <span>&nbsp; &nbsp;<i class="fas fa-check-circle quality-controlled"></i></span>
+                                </MatTooltip>
+                            }
+                        </div>
+                        <div class="small-text">&nbsp;&nbsp;&nbsp;@projectContainer.ProjectMeta.ShortDescription</div>
                     </div>
-                    <div class="small-text">&nbsp;&nbsp;&nbsp;@projectContainer.ProjectMeta.ShortDescription</div>
-                </div>
-            </li>
-        }
-    </ul>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="ml-15px flex-centered-vertically h-100"><i class="pulsate-css"></i>&nbsp;&nbsp; Initializing ...</div>
+    }
 </div>
 <div class="project-box-selected">
 

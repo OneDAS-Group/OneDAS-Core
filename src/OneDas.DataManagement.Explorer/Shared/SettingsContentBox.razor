@@ -39,7 +39,7 @@
 
         <MatTab Label="Settings">
 
-            <MatButton Icon="@MatIconNames.Autorenew" @onclick="async () => await this.DatabaseManager.UpdateAsync()">Reload Database</MatButton>
+            <MatButton Icon="@MatIconNames.Autorenew" @onclick="async () => await this.AppState.UpdateDatabaseAsync()">Reload Database</MatButton>
 
             <MatTextField @bind-Value="@this.Options.DataBaseFolderPath"
                           Label="Database Location">

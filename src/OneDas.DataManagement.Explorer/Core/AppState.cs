@@ -1,30 +1,34 @@
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.DataManagement.Infrastructure;
 using OneDas.Extension.Csv;
 using OneDas.Infrastructure;
+using OneDas.Types;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-    public class AppState : BindableBase, IDisposable
+    public class AppState : BindableBase
     {
-        #region Events
-
-        public event EventHandler<OneDasDatabase> DatabaseUpdated;
-
-        #endregion
-
         #region Fields
 
-        private OneDasDatabaseManager _databaseManager;
+        private UserManager _userManager;
+        private OneDasExplorerOptions _options;
+        private bool _isAppInitialized;
+        private bool _isDatabaseInitialized;
+        private bool _isDatabaseUpdating;
+        private SemaphoreSlim _updateDatabaseSemaphore;
+        private CancellationTokenSource _updateDatabaseCancellationTokenSource;
+        private DatabaseManager _databaseManager;
         private Dictionary<ProjectContainer, List<ChannelInfoViewModel>> _channelCache;
 
         #endregion
@@ -32,34 +36,50 @@ namespace OneDas.DataManagement.Explorer.Core
         #region Constructors
 
         public AppState(ILogger<AppState> logger,
-                        OneDasDatabaseManager databaseManager,
+                        DatabaseManager databaseManager,
+                        UserManager userManager,
                         OneDasExplorerOptions options)
         {
             this.Logger = logger;
             _databaseManager = databaseManager;
-            _databaseManager.PropertyChanged += this.OnDatabasManagerPropertyChanged;
-            _databaseManager.DatabaseUpdated += this.OnDatabaseUpdated;
+            _userManager = userManager;
+            _options = options;
 
-            this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
-            this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
-            this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
-            this.CodeTypeValues = Utilities.GetEnumValues<CodeType>();
-            this.CodeLanguageValues = Utilities.GetEnumValues<CodeLanguage>();
             this.CsvRowIndexFormatValues = Utilities.GetEnumValues<CsvRowIndexFormat>();
-            this.NewsPaper = NewsPaper.Load(Path.Combine(options.DataBaseFolderPath, "news.json"));
+            this.CodeLanguageValues = Utilities.GetEnumValues<CodeLanguage>();
+            this.CodeTypeValues = Utilities.GetEnumValues<CodeType>();
+            this.FileFormatValues = Utilities.GetEnumValues<FileFormat>();
+            this.FileGranularityValues = Utilities.GetEnumValues<FileGranularity>();
+            this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString();
 
-            _channelCache = new Dictionary<ProjectContainer, List<ChannelInfoViewModel>>();
-
-            // load filter settings
-            var filterSettingsFilePath = Path.Combine(options.DataBaseFolderPath, "filters.json");
-            this.FilterSettings = new FilterSettingsViewModel(filterSettingsFilePath);
+            if (!string.IsNullOrWhiteSpace(options.DataBaseFolderPath))
+            {
+                if (!this.TryInitializeApp(out var ex))
+                    throw ex;
+            }           
         }
 
         #endregion
 
         #region Properties - General
 
-        public bool IsDatabaseUpdating => _databaseManager.IsUpdating;
+        public bool IsAppInitialized
+        {
+            get { return _isAppInitialized; }
+            set { this.SetProperty(ref _isAppInitialized, value); }
+        }
+
+        public bool IsDatabaseInitialized
+        {
+            get { return _isDatabaseInitialized; }
+            set { this.SetProperty(ref _isDatabaseInitialized, value); }
+        }
+
+        public bool IsDatabaseUpdating
+        {
+            get { return _isDatabaseUpdating; }
+            set { this.SetProperty(ref _isDatabaseUpdating, value); }
+        }
 
         public ILogger<AppState> Logger { get; }
 
@@ -79,25 +99,76 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Properties - Filter
 
-        public List<CodeType> CodeTypeValues { get; set; }
+        public List<CodeType> CodeTypeValues { get; }
 
-        public List<CodeLanguage> CodeLanguageValues { get; set; }
+        public List<CodeLanguage> CodeLanguageValues { get; }
 
-        public FilterSettingsViewModel FilterSettings { get; }
+        public FilterSettingsViewModel FilterSettings { get; private set; }
 
         #endregion
 
         #region Properties - News
 
-        public NewsPaper NewsPaper { get; }
+        public NewsPaper NewsPaper { get; private set; }
 
         #endregion
 
         #region Methods
 
-        public void ClearCache()
+        public bool TryInitializeApp(out Exception exception)
         {
-            _channelCache.Clear();
+            exception = null;
+
+            try
+            {
+                Directory.CreateDirectory(_options.DataBaseFolderPath);
+
+                this.NewsPaper = NewsPaper.Load(Path.Combine(_options.DataBaseFolderPath, "news.json"));
+                this.FilterSettings = new FilterSettingsViewModel(Path.Combine(_options.DataBaseFolderPath, "filters.json"));
+
+                _channelCache = new Dictionary<ProjectContainer, List<ChannelInfoViewModel>>();
+                _updateDatabaseSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+
+                _userManager.Initialize();
+                _options.Save(Program.OptionsFilePath);
+
+                _ = this.UpdateDatabaseAsync();
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                this.Logger.LogError(ex.GetFullMessage());
+                return false;
+            }
+
+            this.IsAppInitialized = true;
+            return true;
+        }
+
+        public async Task UpdateDatabaseAsync()
+        {
+            _updateDatabaseCancellationTokenSource?.Cancel();
+            _updateDatabaseCancellationTokenSource = new CancellationTokenSource();
+
+            await _updateDatabaseSemaphore.WaitAsync();
+
+            try
+            { 
+                this.IsDatabaseUpdating = true;
+                await _databaseManager.UpdateAsync(_updateDatabaseCancellationTokenSource.Token);
+                _channelCache.Clear();
+                this.IsDatabaseInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                this.Logger.LogError(ex.GetFullMessage());
+                throw;
+            }
+            finally
+            {
+                this.IsDatabaseUpdating = false;
+                _updateDatabaseSemaphore.Release();
+            }
         }
 
         public List<ChannelInfoViewModel> GetChannels(ProjectContainer projectContainer)
@@ -114,49 +185,6 @@ namespace OneDas.DataManagement.Explorer.Core
             }
 
             return channels;
-        }
-
-        #endregion
-
-        #region Callbacks
-
-        private void OnDatabaseUpdated(object sender, OneDasDatabase e)
-        {
-            this.ClearCache();
-            this.DatabaseUpdated?.Invoke(this, e);
-        }
-
-        private void OnDatabasManagerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(OneDasDatabaseManager.IsUpdating))
-            {
-                this.RaisePropertyChanged(nameof(AppState.IsDatabaseUpdating));
-            }
-        }
-
-        #endregion
-
-        #region IDisposable Support
-
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _databaseManager.DatabaseUpdated -= this.OnDatabaseUpdated;
-                    _databaseManager.PropertyChanged -= this.OnDatabasManagerPropertyChanged;
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
 
         #endregion

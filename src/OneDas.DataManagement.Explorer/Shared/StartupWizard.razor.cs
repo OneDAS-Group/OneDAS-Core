@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OneDas.DataManagement.Explorer.Core;
-using OneDas.DataManagement.Explorer.Services;
 using OneDas.Types;
 
 namespace OneDas.DataManagement.Explorer.Shared
@@ -11,16 +10,14 @@ namespace OneDas.DataManagement.Explorer.Shared
         public OneDasExplorerOptions Options { get; set; }
 
         [Inject]
-        public StateManager StateManager { get; set; }
+        public AppState AppState { get; set; }
 
         public string Error { get; set; }
 
-        public void TryRunApp()
+        public void TryInitializeApp()
         {
-            if (!this.StateManager.TryRunApp(out var exception))
-            {
+            if (!this.AppState.TryInitializeApp(out var exception))
                 this.Error = exception.GetFullMessage();
-            }
         }
     }
 }

@@ -17,6 +17,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +28,8 @@ namespace OneDas.DataManagement.Explorer.Services
         #region Fields
 
         private ILogger _logger;
-        private OneDasDatabaseManager _databaseManager;
+        private UserIdService _userIdService;
+        private DatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private ulong _blockSizeLimit;
 
@@ -35,11 +37,13 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Constructors
 
-        public DataService(OneDasDatabaseManager databaseManager,
+        public DataService(DatabaseManager databaseManager,
+                           UserIdService userIdService,
                            ILoggerFactory loggerFactory,
                            OneDasExplorerOptions options)
         {
             _databaseManager = databaseManager;
+            _userIdService = userIdService;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
             _options = options;
             _blockSizeLimit = 5 * 1000 * 1000UL;
@@ -61,7 +65,7 @@ namespace OneDas.DataManagement.Explorer.Services
         {
             return Task.Run(() =>
             {
-                var dataReaders = _databaseManager.GetDataReaders(projectId);
+                var dataReaders = _databaseManager.GetDataReaders(_userIdService.User, projectId);
 
                 return dataReaders.Select(dataReaderForUsing =>
                 {
@@ -71,13 +75,14 @@ namespace OneDas.DataManagement.Explorer.Services
             });
         }
 
-        public Task<string> ExportDataAsync(string username,
-                                            ExportParameters exportParameters,
+        public Task<string> ExportDataAsync(ExportParameters exportParameters,
                                             List<DatasetInfo> datasets,
                                             CancellationToken cancellationToken)
         {
             if (!datasets.Any() || exportParameters.Begin == exportParameters.End)
                 return Task.FromResult(string.Empty);
+
+            var username = _userIdService.GetUserId();
 
             // find sample rate
             var sampleRates = datasets.Select(dataset => dataset.GetSampleRate());
@@ -114,7 +119,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     foreach (var sparseProject in sparseProjects)
                     {
-                        this.WriteZipFileProjectEntry(zipArchive, exportParameters, sparseProject, cancellationToken);
+                        this.WriteZipFileProjectEntry(_userIdService.User, zipArchive, exportParameters, sparseProject, cancellationToken);
                     }
                 }
                 catch (Exception ex)
@@ -129,7 +134,8 @@ namespace OneDas.DataManagement.Explorer.Services
             }, cancellationToken);
         }
 
-        private void WriteZipFileProjectEntry(ZipArchive zipArchive,
+        private void WriteZipFileProjectEntry(ClaimsPrincipal user, 
+                                              ZipArchive zipArchive,
                                               ExportParameters exportParameters,
                                               SparseProjectInfo sparseProject,
                                               CancellationToken cancellationToken)
@@ -210,7 +216,7 @@ namespace OneDas.DataManagement.Explorer.Services
             try
             {
                 // create temp files
-                this.CreateFiles(dataWriter, exportParameters, sparseProject, cancellationToken);
+                this.CreateFiles(user, dataWriter, exportParameters, sparseProject, cancellationToken);
                 dataWriter.Dispose();
 
                 // write zip archive entries
@@ -240,7 +246,8 @@ namespace OneDas.DataManagement.Explorer.Services
             }
         }
 
-        private void CreateFiles(DataWriterExtensionLogicBase dataWriter,
+        private void CreateFiles(ClaimsPrincipal user,
+                                 DataWriterExtensionLogicBase dataWriter,
                                  ExportParameters exportParameters,
                                  SparseProjectInfo sparseProject,
                                  CancellationToken cancellationToken)
@@ -266,7 +273,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 if (entry.Value.Any())
                 {
                     var registration = entry.Key;
-                    var dataReader = _databaseManager.GetDataReader(registration);
+                    var dataReader = _databaseManager.GetDataReader(user, registration);
                     dataReader.Progress.ProgressChanged += progressHandler;
 
                     try

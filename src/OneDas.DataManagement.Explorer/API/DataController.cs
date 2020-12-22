@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.Types;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -18,16 +19,19 @@ namespace OneDas.DataManagement.Explorer.Controllers
         #region Fields
 
         private ILogger _logger;
-        private OneDasDatabaseManager _databaseManager;
+        private UserIdService _userIdService;
+        private DatabaseManager _databaseManager;
 
         #endregion
 
         #region Constructors
 
-        public DataController(OneDasDatabaseManager databaseManager,
+        public DataController(DatabaseManager databaseManager,
+                              UserIdService userIdService,
                               ILoggerFactory loggerFactory)
         {
             _databaseManager = databaseManager;
+            _userIdService = userIdService;
             _logger = loggerFactory.CreateLogger("OneDAS Explorer");
         }
 
@@ -53,6 +57,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
             [BindRequired] DateTime end,
             CancellationToken cancellationToken)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
             channelId = WebUtility.UrlDecode(channelId);
             datasetId = WebUtility.UrlDecode(datasetId);
@@ -88,7 +95,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                     return this.Unauthorized($"The current user is not authorized to access the project '{project.Id}'.");
 
                 // dataReader
-                using var dataReader = _databaseManager.GetDataReader(dataset.Registration);
+                using var dataReader = _databaseManager.GetDataReader(_userIdService.User, dataset.Registration);
 
                 // read data
                 var stream = dataReader.ReadAsDoubleStream(dataset, begin, end, 1 * 1000 * 1000UL, cancellationToken);

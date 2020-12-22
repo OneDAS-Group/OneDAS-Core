@@ -1,12 +1,13 @@
 ﻿using GraphQL;
 using GraphQL.Types;
+using OneDas.DataManagement.Explorer.Services;
 using System.Linq;
 
 namespace OneDas.DataManagement.Explorer.API
 {
     public class ProjectQuery : ObjectGraphType
     {
-        public ProjectQuery(OneDasDatabaseManager databaseManager)
+        public ProjectQuery(DatabaseManager databaseManager)
         {
             this.Field<ProjectType>(
                 "Project",

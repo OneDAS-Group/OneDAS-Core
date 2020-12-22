@@ -30,7 +30,16 @@ namespace OneDas.DataManagement.Explorer.Shared
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }
+                else if (e.PropertyName == nameof(UserState.SampleRate))
+                {
+                    this.InvokeAsync(this.StateHasChanged);
+                }
                 else if (e.PropertyName == nameof(UserState.SelectedDatasets))
+                {
+                    this.InvokeAsync(this.StateHasChanged);
+                }
+                else if (e.PropertyName == nameof(AppState.IsDatabaseInitialized) ||
+                        (e.PropertyName == nameof(AppState.IsDatabaseUpdating) && !this.AppState.IsDatabaseUpdating))
                 {
                     this.InvokeAsync(this.StateHasChanged);
                 }

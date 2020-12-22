@@ -162,19 +162,18 @@ namespace OneDas.DataManagement.Explorer
             services.AddTransient<DataService>();
             services.AddTransient<AggregationService>();
 
-            services.AddSingleton<AppState>();
-            services.AddSingleton(Program.DatabaseManager);
             services.AddSingleton(Program.Options);
-            services.AddSingleton<StateManager>();
+            services.AddSingleton<AppState>();
+            services.AddSingleton<FileAccessManager>();
             services.AddSingleton<JobService<ExportJob>>();
             services.AddSingleton<JobService<AggregationJob>>();
+            services.AddSingleton<DatabaseManager>();
             services.AddSingleton<UserManager>();
-            services.AddSingleton<FileAccessManager>();
         }
 
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              StateManager stateManager, // needs to be called to initialize the database
+                              AppState appState, // needs to be called to initialize the database
                               OneDasExplorerOptions options)
         {
             // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-5.0

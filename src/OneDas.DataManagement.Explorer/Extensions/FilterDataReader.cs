@@ -2,6 +2,7 @@
 using OneDas.Buffers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
@@ -38,7 +39,7 @@ namespace OneDas.DataManagement.Extensions
 
         public ClaimsPrincipal User { get; set; }
 
-        public OneDasDatabaseManager DatabaseManager { get; set; }
+        public DatabaseManager DatabaseManager { get; set; }
 
         public static ConcurrentDictionary<DataReaderRegistration, FilterSettings> FilterSettingsCache { get; }
 
@@ -73,7 +74,7 @@ namespace OneDas.DataManagement.Extensions
                 if (!Utilities.IsProjectAccessible(this.User, dataset.Parent.Parent.Id, this.DatabaseManager.Database))
                     throw new UnauthorizedAccessException("The current user is not allowed to access this filter.");
 
-                var dataReader = this.DatabaseManager.GetDataReader(dataset.Registration);
+                var dataReader = this.DatabaseManager.GetDataReader(this.User, dataset.Registration);
                 (var rawData, var status) = dataReader.ReadSingle(dataset, begin, end);
                 var data = BufferUtilities.ApplyDatasetStatus2(rawData, status);
 

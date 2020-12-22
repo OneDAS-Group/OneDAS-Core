@@ -41,13 +41,14 @@ namespace OneDas.DataManagement.Explorer.Core
         private AppState _appState;
         private DataService _dataService;
         private UserIdService _userIdService;
+        private ExportParameters _exportParameters;
         private ProjectContainer _projectContainer;
-        private OneDasDatabaseManager _databaseManager;
+        private DatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private JobControl<ExportJob> _exportJobControl;
         private AuthenticationStateProvider _authenticationStateProvider;
 
-        private List<ChannelInfoViewModel> _channelGroup;
+        private KeyValuePair<string, List<ChannelInfoViewModel>> _groupedChannelsEntry;
         private Dictionary<string, List<DatasetInfoViewModel>> _sampleRateToSelectedDatasetsMap;
 
         #endregion
@@ -60,12 +61,12 @@ namespace OneDas.DataManagement.Explorer.Core
                          AppState appState,
                          UserIdService userIdService,
                          AuthenticationStateProvider authenticationStateProvider,
-                         StateManager stateManager,
-                         OneDasDatabaseManager databaseManager,
+                         DatabaseManager databaseManager,
                          OneDasExplorerOptions options,
                          DataService dataService)
         {
             this.Logger = logger;
+
             _jsRuntime = jsRuntime;
             _serviceProvider = serviceProvider;
             _appState = appState;
@@ -76,19 +77,13 @@ namespace OneDas.DataManagement.Explorer.Core
             _dataService = dataService;
 
             this.VisualizeBeginAtZero = true;
+            this.SampleRateValues = new List<string>();
+            this.ExportParameters = new ExportParameters();
 
-            this.Initialize(_databaseManager.Database);
-            this.InitializeSampleRateToDatasetsMap();
+            _appState.PropertyChanged += this.OnAppStatePropertyChanged;
 
-            // app state
-            _appState.DatabaseUpdated += this.OnDatabaseUpdated;
-
-            // state manager
-            this.StateManager = stateManager;
-            this.StateManager.PropertyChanged += this.OnStateManagerPropertyChanged;
-
-            // export parameters
-            this.SetExportParameters(new ExportParameters());
+            if (_appState.IsDatabaseInitialized)
+                this.Initialize(_databaseManager.Database);
         }
 
         #endregion
@@ -133,9 +128,24 @@ namespace OneDas.DataManagement.Explorer.Core
             set { this.SetProperty(ref _downloadMessage, value); }
         }
 
-        public StateManager StateManager { get; }
+        public ExportParameters ExportParameters
+        {
+            get
+            {
+                return _exportParameters;
+            }
+            set
+            {
+                _exportParameters = value;
 
-        public ExportParameters ExportParameters { get; private set; }
+                // Pretend that UTC time is local time to avoid conversion to nonsense.
+                this.DateTimeBeginWorkaround = DateTime.SpecifyKind(value.Begin, DateTimeKind.Local);
+
+                // Pretend that UTC time is local time to avoid conversion to nonsense.
+                this.DateTimeEndWorkaround = DateTime.SpecifyKind(value.End, DateTimeKind.Local);
+
+            }
+        }
 
         #endregion
 
@@ -250,6 +260,12 @@ namespace OneDas.DataManagement.Explorer.Core
             }
             set
             {
+                // When database is updated and then the selected project is changed
+                // "value" refers to an old project container that does not exist in 
+                // the database anymore.
+                if (value != null && !_databaseManager.Database.ProjectContainers.Contains(value))
+                    value = _databaseManager.Database.ProjectContainers.FirstOrDefault(container => container.Id == value.Id);
+
                 this.SetProperty(ref _projectContainer, value);
 
                 _searchString = string.Empty;
@@ -273,10 +289,10 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public Dictionary<string, List<ChannelInfoViewModel>> GroupedChannels { get; private set; }
 
-        public List<ChannelInfoViewModel> ChannelGroup
+        public KeyValuePair<string, List<ChannelInfoViewModel>> GroupedChannelsEntry
         {
-            get { return _channelGroup; }
-            set { base.SetProperty(ref _channelGroup, value); }
+            get { return _groupedChannelsEntry; }
+            set { base.SetProperty(ref _groupedChannelsEntry, value); }
         }
 
         public string SearchString
@@ -415,8 +431,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
                 _exportJobControl = exportJobService.AddJob(job, _dataService.Progress, (jobControl, cts) =>
                 {
-                    var task = _dataService.ExportDataAsync(_userIdService.GetUserId(),
-                                                            this.ExportParameters,
+                    var task = _dataService.ExportDataAsync(this.ExportParameters,
                                                             selectedDatasets,
                                                             cts.Token);
 
@@ -489,7 +504,8 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public void SetExportParameters(ExportParameters exportParameters)
         {
-            this.InitializeSampleRateToDatasetsMap();
+            _sampleRateToSelectedDatasetsMap = this.SampleRateValues
+                .ToDictionary(sampleRate => sampleRate, sampleRate => new List<DatasetInfoViewModel>());
 
             // find sample rate
             var sampleRates = exportParameters.ChannelPaths.Select(channelPath 
@@ -525,12 +541,6 @@ namespace OneDas.DataManagement.Explorer.Core
                     }
                 }
             });
-
-            // Pretend that UTC time is local time to avoid conversion to nonsense.
-            this.DateTimeBeginWorkaround = DateTime.SpecifyKind(exportParameters.Begin, DateTimeKind.Local);
-
-            // Pretend that UTC time is local time to avoid conversion to nonsense.
-            this.DateTimeEndWorkaround = DateTime.SpecifyKind(exportParameters.End, DateTimeKind.Local);
 
             this.RaisePropertyChanged(nameof(UserState.ExportParameters));
         }
@@ -572,6 +582,9 @@ namespace OneDas.DataManagement.Explorer.Core
 
             this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, database, Constants.HiddenProjects).Result;
 
+            // this triggers a search to find the new container instance
+            this.ProjectContainer = this.ProjectContainer;
+
             this.SampleRateValues = this.ProjectContainersInfo.Accessible.SelectMany(projectContainer =>
             {
                 return projectContainer.Project.Channels.SelectMany(channel =>
@@ -580,13 +593,11 @@ namespace OneDas.DataManagement.Explorer.Core
                 });
             }).Distinct().OrderBy(x => x, new SampleRateStringComparer()).ToList();
 
-            if (_projectContainer is not null)
-            {
-                var newProjectContainer = this.ProjectContainersInfo.Accessible.FirstOrDefault(container => container.Id == _projectContainer.Id);
+            // to rebuilt list with new dataset instances
+            this.SetExportParameters(this.ExportParameters);
 
-                if (newProjectContainer is not null)
-                    _projectContainer = newProjectContainer;
-            }
+            // maybe there is a new channel available now: display it
+            this.UpdateGroupedChannels();
         }
 
         private void UpdateAttachments()
@@ -604,7 +615,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         private void UpdateGroupedChannels()
         {
-            if (this.ProjectContainer != null)
+            if (this.ProjectContainer is not null)
             {
                 this.GroupedChannels = new Dictionary<string, List<ChannelInfoViewModel>>();
 
@@ -633,12 +644,27 @@ namespace OneDas.DataManagement.Explorer.Core
                 {
                     entry.Value.Sort((x, y) => x.Name.CompareTo(y.Name));
                 }
-            }
 
-            if (this.GroupedChannels.Any())
-                this.ChannelGroup = this.GroupedChannels.OrderBy(entry => entry.Key).First().Value;
+                if (this.GroupedChannels.Any())
+                {
+                    // try find previously selected group
+                    if (this.GroupedChannelsEntry.Value is not null)
+                        this.GroupedChannelsEntry = this.GroupedChannels
+                            .FirstOrDefault(entry => entry.Key == this.GroupedChannelsEntry.Key);
+
+                    // otherwise select first group
+                    if (this.GroupedChannelsEntry.Value is null)
+                        this.GroupedChannelsEntry = this.GroupedChannels
+                            .OrderBy(entry => entry.Key)
+                            .First();
+                }
+                else
+                    this.GroupedChannelsEntry = default;
+            }
             else
-                this.ChannelGroup = null;
+            {
+                this.GroupedChannelsEntry = default;
+            }
         }
 
         private void UpdateExportParameters()
@@ -659,11 +685,6 @@ namespace OneDas.DataManagement.Explorer.Core
                 return true;
 
             return false;
-        }
-
-        private void InitializeSampleRateToDatasetsMap()
-        {
-            _sampleRateToSelectedDatasetsMap = this.SampleRateValues.ToDictionary(sampleRate => sampleRate, sampleRate => new List<DatasetInfoViewModel>());
         }
 
         private List<DatasetInfoViewModel> GetSelectedDatasets()
@@ -702,17 +723,11 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Callbacks
 
-        public void OnDatabaseUpdated(object sender, OneDasDatabase e)
+        public void OnAppStatePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            this.Initialize(e);
-        }
-
-        public void OnStateManagerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(StateManager.IsInitialized))
-            {
-                this.RaisePropertyChanged(e.PropertyName);
-            }
+            if (e.PropertyName == nameof(AppState.IsDatabaseInitialized) ||
+               (e.PropertyName == nameof(AppState.IsDatabaseUpdating) && !this._appState.IsDatabaseUpdating))
+                this.Initialize(_databaseManager.Database);
         }
 
         #endregion
@@ -734,7 +749,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 if (disposing)
                 {
                     _exportJobControl?.CancellationTokenSource.Cancel();
-                    this.StateManager.PropertyChanged -= this.OnStateManagerPropertyChanged;
+                    _appState.PropertyChanged -= this.OnAppStatePropertyChanged;
                 }
 
                 disposedValue = true;

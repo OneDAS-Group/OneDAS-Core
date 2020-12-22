@@ -21,7 +21,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private ILogger _logger;
         private IServiceProvider _serviceProvider;
-        private OneDasDatabaseManager _databaseManager;
+        private DatabaseManager _databaseManager;
         private OneDasExplorerOptions _options;
         private JobService<ExportJob> _exportJobService;
         private JobService<AggregationJob> _aggregationJobService;
@@ -31,7 +31,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         #region Constructors
 
         public JobsController(
-            OneDasDatabaseManager databaseManager,
+            DatabaseManager databaseManager,
             OneDasExplorerOptions options,
             JobService<ExportJob> exportJobService,
             JobService<AggregationJob> aggregationJobService,
@@ -58,6 +58,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpPost("export")]
         public ActionResult<ExportJob> CreateExportJob(ExportParameters parameters)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             parameters.Begin = parameters.Begin.ToUniversalTime();
             parameters.End = parameters.End.ToUniversalTime();
 
@@ -106,7 +109,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 var jobControl = _exportJobService.AddJob(job, dataService.Progress, (jobControl, cts) =>
                 {
                     var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
-                    var task = dataService.ExportDataAsync(userIdService.GetUserId(), parameters, datasets, cts.Token);
+                    var task = dataService.ExportDataAsync(parameters, datasets, cts.Token);
 
                     return task;
                 });
@@ -225,6 +228,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpPost("aggregation")]
         public ActionResult<AggregationJob> CreateAggregationJob(AggregationSetup setup)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             setup.Begin = setup.Begin.ToUniversalTime();
             setup.End = setup.End.ToUniversalTime();
 
@@ -246,8 +252,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 var jobControl = _aggregationJobService.AddJob(job, aggregationService.Progress, (jobControl, cts) =>
                 {
                     var userIdService = _serviceProvider.GetRequiredService<UserIdService>();
+
                     var task = aggregationService.AggregateDataAsync(
-                        userIdService.GetUserId(),
+                        userIdService,
                         _options.DataBaseFolderPath,
                         setup,
                         cts.Token);

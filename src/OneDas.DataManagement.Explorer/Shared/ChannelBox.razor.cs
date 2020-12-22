@@ -33,9 +33,14 @@ namespace OneDas.DataManagement.Explorer.Shared
 						this.StateHasChanged();
 					});
 				}
-				else if (e.PropertyName == nameof(UserState.ChannelGroup))
+				else if (e.PropertyName == nameof(UserState.GroupedChannelsEntry))
 				{
 					this.ChannelPage = 0;
+				}
+				else if (e.PropertyName == nameof(AppState.IsDatabaseInitialized) ||
+						(e.PropertyName == nameof(AppState.IsDatabaseUpdating) && !this.AppState.IsDatabaseUpdating))
+				{
+					this.InvokeAsync(this.StateHasChanged);
 				}
 			};
 		}

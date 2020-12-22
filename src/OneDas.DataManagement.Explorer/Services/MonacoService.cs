@@ -50,7 +50,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private ILoggerFactory _loggerFactory;
         private FormattingOptions _formattingOptions;
-        private OneDasDatabaseManager _databaseManager;
+        private DatabaseManager _databaseManager;
         private RoslynProject _completionProject;
         private RoslynProject _diagnosticProject;
         private OmniSharpCompletionService _completionService;
@@ -73,7 +73,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Constructors
 
-        public MonacoService(OneDasDatabaseManager databaseManager)
+        public MonacoService(DatabaseManager databaseManager)
         {
             _databaseManager = databaseManager;
             _loggerFactory = LoggerFactory.Create(configure => { });

@@ -23,13 +23,13 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private ILogger _logger;
         private UserIdService _userIdService;
-        private OneDasDatabaseManager _databaseManager;
+        private DatabaseManager _databaseManager;
 
         #endregion
 
         #region Constructors
 
-        public ProjectsController(OneDasDatabaseManager databaseManager,
+        public ProjectsController(DatabaseManager databaseManager,
                                     UserIdService userIdService,
                                     ILoggerFactory loggerFactory)
         {
@@ -48,6 +48,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpGet]
         public ActionResult<List<Project>> GetProjects()
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             var projectContainers = _databaseManager.Database.ProjectContainers;
 
             projectContainers = projectContainers.Where(projectContainer
@@ -67,6 +70,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         [HttpGet("{projectId}")]
         public ActionResult<Project> GetProject(string projectId)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
 
             // log
@@ -100,6 +106,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
                                                                              [BindRequired][JsonSchemaDate] DateTime begin,
                                                                              [BindRequired][JsonSchemaDate] DateTime end)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
 
             // log
@@ -131,6 +140,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
         public ActionResult<List<Channel>> GetChannels(
             string projectId)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
 
             var remoteIpAddress = this.HttpContext.Connection.RemoteIpAddress;
@@ -182,6 +194,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
             string projectId,
             string channelId)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
             channelId = WebUtility.UrlDecode(channelId);
 
@@ -230,6 +245,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
             string projectId,
             string channelId)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
             channelId = WebUtility.UrlDecode(channelId);
 
@@ -279,6 +297,9 @@ namespace OneDas.DataManagement.Explorer.Controllers
             string channelId,
             string datasetId)
         {
+            if (_databaseManager.Database == null)
+                return this.StatusCode(503, "The database has not been loaded yet.");
+
             projectId = WebUtility.UrlDecode(projectId);
             channelId = WebUtility.UrlDecode(channelId);
             datasetId = WebUtility.UrlDecode(datasetId);
@@ -338,7 +359,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         private List<AvailabilityResult> CreateAvailabilityResponse(ProjectInfo project, DateTime begin, DateTime end)
         {
-            var dataReaders = _databaseManager.GetDataReaders(project.Id);
+            var dataReaders = _databaseManager.GetDataReaders(_userIdService.User, project.Id);
 
             return dataReaders.Select(dataReaderForUsing =>
             {

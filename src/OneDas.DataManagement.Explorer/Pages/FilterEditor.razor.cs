@@ -29,9 +29,6 @@ namespace OneDas.DataManagement.Explorer.Pages
         public List<Diagnostic> Diagnostics { get; set; }
 
         [Inject]
-        private OneDasDatabaseManager DatabaseManager { get; set; }
-
-        [Inject]
         private ToasterService ToasterService { get; set; }
 
         [Inject]
@@ -280,7 +277,7 @@ namespace OneDas.DataManagement.Explorer.Pages
             await this.InvokeAsync(() => this.StateHasChanged());
 
             // update database
-            await this.DatabaseManager.UpdateAsync();
+            await this.AppState.UpdateDatabaseAsync();
         }
 
         private async Task DeleteFilterAsync()
@@ -297,6 +294,9 @@ namespace OneDas.DataManagement.Explorer.Pages
             // notify
             this.ToasterService.ShowSuccess(message: "The filter has been deleted.", icon: MatIconNames.Delete);
             await this.InvokeAsync(() => this.StateHasChanged());
+
+            // update database
+            await this.AppState.UpdateDatabaseAsync();
         }
 
         private void OpenGalleryDialog()
