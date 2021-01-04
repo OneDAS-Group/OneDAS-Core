@@ -20,7 +20,7 @@ namespace OneDas.DataManagement.Explorer.Core
 $@"           
 namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
 {{
-    public record FilterChannel(string Name, string Group, string Unit);
+    public record FilterChannel(string Project, string Name, string Group, string Unit);
 
     public static class FilterBase
     {{
@@ -38,14 +38,14 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
     class Filter : FilterBase
     {{
         /// <summary>
-        /// This method is used to do the calculations for a single filter channel that can be based on the channels 
+        /// This method is used to do the calculations for a single filter that can be based on the channels 
         /// of one ore more available and accessible projects.
         /// </summary>
         /// <param name=""begin"">Enables the user to choose the right calibration factors for that time period.</param>
         /// <param name=""end"">Enables the user to choose the right calibration factors for that time period.</param>
         /// <param name=""data"">Contains the data of the preselected projects.</param>
         /// <param name=""result"">The resulting double array with length matching the time period and sample rate.</param>
-        public void Filter(DateTime begin, DateTime end, DataProvider data, double[] result)
+        public override void Filter(DateTime begin, DateTime end, DataProvider data, double[] result)
         {{
             /* This dataset has the same length as the result array. */
             var t1 = database.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;
@@ -54,6 +54,17 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             {{
                 /* Example: Square each value. */
                 result[i] = Math.Pow(t1[i], 2);
+            }}
+        }}
+
+        /// <summary>
+        /// This method is used to provide one or more filter channel definitions.
+        /// </summary>
+        public override List<FilterChannel> GetFilters();
+        {{
+            return new List<FilterChannel>()
+            {{
+                new FilterChannel(Project: ""/IN_MEMORY/TEST/ACCESSIBLE"", Name: ""T1_squared"", Group: ""myGroup"", Unit: ""°C²"")
             }}
         }}
     }}

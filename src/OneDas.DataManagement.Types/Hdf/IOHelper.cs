@@ -333,7 +333,7 @@ namespace OneDas.DataManagement.Hdf
 
                     returnValue = intPtrSet.Select(x =>
                     {
-                        string result = Marshal.PtrToStringUTF8(x);
+                        string result = Marshal.PtrToStringAnsi(x); // keep this, otherwise °C gets read-in wrongly
                         H5.free_memory(x);
                         return result;
                     }).Cast<T>().ToArray();
