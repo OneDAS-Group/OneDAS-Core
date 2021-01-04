@@ -4,12 +4,39 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OneDas
 {
     public static class OneDasUtilities
     {
+        public static unsafe string PtrToStringAnsiWithEncoding(IntPtr ptr, Encoding encoding)
+        {
+            var l = 0;
+            var bytePtr = (byte*)ptr.ToPointer();
+
+            while (bytePtr[l] != 0)
+            {
+                l++;
+            }
+
+            if (l > 0 )
+            {
+                var chars = stackalloc char[l];
+
+                encoding
+                    .GetDecoder()
+                    .Convert(bytePtr, l, chars, l, true, out var bytesUsed, out var charsUsed, out var completed);
+
+                return new string(chars, 0, charsUsed);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
         public static double ToUnixTimeStamp(this DateTime value)
         {
             return value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;

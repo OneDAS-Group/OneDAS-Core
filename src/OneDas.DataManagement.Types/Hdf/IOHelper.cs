@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OneDas.DataManagement.Hdf
 {
@@ -333,22 +334,9 @@ namespace OneDas.DataManagement.Hdf
 
                     returnValue = intPtrSet.Select(x =>
                     {
-                        string val1 = Marshal.PtrToStringAnsi(x);
-                        string val2 = Marshal.PtrToStringUTF8(x);
-                        string val3 = Marshal.PtrToStringUni(x);
-
-                        var ptr = (byte*)x.ToPointer();
-
-                        var byte1 = ptr[0];
-                        var byte2 = ptr[1];
-                        var byte3 = ptr[2];
-                        var byte4 = ptr[3];
-                        var byte5 = ptr[4];
-                        var byte6 = ptr[6];
-
-                        Console.WriteLine($"ANSI: {val1}, UTF8: {val2}, UNI: {val3}, BYTES: {byte1}, {byte2}, {byte3}, {byte4}, {byte5}, {byte6}");
-
-                        string result = Marshal.PtrToStringAnsi(x); // keep this, otherwise °C gets read-in wrongly
+                        // keep this, otherwise °C gets read-in wrongly on Linux 
+                        // (https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.ptrtostringansi?view=net-5.0)
+                        string result = OneDasUtilities.PtrToStringAnsiWithEncoding(x, Encoding.GetEncoding(1252));
                         H5.free_memory(x);
                         return result;
                     }).Cast<T>().ToArray();
