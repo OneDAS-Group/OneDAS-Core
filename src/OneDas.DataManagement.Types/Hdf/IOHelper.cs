@@ -224,7 +224,7 @@ namespace OneDas.DataManagement.Hdf
             return result;
         }
 
-        public static T[] Read<T>(long dataPortId, DataContainerType dataContainerType, long dataspaceId = -1)
+        public static unsafe T[] Read<T>(long dataPortId, DataContainerType dataContainerType, long dataspaceId = -1)
         {
             long dataspaceId_file = -1;
             long dataspaceId_buffer = -1;
@@ -337,7 +337,16 @@ namespace OneDas.DataManagement.Hdf
                         string val2 = Marshal.PtrToStringUTF8(x);
                         string val3 = Marshal.PtrToStringUni(x);
 
-                        Console.WriteLine($"ANSI: {val1}, UTF8: {val2}, UNI: {val3}");
+                        var ptr = (byte*)x.ToPointer();
+
+                        var byte1 = ptr[0];
+                        var byte2 = ptr[1];
+                        var byte3 = ptr[2];
+                        var byte4 = ptr[3];
+                        var byte5 = ptr[4];
+                        var byte6 = ptr[6];
+
+                        Console.WriteLine($"ANSI: {val1}, UTF8: {val2}, UNI: {val3}, BYTES: {byte1}, {byte2}, {byte3}, {byte4}, {byte5}, {byte6}");
 
                         string result = Marshal.PtrToStringAnsi(x); // keep this, otherwise °C gets read-in wrongly
                         H5.free_memory(x);
