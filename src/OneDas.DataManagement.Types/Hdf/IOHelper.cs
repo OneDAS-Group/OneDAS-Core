@@ -333,6 +333,12 @@ namespace OneDas.DataManagement.Hdf
 
                     returnValue = intPtrSet.Select(x =>
                     {
+                        string val1 = Marshal.PtrToStringAnsi(x);
+                        string val2 = Marshal.PtrToStringUTF8(x);
+                        string val3 = Marshal.PtrToStringUni(x);
+
+                        Console.WriteLine($"ANSI: {val1}, UTF8: {val2}, UNI: {val3}");
+
                         string result = Marshal.PtrToStringAnsi(x); // keep this, otherwise °C gets read-in wrongly
                         H5.free_memory(x);
                         return result;
