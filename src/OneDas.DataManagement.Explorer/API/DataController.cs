@@ -107,7 +107,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
             catch (ValidationException ex)
             {
-                return this.UnprocessableEntity(ex.GetFullMessage());
+                return this.UnprocessableEntity(ex.GetFullMessage(includeStackTrace: false));
             }
             catch (Exception ex)
             {

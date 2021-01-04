@@ -79,7 +79,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
             catch (ValidationException ex)
             {
-                return this.UnprocessableEntity(ex.GetFullMessage());
+                return this.UnprocessableEntity(ex.GetFullMessage(includeStackTrace: false));
             }
 
             // check that there is anything to export
@@ -118,7 +118,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
             catch (ValidationException ex)
             {
-                return this.UnprocessableEntity(ex.GetFullMessage());
+                return this.UnprocessableEntity(ex.GetFullMessage(includeStackTrace: false));
             }
         }
 
@@ -170,7 +170,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                         ProgressMessage = jobControl.ProgressMessage,
                         Status = jobControl.Task.Status,
                         ExceptionMessage = jobControl.Task.Exception != null
-                            ? jobControl.Task.Exception.GetFullMessage()
+                            ? jobControl.Task.Exception.GetFullMessage(includeStackTrace: false)
                             : string.Empty,
                         Result = jobControl.Task.Status == TaskStatus.RanToCompletion 
                             ? $"{this.GetBasePath()}/{jobControl.Task.Result}"
@@ -266,7 +266,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
             catch (ValidationException ex)
             {
-                return this.UnprocessableEntity(ex.GetFullMessage());
+                return this.UnprocessableEntity(ex.GetFullMessage(includeStackTrace: false));
             }
         }
 
@@ -318,7 +318,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                         ProgressMessage = jobControl.ProgressMessage,
                         Status = jobControl.Task.Status,
                         ExceptionMessage = jobControl.Task.Exception != null
-                            ? jobControl.Task.Exception.GetFullMessage()
+                            ? jobControl.Task.Exception.GetFullMessage(includeStackTrace: false)
                             : string.Empty,
                         Result = jobControl.Task.Status == TaskStatus.RanToCompletion
                             ? jobControl.Task.Result

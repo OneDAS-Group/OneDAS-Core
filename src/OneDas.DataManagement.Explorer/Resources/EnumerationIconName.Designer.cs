@@ -63,18 +63,9 @@ namespace OneDas.DataManagement.Explorer {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die note_add ähnelt.
         /// </summary>
-        internal static string CodeType_Channel {
+        internal static string CodeType_Filter {
             get {
-                return ResourceManager.GetString("CodeType_Channel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die create_new_folder ähnelt.
-        /// </summary>
-        internal static string CodeType_Project {
-            get {
-                return ResourceManager.GetString("CodeType_Project", resourceCulture);
+                return ResourceManager.GetString("CodeType_Filter", resourceCulture);
             }
         }
         

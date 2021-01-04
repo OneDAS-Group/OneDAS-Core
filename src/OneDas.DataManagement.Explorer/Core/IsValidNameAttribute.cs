@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#warning remove this attribute? seems to be unused
+
+using System.ComponentModel.DataAnnotations;
 
 namespace OneDas.DataManagement.Explorer.Core
 {

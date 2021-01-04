@@ -77,7 +77,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         protected override async Task OnParametersSetAsync()
         {
             // create filter here so rendering works fine
-            _filter = this.CreateFilter(CodeType.Channel);
+            _filter = this.CreateFilter(CodeType.Filter);
 
             // update filter list
             this.UpdateFilters();
@@ -120,17 +120,15 @@ namespace OneDas.DataManagement.Explorer.Pages
         {
             var name = codeType switch
             {
-                CodeType.Channel => "NewChannelFilter",
-                CodeType.Project => "NewProjectFilter",
+                CodeType.Filter => "NewFilterCode",
                 CodeType.Shared => "NewSharedCode",
                 _ => throw new Exception($"The code type '{codeType}' is not supported.")
             };
 
             var code = codeType switch
             {
-                CodeType.Channel => this.MonacoService.DefaultChannelCode,
-                CodeType.Project => this.MonacoService.DefaultProjectCode,
-                CodeType.Shared => this.MonacoService.DefaultSharedCode,
+                CodeType.Filter => RoslynProject.DefaultFilterCode,
+                CodeType.Shared => RoslynProject.DefaultSharedCode,
                 _ => throw new Exception($"The code type '{codeType}' is not supported.")
             };
 
@@ -141,8 +139,6 @@ namespace OneDas.DataManagement.Explorer.Pages
                 CodeType = codeType,
                 Code = code,
                 Name = name,
-                Group = owner.Split('@').First(),
-                Unit = "-",
                 SampleRate = "1 s"
             };
         }
@@ -252,7 +248,6 @@ namespace OneDas.DataManagement.Explorer.Pages
             this.Filter = new FilterDescriptionViewModel(filter.Model with
             {
                 IsPublic = false,
-                Group = owner.Split('@').First(),
                 Owner = owner
             });
         }
@@ -286,7 +281,7 @@ namespace OneDas.DataManagement.Explorer.Pages
             this.AppState.FilterSettings.RemoveFilter(this.Filter);
 
             // create new filter
-            this.Filter = this.CreateFilter(CodeType.Channel);
+            this.Filter = this.CreateFilter(CodeType.Filter);
 
             // update filters
             this.UpdateFilters();

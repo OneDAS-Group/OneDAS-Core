@@ -63,23 +63,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { this.Model.IsPublic = value; }
         }
 
-        [IsValidName]
         public string Name
         {
             get { return this.Model.Name; }
             set { this.Model.Name = value; }
-        }
-
-        public string Group
-        {
-            get { return this.Model.Group; }
-            set { this.Model.Group = value; }
-        }
-
-        public string Unit
-        {
-            get { return this.Model.Unit; }
-            set { this.Model.Unit = value; }
         }
 
         [Required]

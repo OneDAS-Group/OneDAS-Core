@@ -1,6 +1,4 @@
-﻿using OneDas.DataManagement.Database;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.Loader;
 
 namespace OneDas.DataManagement.Extensions
@@ -12,6 +10,5 @@ namespace OneDas.DataManagement.Extensions
 
     public record FilterDataReaderCacheEntry(
         FilterDataReaderLoadContext LoadContext, 
-        MethodInfo MethodInfo, Dictionary<string, 
-        DatasetInfo> Replacements);
+        MethodInfo MethodInfo);
 }

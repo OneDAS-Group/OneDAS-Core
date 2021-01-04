@@ -67,9 +67,20 @@ namespace OneDas.DataManagement.Extensions
             status.AsSpan().Fill(1);
 
             // fill database
-            var database = cacheEntry.Replacements.ToDictionary(entry => entry.Key, entry =>
+            Func<string, string, string, double[]> data = (string projectId, string channelId, string datasetId) =>
             {
-                var dataset = entry.Value;
+#warning improve this (PhysicalName)
+                var project = this.DatabaseManager.Database.ProjectContainers
+                    .FirstOrDefault(container => container.Id == projectId || container.PhysicalName == projectId);
+
+                if (project == null)
+                    throw new Exception($"Unable to find project with id '{projectId}'.");
+
+                if (!this.DatabaseManager.Database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
+                {
+                    var path = $"{project.Id}/{channelId}/{datasetId}";
+                    throw new Exception($"Unable to find dataset with path '{path}'.");
+                }
 
                 if (!Utilities.IsProjectAccessible(this.User, dataset.Parent.Parent.Id, this.DatabaseManager.Database))
                     throw new UnauthorizedAccessException("The current user is not allowed to access this filter.");
@@ -79,11 +90,11 @@ namespace OneDas.DataManagement.Extensions
                 var data = BufferUtilities.ApplyDatasetStatus2(rawData, status);
 
                 return data;
-            });
+            };
 
             // execute
             var filterInstance = Activator.CreateInstance(cacheEntry.MethodInfo.DeclaringType);
-            cacheEntry.MethodInfo.Invoke(filterInstance, new object[] { begin, end, database, result });
+            cacheEntry.MethodInfo.Invoke(filterInstance, new object[] { begin, end, data, result });
 
             return ((T[])(object)result, status);
         }
@@ -98,32 +109,32 @@ namespace OneDas.DataManagement.Extensions
                     ProjectEnd = DateTime.MaxValue
                 };
 
-                var channels = filterSettings.Filters
-                    .Where(filter => filter.CodeType == CodeType.Channel)
-                    .Select(filter =>
-                {
-                    // create channel
-                    var channel = new ChannelInfo(filter.Id, project)
-                    {
-                        Group = filter.Group,
-                        Name = filter.Name,
-                        Unit = filter.Unit  
-                    };
+                //var channels = filterSettings.Filters
+                //    .Where(filter => filter.CodeType == CodeType.Filter)
+                //    .Select(filter =>
+                //{
+                //    // create channel
+                //    var channel = new ChannelInfo(filter.Id, project)
+                //    {
+                //        Name = filter.Name,
+                //        Group = filter.Group,
+                //        Unit = filter.Unit  
+                //    };
 
-                    var datasets = new List<DatasetInfo>()
-                    {
-                        new DatasetInfo(filter.SampleRate, channel)
-                        {
-                            DataType = OneDasDataType.FLOAT64
-                        }
-                    };
+                //    var datasets = new List<DatasetInfo>()
+                //    {
+                //        new DatasetInfo(filter.SampleRate, channel)
+                //        {
+                //            DataType = OneDasDataType.FLOAT64
+                //        }
+                //    };
 
-                    channel.Datasets.AddRange(datasets);
+                //    channel.Datasets.AddRange(datasets);
 
-                    return channel;
-                });
+                //    return channel;
+                //});
 
-                project.Channels.AddRange(channels);
+                //project.Channels.AddRange(channels);
 
                 return new List<ProjectInfo>() { project };
             }
@@ -184,9 +195,7 @@ namespace OneDas.DataManagement.Extensions
                 if (filter is null)
                     throw new Exception($"No filter found with ID '{filterId}'.");
 
-                (var preparedCode, var replacements) = this.PrepareCode(filter.Code);
-
-                filter.Code = preparedCode;
+                filter.Code = this.PrepareCode(filter.Code);
 
                 var roslynProject = new RoslynProject(filter, additionalCodeFiles);
                 using var peStream = new MemoryStream();
@@ -212,52 +221,40 @@ namespace OneDas.DataManagement.Extensions
                     throw new Exception($"No method with matching signature found for filter with ID '{filterId}'.");
 
                 // add to cache
-                cacheEntry = new FilterDataReaderCacheEntry(loadContext, methodInfo, replacements);
+                cacheEntry = new FilterDataReaderCacheEntry(loadContext, methodInfo);
                 FilterDataReader.MethodInfoCache.AddOrUpdate((this.Registration, filterId), cacheEntry, (key, value) => cacheEntry);
             }
 
             return cacheEntry;
         }
 
-        private (string, Dictionary<string, DatasetInfo>) PrepareCode(string code)
+        private string PrepareCode(string code)
         {
-            var replacements = new Dictionary<string, DatasetInfo>();
-
             // change signature
             code = code.Replace(
                 "DateTime begin, DateTime end, Database database, double[] result",
-                "DateTime begin, DateTime end, System.Collections.Generic.Dictionary<string, double[]> database, double[] result");
+                "DateTime begin, DateTime end, System.Func<string, string, string, bool, double[]> getData, double[] result");
 
-            // matches strings like "= database.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
-            var pattern = @"=\s?database\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";
-
-            code = Regex.Replace(code, pattern, match =>
-            {
-                var projectPhysicalName = match.Groups[1].Value;
+            MatchEvaluator matchEvaluator = match => {
+                var projectId = match.Groups[1].Value;
                 var channelId = match.Groups[2].Value;
 
 #warning: Whenever the space in the dataset name is removed, update this code
                 var regex = new Regex("_");
                 var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
 
-#warning improve this (PhysicalName)
-                var project = this.DatabaseManager.Database.ProjectContainers
-                        .FirstOrDefault(container => container.PhysicalName == projectPhysicalName);
+                return $"= (double[])getData({projectId}, {channelId}, {datasetId});";
+            };
 
-                if (project == null)
-                    throw new Exception($"Unable to find project with physical name '{projectPhysicalName}'.");
+            // matches strings like "= data.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
+            var pattern1 = @"=\s*data\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";
+            code = Regex.Replace(code, pattern1, matchEvaluator);
 
-                var path = $"{project.Id}/{channelId}/{datasetId}";
+            // matches strings like "= data.Read(campaignId, channelId, datasetId);"
+            var pattern2 = @"=\s*data\.Read\((.*),(.*),(.*)\);";
+            code = Regex.Replace(code, pattern2, matchEvaluator);
 
-                if (!this.DatabaseManager.Database.TryFindDatasetById(project.Id, channelId, datasetId, out var dataset))
-                    throw new Exception($"Unable to find dataset with path 'path'.");
-
-                replacements[path] = dataset;
-
-                return $"= (double[])database[\"{path}\"];";
-            });
-
-            return (code, replacements);
+            return code;
         }
 
         #endregion

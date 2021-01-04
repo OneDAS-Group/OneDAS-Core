@@ -70,20 +70,11 @@ namespace OneDas.DataManagement.Explorer {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Single filter ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter code ähnelt.
         /// </summary>
-        internal static string CodeType_Channel {
+        internal static string CodeType_Filter {
             get {
-                return ResourceManager.GetString("CodeType_Channel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Project filter ähnelt.
-        /// </summary>
-        internal static string CodeType_Project {
-            get {
-                return ResourceManager.GetString("CodeType_Project", resourceCulture);
+                return ResourceManager.GetString("CodeType_Filter", resourceCulture);
             }
         }
         

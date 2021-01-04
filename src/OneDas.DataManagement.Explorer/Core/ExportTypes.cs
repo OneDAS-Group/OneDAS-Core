@@ -15,7 +15,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public DateTime End { get; set; } = DateTime.UtcNow.Date.AddDays(-1);
 
         /// <example>Hour</example>
-        public FileGranularity FileGranularity { get; set; } = FileGranularity.Hour;
+        public FileGranularity FileGranularity { get; set; } = FileGranularity.SingleFile;
 
         /// <example>CSV</example>
         public FileFormat FileFormat { get; set; } = FileFormat.CSV;

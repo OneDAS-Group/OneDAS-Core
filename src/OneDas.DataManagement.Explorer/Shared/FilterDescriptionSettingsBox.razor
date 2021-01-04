@@ -33,26 +33,8 @@
                       @bind-Value="this.FilterDescription.Name">
         </MatTextField>
 
-        <div class="validation-message-for-settings-control">
-            <ValidationMessage For="@(() => this.FilterDescription.Name)" />
-        </div>
-
-        @if (this.FilterDescription.CodeType == CodeType.Channel)
-        {
-            <MatTextField class="settings-control"
-                          Label="Group"
-                          ReadOnly="true"
-                          @bind-Value="this.FilterDescription.Group">
-            </MatTextField>
-
-            <MatTextField class="settings-control"
-                          Label="Unit"
-                          @bind-Value="this.FilterDescription.Unit">
-            </MatTextField>
-        }
-
-        @if (this.FilterDescription.CodeType == CodeType.Channel || this.FilterDescription.CodeType == CodeType.Project)
-        {
+        @if (this.FilterDescription.CodeType == CodeType.Filter)
+        {          
             <MatSelectItem class="settings-control"
                            Label="Sample Rate"
                            @bind-Value="this.FilterDescription.SampleRate"

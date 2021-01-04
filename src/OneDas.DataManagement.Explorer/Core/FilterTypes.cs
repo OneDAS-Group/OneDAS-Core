@@ -8,9 +8,8 @@ namespace OneDas.DataManagement.Explorer.Core
 {
     public enum CodeType
     {
-        Channel = 1,
-        Project = 2,
-        Shared = 3
+        Filter = 1,
+        Shared = 99
     }
 
     public enum CodeLanguage
@@ -27,7 +26,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public String Owner { get; set; }
 
-        public CodeType CodeType { get; set; } = CodeType.Channel;
+        public CodeType CodeType { get; set; } = CodeType.Filter;
 
         public CodeLanguage CodeLanguage { get; set; } = CodeLanguage.CSharp;
 
@@ -38,10 +37,6 @@ namespace OneDas.DataManagement.Explorer.Core
         public bool IsPublic { get; set; }
 
         public string Name { get; set; } = string.Empty;
-
-        public string Group { get; set; } = string.Empty;
-
-        public string Unit { get; set; } = string.Empty;
 
         public string SampleRate { get; set; }
 
