@@ -4,7 +4,7 @@ namespace OneDas.Types
 {
     public static class ExceptionExtensions
     {
-        public static string GetFullMessage(this Exception ex, bool includeStackTrace = false)
+        public static string GetFullMessage(this Exception ex, bool includeStackTrace = true)
         {
             if (includeStackTrace)
                 return $"{ex.InternalGetFullMessage()} - stack trace: {ex.StackTrace}";
