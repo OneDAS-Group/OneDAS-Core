@@ -26,8 +26,6 @@ var progress;
 var currentIndex;
 var chartContainerId = "visualize-chart-container";
 
-window.addEventListener("resize", () => DotNet.invokeMethodAsync("OneDas.DataManagement.Explorer", 'RaiseOnWindowResizeAsync'));
-
 async function UpdateChart(userState, chartEntries, start, end, count, dt, beginAtZero) {  
 
     var beginDate = new Date(start);
