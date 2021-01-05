@@ -70,6 +70,24 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The buffer type is invalid. ähnelt.
+        /// </summary>
+        internal static string ChannelContext_BufferTypeInvalid {
+            get {
+                return ResourceManager.GetString("ChannelContext_BufferTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IBuffer. ähnelt.
+        /// </summary>
+        internal static string ChannelDescription_BufferTypeInvalid {
+            get {
+                return ResourceManager.GetString("ChannelDescription_BufferTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The MaximumDatasetAge must be between 0 and 10000. ähnelt.
         /// </summary>
         internal static string DataReaderExtensionSettingsBase_MaximumDatasetAgeInvalid {
@@ -178,33 +196,6 @@ namespace OneDas {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
-        /// </summary>
-        internal static string OneDasProjectDescription_InvalidFormatVersion {
-            get {
-                return ResourceManager.GetString("OneDasProjectDescription_InvalidFormatVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The project version must be equal or greater zero. ähnelt.
-        /// </summary>
-        internal static string OneDasProjectDescription_InvalidVersion {
-            get {
-                return ResourceManager.GetString("OneDasProjectDescription_InvalidVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The project name is invalid. ähnelt.
-        /// </summary>
-        internal static string OneDasProject_ProjectNameInvalid {
-            get {
-                return ResourceManager.GetString("OneDasProject_ProjectNameInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die One or more channel names are invalid ähnelt.
         /// </summary>
         internal static string OneDasProject_ChannelHubNameInvalid {
@@ -250,11 +241,38 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The project name is invalid. ähnelt.
+        /// </summary>
+        internal static string OneDasProject_ProjectNameInvalid {
+            get {
+                return ResourceManager.GetString("OneDasProject_ProjectNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The 2nd level group name is invalid. ähnelt.
         /// </summary>
         internal static string OneDasProject_SecondaryGroupNameInvalid {
             get {
                 return ResourceManager.GetString("OneDasProject_SecondaryGroupNameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The format version must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string OneDasProjectDescription_InvalidFormatVersion {
+            get {
+                return ResourceManager.GetString("OneDasProjectDescription_InvalidFormatVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The project version must be equal or greater zero. ähnelt.
+        /// </summary>
+        internal static string OneDasProjectDescription_InvalidVersion {
+            get {
+                return ResourceManager.GetString("OneDasProjectDescription_InvalidVersion", resourceCulture);
             }
         }
         
@@ -277,29 +295,29 @@ namespace OneDas {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A project id must start with a &apos;/&apos; as first character. ähnelt.
+        /// </summary>
+        internal static string OneDasUtilities_InvalidLeadingCharacter2 {
+            get {
+                return ResourceManager.GetString("OneDasUtilities_InvalidLeadingCharacter2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A project id must contain three &apos;/&apos; path separators. ähnelt.
+        /// </summary>
+        internal static string OneDasUtilities_InvalidPathSeparatorCount {
+            get {
+                return ResourceManager.GetString("OneDasUtilities_InvalidPathSeparatorCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The name must not be empty. ähnelt.
         /// </summary>
         internal static string OneDasUtilities_NameEmpty {
             get {
                 return ResourceManager.GetString("OneDasUtilities_NameEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The buffer type is invalid. ähnelt.
-        /// </summary>
-        internal static string ChannelContext_BufferTypeInvalid {
-            get {
-                return ResourceManager.GetString("ChannelContext_BufferTypeInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The provided type must be assignable to IBuffer. ähnelt.
-        /// </summary>
-        internal static string ChannelDescription_BufferTypeInvalid {
-            get {
-                return ResourceManager.GetString("ChannelDescription_BufferTypeInvalid", resourceCulture);
             }
         }
     }

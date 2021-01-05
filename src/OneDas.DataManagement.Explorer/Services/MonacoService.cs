@@ -8,6 +8,7 @@ using OmniSharp.Models.v1.Completion;
 using OmniSharp.Options;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Omnisharp;
+using OneDas.DataManagement.Explorer.Roslyn;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -363,6 +363,10 @@ namespace OneDas.DataManagement.Explorer.Services
                 var fileAccessManger = _serviceProvider.GetRequiredService<FileAccessManager>();
                 ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
             }
+            else if (type == typeof(FilterDataReader))
+            {
+                ((FilterDataReader)dataReader).ServiceProvider = _serviceProvider;
+            }
 
             // initialize projects property
             if (registrationToProjectsMap.TryGetValue(registration, out var value))

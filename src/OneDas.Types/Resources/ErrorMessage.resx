@@ -198,4 +198,10 @@
   <data name="ChannelDescription_BufferTypeInvalid" xml:space="preserve">
     <value>The provided type must be assignable to IBuffer.</value>
   </data>
+  <data name="OneDasUtilities_InvalidLeadingCharacter2" xml:space="preserve">
+    <value>A project id must start with a '/' as first character.</value>
+  </data>
+  <data name="OneDasUtilities_InvalidPathSeparatorCount" xml:space="preserve">
+    <value>A project id must contain three '/' path separators.</value>
+  </data>
 </root>

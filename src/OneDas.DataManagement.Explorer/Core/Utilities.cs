@@ -1,16 +1,33 @@
-﻿using OneDas.DataManagement.Database;
+using Microsoft.AspNetCore.Identity;
+using OneDas.DataManagement.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
     public static class Utilities
     {
+        public static async Task<ClaimsPrincipal> GetClaimsPrincipalAsync(string username, UserManager<IdentityUser> userManager)
+        {
+            var user = await userManager.FindByNameAsync(username);
+
+            if (user == null)
+                return null;
+
+            var claims = await userManager.GetClaimsAsync(user);
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Basic"));
+
+            return principal;
+        }
+
         public static bool IsProjectAccessible(ClaimsPrincipal principal, string projectId, OneDasDatabase database)
         {
+            if (principal == null)
+                return false;
+
             var identity = principal.Identity;
             var projectContainer = database.ProjectContainers.First(current => current.Id == projectId);
 
@@ -25,6 +42,30 @@ namespace OneDas.DataManagement.Explorer.Core
                                                        && claim.Value.Split(";").Any(current => current == projectId));
 
                 return isAdmin || canAccessProject;
+            }
+
+            return false;
+        }
+
+        public static bool IsProjectEditable(ClaimsPrincipal principal, string projectId, OneDasDatabase database)
+        {
+            if (principal == null)
+                return false;
+
+            var identity = principal.Identity;
+            var projectContainer = database.ProjectContainers.First(current => current.Id == projectId);
+
+            if (projectContainer.ProjectMeta.License.LicensingScheme == ProjectLicensingScheme.None)
+            {
+                return true;
+            }
+            else if (identity.IsAuthenticated)
+            {
+                var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
+                var canEditProject = principal.HasClaim(claim => claim.Type == "CanEditProject"
+                                                       && claim.Value.Split(";").Any(current => current == projectId));
+
+                return isAdmin || canEditProject;
             }
 
             return false;
@@ -60,30 +101,6 @@ namespace OneDas.DataManagement.Explorer.Core
         public static List<T> GetEnumValues<T>()
         {
             return Enum.GetValues(typeof(T)).Cast<T>().ToList();
-        }
-
-        public static IEnumerable<MethodInfo> GetMethodsBySignature(Type type, Type returnType, params Type[] parameterTypes)
-        {
-            return type.GetMethods().Where(method =>
-            {
-                if (method.ReturnType != returnType) return false;
-
-                var parameters = method.GetParameters();
-
-                if (parameterTypes == null || parameterTypes.Length == 0)
-                    return parameters.Length == 0;
-
-                else if (parameters.Length != parameterTypes.Length)
-                    return false;
-
-                for (int i = 0; i < parameterTypes.Length; i++)
-                {
-                    if (parameters[i].ParameterType != parameterTypes[i])
-                        return false;
-                }
-
-                return true;
-            });
         }
 
         public static string FormatByteCount(long byteCount)

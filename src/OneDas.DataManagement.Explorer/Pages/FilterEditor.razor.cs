@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Roslyn;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;

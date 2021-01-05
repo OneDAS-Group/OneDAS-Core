@@ -1,7 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OneDas.Buffers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Filters;
+using OneDas.DataManagement.Explorer.Roslyn;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
@@ -41,6 +45,8 @@ namespace OneDas.DataManagement.Extensions
 
         public DatabaseManager DatabaseManager { get; set; }
 
+        public IServiceProvider ServiceProvider { get; set; }
+
         public static ConcurrentDictionary<DataReaderRegistration, FilterSettings> FilterSettingsCache { get; }
 
         public static ConcurrentDictionary<(DataReaderRegistration, string), FilterDataReaderCacheEntry> MethodInfoCache { get; }
@@ -59,7 +65,9 @@ namespace OneDas.DataManagement.Extensions
         {
             var samplesPerDay = new SampleRateContainer(dataset.Id).SamplesPerDay;
             var length = (long)Math.Round((end - begin).TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
-            var cacheEntry = this.GetCacheEntry(dataset.Parent.Id);
+
+            if (!this.TryGetCacheEntry(dataset.Parent.Id, out var cacheEntry))
+                throw new Exception("Unable to compile filter code.");
 
             // prepare data
             var result = new double[length];
@@ -67,7 +75,7 @@ namespace OneDas.DataManagement.Extensions
             status.AsSpan().Fill(1);
 
             // fill database
-            Func<string, string, string, double[]> data = (string projectId, string channelId, string datasetId) =>
+            Func<string, string, string, double[]> getData = (string projectId, string channelId, string datasetId) =>
             {
 #warning improve this (PhysicalName)
                 var project = this.DatabaseManager.Database.ProjectContainers
@@ -93,55 +101,101 @@ namespace OneDas.DataManagement.Extensions
             };
 
             // execute
-            var filterInstance = Activator.CreateInstance(cacheEntry.MethodInfo.DeclaringType);
-            cacheEntry.MethodInfo.Invoke(filterInstance, new object[] { begin, end, data, result });
+#error fix this
+            cacheEntry.FilterProvider.Filter(null, begin, end, getData, result);
+#error link to xml file: C:\Users\wilvin\.nuget\packages\microsoft.netcore.app.ref\5.0.0\ref\net5.0
 
             return ((T[])(object)result, status);
         }
 
         protected override List<ProjectInfo> LoadProjects()
         {
+            var projects = new Dictionary<string, ProjectInfo>();
+
             if (this.TryGetFilterSettings(out var filterSettings))
             {
-                var project = new ProjectInfo("/IN_MEMORY/FILTERS/SHARED")
+                var filterDescriptions = filterSettings.Filters.Where(filter => filter.CodeType == CodeType.Filter);
+
+                foreach (var filterDescription in filterDescriptions)
                 {
-                    ProjectStart = DateTime.MinValue,
-                    ProjectEnd = DateTime.MaxValue
-                };
+                    if (!this.TryGetCacheEntry(filterDescription.Id, out var cacheEntry))
+                        continue;
 
-                //var channels = filterSettings.Filters
-                //    .Where(filter => filter.CodeType == CodeType.Filter)
-                //    .Select(filter =>
-                //{
-                //    // create channel
-                //    var channel = new ChannelInfo(filter.Id, project)
-                //    {
-                //        Name = filter.Name,
-                //        Group = filter.Group,
-                //        Unit = filter.Unit  
-                //    };
+                    ClaimsPrincipal user;
 
-                //    var datasets = new List<DatasetInfo>()
-                //    {
-                //        new DatasetInfo(filter.SampleRate, channel)
-                //        {
-                //            DataType = OneDasDataType.FLOAT64
-                //        }
-                //    };
+                    using (var scope = this.ServiceProvider.CreateScope())
+                    {
+                        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                        user = Utilities.GetClaimsPrincipalAsync(filterDescription.Owner, userManager).Result;
+                    }
 
-                //    channel.Datasets.AddRange(datasets);
+                    
+                    var filterProvider = cacheEntry.FilterProvider;
+                    var filterChannels = filterProvider.Filters;
 
-                //    return channel;
-                //});
+                    foreach (var filterChannel in filterChannels)
+                    {
+                        var sharedProjectID = "/IN_MEMORY/FILTERS/SHARED";
+                        var localFilterChannel = filterChannel;
 
-                //project.Channels.AddRange(channels);
+#error fix this
+                        //Utilities.IsProjectEditable(user, filterChannel.ProjectId, this.DatabaseManager.Database);
 
-                return new List<ProjectInfo>() { project };
+                        // enforce project id
+                        if (!OneDasUtilities.CheckProjectNamingConvention(filterChannel.ProjectId, out var _) ||
+                            !Utilities.IsProjectEditable(user, filterChannel.ProjectId, this.DatabaseManager.Database))
+                        {
+                            localFilterChannel = localFilterChannel with
+                            {
+                                ProjectId = sharedProjectID
+                            };
+                        }
+
+                        // enforce group
+                        if (localFilterChannel.ProjectId == sharedProjectID)
+                        {
+                            localFilterChannel = localFilterChannel with
+                            {
+                                Group = filterDescription.Owner.Split('@')[0]
+                            };
+                        }
+
+                        // get or create project
+                        if (!projects.TryGetValue(localFilterChannel.ProjectId, out var project))
+                        {
+                            project = new ProjectInfo(localFilterChannel.ProjectId);
+                            projects[localFilterChannel.ProjectId] = project;
+                        }
+
+                        // create channel
+                        if (!OneDasUtilities.CheckNamingConvention(localFilterChannel.ChannelId, out var _))
+                            continue;
+
+#error fix this
+                        var channel = new ChannelInfo(id, project)
+                        {
+                            Name = localFilterChannel.ChannelId,
+                            Group = localFilterChannel.Group,
+                            Unit = localFilterChannel.Unit
+                        };
+
+                        // create datasets
+                        var datasets = new List<DatasetInfo>()
+                        {
+                            new DatasetInfo(filterDescription.SampleRate, channel)
+                            {
+                                DataType = OneDasDataType.FLOAT64
+                            }
+                        };
+
+                        // append
+                        channel.Datasets.AddRange(datasets);
+                        project.Channels.Add(channel);
+                    }
+                }
             }
-            else
-            {
-                return new List<ProjectInfo>();
-            }
+
+            return projects.Values.ToList();
         }
 
         protected override double GetAvailability(string projectId, DateTime Day)
@@ -177,32 +231,41 @@ namespace OneDas.DataManagement.Extensions
             return false;
         }
 
-        private FilterDataReaderCacheEntry GetCacheEntry(string filterId)
+        private bool TryGetCacheEntry(string filterDescriptionId, out FilterDataReaderCacheEntry cacheEntry)
         {
+            cacheEntry = null;
+
             // search in cache
-            if (!FilterDataReader.MethodInfoCache.TryGetValue((this.Registration, filterId), out var cacheEntry))
+            if (FilterDataReader.MethodInfoCache.TryGetValue((this.Registration, filterDescriptionId), out cacheEntry))
+            {
+                return true;
+            }
+            else
             {
                 if (!this.TryGetFilterSettings(out var filterSettings))
                     throw new Exception("No filter settings available.");
 
                 // compile channel
-                var additionalCodeFiles = filterSettings.GetSharedFiles(this.User.Identity.Name)
+                var filterDescription = filterSettings.Filters.FirstOrDefault(current => current.Id == filterDescriptionId);
+
+                if (filterDescription is null)
+                    throw new Exception($"No filter found with ID '{filterDescriptionId}'.");
+
+                filterDescription.Code = this.PrepareCode(filterDescription.Code);
+
+                var additionalCodeFiles = filterSettings.GetSharedFiles(filterDescription.Owner)
                     .Select(filterDescription => filterDescription.Code)
                     .ToList();
 
-                var filter = filterSettings.Filters.FirstOrDefault(current => current.Id == filterId);
-
-                if (filter is null)
-                    throw new Exception($"No filter found with ID '{filterId}'.");
-
-                filter.Code = this.PrepareCode(filter.Code);
-
-                var roslynProject = new RoslynProject(filter, additionalCodeFiles);
+                var roslynProject = new RoslynProject(filterDescription, additionalCodeFiles);
                 using var peStream = new MemoryStream();
 
-                var compilation = roslynProject.Workspace.CurrentSolution.Projects.First()
+                var emitResult = roslynProject.Workspace.CurrentSolution.Projects.First()
                     .GetCompilationAsync().Result
                     .Emit(peStream);
+
+                if (!emitResult.Success) 
+                    return false;
 
                 peStream.Seek(0, SeekOrigin.Begin);
 
@@ -210,32 +273,57 @@ namespace OneDas.DataManagement.Extensions
                 var assembly = loadContext.LoadFromStream(peStream);
                 var assemblyType = assembly.GetType();
 
-                var methodInfo = assembly.GetTypes().SelectMany(type =>
+                // filter method info
+                var interfaceType = typeof(FilterProviderBase);
+                var filterType = assembly
+                    .GetTypes()
+                    .FirstOrDefault(type => interfaceType.IsAssignableFrom(type));
+
+                if (filterType is null)
+                    throw new Exception($"No type found that implements the IFilterProvider interface for filter with ID '{filterDescriptionId}'.");
+
+                try
                 {
-#warning https://stackoverflow.com/questions/4681031/how-do-i-check-if-a-type-provides-a-parameterless-constructor
-                    var parameters = new Type[] { typeof(DateTime), typeof(DateTime), typeof(Dictionary<string, double[]>), typeof(double[]) };
-                    return Utilities.GetMethodsBySignature(type, typeof(void), parameters);
-                }).FirstOrDefault();
+                    var filterProvider = (FilterProviderBase)Activator.CreateInstance(filterType);
 
-                if (methodInfo is null)
-                    throw new Exception($"No method with matching signature found for filter with ID '{filterId}'.");
-
-                // add to cache
-                cacheEntry = new FilterDataReaderCacheEntry(loadContext, methodInfo);
-                FilterDataReader.MethodInfoCache.AddOrUpdate((this.Registration, filterId), cacheEntry, (key, value) => cacheEntry);
+                    // add to cache
+                    cacheEntry = new FilterDataReaderCacheEntry(loadContext, filterProvider);
+                    var localCacheEntry = cacheEntry;
+                    FilterDataReader.MethodInfoCache.AddOrUpdate((this.Registration, filterDescriptionId), cacheEntry, (key, value) => localCacheEntry);
+                    return true;
+                }
+                catch (MissingMethodException)
+                {
+                    throw new Exception($"No parameterless constructor found for filter with ID '{filterDescriptionId}'.");
+                }
             }
-
-            return cacheEntry;
         }
 
         private string PrepareCode(string code)
         {
             // change signature
             code = code.Replace(
-                "DateTime begin, DateTime end, Database database, double[] result",
-                "DateTime begin, DateTime end, System.Func<string, string, string, bool, double[]> getData, double[] result");
+                "DateTime begin, DateTime end, DataProvider dataProvider, double[] result",
+                "DateTime begin, DateTime end, System.Func<string, string, string, double[]> getData, double[] result");
 
-            MatchEvaluator matchEvaluator = match => {
+            // matches strings like "= dataProvider.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
+            var pattern1 = @"=\s*dataProvider\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";
+            code = Regex.Replace(code, pattern1, match =>
+            {
+                var projectId = match.Groups[1].Value;
+                var channelId = match.Groups[2].Value;
+
+#warning: Whenever the space in the dataset name is removed, update this code
+                var regex = new Regex("_");
+                var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
+
+                return $"= (double[])getData(\"{projectId}\", \"{channelId}\", \"{datasetId}\");";
+            });
+
+            // matches strings like "= dataProvider.Read(campaignId, channelId, datasetId);"
+            var pattern2 = @"=\s*dataProvider\.Read\((.*),(.*),(.*)\);";
+            code = Regex.Replace(code, pattern2, match =>
+            {
                 var projectId = match.Groups[1].Value;
                 var channelId = match.Groups[2].Value;
 
@@ -244,15 +332,7 @@ namespace OneDas.DataManagement.Extensions
                 var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
 
                 return $"= (double[])getData({projectId}, {channelId}, {datasetId});";
-            };
-
-            // matches strings like "= data.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
-            var pattern1 = @"=\s*data\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";
-            code = Regex.Replace(code, pattern1, matchEvaluator);
-
-            // matches strings like "= data.Read(campaignId, channelId, datasetId);"
-            var pattern2 = @"=\s*data\.Read\((.*),(.*),(.*)\);";
-            code = Regex.Replace(code, pattern2, matchEvaluator);
+            });
 
             return code;
         }

@@ -111,6 +111,23 @@ namespace OneDas
                 return Convert.ToByte((int)oneDasDataType & 0xff);
         }
 
+        public static bool CheckProjectNamingConvention(string value, out string errorDescription, bool includeValue = false)
+        {
+            var valueAsString = string.Empty;
+
+            if (includeValue)
+                valueAsString = $" (value: '{value}')";
+
+            errorDescription = true switch
+            {
+                true when !value.StartsWith('/') => $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter2}{valueAsString}",
+                true when value.Split('/').Count() != 5 => $"{ErrorMessage.OneDasUtilities_InvalidPathSeparatorCount}{valueAsString}",
+                _ => string.Empty
+            };
+
+            return string.IsNullOrWhiteSpace(errorDescription);
+        }
+
         public static bool CheckNamingConvention(string value, out string errorDescription, bool includeValue = false)
         {
             var valueAsString = string.Empty;

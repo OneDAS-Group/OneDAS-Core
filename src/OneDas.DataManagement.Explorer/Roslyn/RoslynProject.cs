@@ -2,13 +2,16 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
+using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Filters;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using OneDasDatabase = OneDas.DataManagement.Database.OneDasDatabase;
 
-namespace OneDas.DataManagement.Explorer.Core
+namespace OneDas.DataManagement.Explorer.Roslyn
 {
     public class RoslynProject
     {
@@ -16,39 +19,25 @@ namespace OneDas.DataManagement.Explorer.Core
 
         static RoslynProject()
         {
-            RoslynProject.AdditionalTypesCode =
-$@"           
-namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
-{{
-    public record FilterChannel(string Project, string Name, string Group, string Unit);
-
-    public static class FilterBase
-    {{
-        public abstract void Filter(FilterChannel filterChannel, DateTime begin, DateTime end, DataProvider data, double[] result);
-        public abstract List<FilterChannel> GetFilters(Database database);
-    }}
-}}
-";
-
             RoslynProject.DefaultFilterCode =
 $@"using System;
+using System.Collections.Generic;
                  
 namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
 {{
-    class Filter : FilterBase
+    class FilterProvider : FilterProviderBase
     {{
-        /// <summary>
-        /// This method is used to do the calculations for a single filter that can be based on the channels 
-        /// of one ore more available and accessible projects.
-        /// </summary>
-        /// <param name=""begin"">Enables the user to choose the right calibration factors for that time period.</param>
-        /// <param name=""end"">Enables the user to choose the right calibration factors for that time period.</param>
-        /// <param name=""data"">Contains the data of the preselected projects.</param>
-        /// <param name=""result"">The resulting double array with length matching the time period and sample rate.</param>
-        public override void Filter(DateTime begin, DateTime end, DataProvider data, double[] result)
+        /* Use this method to do the calculations for a filter that can be based on one or more
+         * channels of available and accessible projects.
+         *   begin:  Enables the user to choose the right calibration factors for that time period.
+         *   end:    Enables the user to choose the right calibration factors for that time period.
+         *   data:   Contains the data of the preselected projects.
+         *   result: The resulting double array with length matching the time period and sample rate.
+         */
+        public override void Filter(FilterChannel filter, DateTime begin, DateTime end, DataProvider dataProvider, double[] result)
         {{
             /* This dataset has the same length as the result array. */
-            var t1 = database.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;
+            var t1 = dataProvider.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;
             
             for (int i = 0; i < result.Length; i++)
             {{
@@ -57,15 +46,17 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             }}
         }}
 
-        /// <summary>
-        /// This method is used to provide one or more filter channel definitions.
-        /// </summary>
-        public override List<FilterChannel> GetFilters();
+        /* Use this method to provide one or more filter definitions. */
+        protected override List<FilterChannel> GetFilters()
         {{
             return new List<FilterChannel>()
             {{
-                new FilterChannel(Project: ""/IN_MEMORY/TEST/ACCESSIBLE"", Name: ""T1_squared"", Group: ""myGroup"", Unit: ""°C²"")
-            }}
+                new FilterChannel()
+                {{
+                    ChannelId = ""T1_squared"", 
+                    Unit = ""°C²""
+                }}
+            }};
         }}
     }}
 }}
@@ -97,32 +88,39 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
 
         public RoslynProject(FilterDescription filter, List<string> additionalCodeFiles, OneDasDatabase database = null)
         {
+            var isRealBuild = database is null;
             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
 
             // workspace
             this.Workspace = new AdhocWorkspace(host);
 
             // project
-            var filePath = typeof(object).Assembly.Location;
             var documentationProvider = XmlDocumentationProvider.CreateFromFile(@"./Resources/System.Runtime.xml");
 
             var projectInfo = ProjectInfo
                 .Create(ProjectId.CreateNewId(), VersionStamp.Create(), "OneDas", "OneDas", LanguageNames.CSharp)
-                .WithMetadataReferences(new[]
-                {
-                    MetadataReference.CreateFromFile(filePath, documentation: documentationProvider)
-                })
                 .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                    optimizationLevel: OptimizationLevel.Release));
+                    optimizationLevel: OptimizationLevel.Release,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
+
+            if (isRealBuild)
+            {
+                projectInfo = projectInfo
+                    .WithMetadataReferences(Net50.All.Concat(new List<PortableExecutableReference>() { MetadataReference.CreateFromFile(typeof(FilterProviderBase).Assembly.Location) }));
+            }
+            else
+            {
+                projectInfo = projectInfo.WithMetadataReferences(new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: documentationProvider),
+                });
+            }
 
             var project = this.Workspace.AddProject(projectInfo);
 
-            // code
+            // actual code
             var document = this.Workspace.AddDocument(project.Id, "Code.cs", SourceText.From(filter.Code));
             this.DocumentId = document.Id;
-
-            // additional types code
-            this.Workspace.AddDocument(project.Id, Guid.NewGuid().ToString(), SourceText.From(RoslynProject.AdditionalTypesCode));
 
             // additional code
             foreach (var additionalCode in additionalCodeFiles)
@@ -130,9 +128,16 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
                 this.Workspace.AddDocument(project.Id, Guid.NewGuid().ToString(), SourceText.From(additionalCode));
             }
 
-            // database code
+            // other code
             if (database is not null)
             {
+                // shared code
+                var sharedCode = File
+                    .ReadAllText("./Core/FilterTypesShared.cs")
+                    .Replace("Func<string, string, string, double[]> getData", "DataProvider dataProvider");
+                this.Workspace.AddDocument(project.Id, "FilterTypesShared.cs", SourceText.From(sharedCode));
+
+                // database code
                 var databaseCode = this.GenerateDatabaseCode(database, filter.SampleRate, filter.RequestedProjectIds);
                 this.Workspace.AddDocument(project.Id, "DatabaseCode.cs", SourceText.From(databaseCode));
             }
@@ -141,8 +146,6 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
         #endregion
 
         #region Properties
-
-        public static string AdditionalTypesCode { get; }
 
         public static string DefaultFilterCode { get; }
 
@@ -181,7 +184,10 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             classStringBuilder.AppendLine($"{{");
 
             // add Read() method
-            classStringBuilder.AppendLine($"public double[] Read(string projectId, string channelId, string datasetId");
+            classStringBuilder.AppendLine($"public double[] Read(string projectId, string channelId)");
+            classStringBuilder.AppendLine($"{{");
+            classStringBuilder.AppendLine($"return new double[0];");
+            classStringBuilder.AppendLine($"}}");
 
             if (sampleRate is not null)
             {

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using OneDas.DataManagement.Explorer.Filters;
 using System.Runtime.Loader;
 
 namespace OneDas.DataManagement.Extensions
@@ -9,6 +9,6 @@ namespace OneDas.DataManagement.Extensions
     }
 
     public record FilterDataReaderCacheEntry(
-        FilterDataReaderLoadContext LoadContext, 
-        MethodInfo MethodInfo);
+        FilterDataReaderLoadContext LoadContext,
+        FilterProviderBase FilterProvider);
 }
