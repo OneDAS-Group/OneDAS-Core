@@ -12,17 +12,11 @@ namespace OneDas.DataManagement.Extensions
     [ExtensionIdentification("OneDas.InMemory", "OneDAS in-memory", "Provides an in-memory database.", "", "")]
     public class InMemoryDataReader : DataReaderExtensionBase
     {
-        #region Fields
-
-        private Random _random;
-
-        #endregion
-
         #region Constructors
 
         public InMemoryDataReader(DataReaderRegistration registration, ILogger logger) : base(registration, logger)
         {
-            _random = new Random();
+            //
         }
 
         #endregion
@@ -47,7 +41,7 @@ namespace OneDas.DataManagement.Extensions
             {
                 var kernelSize = 1000;
                 var movingAverage = new double[kernelSize];
-                var random = new Random();
+                var random = new Random((int)begin.Ticks);
                 var mean = 15;
 
                 dataDouble = new double[length];
@@ -86,12 +80,12 @@ namespace OneDas.DataManagement.Extensions
             return new List<ProjectInfo>() { project_allowed, project_restricted };
         }
 
-        protected override double GetAvailability(string projectId, DateTime Day)
+        protected override double GetAvailability(string projectId, DateTime day)
         {
             if (!this.Projects.Any(project => project.Id == projectId))
                 throw new Exception($"The requested project with name '{projectId}' could not be found.");
 
-            return _random.NextDouble() / 10 + 0.9;
+            return new Random((int)day.Ticks).NextDouble() / 10 + 0.9;
         }
 
         private ProjectInfo LoadProject(string projectId, string id1, string id2, string id3, string id4)
