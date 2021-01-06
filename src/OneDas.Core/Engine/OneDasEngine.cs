@@ -554,7 +554,6 @@ namespace OneDas.Core.Engine
                         channelHubSettings.DataType,
                         sampleRate,
                         channelHubSettings.Unit,
-                        channelHubSettings.TransferFunctionSet,
                         BufferType.Extended
                     ));
                 });
