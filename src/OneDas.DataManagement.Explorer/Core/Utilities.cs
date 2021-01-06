@@ -30,8 +30,19 @@ namespace OneDas.DataManagement.Explorer.Core
 
             var identity = principal.Identity;
             var projectContainer = database.ProjectContainers.First(current => current.Id == projectId);
+            var projectMeta = projectContainer.ProjectMeta;
 
-            if (projectContainer.ProjectMeta.License.LicensingScheme == ProjectLicensingScheme.None)
+            return Utilities.IsProjectAccessible(principal, projectMeta);
+        }
+
+        public static bool IsProjectAccessible(ClaimsPrincipal principal, ProjectMeta projectMeta)
+        {
+            if (principal == null)
+                return false;
+
+            var identity = principal.Identity;
+
+            if (projectMeta.License.LicensingScheme == ProjectLicensingScheme.None)
             {
                 return true;
             }
@@ -39,7 +50,7 @@ namespace OneDas.DataManagement.Explorer.Core
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
                 var canAccessProject = principal.HasClaim(claim => claim.Type == "CanAccessProject"
-                                                       && claim.Value.Split(";").Any(current => current == projectId));
+                                                       && claim.Value.Split(";").Any(current => current == projectMeta.Id));
 
                 return isAdmin || canAccessProject;
             }
@@ -47,23 +58,18 @@ namespace OneDas.DataManagement.Explorer.Core
             return false;
         }
 
-        public static bool IsProjectEditable(ClaimsPrincipal principal, string projectId, OneDasDatabase database)
+        public static bool IsProjectEditable(ClaimsPrincipal principal, ProjectMeta projectMeta)
         {
             if (principal == null)
                 return false;
 
             var identity = principal.Identity;
-            var projectContainer = database.ProjectContainers.First(current => current.Id == projectId);
 
-            if (projectContainer.ProjectMeta.License.LicensingScheme == ProjectLicensingScheme.None)
-            {
-                return true;
-            }
-            else if (identity.IsAuthenticated)
+            if (identity.IsAuthenticated)
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
                 var canEditProject = principal.HasClaim(claim => claim.Type == "CanEditProject"
-                                                       && claim.Value.Split(";").Any(current => current == projectId));
+                                                       && claim.Value.Split(";").Any(current => current == projectMeta.Id));
 
                 return isAdmin || canEditProject;
             }

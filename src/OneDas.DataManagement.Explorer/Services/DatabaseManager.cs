@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
@@ -115,16 +116,16 @@ namespace OneDas.DataManagement.Explorer.Services
 
             // Concept:
             //
-            // 1) rootPathToProjectsMap, rootPathToDataReaderTypeMap and database are instantiated in this method,
+            // 1) registrationToProjectsMap, registrationToDataReaderTypeMap and database are instantiated in this method,
             // combined into a new DatabaseManagerState and then set in an atomic operation to the State propery.
             // 
-            // 2) Within this method, the rootPathToProjectsMap cache gets filled for both, aggregated and native data 
-            // reader.
+            // 2) Within this method, the registrationToProjectsMap cache gets filled
             //
             // 3) It may happen that during this process, which might take a while, an external caller calls 
-            // GetAggregationDataReader or GetNativeDataReader. To divide both processes (external call vs this method),
-            // the State property is introduced, so external calls use old maps and this method uses the new instances.
+            // GetDataReader. To divide both processes (external call vs this method),the State property is introduced, 
+            // so external calls use old maps and this method uses the new instances.
 
+            FilterDataReader.ClearCache();
             var database = new OneDasDatabase();
 
             // create new empty projects map
@@ -152,56 +153,75 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 try
                 {
-                    var projectIds = dataReader.GetProjectIds();
-
-                    foreach (var projectId in projectIds)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            return;
-
-                        // find project container or create a new one
-                        var container = database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
-
-                        if (container == null)
-                        {
-                            container = new ProjectContainer(projectId);
-                            database.ProjectContainers.Add(container);
-
-                            // try to load project meta data
-                            var filePath = this.GetProjectMetaPath(projectId);
-
-                            ProjectMetaInfo projectMeta;
-
-                            if (File.Exists(filePath))
-                            {
-                                var jsonString = File.ReadAllText(filePath);
-                                projectMeta = JsonSerializer.Deserialize<ProjectMetaInfo>(jsonString);
-                            }
-                            else
-                            {
-                                projectMeta = new ProjectMetaInfo(projectId);
-                            }
-
-                            container.ProjectMeta = projectMeta;
-                        }
-
-                        // get up-to-date project from data reader
-                        var project = dataReader.GetProject(projectId);
-
-                        //
-                        container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
-                    }
-                }
-                finally
-                {
                     dataReader.Dispose();
+                }
+                catch { }
+            }
+
+            // get project meta data
+            var projectMetas = registrationToProjectsMap
+                .SelectMany(entry => entry.Value)
+                .Select(project => project.Id)
+                .Distinct()
+                .Select(projectId =>
+                {
+                    var filePath = this.GetProjectMetaPath(projectId);
+
+                    if (File.Exists(filePath))
+                    {
+                        var jsonString = File.ReadAllText(filePath);
+                        return JsonSerializer.Deserialize<ProjectMeta>(jsonString);
+                    }
+                    else
+                    {
+                        return new ProjectMeta(projectId);
+                    }
+                })
+                .ToList();
+
+            // ensure that the filter data reader plugin does not create projects and channels without permission
+            var filterProjects = registrationToProjectsMap
+                .Where(entry => entry.Key.DataReaderId == FilterDataReader.Id)
+                .SelectMany(entry => entry.Value)
+                .ToList();
+
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                this.CleanUpFilterProjects(filterProjects, projectMetas, userManager, cancellationToken);
+            }
+
+            // merge all projects
+            foreach (var entry in registrationToProjectsMap)
+            {
+                foreach (var project in entry.Value)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
+                    // find project container or create a new one
+                    var container = database.ProjectContainers.FirstOrDefault(container => container.Id == project.Id);
+
+                    if (container == null)
+                    {
+                        var projectMeta = projectMetas.First(projectMeta => projectMeta.Id == project.Id);
+
+                        container = new ProjectContainer(project.Id);
+                        container.ProjectMeta = projectMeta;
+                        database.ProjectContainers.Add(container);
+                    }
+
+                    container.Project.Merge(project, ChannelMergeMode.OverwriteMissing);
                 }
             }
 
-            // the purpose of this block is to initalize empty properties 
+            // the purpose of this block is to initalize empty properties,
             // add missing channels and clean up empty channels
             foreach (var projectContainer in database.ProjectContainers)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
                 // remove all channels where no native datasets are available
                 // because only these provide metadata like name and group
                 var channels = projectContainer.Project.Channels;
@@ -225,8 +245,6 @@ namespace OneDas.DataManagement.Explorer.Services
                 RegistrationToProjectsMap = registrationToProjectsMap,
                 RegistrationToDataReaderTypeMap = registrationToDataReaderTypeMap
             };
-
-            FilterDataReader.ClearCache();
 
             this.DatabaseUpdated?.Invoke(this, database);
         }
@@ -271,7 +289,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return dataReader;
         }
 
-        public void SaveProjectMeta(ProjectMetaInfo projectMeta)
+        public void SaveProjectMeta(ProjectMeta projectMeta)
         {
             var filePath = this.GetProjectMetaPath(projectMeta.Id);
             var jsonString = JsonSerializer.Serialize(projectMeta, new JsonSerializerOptions() { WriteIndented = true });
@@ -354,7 +372,7 @@ namespace OneDas.DataManagement.Explorer.Services
             DataReaderRegistration registration, Type type,
             Dictionary<DataReaderRegistration, List<ProjectInfo>> registrationToProjectsMap)
         {
-            var logger = _loggerFactory.CreateLogger(registration.RootPath);
+            var logger = _loggerFactory.CreateLogger($"{registration.DataReaderId} - {registration.RootPath}");
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, registration, logger);
 
             // special case checks
@@ -362,10 +380,6 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 var fileAccessManger = _serviceProvider.GetRequiredService<FileAccessManager>();
                 ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
-            }
-            else if (type == typeof(FilterDataReader))
-            {
-                ((FilterDataReader)dataReader).ServiceProvider = _serviceProvider;
             }
 
             // initialize projects property
@@ -377,7 +391,11 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 _logger.LogInformation($"Loading {registration.DataReaderId} on path {registration.RootPath} ...");
                 dataReader.InitializeProjects();
-                registrationToProjectsMap[registration] = dataReader.Projects;
+
+                registrationToProjectsMap[registration] = dataReader
+                    .Projects
+                    .Where(current => OneDasUtilities.CheckProjectNamingConvention(current.Id, out var _))
+                    .ToList();
             }
 
             return dataReader;
@@ -434,6 +452,73 @@ namespace OneDas.DataManagement.Explorer.Services
         private List<Type> ScanAssembly(Assembly assembly)
         {
             return assembly.ExportedTypes.Where(type => type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(DataReaderExtensionBase))).ToList();
+        }
+
+        private void CleanUpFilterProjects(List<ProjectInfo> filterProjects,
+                                           List<ProjectMeta> projectMetas,
+                                           UserManager<IdentityUser> userManager,
+                                           CancellationToken cancellationToken)
+        {
+            var usersMap = new Dictionary<string, ClaimsPrincipal>();
+            var projectsToRemove = new List<ProjectInfo>();
+
+            foreach (var project in filterProjects)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                var projectMeta = projectMetas.First(projectMeta => projectMeta.Id == project.Id);
+                var channelsToRemove = new List<ChannelInfo>();
+
+                foreach (var channel in project.Channels)
+                {
+                    var datasetsToRemove = new List<DatasetInfo>();
+
+                    foreach (var dataset in channel.Datasets)
+                    {
+                        var keep = false;
+
+                        if (FilterDataReader.TryGetFilterCodeDefinition(dataset, out var codeDefinition))
+                        {
+                            // get user
+                            if (!usersMap.TryGetValue(codeDefinition.Owner, out var user))
+                            {
+                                user = Utilities
+                                    .GetClaimsPrincipalAsync(codeDefinition.Owner, userManager)
+                                    .Result;
+
+                                usersMap[codeDefinition.Owner] = user;
+                            }
+
+                            keep = Utilities.IsProjectEditable(user, projectMeta);
+                        }
+
+                        if (!keep)
+                            datasetsToRemove.Add(dataset);
+                    }
+
+                    foreach (var datasetToRemove in datasetsToRemove)
+                    {
+                        channel.Datasets.Remove(datasetToRemove);
+
+                        if (!channel.Datasets.Any())
+                            channelsToRemove.Add(channel);
+                    }
+                }
+
+                foreach (var channelToRemove in channelsToRemove)
+                {
+                    project.Channels.Remove(channelToRemove);
+
+                    if (!project.Channels.Any())
+                        projectsToRemove.Add(project);
+                }
+            }
+
+            foreach (var projectToRemove in projectsToRemove)
+            {
+                filterProjects.Remove(projectToRemove);
+            }
         }
 
         #endregion

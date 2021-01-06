@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OneDas.DataManagement.Explorer.Core;
-using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.IO;
 using System.Text.Json;

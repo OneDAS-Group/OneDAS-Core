@@ -5,6 +5,11 @@ using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Explorer.Filters
 {
+    public static class FilterConstants
+    {
+        public static string SharedProjectID { get; } = "/IN_MEMORY/FILTERS/SHARED";
+    }
+
     public record FilterChannel
     {
         #region Constructors
@@ -14,10 +19,10 @@ namespace OneDas.DataManagement.Explorer.Filters
             //
         }
 
-        public FilterChannel(string projectId, string channelId, string group, string unit)
+        public FilterChannel(string projectId, string channelName, string group, string unit)
         {
             this.ProjectId = projectId;
-            this.ChannelId = channelId; // the actual channel ID derives from this, so it is really a (human-readable) ID here
+            this.ChannelName = channelName;
             this.Group = group;
             this.Unit = unit;
         }
@@ -26,8 +31,8 @@ namespace OneDas.DataManagement.Explorer.Filters
 
         #region Properties
 
-        public string ProjectId { get; init; } = string.Empty;
-        public string ChannelId { get; init; } = string.Empty;
+        public string ProjectId { get; init; } = FilterConstants.SharedProjectID;
+        public string ChannelName { get; init; } = string.Empty;
         public string Group { get; init; } = string.Empty;
         public string Unit { get; init; } = string.Empty;
 

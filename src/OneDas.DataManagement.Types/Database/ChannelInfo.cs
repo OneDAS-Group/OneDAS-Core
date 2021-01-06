@@ -16,7 +16,6 @@ namespace OneDas.DataManagement.Database
             this.Name = string.Empty;
             this.Group = string.Empty;
             this.Unit = string.Empty;
-            this.TransferFunctions = new List<TransferFunction>();
             this.Datasets = new List<DatasetInfo>();
         }
 
@@ -34,8 +33,6 @@ namespace OneDas.DataManagement.Database
         public string Group { get; set; }
 
         public string Unit { get; set; }
-
-        public List<TransferFunction> TransferFunctions { get; set; }
 
         public List<DatasetInfo> Datasets { get; set; }
 
@@ -62,16 +59,12 @@ namespace OneDas.DataManagement.Database
                     if (string.IsNullOrWhiteSpace(this.Unit))
                         this.Unit = channel.Unit;
 
-                    if (!this.TransferFunctions.Any())
-                        this.TransferFunctions = channel.TransferFunctions;
-
                     break;
 
                 case ChannelMergeMode.NewWins:
                     this.Name = channel.Name;
                     this.Group = channel.Group;
                     this.Unit = channel.Unit;
-                    this.TransferFunctions = channel.TransferFunctions;
                     break;
 
                 default:

@@ -38,7 +38,6 @@ namespace OneDas.DataManagement.Database
                     var dataType = dataset.DataType;
                     var sampleRate = dataset.GetSampleRate();
                     var unit = channel.Unit;
-                    var transferFunctions = channel.TransferFunctions;
 
                     return new ChannelDescription(guid,
                                                    displayName,
@@ -47,7 +46,6 @@ namespace OneDas.DataManagement.Database
                                                    dataType,
                                                    sampleRate,
                                                    unit,
-                                                   transferFunctions,
                                                    BufferType.Simple);
                 });
             }).ToList();

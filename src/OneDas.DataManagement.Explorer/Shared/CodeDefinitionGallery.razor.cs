@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class FilterGallery
+    public partial class CodeDefinitionGallery
     {
         #region Properties
 
@@ -21,7 +21,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         public EventCallback<bool> IsOpenChanged { get; set; }
 
         [Parameter]
-        public Action<FilterDescriptionViewModel> OnFilterDescriptionSelected { get; set; }
+        public Action<CodeDefinitionViewModel> OnCodeDefinitionSelected { get; set; }
 
         private List<string> Owners { get; set; }
 
@@ -31,7 +31,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         protected override void OnAfterRender(bool firstRender)
         {
-            this.Owners = this.AppState.FilterSettings.Filters
+            this.Owners = this.AppState.FilterSettings.CodeDefintions
                 .Where(current => current.IsPublic)
                 .Select(current => current.Owner)
                 .Distinct()
@@ -40,21 +40,21 @@ namespace OneDas.DataManagement.Explorer.Shared
             base.OnAfterRender(firstRender);
         }
 
-        private List<FilterDescriptionViewModel> GetFilterDescriptionsForOwner(string owner)
+        private List<CodeDefinitionViewModel> GetCodeDefinitionsForOwner(string owner)
         {
             return this.AppState
                 .FilterSettings
-                .Filters
+                .CodeDefintions
                 .Where(current => current.IsPublic && current.Owner == owner)
                 .OrderBy(current => current.CodeType)
-                .Select(current => new FilterDescriptionViewModel(current))
+                .Select(current => new CodeDefinitionViewModel(current))
                 .ToList();
         }
 
-        private void Accept(FilterDescriptionViewModel filterDescription)
+        private void Accept(CodeDefinitionViewModel codeDefinition)
         {
             this.OnIsOpenChanged(false);
-            this.OnFilterDescriptionSelected?.Invoke(filterDescription);
+            this.OnCodeDefinitionSelected?.Invoke(codeDefinition);
         }
 
         private void Cancel()

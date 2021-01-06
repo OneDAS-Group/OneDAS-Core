@@ -3,7 +3,7 @@ using System;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class FilterDeleteModal
+    public partial class CodeDefinitionDeleteModal
     {
         #region Properties
 

@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
-using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
-	public abstract class StateComponentBase : ComponentBase, IDisposable
+    public abstract class StateComponentBase : ComponentBase, IDisposable
 	{
 		#region Properties
 

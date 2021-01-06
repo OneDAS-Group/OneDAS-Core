@@ -1,7 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Pages;
 using OneDas.DataManagement.Explorer.Services;
-using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

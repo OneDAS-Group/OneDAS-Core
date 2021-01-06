@@ -27,22 +27,18 @@ SOFTWARE.
 */
 
 using System.Collections.Generic;
-using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
-using OmniSharp.Extensions;
-using OmniSharp.Mef;
 using OmniSharp.Models;
 using OmniSharp.Models.SignatureHelp;
 using OmniSharp.Roslyn.CSharp.Services.Documentation;
 
 namespace OneDas.DataManagement.Explorer.Omnisharp
 {
-    
+
     public class OmniSharpSignatureHelpService 
     {
         private readonly AdhocWorkspace _workspace;

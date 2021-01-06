@@ -70,10 +70,6 @@ namespace OneDas.DataManagement.Types.Hdf
                     // sometimes the unit property is null in the HDF file
                     if (string.IsNullOrWhiteSpace(channel.Unit))
                         channel.Unit = string.Empty;
-
-                    // hdf_transfer_function_t to TransferFunction
-                    var hdf_transfer_function_set = IOHelper.ReadAttribute<hdf_transfer_function_t>(channelGroupId, "transfer_function_set");
-                    channel.TransferFunctions = hdf_transfer_function_set.Select(tf => tf.ToTransferFunction()).ToList();
                 }
             }
 

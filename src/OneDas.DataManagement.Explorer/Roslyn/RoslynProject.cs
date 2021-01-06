@@ -15,6 +15,12 @@ namespace OneDas.DataManagement.Explorer.Roslyn
 {
     public class RoslynProject
     {
+        #region Fields
+
+        private static object _mefLock = new object();
+
+        #endregion
+
         #region Constructors
 
         static RoslynProject()
@@ -53,7 +59,7 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             {{
                 new FilterChannel()
                 {{
-                    ChannelId = ""T1_squared"", 
+                    ChannelName = ""T1_squared"", 
                     Unit = ""°C²""
                 }}
             }};
@@ -86,17 +92,21 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
 ";
         }
 
-        public RoslynProject(FilterDescription filter, List<string> additionalCodeFiles, OneDasDatabase database = null)
+        public RoslynProject(CodeDefinition filter, List<string> additionalCodeFiles, OneDasDatabase database = null)
         {
             var isRealBuild = database is null;
-            var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
 
-            // workspace
-            this.Workspace = new AdhocWorkspace(host);
+            MefHostServices host;
+
+            // Lock is required because the RoslynProject may be instantiated concurrently.
+            lock (_mefLock) {
+                host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
+
+                // workspace
+                this.Workspace = new AdhocWorkspace(host);
+            }
 
             // project
-            var documentationProvider = XmlDocumentationProvider.CreateFromFile(@"./Resources/System.Runtime.xml");
-
             var projectInfo = ProjectInfo
                 .Create(ProjectId.CreateNewId(), VersionStamp.Create(), "OneDas", "OneDas", LanguageNames.CSharp)
                 .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
@@ -110,10 +120,13 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             }
             else
             {
-                projectInfo = projectInfo.WithMetadataReferences(new[]
-                {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: documentationProvider),
-                });
+                projectInfo = projectInfo
+                    .WithMetadataReferences(Net50.All);
+
+                //projectInfo = projectInfo.WithMetadataReferences(new[]
+                //{
+                //    MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: documentationProvider),
+                //});
             }
 
             var project = this.Workspace.AddProject(projectInfo);
@@ -184,7 +197,7 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             classStringBuilder.AppendLine($"{{");
 
             // add Read() method
-            classStringBuilder.AppendLine($"public double[] Read(string projectId, string channelId)");
+            classStringBuilder.AppendLine($"public double[] Read(string projectId, string channelName, string datasetId)");
             classStringBuilder.AppendLine($"{{");
             classStringBuilder.AppendLine($"return new double[0];");
             classStringBuilder.AppendLine($"}}");

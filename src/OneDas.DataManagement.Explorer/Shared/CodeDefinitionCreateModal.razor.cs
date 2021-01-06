@@ -4,7 +4,7 @@ using System;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class FilterCreateModal
+    public partial class CodeDefinitionCreateModal
     {
         #region Properties
 

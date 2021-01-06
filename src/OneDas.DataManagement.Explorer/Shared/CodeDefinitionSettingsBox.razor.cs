@@ -5,17 +5,17 @@ using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class FilterDescriptionSettingsBox
+    public partial class CodeDefinitionSettingsBox
     {
         #region Properties
 
         [Parameter]
-        public FilterDescriptionViewModel FilterDescription { get; set; }
+        public CodeDefinitionViewModel CodeDefinition { get; set; }
 
         [Parameter]
         public Action OnSave { get; set; }
 
-        private bool FilterProjectRequestDialogIsOpen { get; set; }
+        private bool CodeDefinitionProjectRequestDialogIsOpen { get; set; }
 
         #endregion
 
@@ -23,12 +23,12 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private void SelectProjectIds(List<string> projectIds)
         {
-            this.FilterDescription.RequestedProjectIds = projectIds;
+            this.CodeDefinition.RequestedProjectIds = projectIds;
         }
 
-        public void OpenFilterProjectRequestDialog()
+        public void OpenCodeDefinitionProjectRequestDialog()
         {
-            this.FilterProjectRequestDialogIsOpen = true;
+            this.CodeDefinitionProjectRequestDialogIsOpen = true;
         }
 
         #endregion

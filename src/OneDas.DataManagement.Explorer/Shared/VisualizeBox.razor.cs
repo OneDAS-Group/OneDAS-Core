@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
-using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.Infrastructure;
 using OneDas.Types;
 using System;

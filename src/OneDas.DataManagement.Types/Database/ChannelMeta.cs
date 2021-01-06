@@ -1,24 +1,21 @@
-﻿using OneDas.Infrastructure;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace OneDas.DataManagement.Database
 {
     [DebuggerDisplay("{Id,nq}")]
-    public class ChannelMetaInfo
+    public class ChannelMeta
     {
         #region "Constructors"
 
-        public ChannelMetaInfo(string id)
+        public ChannelMeta(string id)
         {
             this.Id = id;
             this.Description = string.Empty;
             this.SpecialInfo = string.Empty;
             this.Unit = string.Empty;
-            this.TransferFunctions = new List<TransferFunction>();
         }
 
-        private ChannelMetaInfo()
+        private ChannelMeta()
         {
             //
         }
@@ -34,8 +31,6 @@ namespace OneDas.DataManagement.Database
         public string SpecialInfo { get; set; }
 
         public string Unit { get; set; }
-
-        public List<TransferFunction> TransferFunctions { get; set; }
 
         #endregion
     }

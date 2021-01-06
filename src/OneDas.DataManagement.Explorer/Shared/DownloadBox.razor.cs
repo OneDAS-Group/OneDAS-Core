@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
-using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.Types;
 using System;
 using System.Threading.Tasks;

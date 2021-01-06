@@ -7,7 +7,7 @@ using static OneDas.DataManagement.Explorer.Controllers.ProjectsController;
 
 namespace OneDas.DataManagement.Explorer.API
 {
-    public class ProjectType : ObjectGraphType<(ProjectInfo Project, ProjectMetaInfo Meta)>
+    public class ProjectType : ObjectGraphType<(ProjectInfo Project, ProjectMeta Meta)>
     {
         public ProjectType()
         {
@@ -45,10 +45,7 @@ namespace OneDas.DataManagement.Explorer.API
                             ? channelMeta.Unit
                             : channel.Unit,
                     Description = channelMeta.Description,
-                    SpecialInfo = channelMeta.SpecialInfo,
-                    TransferFunctions = channelMeta.TransferFunctions.Any()
-                            ? channelMeta.TransferFunctions
-                            : channel.TransferFunctions
+                    SpecialInfo = channelMeta.SpecialInfo
                 };
 
                 return channel2;
@@ -75,10 +72,7 @@ namespace OneDas.DataManagement.Explorer.API
                                 ? channelMeta.Unit
                                 : channel.Unit,
                         Description = channelMeta.Description,
-                        SpecialInfo = channelMeta.SpecialInfo,
-                        TransferFunctions = channelMeta.TransferFunctions.Any()
-                                ? channelMeta.TransferFunctions
-                                : channel.TransferFunctions
+                        SpecialInfo = channelMeta.SpecialInfo
                     };
 
                     result.Add(channel2);

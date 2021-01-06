@@ -1,8 +1,12 @@
-﻿using System;
+﻿using OneDas.DataManagement.Explorer.Filters;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Core
 {
@@ -17,9 +21,9 @@ namespace OneDas.DataManagement.Explorer.Core
         CSharp = 1
     }
 
-    public record FilterDescription()
+    public record CodeDefinition()
     {
-        public FilterDescription(string owner) : this()
+        public CodeDefinition(string owner) : this()
         {
             this.Owner = owner;
         }
@@ -31,8 +35,6 @@ namespace OneDas.DataManagement.Explorer.Core
         public CodeLanguage CodeLanguage { get; set; } = CodeLanguage.CSharp;
 
         public string Code { get; set; } = string.Empty;
-
-        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         public bool IsPublic { get; set; }
 
@@ -51,25 +53,25 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public FilterSettings()
         {
-            this.Filters = new List<FilterDescription>();
+            this.Codes = new List<CodeDefinition>();
         }
 
         #endregion
 
         #region Properties
 
-        public List<FilterDescription> Filters { get; set; }
+        public List<CodeDefinition> Codes { get; set; }
 
         #endregion
 
         #region Methods
 
-        public List<FilterDescription> GetSharedFiles(string userName)
+        public List<CodeDefinition> GetSharedFiles(string userName)
         {
-            return this.Filters
-                   .Where(filterDescription =>
-                          filterDescription.Owner == userName &&
-                          filterDescription.CodeType == CodeType.Shared)
+            return this.Codes
+                   .Where(codeDefinition =>
+                          codeDefinition.Owner == userName &&
+                          codeDefinition.CodeType == CodeType.Shared)
                    .ToList();
         }
 
@@ -84,6 +86,28 @@ namespace OneDas.DataManagement.Explorer.Core
             var options = new JsonSerializerOptions() { WriteIndented = true };
             var jsonString = JsonSerializer.Serialize(this, options);
             File.WriteAllText(filePath, jsonString);
+        }
+
+        #endregion
+    }
+
+    public static class FilterChannelExtensions
+    {
+        #region Methods
+
+        public static Guid ToGuid(this FilterChannel filterChannel)
+        {
+            // With the filter extension, channels are produced dynamically, so there
+            // is no way to generate an ID once and store it somewhere. Therefore the 
+            // ID must be generated each time the filter code is instantiated. To avoid 
+            // having ever changing IDs, the ID is effectively a good hash code based 
+            // on the project ID and channel name. In the end this means that the 
+            // channel name determines the ID. And so renaming a channel means changing 
+            // the ID.
+            var value = $"{filterChannel.ProjectId}/{filterChannel.ChannelName}";
+            var md5 = MD5.Create(); // compute hash is not thread safe!
+            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(value)); // 
+            return new Guid(hash);
         }
 
         #endregion

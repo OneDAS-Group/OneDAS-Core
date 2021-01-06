@@ -19,7 +19,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         #region Fields
 
         private string _editorId;
-        private FilterDescriptionViewModel _filter;
+        private CodeDefinitionViewModel _filter;
         private DotNetObjectReference<FilterEditor> _filterEditorRef;
         private DotNetObjectReference<MonacoService> _monacoServiceRef;
 
@@ -41,15 +41,15 @@ namespace OneDas.DataManagement.Explorer.Pages
         [Inject]
         private UserIdService UserIdService { get; set; }
 
-        private List<FilterDescriptionViewModel> Filters { get; set; }
+        private List<CodeDefinitionViewModel> CodeDefinitions { get; set; }
 
-        private bool FilterGalleryIsOpen { get; set; }
+        private bool CodeDefinitionGalleryIsOpen { get; set; }
 
-        private bool FilterCreateDialogIsOpen { get; set; }
+        private bool CodeDefinitionCreateDialogIsOpen { get; set; }
 
-        private bool FilterDeleteDialogIsOpen { get; set; }
+        private bool CodeDefinitionDeleteDialogIsOpen { get; set; }
 
-        private FilterDescriptionViewModel Filter
+        private CodeDefinitionViewModel CodeDefinition
         {
             get
             {
@@ -78,7 +78,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         protected override async Task OnParametersSetAsync()
         {
             // create filter here so rendering works fine
-            _filter = this.CreateFilter(CodeType.Filter);
+            _filter = this.CreateCodeDefinition(CodeType.Filter);
 
             // update filter list
             this.UpdateFilters();
@@ -101,7 +101,7 @@ namespace OneDas.DataManagement.Explorer.Pages
                         ["automaticLayout"] = true,
                         ["language"] = "csharp",
                         ["scrollBeyondLastLine"] = false,
-                        ["value"] = this.Filter.Code,
+                        ["value"] = this.CodeDefinition.Code,
                         ["theme"] = "vs-dark"
                     };
 
@@ -109,7 +109,7 @@ namespace OneDas.DataManagement.Explorer.Pages
                     await this.JS.CreateMonacoEditorAsync(_editorId, options);
 
                     // update monaco and roslyn
-                    await this.OnFilterChangedAsync(this.Filter);
+                    await this.OnFilterChangedAsync(this.CodeDefinition);
 
                     // register monaco providers after roslyn projects are created!
                     await this.JS.RegisterMonacoProvidersAsync(_editorId, _filterEditorRef, _monacoServiceRef);
@@ -117,7 +117,7 @@ namespace OneDas.DataManagement.Explorer.Pages
             }
         }
 
-        private FilterDescriptionViewModel CreateFilter(CodeType codeType)
+        private CodeDefinitionViewModel CreateCodeDefinition(CodeType codeType)
         {
             var name = codeType switch
             {
@@ -135,7 +135,7 @@ namespace OneDas.DataManagement.Explorer.Pages
 
             var owner = this.UserIdService.User.Identity.Name;
 
-            return new FilterDescriptionViewModel(new FilterDescription(owner: owner))
+            return new CodeDefinitionViewModel(new CodeDefinition(owner: owner))
             {
                 CodeType = codeType,
                 Code = code,
@@ -146,17 +146,17 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private async Task CreateProjectAsync()
         {
-            if (this.Filter.CodeType != CodeType.Shared)
+            if (this.CodeDefinition.CodeType != CodeType.Shared)
             {
                 var shareCodeFiles = this.AppState.FilterSettings.Model.GetSharedFiles(this.UserIdService.User.Identity.Name)
-                    .Select(filterDescription => filterDescription.Code)
+                    .Select(codeDefinition => codeDefinition.Code)
                     .ToList();
 
-                await this.MonacoService.CreateProjectForEditorAsync(this.Filter.Model, shareCodeFiles);
+                await this.MonacoService.CreateProjectForEditorAsync(this.CodeDefinition.Model, shareCodeFiles);
             }
             else
             {
-                await this.MonacoService.CreateProjectForEditorAsync(this.Filter.Model, new List<string>());
+                await this.MonacoService.CreateProjectForEditorAsync(this.CodeDefinition.Model, new List<string>());
             }            
         }
 
@@ -164,12 +164,12 @@ namespace OneDas.DataManagement.Explorer.Pages
         {
             var owner = this.UserIdService.User.Identity.Name;
 
-            this.Filters = this.AppState
+            this.CodeDefinitions = this.AppState
                 .FilterSettings
-                .Filters
+                .CodeDefintions
                 .Where(current => current.Owner == owner)
                 .OrderBy(current => current.CodeType)
-                .Select(current => new FilterDescriptionViewModel(current))
+                .Select(current => new CodeDefinitionViewModel(current))
                 .ToList();
         }
 
@@ -177,7 +177,7 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         #region EventHandlers
 
-        private async Task OnFilterChangedAsync(FilterDescriptionViewModel filter)
+        private async Task OnFilterChangedAsync(CodeDefinitionViewModel filter)
         {
             // attach to events
             if (_filter is not null)
@@ -190,7 +190,7 @@ namespace OneDas.DataManagement.Explorer.Pages
             await this.UpdateMonacoAndRoslyn(filter);
         }
 
-        private async Task UpdateMonacoAndRoslyn(FilterDescriptionViewModel filter)
+        private async Task UpdateMonacoAndRoslyn(CodeDefinitionViewModel filter)
         {
             // create roslyn project
             await this.CreateProjectAsync();
@@ -207,20 +207,20 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private void OnFilterPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(FilterDescriptionViewModel.SampleRate))
+            if (e.PropertyName == nameof(CodeDefinitionViewModel.SampleRate))
             {
                 this.InvokeAsync(async () =>
                 {
-                    await this.UpdateMonacoAndRoslyn(this.Filter);
+                    await this.UpdateMonacoAndRoslyn(this.CodeDefinition);
                     this.StateHasChanged();
                 });
             }
 
-            else if (e.PropertyName == nameof(FilterDescriptionViewModel.RequestedProjectIds))
+            else if (e.PropertyName == nameof(CodeDefinitionViewModel.RequestedProjectIds))
             {
                 this.InvokeAsync(async () =>
                 {
-                    await this.UpdateMonacoAndRoslyn(this.Filter);
+                    await this.UpdateMonacoAndRoslyn(this.CodeDefinition);
                     this.StateHasChanged();
                 });
             }
@@ -242,34 +242,34 @@ namespace OneDas.DataManagement.Explorer.Pages
             await this.InvokeAsync(() => this.StateHasChanged());
         }
 
-        private async Task CopyFilterAsync(FilterDescriptionViewModel filter)
+        private async Task CopyCodeDefinitionAsync(CodeDefinitionViewModel filter)
         {
             var owner = this.UserIdService.User.Identity.Name;
 
-            this.Filter = new FilterDescriptionViewModel(filter.Model with
+            this.CodeDefinition = new CodeDefinitionViewModel(filter.Model with
             {
                 IsPublic = false,
                 Owner = owner
             });
         }
 
-        private void PrepareFilter(CodeType codeType)
+        private void PrepareCodeDefinition(CodeType codeType)
         {
-            this.Filter = this.CreateFilter(codeType);
-            this.FilterDescriptionSettingsBox.OpenFilterProjectRequestDialog();
+            this.CodeDefinition = this.CreateCodeDefinition(codeType);
+            this.CodeDefinitionSettingsBox.OpenCodeDefinitionProjectRequestDialog();
         }
 
         private async Task SaveFilterAsync()
         {
             // add new filter
-            this.Filter.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set filter code on every key stroke
-            this.AppState.FilterSettings.AddOrUpdateFilterDescription(this.Filter);
+            this.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set filter code on every key stroke
+            this.AppState.FilterSettings.AddOrUpdateCodeDefinition(this.CodeDefinition);
 
             // update filter list
             this.UpdateFilters();
 
             // notify
-            this.ToasterService.ShowSuccess(message: "The filter has been saved.", icon: MatIconNames.Thumb_up);
+            this.ToasterService.ShowSuccess(message: "The code definition has been saved.", icon: MatIconNames.Thumb_up);
             await this.InvokeAsync(() => this.StateHasChanged());
 
             // update database
@@ -278,17 +278,17 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private async Task DeleteFilterAsync()
         {
-            // remove old filter
-            this.AppState.FilterSettings.RemoveFilter(this.Filter);
+            // remove old code definition
+            this.AppState.FilterSettings.RemoveCodeDefinition(this.CodeDefinition);
 
-            // create new filter
-            this.Filter = this.CreateFilter(CodeType.Filter);
+            // create new code definition
+            this.CodeDefinition = this.CreateCodeDefinition(CodeType.Filter);
 
-            // update filters
+            // update code definitions
             this.UpdateFilters();
 
             // notify
-            this.ToasterService.ShowSuccess(message: "The filter has been deleted.", icon: MatIconNames.Delete);
+            this.ToasterService.ShowSuccess(message: "The code definition has been deleted.", icon: MatIconNames.Delete);
             await this.InvokeAsync(() => this.StateHasChanged());
 
             // update database
@@ -297,17 +297,17 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private void OpenGalleryDialog()
         {
-            this.FilterGalleryIsOpen = true;
+            this.CodeDefinitionGalleryIsOpen = true;
         }
 
         private void OpenFilterCreateDialog()
         {
-            this.FilterCreateDialogIsOpen = true;
+            this.CodeDefinitionCreateDialogIsOpen = true;
         }
 
         private void OpenFilterDeleteDialog()
         {
-            this.FilterDeleteDialogIsOpen = true;
+            this.CodeDefinitionDeleteDialogIsOpen = true;
         }
 
         #endregion

@@ -7,466 +7,268 @@ namespace OneDas.DataManagement.Explorer.Roslyn
 {
     internal static class Net50Resources
     {
-        private static byte[]? _MicrosoftCSharp;
-        internal static byte[] MicrosoftCSharp => ResourceLoader.GetOrCreateResource(ref _MicrosoftCSharp, "net50.Microsoft.CSharp");
-        private static byte[]? _MicrosoftVisualBasicCore;
-        internal static byte[] MicrosoftVisualBasicCore => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasicCore, "net50.Microsoft.VisualBasic.Core");
-        private static byte[]? _MicrosoftVisualBasic;
-        internal static byte[] MicrosoftVisualBasic => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasic, "net50.Microsoft.VisualBasic");
-        private static byte[]? _MicrosoftWin32Primitives;
-        internal static byte[] MicrosoftWin32Primitives => ResourceLoader.GetOrCreateResource(ref _MicrosoftWin32Primitives, "net50.Microsoft.Win32.Primitives");
-        private static byte[]? _mscorlib;
-        internal static byte[] mscorlib => ResourceLoader.GetOrCreateResource(ref _mscorlib, "net50.mscorlib");
-        private static byte[]? _netstandard;
-        internal static byte[] netstandard => ResourceLoader.GetOrCreateResource(ref _netstandard, "net50.netstandard");
-        private static byte[]? _SystemAppContext;
-        internal static byte[] SystemAppContext => ResourceLoader.GetOrCreateResource(ref _SystemAppContext, "net50.System.AppContext");
-        private static byte[]? _SystemBuffers;
-        internal static byte[] SystemBuffers => ResourceLoader.GetOrCreateResource(ref _SystemBuffers, "net50.System.Buffers");
-        private static byte[]? _SystemCollectionsConcurrent;
-        internal static byte[] SystemCollectionsConcurrent => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsConcurrent, "net50.System.Collections.Concurrent");
-        private static byte[]? _SystemCollections;
-        internal static byte[] SystemCollections => ResourceLoader.GetOrCreateResource(ref _SystemCollections, "net50.System.Collections");
-        private static byte[]? _SystemCollectionsImmutable;
-        internal static byte[] SystemCollectionsImmutable => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsImmutable, "net50.System.Collections.Immutable");
-        private static byte[]? _SystemCollectionsNonGeneric;
-        internal static byte[] SystemCollectionsNonGeneric => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsNonGeneric, "net50.System.Collections.NonGeneric");
-        private static byte[]? _SystemCollectionsSpecialized;
-        internal static byte[] SystemCollectionsSpecialized => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsSpecialized, "net50.System.Collections.Specialized");
-        private static byte[]? _SystemComponentModelAnnotations;
-        internal static byte[] SystemComponentModelAnnotations => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelAnnotations, "net50.System.ComponentModel.Annotations");
-        private static byte[]? _SystemComponentModelDataAnnotations;
-        internal static byte[] SystemComponentModelDataAnnotations => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelDataAnnotations, "net50.System.ComponentModel.DataAnnotations");
-        private static byte[]? _SystemComponentModel;
-        internal static byte[] SystemComponentModel => ResourceLoader.GetOrCreateResource(ref _SystemComponentModel, "net50.System.ComponentModel");
-        private static byte[]? _SystemComponentModelEventBasedAsync;
-        internal static byte[] SystemComponentModelEventBasedAsync => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelEventBasedAsync, "net50.System.ComponentModel.EventBasedAsync");
-        private static byte[]? _SystemComponentModelPrimitives;
-        internal static byte[] SystemComponentModelPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelPrimitives, "net50.System.ComponentModel.Primitives");
-        private static byte[]? _SystemComponentModelTypeConverter;
-        internal static byte[] SystemComponentModelTypeConverter => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelTypeConverter, "net50.System.ComponentModel.TypeConverter");
-        private static byte[]? _SystemConfiguration;
-        internal static byte[] SystemConfiguration => ResourceLoader.GetOrCreateResource(ref _SystemConfiguration, "net50.System.Configuration");
-        private static byte[]? _SystemConsole;
-        internal static byte[] SystemConsole => ResourceLoader.GetOrCreateResource(ref _SystemConsole, "net50.System.Console");
-        private static byte[]? _SystemCore;
-        internal static byte[] SystemCore => ResourceLoader.GetOrCreateResource(ref _SystemCore, "net50.System.Core");
-        private static byte[]? _SystemDataCommon;
-        internal static byte[] SystemDataCommon => ResourceLoader.GetOrCreateResource(ref _SystemDataCommon, "net50.System.Data.Common");
-        private static byte[]? _SystemDataDataSetExtensions;
-        internal static byte[] SystemDataDataSetExtensions => ResourceLoader.GetOrCreateResource(ref _SystemDataDataSetExtensions, "net50.System.Data.DataSetExtensions");
-        private static byte[]? _SystemData;
-        internal static byte[] SystemData => ResourceLoader.GetOrCreateResource(ref _SystemData, "net50.System.Data");
-        private static byte[]? _SystemDiagnosticsContracts;
-        internal static byte[] SystemDiagnosticsContracts => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsContracts, "net50.System.Diagnostics.Contracts");
-        private static byte[]? _SystemDiagnosticsDebug;
-        internal static byte[] SystemDiagnosticsDebug => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsDebug, "net50.System.Diagnostics.Debug");
-        private static byte[]? _SystemDiagnosticsDiagnosticSource;
-        internal static byte[] SystemDiagnosticsDiagnosticSource => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsDiagnosticSource, "net50.System.Diagnostics.DiagnosticSource");
-        private static byte[]? _SystemDiagnosticsFileVersionInfo;
-        internal static byte[] SystemDiagnosticsFileVersionInfo => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsFileVersionInfo, "net50.System.Diagnostics.FileVersionInfo");
-        private static byte[]? _SystemDiagnosticsProcess;
-        internal static byte[] SystemDiagnosticsProcess => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsProcess, "net50.System.Diagnostics.Process");
-        private static byte[]? _SystemDiagnosticsStackTrace;
-        internal static byte[] SystemDiagnosticsStackTrace => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsStackTrace, "net50.System.Diagnostics.StackTrace");
-        private static byte[]? _SystemDiagnosticsTextWriterTraceListener;
-        internal static byte[] SystemDiagnosticsTextWriterTraceListener => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsTextWriterTraceListener, "net50.System.Diagnostics.TextWriterTraceListener");
-        private static byte[]? _SystemDiagnosticsTools;
-        internal static byte[] SystemDiagnosticsTools => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsTools, "net50.System.Diagnostics.Tools");
-        private static byte[]? _SystemDiagnosticsTraceSource;
-        internal static byte[] SystemDiagnosticsTraceSource => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsTraceSource, "net50.System.Diagnostics.TraceSource");
-        private static byte[]? _SystemDiagnosticsTracing;
-        internal static byte[] SystemDiagnosticsTracing => ResourceLoader.GetOrCreateResource(ref _SystemDiagnosticsTracing, "net50.System.Diagnostics.Tracing");
-        private static byte[]? _System;
-        internal static byte[] System => ResourceLoader.GetOrCreateResource(ref _System, "net50.System");
-        private static byte[]? _SystemDrawing;
-        internal static byte[] SystemDrawing => ResourceLoader.GetOrCreateResource(ref _SystemDrawing, "net50.System.Drawing");
-        private static byte[]? _SystemDrawingPrimitives;
-        internal static byte[] SystemDrawingPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemDrawingPrimitives, "net50.System.Drawing.Primitives");
-        private static byte[]? _SystemDynamicRuntime;
-        internal static byte[] SystemDynamicRuntime => ResourceLoader.GetOrCreateResource(ref _SystemDynamicRuntime, "net50.System.Dynamic.Runtime");
-        private static byte[]? _SystemFormatsAsn1;
-        internal static byte[] SystemFormatsAsn1 => ResourceLoader.GetOrCreateResource(ref _SystemFormatsAsn1, "net50.System.Formats.Asn1");
-        private static byte[]? _SystemGlobalizationCalendars;
-        internal static byte[] SystemGlobalizationCalendars => ResourceLoader.GetOrCreateResource(ref _SystemGlobalizationCalendars, "net50.System.Globalization.Calendars");
-        private static byte[]? _SystemGlobalization;
-        internal static byte[] SystemGlobalization => ResourceLoader.GetOrCreateResource(ref _SystemGlobalization, "net50.System.Globalization");
-        private static byte[]? _SystemGlobalizationExtensions;
-        internal static byte[] SystemGlobalizationExtensions => ResourceLoader.GetOrCreateResource(ref _SystemGlobalizationExtensions, "net50.System.Globalization.Extensions");
-        private static byte[]? _SystemIOCompressionBrotli;
-        internal static byte[] SystemIOCompressionBrotli => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionBrotli, "net50.System.IO.Compression.Brotli");
-        private static byte[]? _SystemIOCompression;
-        internal static byte[] SystemIOCompression => ResourceLoader.GetOrCreateResource(ref _SystemIOCompression, "net50.System.IO.Compression");
-        private static byte[]? _SystemIOCompressionFileSystem;
-        internal static byte[] SystemIOCompressionFileSystem => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionFileSystem, "net50.System.IO.Compression.FileSystem");
-        private static byte[]? _SystemIOCompressionZipFile;
-        internal static byte[] SystemIOCompressionZipFile => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionZipFile, "net50.System.IO.Compression.ZipFile");
-        private static byte[]? _SystemIO;
-        internal static byte[] SystemIO => ResourceLoader.GetOrCreateResource(ref _SystemIO, "net50.System.IO");
-        private static byte[]? _SystemIOFileSystem;
-        internal static byte[] SystemIOFileSystem => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystem, "net50.System.IO.FileSystem");
-        private static byte[]? _SystemIOFileSystemDriveInfo;
-        internal static byte[] SystemIOFileSystemDriveInfo => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemDriveInfo, "net50.System.IO.FileSystem.DriveInfo");
-        private static byte[]? _SystemIOFileSystemPrimitives;
-        internal static byte[] SystemIOFileSystemPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemPrimitives, "net50.System.IO.FileSystem.Primitives");
-        private static byte[]? _SystemIOFileSystemWatcher;
-        internal static byte[] SystemIOFileSystemWatcher => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemWatcher, "net50.System.IO.FileSystem.Watcher");
-        private static byte[]? _SystemIOIsolatedStorage;
-        internal static byte[] SystemIOIsolatedStorage => ResourceLoader.GetOrCreateResource(ref _SystemIOIsolatedStorage, "net50.System.IO.IsolatedStorage");
-        private static byte[]? _SystemIOMemoryMappedFiles;
-        internal static byte[] SystemIOMemoryMappedFiles => ResourceLoader.GetOrCreateResource(ref _SystemIOMemoryMappedFiles, "net50.System.IO.MemoryMappedFiles");
-        private static byte[]? _SystemIOPipes;
-        internal static byte[] SystemIOPipes => ResourceLoader.GetOrCreateResource(ref _SystemIOPipes, "net50.System.IO.Pipes");
-        private static byte[]? _SystemIOUnmanagedMemoryStream;
-        internal static byte[] SystemIOUnmanagedMemoryStream => ResourceLoader.GetOrCreateResource(ref _SystemIOUnmanagedMemoryStream, "net50.System.IO.UnmanagedMemoryStream");
-        private static byte[]? _SystemLinq;
-        internal static byte[] SystemLinq => ResourceLoader.GetOrCreateResource(ref _SystemLinq, "net50.System.Linq");
-        private static byte[]? _SystemLinqExpressions;
-        internal static byte[] SystemLinqExpressions => ResourceLoader.GetOrCreateResource(ref _SystemLinqExpressions, "net50.System.Linq.Expressions");
-        private static byte[]? _SystemLinqParallel;
-        internal static byte[] SystemLinqParallel => ResourceLoader.GetOrCreateResource(ref _SystemLinqParallel, "net50.System.Linq.Parallel");
-        private static byte[]? _SystemLinqQueryable;
-        internal static byte[] SystemLinqQueryable => ResourceLoader.GetOrCreateResource(ref _SystemLinqQueryable, "net50.System.Linq.Queryable");
-        private static byte[]? _SystemMemory;
-        internal static byte[] SystemMemory => ResourceLoader.GetOrCreateResource(ref _SystemMemory, "net50.System.Memory");
-        private static byte[]? _SystemNet;
-        internal static byte[] SystemNet => ResourceLoader.GetOrCreateResource(ref _SystemNet, "net50.System.Net");
-        private static byte[]? _SystemNetHttp;
-        internal static byte[] SystemNetHttp => ResourceLoader.GetOrCreateResource(ref _SystemNetHttp, "net50.System.Net.Http");
-        private static byte[]? _SystemNetHttpJson;
-        internal static byte[] SystemNetHttpJson => ResourceLoader.GetOrCreateResource(ref _SystemNetHttpJson, "net50.System.Net.Http.Json");
-        private static byte[]? _SystemNetHttpListener;
-        internal static byte[] SystemNetHttpListener => ResourceLoader.GetOrCreateResource(ref _SystemNetHttpListener, "net50.System.Net.HttpListener");
-        private static byte[]? _SystemNetMail;
-        internal static byte[] SystemNetMail => ResourceLoader.GetOrCreateResource(ref _SystemNetMail, "net50.System.Net.Mail");
-        private static byte[]? _SystemNetNameResolution;
-        internal static byte[] SystemNetNameResolution => ResourceLoader.GetOrCreateResource(ref _SystemNetNameResolution, "net50.System.Net.NameResolution");
-        private static byte[]? _SystemNetNetworkInformation;
-        internal static byte[] SystemNetNetworkInformation => ResourceLoader.GetOrCreateResource(ref _SystemNetNetworkInformation, "net50.System.Net.NetworkInformation");
-        private static byte[]? _SystemNetPing;
-        internal static byte[] SystemNetPing => ResourceLoader.GetOrCreateResource(ref _SystemNetPing, "net50.System.Net.Ping");
-        private static byte[]? _SystemNetPrimitives;
-        internal static byte[] SystemNetPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemNetPrimitives, "net50.System.Net.Primitives");
-        private static byte[]? _SystemNetRequests;
-        internal static byte[] SystemNetRequests => ResourceLoader.GetOrCreateResource(ref _SystemNetRequests, "net50.System.Net.Requests");
-        private static byte[]? _SystemNetSecurity;
-        internal static byte[] SystemNetSecurity => ResourceLoader.GetOrCreateResource(ref _SystemNetSecurity, "net50.System.Net.Security");
-        private static byte[]? _SystemNetServicePoint;
-        internal static byte[] SystemNetServicePoint => ResourceLoader.GetOrCreateResource(ref _SystemNetServicePoint, "net50.System.Net.ServicePoint");
-        private static byte[]? _SystemNetSockets;
-        internal static byte[] SystemNetSockets => ResourceLoader.GetOrCreateResource(ref _SystemNetSockets, "net50.System.Net.Sockets");
-        private static byte[]? _SystemNetWebClient;
-        internal static byte[] SystemNetWebClient => ResourceLoader.GetOrCreateResource(ref _SystemNetWebClient, "net50.System.Net.WebClient");
-        private static byte[]? _SystemNetWebHeaderCollection;
-        internal static byte[] SystemNetWebHeaderCollection => ResourceLoader.GetOrCreateResource(ref _SystemNetWebHeaderCollection, "net50.System.Net.WebHeaderCollection");
-        private static byte[]? _SystemNetWebProxy;
-        internal static byte[] SystemNetWebProxy => ResourceLoader.GetOrCreateResource(ref _SystemNetWebProxy, "net50.System.Net.WebProxy");
-        private static byte[]? _SystemNetWebSocketsClient;
-        internal static byte[] SystemNetWebSocketsClient => ResourceLoader.GetOrCreateResource(ref _SystemNetWebSocketsClient, "net50.System.Net.WebSockets.Client");
-        private static byte[]? _SystemNetWebSockets;
-        internal static byte[] SystemNetWebSockets => ResourceLoader.GetOrCreateResource(ref _SystemNetWebSockets, "net50.System.Net.WebSockets");
-        private static byte[]? _SystemNumerics;
-        internal static byte[] SystemNumerics => ResourceLoader.GetOrCreateResource(ref _SystemNumerics, "net50.System.Numerics");
-        private static byte[]? _SystemNumericsVectors;
-        internal static byte[] SystemNumericsVectors => ResourceLoader.GetOrCreateResource(ref _SystemNumericsVectors, "net50.System.Numerics.Vectors");
-        private static byte[]? _SystemObjectModel;
-        internal static byte[] SystemObjectModel => ResourceLoader.GetOrCreateResource(ref _SystemObjectModel, "net50.System.ObjectModel");
-        private static byte[]? _SystemReflectionDispatchProxy;
-        internal static byte[] SystemReflectionDispatchProxy => ResourceLoader.GetOrCreateResource(ref _SystemReflectionDispatchProxy, "net50.System.Reflection.DispatchProxy");
-        private static byte[]? _SystemReflection;
-        internal static byte[] SystemReflection => ResourceLoader.GetOrCreateResource(ref _SystemReflection, "net50.System.Reflection");
-        private static byte[]? _SystemReflectionEmit;
-        internal static byte[] SystemReflectionEmit => ResourceLoader.GetOrCreateResource(ref _SystemReflectionEmit, "net50.System.Reflection.Emit");
-        private static byte[]? _SystemReflectionEmitILGeneration;
-        internal static byte[] SystemReflectionEmitILGeneration => ResourceLoader.GetOrCreateResource(ref _SystemReflectionEmitILGeneration, "net50.System.Reflection.Emit.ILGeneration");
-        private static byte[]? _SystemReflectionEmitLightweight;
-        internal static byte[] SystemReflectionEmitLightweight => ResourceLoader.GetOrCreateResource(ref _SystemReflectionEmitLightweight, "net50.System.Reflection.Emit.Lightweight");
-        private static byte[]? _SystemReflectionExtensions;
-        internal static byte[] SystemReflectionExtensions => ResourceLoader.GetOrCreateResource(ref _SystemReflectionExtensions, "net50.System.Reflection.Extensions");
-        private static byte[]? _SystemReflectionMetadata;
-        internal static byte[] SystemReflectionMetadata => ResourceLoader.GetOrCreateResource(ref _SystemReflectionMetadata, "net50.System.Reflection.Metadata");
-        private static byte[]? _SystemReflectionPrimitives;
-        internal static byte[] SystemReflectionPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemReflectionPrimitives, "net50.System.Reflection.Primitives");
-        private static byte[]? _SystemReflectionTypeExtensions;
-        internal static byte[] SystemReflectionTypeExtensions => ResourceLoader.GetOrCreateResource(ref _SystemReflectionTypeExtensions, "net50.System.Reflection.TypeExtensions");
-        private static byte[]? _SystemResourcesReader;
-        internal static byte[] SystemResourcesReader => ResourceLoader.GetOrCreateResource(ref _SystemResourcesReader, "net50.System.Resources.Reader");
-        private static byte[]? _SystemResourcesResourceManager;
-        internal static byte[] SystemResourcesResourceManager => ResourceLoader.GetOrCreateResource(ref _SystemResourcesResourceManager, "net50.System.Resources.ResourceManager");
-        private static byte[]? _SystemResourcesWriter;
-        internal static byte[] SystemResourcesWriter => ResourceLoader.GetOrCreateResource(ref _SystemResourcesWriter, "net50.System.Resources.Writer");
-        private static byte[]? _SystemRuntimeCompilerServicesUnsafe;
-        internal static byte[] SystemRuntimeCompilerServicesUnsafe => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeCompilerServicesUnsafe, "net50.System.Runtime.CompilerServices.Unsafe");
-        private static byte[]? _SystemRuntimeCompilerServicesVisualC;
-        internal static byte[] SystemRuntimeCompilerServicesVisualC => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeCompilerServicesVisualC, "net50.System.Runtime.CompilerServices.VisualC");
-        private static byte[]? _SystemRuntime;
-        internal static byte[] SystemRuntime => ResourceLoader.GetOrCreateResource(ref _SystemRuntime, "net50.System.Runtime");
-        private static byte[]? _SystemRuntimeExtensions;
-        internal static byte[] SystemRuntimeExtensions => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeExtensions, "net50.System.Runtime.Extensions");
-        private static byte[]? _SystemRuntimeHandles;
-        internal static byte[] SystemRuntimeHandles => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeHandles, "net50.System.Runtime.Handles");
-        private static byte[]? _SystemRuntimeInteropServices;
-        internal static byte[] SystemRuntimeInteropServices => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeInteropServices, "net50.System.Runtime.InteropServices");
-        private static byte[]? _SystemRuntimeInteropServicesRuntimeInformation;
-        internal static byte[] SystemRuntimeInteropServicesRuntimeInformation => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeInteropServicesRuntimeInformation, "net50.System.Runtime.InteropServices.RuntimeInformation");
-        private static byte[]? _SystemRuntimeIntrinsics;
-        internal static byte[] SystemRuntimeIntrinsics => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeIntrinsics, "net50.System.Runtime.Intrinsics");
-        private static byte[]? _SystemRuntimeLoader;
-        internal static byte[] SystemRuntimeLoader => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeLoader, "net50.System.Runtime.Loader");
-        private static byte[]? _SystemRuntimeNumerics;
-        internal static byte[] SystemRuntimeNumerics => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeNumerics, "net50.System.Runtime.Numerics");
-        private static byte[]? _SystemRuntimeSerialization;
-        internal static byte[] SystemRuntimeSerialization => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerialization, "net50.System.Runtime.Serialization");
-        private static byte[]? _SystemRuntimeSerializationFormatters;
-        internal static byte[] SystemRuntimeSerializationFormatters => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationFormatters, "net50.System.Runtime.Serialization.Formatters");
-        private static byte[]? _SystemRuntimeSerializationJson;
-        internal static byte[] SystemRuntimeSerializationJson => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationJson, "net50.System.Runtime.Serialization.Json");
-        private static byte[]? _SystemRuntimeSerializationPrimitives;
-        internal static byte[] SystemRuntimeSerializationPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationPrimitives, "net50.System.Runtime.Serialization.Primitives");
-        private static byte[]? _SystemRuntimeSerializationXml;
-        internal static byte[] SystemRuntimeSerializationXml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationXml, "net50.System.Runtime.Serialization.Xml");
-        private static byte[]? _SystemSecurityClaims;
-        internal static byte[] SystemSecurityClaims => ResourceLoader.GetOrCreateResource(ref _SystemSecurityClaims, "net50.System.Security.Claims");
-        private static byte[]? _SystemSecurityCryptographyAlgorithms;
-        internal static byte[] SystemSecurityCryptographyAlgorithms => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyAlgorithms, "net50.System.Security.Cryptography.Algorithms");
-        private static byte[]? _SystemSecurityCryptographyCsp;
-        internal static byte[] SystemSecurityCryptographyCsp => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyCsp, "net50.System.Security.Cryptography.Csp");
-        private static byte[]? _SystemSecurityCryptographyEncoding;
-        internal static byte[] SystemSecurityCryptographyEncoding => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyEncoding, "net50.System.Security.Cryptography.Encoding");
-        private static byte[]? _SystemSecurityCryptographyPrimitives;
-        internal static byte[] SystemSecurityCryptographyPrimitives => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyPrimitives, "net50.System.Security.Cryptography.Primitives");
-        private static byte[]? _SystemSecurityCryptographyX509Certificates;
-        internal static byte[] SystemSecurityCryptographyX509Certificates => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyX509Certificates, "net50.System.Security.Cryptography.X509Certificates");
-        private static byte[]? _SystemSecurity;
-        internal static byte[] SystemSecurity => ResourceLoader.GetOrCreateResource(ref _SystemSecurity, "net50.System.Security");
-        private static byte[]? _SystemSecurityPrincipal;
-        internal static byte[] SystemSecurityPrincipal => ResourceLoader.GetOrCreateResource(ref _SystemSecurityPrincipal, "net50.System.Security.Principal");
-        private static byte[]? _SystemSecuritySecureString;
-        internal static byte[] SystemSecuritySecureString => ResourceLoader.GetOrCreateResource(ref _SystemSecuritySecureString, "net50.System.Security.SecureString");
-        private static byte[]? _SystemServiceModelWeb;
-        internal static byte[] SystemServiceModelWeb => ResourceLoader.GetOrCreateResource(ref _SystemServiceModelWeb, "net50.System.ServiceModel.Web");
-        private static byte[]? _SystemServiceProcess;
-        internal static byte[] SystemServiceProcess => ResourceLoader.GetOrCreateResource(ref _SystemServiceProcess, "net50.System.ServiceProcess");
-        private static byte[]? _SystemTextEncodingCodePages;
-        internal static byte[] SystemTextEncodingCodePages => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingCodePages, "net50.System.Text.Encoding.CodePages");
-        private static byte[]? _SystemTextEncoding;
-        internal static byte[] SystemTextEncoding => ResourceLoader.GetOrCreateResource(ref _SystemTextEncoding, "net50.System.Text.Encoding");
-        private static byte[]? _SystemTextEncodingExtensions;
-        internal static byte[] SystemTextEncodingExtensions => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingExtensions, "net50.System.Text.Encoding.Extensions");
-        private static byte[]? _SystemTextEncodingsWeb;
-        internal static byte[] SystemTextEncodingsWeb => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingsWeb, "net50.System.Text.Encodings.Web");
-        private static byte[]? _SystemTextJson;
-        internal static byte[] SystemTextJson => ResourceLoader.GetOrCreateResource(ref _SystemTextJson, "net50.System.Text.Json");
-        private static byte[]? _SystemTextRegularExpressions;
-        internal static byte[] SystemTextRegularExpressions => ResourceLoader.GetOrCreateResource(ref _SystemTextRegularExpressions, "net50.System.Text.RegularExpressions");
-        private static byte[]? _SystemThreadingChannels;
-        internal static byte[] SystemThreadingChannels => ResourceLoader.GetOrCreateResource(ref _SystemThreadingChannels, "net50.System.Threading.Channels");
-        private static byte[]? _SystemThreading;
-        internal static byte[] SystemThreading => ResourceLoader.GetOrCreateResource(ref _SystemThreading, "net50.System.Threading");
-        private static byte[]? _SystemThreadingOverlapped;
-        internal static byte[] SystemThreadingOverlapped => ResourceLoader.GetOrCreateResource(ref _SystemThreadingOverlapped, "net50.System.Threading.Overlapped");
-        private static byte[]? _SystemThreadingTasksDataflow;
-        internal static byte[] SystemThreadingTasksDataflow => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksDataflow, "net50.System.Threading.Tasks.Dataflow");
-        private static byte[]? _SystemThreadingTasks;
-        internal static byte[] SystemThreadingTasks => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasks, "net50.System.Threading.Tasks");
-        private static byte[]? _SystemThreadingTasksExtensions;
-        internal static byte[] SystemThreadingTasksExtensions => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksExtensions, "net50.System.Threading.Tasks.Extensions");
-        private static byte[]? _SystemThreadingTasksParallel;
-        internal static byte[] SystemThreadingTasksParallel => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksParallel, "net50.System.Threading.Tasks.Parallel");
-        private static byte[]? _SystemThreadingThread;
-        internal static byte[] SystemThreadingThread => ResourceLoader.GetOrCreateResource(ref _SystemThreadingThread, "net50.System.Threading.Thread");
-        private static byte[]? _SystemThreadingThreadPool;
-        internal static byte[] SystemThreadingThreadPool => ResourceLoader.GetOrCreateResource(ref _SystemThreadingThreadPool, "net50.System.Threading.ThreadPool");
-        private static byte[]? _SystemThreadingTimer;
-        internal static byte[] SystemThreadingTimer => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTimer, "net50.System.Threading.Timer");
-        private static byte[]? _SystemTransactions;
-        internal static byte[] SystemTransactions => ResourceLoader.GetOrCreateResource(ref _SystemTransactions, "net50.System.Transactions");
-        private static byte[]? _SystemTransactionsLocal;
-        internal static byte[] SystemTransactionsLocal => ResourceLoader.GetOrCreateResource(ref _SystemTransactionsLocal, "net50.System.Transactions.Local");
-        private static byte[]? _SystemValueTuple;
-        internal static byte[] SystemValueTuple => ResourceLoader.GetOrCreateResource(ref _SystemValueTuple, "net50.System.ValueTuple");
-        private static byte[]? _SystemWeb;
-        internal static byte[] SystemWeb => ResourceLoader.GetOrCreateResource(ref _SystemWeb, "net50.System.Web");
-        private static byte[]? _SystemWebHttpUtility;
-        internal static byte[] SystemWebHttpUtility => ResourceLoader.GetOrCreateResource(ref _SystemWebHttpUtility, "net50.System.Web.HttpUtility");
-        private static byte[]? _SystemWindows;
-        internal static byte[] SystemWindows => ResourceLoader.GetOrCreateResource(ref _SystemWindows, "net50.System.Windows");
-        private static byte[]? _SystemXml;
-        internal static byte[] SystemXml => ResourceLoader.GetOrCreateResource(ref _SystemXml, "net50.System.Xml");
-        private static byte[]? _SystemXmlLinq;
-        internal static byte[] SystemXmlLinq => ResourceLoader.GetOrCreateResource(ref _SystemXmlLinq, "net50.System.Xml.Linq");
-        private static byte[]? _SystemXmlReaderWriter;
-        internal static byte[] SystemXmlReaderWriter => ResourceLoader.GetOrCreateResource(ref _SystemXmlReaderWriter, "net50.System.Xml.ReaderWriter");
-        private static byte[]? _SystemXmlSerialization;
-        internal static byte[] SystemXmlSerialization => ResourceLoader.GetOrCreateResource(ref _SystemXmlSerialization, "net50.System.Xml.Serialization");
-        private static byte[]? _SystemXmlXDocument;
-        internal static byte[] SystemXmlXDocument => ResourceLoader.GetOrCreateResource(ref _SystemXmlXDocument, "net50.System.Xml.XDocument");
-        private static byte[]? _SystemXmlXmlDocument;
-        internal static byte[] SystemXmlXmlDocument => ResourceLoader.GetOrCreateResource(ref _SystemXmlXmlDocument, "net50.System.Xml.XmlDocument");
-        private static byte[]? _SystemXmlXmlSerializer;
-        internal static byte[] SystemXmlXmlSerializer => ResourceLoader.GetOrCreateResource(ref _SystemXmlXmlSerializer, "net50.System.Xml.XmlSerializer");
-        private static byte[]? _SystemXmlXPath;
-        internal static byte[] SystemXmlXPath => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPath, "net50.System.Xml.XPath");
-        private static byte[]? _SystemXmlXPathXDocument;
-        internal static byte[] SystemXmlXPathXDocument => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPathXDocument, "net50.System.Xml.XPath.XDocument");
-        private static byte[]? _WindowsBase;
-        internal static byte[] WindowsBase => ResourceLoader.GetOrCreateResource(ref _WindowsBase, "net50.WindowsBase");
+        private static byte[]? _MicrosoftCSharp_dll; internal static byte[] MicrosoftCSharp_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftCSharp_dll, "net50.Microsoft.CSharp.dll");
+        private static byte[]? _MicrosoftCSharp_xml; internal static byte[] MicrosoftCSharp_xml => ResourceLoader.GetOrCreateResource(ref _MicrosoftCSharp_xml, "net50.Microsoft.CSharp.xml");
+        private static byte[]? _MicrosoftVisualBasicCore_dll; internal static byte[] MicrosoftVisualBasicCore_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasicCore_dll, "net50.Microsoft.VisualBasic.Core.dll");
+        private static byte[]? _MicrosoftVisualBasicCore_xml; internal static byte[] MicrosoftVisualBasicCore_xml => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasicCore_xml, "net50.Microsoft.VisualBasic.Core.xml");
+        private static byte[]? _MicrosoftVisualBasic_dll; internal static byte[] MicrosoftVisualBasic_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasic_dll, "net50.Microsoft.VisualBasic.dll");
+        private static byte[]? _MicrosoftWin32Primitives_dll; internal static byte[] MicrosoftWin32Primitives_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftWin32Primitives_dll, "net50.Microsoft.Win32.Primitives.dll");
+        private static byte[]? _MicrosoftWin32Primitives_xml; internal static byte[] MicrosoftWin32Primitives_xml => ResourceLoader.GetOrCreateResource(ref _MicrosoftWin32Primitives_xml, "net50.Microsoft.Win32.Primitives.xml");
+        private static byte[]? _mscorlib_dll; internal static byte[] mscorlib_dll => ResourceLoader.GetOrCreateResource(ref _mscorlib_dll, "net50.mscorlib.dll");
+        private static byte[]? _mscorlib_xml; internal static byte[] mscorlib_xml => ResourceLoader.GetOrCreateResource(ref _mscorlib_xml, "net50.mscorlib.xml");
+        private static byte[]? _netstandard_dll; internal static byte[] netstandard_dll => ResourceLoader.GetOrCreateResource(ref _netstandard_dll, "net50.netstandard.dll");
+        private static byte[]? _SystemAppContext_dll; internal static byte[] SystemAppContext_dll => ResourceLoader.GetOrCreateResource(ref _SystemAppContext_dll, "net50.System.AppContext.dll");
+        private static byte[]? _SystemBuffers_dll; internal static byte[] SystemBuffers_dll => ResourceLoader.GetOrCreateResource(ref _SystemBuffers_dll, "net50.System.Buffers.dll");
+        private static byte[]? _SystemCollectionsConcurrent_dll; internal static byte[] SystemCollectionsConcurrent_dll => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsConcurrent_dll, "net50.System.Collections.Concurrent.dll");
+        private static byte[]? _SystemCollectionsConcurrent_xml; internal static byte[] SystemCollectionsConcurrent_xml => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsConcurrent_xml, "net50.System.Collections.Concurrent.xml");
+        private static byte[]? _SystemCollections_dll; internal static byte[] SystemCollections_dll => ResourceLoader.GetOrCreateResource(ref _SystemCollections_dll, "net50.System.Collections.dll");
+        private static byte[]? _SystemCollections_xml; internal static byte[] SystemCollections_xml => ResourceLoader.GetOrCreateResource(ref _SystemCollections_xml, "net50.System.Collections.xml");
+        private static byte[]? _SystemCollectionsImmutable_dll; internal static byte[] SystemCollectionsImmutable_dll => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsImmutable_dll, "net50.System.Collections.Immutable.dll");
+        private static byte[]? _SystemCollectionsImmutable_xml; internal static byte[] SystemCollectionsImmutable_xml => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsImmutable_xml, "net50.System.Collections.Immutable.xml");
+        private static byte[]? _SystemCollectionsNonGeneric_dll; internal static byte[] SystemCollectionsNonGeneric_dll => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsNonGeneric_dll, "net50.System.Collections.NonGeneric.dll");
+        private static byte[]? _SystemCollectionsNonGeneric_xml; internal static byte[] SystemCollectionsNonGeneric_xml => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsNonGeneric_xml, "net50.System.Collections.NonGeneric.xml");
+        private static byte[]? _SystemCollectionsSpecialized_dll; internal static byte[] SystemCollectionsSpecialized_dll => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsSpecialized_dll, "net50.System.Collections.Specialized.dll");
+        private static byte[]? _SystemCollectionsSpecialized_xml; internal static byte[] SystemCollectionsSpecialized_xml => ResourceLoader.GetOrCreateResource(ref _SystemCollectionsSpecialized_xml, "net50.System.Collections.Specialized.xml");
+        private static byte[]? _SystemComponentModelAnnotations_dll; internal static byte[] SystemComponentModelAnnotations_dll => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelAnnotations_dll, "net50.System.ComponentModel.Annotations.dll");
+        private static byte[]? _SystemComponentModelAnnotations_xml; internal static byte[] SystemComponentModelAnnotations_xml => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelAnnotations_xml, "net50.System.ComponentModel.Annotations.xml");
+        private static byte[]? _SystemComponentModelDataAnnotations_dll; internal static byte[] SystemComponentModelDataAnnotations_dll => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelDataAnnotations_dll, "net50.System.ComponentModel.DataAnnotations.dll");
+        private static byte[]? _SystemComponentModel_dll; internal static byte[] SystemComponentModel_dll => ResourceLoader.GetOrCreateResource(ref _SystemComponentModel_dll, "net50.System.ComponentModel.dll");
+        private static byte[]? _SystemComponentModel_xml; internal static byte[] SystemComponentModel_xml => ResourceLoader.GetOrCreateResource(ref _SystemComponentModel_xml, "net50.System.ComponentModel.xml");
+        private static byte[]? _SystemComponentModelEventBasedAsync_dll; internal static byte[] SystemComponentModelEventBasedAsync_dll => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelEventBasedAsync_dll, "net50.System.ComponentModel.EventBasedAsync.dll");
+        private static byte[]? _SystemComponentModelEventBasedAsync_xml; internal static byte[] SystemComponentModelEventBasedAsync_xml => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelEventBasedAsync_xml, "net50.System.ComponentModel.EventBasedAsync.xml");
+        private static byte[]? _SystemComponentModelPrimitives_dll; internal static byte[] SystemComponentModelPrimitives_dll => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelPrimitives_dll, "net50.System.ComponentModel.Primitives.dll");
+        private static byte[]? _SystemComponentModelPrimitives_xml; internal static byte[] SystemComponentModelPrimitives_xml => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelPrimitives_xml, "net50.System.ComponentModel.Primitives.xml");
+        private static byte[]? _SystemComponentModelTypeConverter_dll; internal static byte[] SystemComponentModelTypeConverter_dll => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelTypeConverter_dll, "net50.System.ComponentModel.TypeConverter.dll");
+        private static byte[]? _SystemComponentModelTypeConverter_xml; internal static byte[] SystemComponentModelTypeConverter_xml => ResourceLoader.GetOrCreateResource(ref _SystemComponentModelTypeConverter_xml, "net50.System.ComponentModel.TypeConverter.xml");
+        private static byte[]? _SystemConfiguration_dll; internal static byte[] SystemConfiguration_dll => ResourceLoader.GetOrCreateResource(ref _SystemConfiguration_dll, "net50.System.Configuration.dll");
+        private static byte[]? _SystemConsole_dll; internal static byte[] SystemConsole_dll => ResourceLoader.GetOrCreateResource(ref _SystemConsole_dll, "net50.System.Console.dll");
+        private static byte[]? _SystemConsole_xml; internal static byte[] SystemConsole_xml => ResourceLoader.GetOrCreateResource(ref _SystemConsole_xml, "net50.System.Console.xml");
+        private static byte[]? _SystemCore_dll; internal static byte[] SystemCore_dll => ResourceLoader.GetOrCreateResource(ref _SystemCore_dll, "net50.System.Core.dll");
+        private static byte[]? _SystemDataCommon_dll; internal static byte[] SystemDataCommon_dll => ResourceLoader.GetOrCreateResource(ref _SystemDataCommon_dll, "net50.System.Data.Common.dll");
+        private static byte[]? _SystemDataCommon_xml; internal static byte[] SystemDataCommon_xml => ResourceLoader.GetOrCreateResource(ref _SystemDataCommon_xml, "net50.System.Data.Common.xml");
+        private static byte[]? _SystemDataDataSetExtensions_dll; internal static byte[] SystemDataDataSetExtensions_dll => ResourceLoader.GetOrCreateResource(ref _SystemDataDataSetExtensions_dll, "net50.System.Data.DataSetExtensions.dll");
+        private static byte[]? _SystemData_dll; internal static byte[] SystemData_dll => ResourceLoader.GetOrCreateResource(ref _SystemData_dll, "net50.System.Data.dll");
+        private static byte[]? _System_dll; internal static byte[] System_dll => ResourceLoader.GetOrCreateResource(ref _System_dll, "net50.System.dll");
+        private static byte[]? _SystemDynamicRuntime_dll; internal static byte[] SystemDynamicRuntime_dll => ResourceLoader.GetOrCreateResource(ref _SystemDynamicRuntime_dll, "net50.System.Dynamic.Runtime.dll");
+        private static byte[]? _SystemFormatsAsn1_dll; internal static byte[] SystemFormatsAsn1_dll => ResourceLoader.GetOrCreateResource(ref _SystemFormatsAsn1_dll, "net50.System.Formats.Asn1.dll");
+        private static byte[]? _SystemFormatsAsn1_xml; internal static byte[] SystemFormatsAsn1_xml => ResourceLoader.GetOrCreateResource(ref _SystemFormatsAsn1_xml, "net50.System.Formats.Asn1.xml");
+        private static byte[]? _SystemGlobalizationCalendars_dll; internal static byte[] SystemGlobalizationCalendars_dll => ResourceLoader.GetOrCreateResource(ref _SystemGlobalizationCalendars_dll, "net50.System.Globalization.Calendars.dll");
+        private static byte[]? _SystemGlobalization_dll; internal static byte[] SystemGlobalization_dll => ResourceLoader.GetOrCreateResource(ref _SystemGlobalization_dll, "net50.System.Globalization.dll");
+        private static byte[]? _SystemGlobalizationExtensions_dll; internal static byte[] SystemGlobalizationExtensions_dll => ResourceLoader.GetOrCreateResource(ref _SystemGlobalizationExtensions_dll, "net50.System.Globalization.Extensions.dll");
+        private static byte[]? _SystemLinq_dll; internal static byte[] SystemLinq_dll => ResourceLoader.GetOrCreateResource(ref _SystemLinq_dll, "net50.System.Linq.dll");
+        private static byte[]? _SystemLinq_xml; internal static byte[] SystemLinq_xml => ResourceLoader.GetOrCreateResource(ref _SystemLinq_xml, "net50.System.Linq.xml");
+        private static byte[]? _SystemLinqExpressions_dll; internal static byte[] SystemLinqExpressions_dll => ResourceLoader.GetOrCreateResource(ref _SystemLinqExpressions_dll, "net50.System.Linq.Expressions.dll");
+        private static byte[]? _SystemLinqExpressions_xml; internal static byte[] SystemLinqExpressions_xml => ResourceLoader.GetOrCreateResource(ref _SystemLinqExpressions_xml, "net50.System.Linq.Expressions.xml");
+        private static byte[]? _SystemLinqParallel_dll; internal static byte[] SystemLinqParallel_dll => ResourceLoader.GetOrCreateResource(ref _SystemLinqParallel_dll, "net50.System.Linq.Parallel.dll");
+        private static byte[]? _SystemLinqParallel_xml; internal static byte[] SystemLinqParallel_xml => ResourceLoader.GetOrCreateResource(ref _SystemLinqParallel_xml, "net50.System.Linq.Parallel.xml");
+        private static byte[]? _SystemLinqQueryable_dll; internal static byte[] SystemLinqQueryable_dll => ResourceLoader.GetOrCreateResource(ref _SystemLinqQueryable_dll, "net50.System.Linq.Queryable.dll");
+        private static byte[]? _SystemLinqQueryable_xml; internal static byte[] SystemLinqQueryable_xml => ResourceLoader.GetOrCreateResource(ref _SystemLinqQueryable_xml, "net50.System.Linq.Queryable.xml");
+        private static byte[]? _SystemMemory_dll; internal static byte[] SystemMemory_dll => ResourceLoader.GetOrCreateResource(ref _SystemMemory_dll, "net50.System.Memory.dll");
+        private static byte[]? _SystemMemory_xml; internal static byte[] SystemMemory_xml => ResourceLoader.GetOrCreateResource(ref _SystemMemory_xml, "net50.System.Memory.xml");
+        private static byte[]? _SystemNumerics_dll; internal static byte[] SystemNumerics_dll => ResourceLoader.GetOrCreateResource(ref _SystemNumerics_dll, "net50.System.Numerics.dll");
+        private static byte[]? _SystemNumericsVectors_dll; internal static byte[] SystemNumericsVectors_dll => ResourceLoader.GetOrCreateResource(ref _SystemNumericsVectors_dll, "net50.System.Numerics.Vectors.dll");
+        private static byte[]? _SystemNumericsVectors_xml; internal static byte[] SystemNumericsVectors_xml => ResourceLoader.GetOrCreateResource(ref _SystemNumericsVectors_xml, "net50.System.Numerics.Vectors.xml");
+        private static byte[]? _SystemObjectModel_dll; internal static byte[] SystemObjectModel_dll => ResourceLoader.GetOrCreateResource(ref _SystemObjectModel_dll, "net50.System.ObjectModel.dll");
+        private static byte[]? _SystemObjectModel_xml; internal static byte[] SystemObjectModel_xml => ResourceLoader.GetOrCreateResource(ref _SystemObjectModel_xml, "net50.System.ObjectModel.xml");
+        private static byte[]? _SystemResourcesReader_dll; internal static byte[] SystemResourcesReader_dll => ResourceLoader.GetOrCreateResource(ref _SystemResourcesReader_dll, "net50.System.Resources.Reader.dll");
+        private static byte[]? _SystemResourcesResourceManager_dll; internal static byte[] SystemResourcesResourceManager_dll => ResourceLoader.GetOrCreateResource(ref _SystemResourcesResourceManager_dll, "net50.System.Resources.ResourceManager.dll");
+        private static byte[]? _SystemResourcesWriter_dll; internal static byte[] SystemResourcesWriter_dll => ResourceLoader.GetOrCreateResource(ref _SystemResourcesWriter_dll, "net50.System.Resources.Writer.dll");
+        private static byte[]? _SystemResourcesWriter_xml; internal static byte[] SystemResourcesWriter_xml => ResourceLoader.GetOrCreateResource(ref _SystemResourcesWriter_xml, "net50.System.Resources.Writer.xml");
+        private static byte[]? _SystemRuntimeCompilerServicesUnsafe_dll; internal static byte[] SystemRuntimeCompilerServicesUnsafe_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeCompilerServicesUnsafe_dll, "net50.System.Runtime.CompilerServices.Unsafe.dll");
+        private static byte[]? _SystemRuntimeCompilerServicesUnsafe_xml; internal static byte[] SystemRuntimeCompilerServicesUnsafe_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeCompilerServicesUnsafe_xml, "net50.System.Runtime.CompilerServices.Unsafe.xml");
+        private static byte[]? _SystemRuntimeCompilerServicesVisualC_dll; internal static byte[] SystemRuntimeCompilerServicesVisualC_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeCompilerServicesVisualC_dll, "net50.System.Runtime.CompilerServices.VisualC.dll");
+        private static byte[]? _SystemRuntimeCompilerServicesVisualC_xml; internal static byte[] SystemRuntimeCompilerServicesVisualC_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeCompilerServicesVisualC_xml, "net50.System.Runtime.CompilerServices.VisualC.xml");
+        private static byte[]? _SystemRuntime_dll; internal static byte[] SystemRuntime_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntime_dll, "net50.System.Runtime.dll");
+        private static byte[]? _SystemRuntime_xml; internal static byte[] SystemRuntime_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntime_xml, "net50.System.Runtime.xml");
+        private static byte[]? _SystemRuntimeExtensions_dll; internal static byte[] SystemRuntimeExtensions_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeExtensions_dll, "net50.System.Runtime.Extensions.dll");
+        private static byte[]? _SystemRuntimeHandles_dll; internal static byte[] SystemRuntimeHandles_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeHandles_dll, "net50.System.Runtime.Handles.dll");
+        private static byte[]? _SystemRuntimeInteropServices_dll; internal static byte[] SystemRuntimeInteropServices_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeInteropServices_dll, "net50.System.Runtime.InteropServices.dll");
+        private static byte[]? _SystemRuntimeInteropServices_xml; internal static byte[] SystemRuntimeInteropServices_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeInteropServices_xml, "net50.System.Runtime.InteropServices.xml");
+        private static byte[]? _SystemRuntimeInteropServicesRuntimeInformation_dll; internal static byte[] SystemRuntimeInteropServicesRuntimeInformation_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeInteropServicesRuntimeInformation_dll, "net50.System.Runtime.InteropServices.RuntimeInformation.dll");
+        private static byte[]? _SystemRuntimeInteropServicesRuntimeInformation_xml; internal static byte[] SystemRuntimeInteropServicesRuntimeInformation_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeInteropServicesRuntimeInformation_xml, "net50.System.Runtime.InteropServices.RuntimeInformation.xml");
+        private static byte[]? _SystemRuntimeIntrinsics_dll; internal static byte[] SystemRuntimeIntrinsics_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeIntrinsics_dll, "net50.System.Runtime.Intrinsics.dll");
+        private static byte[]? _SystemRuntimeIntrinsics_xml; internal static byte[] SystemRuntimeIntrinsics_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeIntrinsics_xml, "net50.System.Runtime.Intrinsics.xml");
+        private static byte[]? _SystemRuntimeLoader_dll; internal static byte[] SystemRuntimeLoader_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeLoader_dll, "net50.System.Runtime.Loader.dll");
+        private static byte[]? _SystemRuntimeLoader_xml; internal static byte[] SystemRuntimeLoader_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeLoader_xml, "net50.System.Runtime.Loader.xml");
+        private static byte[]? _SystemRuntimeNumerics_dll; internal static byte[] SystemRuntimeNumerics_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeNumerics_dll, "net50.System.Runtime.Numerics.dll");
+        private static byte[]? _SystemRuntimeNumerics_xml; internal static byte[] SystemRuntimeNumerics_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeNumerics_xml, "net50.System.Runtime.Numerics.xml");
+        private static byte[]? _SystemRuntimeSerialization_dll; internal static byte[] SystemRuntimeSerialization_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerialization_dll, "net50.System.Runtime.Serialization.dll");
+        private static byte[]? _SystemRuntimeSerializationFormatters_dll; internal static byte[] SystemRuntimeSerializationFormatters_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationFormatters_dll, "net50.System.Runtime.Serialization.Formatters.dll");
+        private static byte[]? _SystemRuntimeSerializationFormatters_xml; internal static byte[] SystemRuntimeSerializationFormatters_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationFormatters_xml, "net50.System.Runtime.Serialization.Formatters.xml");
+        private static byte[]? _SystemRuntimeSerializationJson_dll; internal static byte[] SystemRuntimeSerializationJson_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationJson_dll, "net50.System.Runtime.Serialization.Json.dll");
+        private static byte[]? _SystemRuntimeSerializationJson_xml; internal static byte[] SystemRuntimeSerializationJson_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationJson_xml, "net50.System.Runtime.Serialization.Json.xml");
+        private static byte[]? _SystemRuntimeSerializationPrimitives_dll; internal static byte[] SystemRuntimeSerializationPrimitives_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationPrimitives_dll, "net50.System.Runtime.Serialization.Primitives.dll");
+        private static byte[]? _SystemRuntimeSerializationPrimitives_xml; internal static byte[] SystemRuntimeSerializationPrimitives_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationPrimitives_xml, "net50.System.Runtime.Serialization.Primitives.xml");
+        private static byte[]? _SystemRuntimeSerializationXml_dll; internal static byte[] SystemRuntimeSerializationXml_dll => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationXml_dll, "net50.System.Runtime.Serialization.Xml.dll");
+        private static byte[]? _SystemRuntimeSerializationXml_xml; internal static byte[] SystemRuntimeSerializationXml_xml => ResourceLoader.GetOrCreateResource(ref _SystemRuntimeSerializationXml_xml, "net50.System.Runtime.Serialization.Xml.xml");
+        private static byte[]? _SystemSecurityClaims_dll; internal static byte[] SystemSecurityClaims_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityClaims_dll, "net50.System.Security.Claims.dll");
+        private static byte[]? _SystemSecurityClaims_xml; internal static byte[] SystemSecurityClaims_xml => ResourceLoader.GetOrCreateResource(ref _SystemSecurityClaims_xml, "net50.System.Security.Claims.xml");
+        private static byte[]? _SystemSecurityCryptographyAlgorithms_dll; internal static byte[] SystemSecurityCryptographyAlgorithms_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyAlgorithms_dll, "net50.System.Security.Cryptography.Algorithms.dll");
+        private static byte[]? _SystemSecurityCryptographyAlgorithms_xml; internal static byte[] SystemSecurityCryptographyAlgorithms_xml => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyAlgorithms_xml, "net50.System.Security.Cryptography.Algorithms.xml");
+        private static byte[]? _SystemSecurityCryptographyCsp_dll; internal static byte[] SystemSecurityCryptographyCsp_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyCsp_dll, "net50.System.Security.Cryptography.Csp.dll");
+        private static byte[]? _SystemSecurityCryptographyCsp_xml; internal static byte[] SystemSecurityCryptographyCsp_xml => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyCsp_xml, "net50.System.Security.Cryptography.Csp.xml");
+        private static byte[]? _SystemSecurityCryptographyEncoding_dll; internal static byte[] SystemSecurityCryptographyEncoding_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyEncoding_dll, "net50.System.Security.Cryptography.Encoding.dll");
+        private static byte[]? _SystemSecurityCryptographyEncoding_xml; internal static byte[] SystemSecurityCryptographyEncoding_xml => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyEncoding_xml, "net50.System.Security.Cryptography.Encoding.xml");
+        private static byte[]? _SystemSecurityCryptographyPrimitives_dll; internal static byte[] SystemSecurityCryptographyPrimitives_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyPrimitives_dll, "net50.System.Security.Cryptography.Primitives.dll");
+        private static byte[]? _SystemSecurityCryptographyPrimitives_xml; internal static byte[] SystemSecurityCryptographyPrimitives_xml => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyPrimitives_xml, "net50.System.Security.Cryptography.Primitives.xml");
+        private static byte[]? _SystemSecurityCryptographyX509Certificates_dll; internal static byte[] SystemSecurityCryptographyX509Certificates_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyX509Certificates_dll, "net50.System.Security.Cryptography.X509Certificates.dll");
+        private static byte[]? _SystemSecurityCryptographyX509Certificates_xml; internal static byte[] SystemSecurityCryptographyX509Certificates_xml => ResourceLoader.GetOrCreateResource(ref _SystemSecurityCryptographyX509Certificates_xml, "net50.System.Security.Cryptography.X509Certificates.xml");
+        private static byte[]? _SystemSecurity_dll; internal static byte[] SystemSecurity_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurity_dll, "net50.System.Security.dll");
+        private static byte[]? _SystemSecurityPrincipal_dll; internal static byte[] SystemSecurityPrincipal_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecurityPrincipal_dll, "net50.System.Security.Principal.dll");
+        private static byte[]? _SystemSecuritySecureString_dll; internal static byte[] SystemSecuritySecureString_dll => ResourceLoader.GetOrCreateResource(ref _SystemSecuritySecureString_dll, "net50.System.Security.SecureString.dll");
+        private static byte[]? _SystemServiceModelWeb_dll; internal static byte[] SystemServiceModelWeb_dll => ResourceLoader.GetOrCreateResource(ref _SystemServiceModelWeb_dll, "net50.System.ServiceModel.Web.dll");
+        private static byte[]? _SystemServiceProcess_dll; internal static byte[] SystemServiceProcess_dll => ResourceLoader.GetOrCreateResource(ref _SystemServiceProcess_dll, "net50.System.ServiceProcess.dll");
+        private static byte[]? _SystemTextEncodingCodePages_dll; internal static byte[] SystemTextEncodingCodePages_dll => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingCodePages_dll, "net50.System.Text.Encoding.CodePages.dll");
+        private static byte[]? _SystemTextEncodingCodePages_xml; internal static byte[] SystemTextEncodingCodePages_xml => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingCodePages_xml, "net50.System.Text.Encoding.CodePages.xml");
+        private static byte[]? _SystemTextEncoding_dll; internal static byte[] SystemTextEncoding_dll => ResourceLoader.GetOrCreateResource(ref _SystemTextEncoding_dll, "net50.System.Text.Encoding.dll");
+        private static byte[]? _SystemTextEncodingExtensions_dll; internal static byte[] SystemTextEncodingExtensions_dll => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingExtensions_dll, "net50.System.Text.Encoding.Extensions.dll");
+        private static byte[]? _SystemTextEncodingExtensions_xml; internal static byte[] SystemTextEncodingExtensions_xml => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingExtensions_xml, "net50.System.Text.Encoding.Extensions.xml");
+        private static byte[]? _SystemTextEncodingsWeb_dll; internal static byte[] SystemTextEncodingsWeb_dll => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingsWeb_dll, "net50.System.Text.Encodings.Web.dll");
+        private static byte[]? _SystemTextEncodingsWeb_xml; internal static byte[] SystemTextEncodingsWeb_xml => ResourceLoader.GetOrCreateResource(ref _SystemTextEncodingsWeb_xml, "net50.System.Text.Encodings.Web.xml");
+        private static byte[]? _SystemTextJson_dll; internal static byte[] SystemTextJson_dll => ResourceLoader.GetOrCreateResource(ref _SystemTextJson_dll, "net50.System.Text.Json.dll");
+        private static byte[]? _SystemTextJson_xml; internal static byte[] SystemTextJson_xml => ResourceLoader.GetOrCreateResource(ref _SystemTextJson_xml, "net50.System.Text.Json.xml");
+        private static byte[]? _SystemTextRegularExpressions_dll; internal static byte[] SystemTextRegularExpressions_dll => ResourceLoader.GetOrCreateResource(ref _SystemTextRegularExpressions_dll, "net50.System.Text.RegularExpressions.dll");
+        private static byte[]? _SystemTextRegularExpressions_xml; internal static byte[] SystemTextRegularExpressions_xml => ResourceLoader.GetOrCreateResource(ref _SystemTextRegularExpressions_xml, "net50.System.Text.RegularExpressions.xml");
+        private static byte[]? _SystemThreadingChannels_dll; internal static byte[] SystemThreadingChannels_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingChannels_dll, "net50.System.Threading.Channels.dll");
+        private static byte[]? _SystemThreadingChannels_xml; internal static byte[] SystemThreadingChannels_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreadingChannels_xml, "net50.System.Threading.Channels.xml");
+        private static byte[]? _SystemThreading_dll; internal static byte[] SystemThreading_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreading_dll, "net50.System.Threading.dll");
+        private static byte[]? _SystemThreading_xml; internal static byte[] SystemThreading_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreading_xml, "net50.System.Threading.xml");
+        private static byte[]? _SystemThreadingOverlapped_dll; internal static byte[] SystemThreadingOverlapped_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingOverlapped_dll, "net50.System.Threading.Overlapped.dll");
+        private static byte[]? _SystemThreadingOverlapped_xml; internal static byte[] SystemThreadingOverlapped_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreadingOverlapped_xml, "net50.System.Threading.Overlapped.xml");
+        private static byte[]? _SystemThreadingTasksDataflow_dll; internal static byte[] SystemThreadingTasksDataflow_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksDataflow_dll, "net50.System.Threading.Tasks.Dataflow.dll");
+        private static byte[]? _SystemThreadingTasksDataflow_xml; internal static byte[] SystemThreadingTasksDataflow_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksDataflow_xml, "net50.System.Threading.Tasks.Dataflow.xml");
+        private static byte[]? _SystemThreadingTasks_dll; internal static byte[] SystemThreadingTasks_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasks_dll, "net50.System.Threading.Tasks.dll");
+        private static byte[]? _SystemThreadingTasksExtensions_dll; internal static byte[] SystemThreadingTasksExtensions_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksExtensions_dll, "net50.System.Threading.Tasks.Extensions.dll");
+        private static byte[]? _SystemThreadingTasksParallel_dll; internal static byte[] SystemThreadingTasksParallel_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksParallel_dll, "net50.System.Threading.Tasks.Parallel.dll");
+        private static byte[]? _SystemThreadingTasksParallel_xml; internal static byte[] SystemThreadingTasksParallel_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTasksParallel_xml, "net50.System.Threading.Tasks.Parallel.xml");
+        private static byte[]? _SystemThreadingThread_dll; internal static byte[] SystemThreadingThread_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingThread_dll, "net50.System.Threading.Thread.dll");
+        private static byte[]? _SystemThreadingThread_xml; internal static byte[] SystemThreadingThread_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreadingThread_xml, "net50.System.Threading.Thread.xml");
+        private static byte[]? _SystemThreadingThreadPool_dll; internal static byte[] SystemThreadingThreadPool_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingThreadPool_dll, "net50.System.Threading.ThreadPool.dll");
+        private static byte[]? _SystemThreadingThreadPool_xml; internal static byte[] SystemThreadingThreadPool_xml => ResourceLoader.GetOrCreateResource(ref _SystemThreadingThreadPool_xml, "net50.System.Threading.ThreadPool.xml");
+        private static byte[]? _SystemThreadingTimer_dll; internal static byte[] SystemThreadingTimer_dll => ResourceLoader.GetOrCreateResource(ref _SystemThreadingTimer_dll, "net50.System.Threading.Timer.dll");
+        private static byte[]? _SystemTransactions_dll; internal static byte[] SystemTransactions_dll => ResourceLoader.GetOrCreateResource(ref _SystemTransactions_dll, "net50.System.Transactions.dll");
+        private static byte[]? _SystemTransactionsLocal_dll; internal static byte[] SystemTransactionsLocal_dll => ResourceLoader.GetOrCreateResource(ref _SystemTransactionsLocal_dll, "net50.System.Transactions.Local.dll");
+        private static byte[]? _SystemTransactionsLocal_xml; internal static byte[] SystemTransactionsLocal_xml => ResourceLoader.GetOrCreateResource(ref _SystemTransactionsLocal_xml, "net50.System.Transactions.Local.xml");
+        private static byte[]? _SystemValueTuple_dll; internal static byte[] SystemValueTuple_dll => ResourceLoader.GetOrCreateResource(ref _SystemValueTuple_dll, "net50.System.ValueTuple.dll");
+        private static byte[]? _SystemWindows_dll; internal static byte[] SystemWindows_dll => ResourceLoader.GetOrCreateResource(ref _SystemWindows_dll, "net50.System.Windows.dll");
+        private static byte[]? _SystemXml_dll; internal static byte[] SystemXml_dll => ResourceLoader.GetOrCreateResource(ref _SystemXml_dll, "net50.System.Xml.dll");
+        private static byte[]? _SystemXmlLinq_dll; internal static byte[] SystemXmlLinq_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlLinq_dll, "net50.System.Xml.Linq.dll");
+        private static byte[]? _SystemXmlReaderWriter_dll; internal static byte[] SystemXmlReaderWriter_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlReaderWriter_dll, "net50.System.Xml.ReaderWriter.dll");
+        private static byte[]? _SystemXmlReaderWriter_xml; internal static byte[] SystemXmlReaderWriter_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlReaderWriter_xml, "net50.System.Xml.ReaderWriter.xml");
+        private static byte[]? _SystemXmlSerialization_dll; internal static byte[] SystemXmlSerialization_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlSerialization_dll, "net50.System.Xml.Serialization.dll");
+        private static byte[]? _SystemXmlXDocument_dll; internal static byte[] SystemXmlXDocument_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlXDocument_dll, "net50.System.Xml.XDocument.dll");
+        private static byte[]? _SystemXmlXDocument_xml; internal static byte[] SystemXmlXDocument_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlXDocument_xml, "net50.System.Xml.XDocument.xml");
+        private static byte[]? _SystemXmlXmlDocument_dll; internal static byte[] SystemXmlXmlDocument_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlXmlDocument_dll, "net50.System.Xml.XmlDocument.dll");
+        private static byte[]? _SystemXmlXmlSerializer_dll; internal static byte[] SystemXmlXmlSerializer_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlXmlSerializer_dll, "net50.System.Xml.XmlSerializer.dll");
+        private static byte[]? _SystemXmlXmlSerializer_xml; internal static byte[] SystemXmlXmlSerializer_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlXmlSerializer_xml, "net50.System.Xml.XmlSerializer.xml");
+        private static byte[]? _SystemXmlXPath_dll; internal static byte[] SystemXmlXPath_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPath_dll, "net50.System.Xml.XPath.dll");
+        private static byte[]? _SystemXmlXPath_xml; internal static byte[] SystemXmlXPath_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPath_xml, "net50.System.Xml.XPath.xml");
+        private static byte[]? _SystemXmlXPathXDocument_dll; internal static byte[] SystemXmlXPathXDocument_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPathXDocument_dll, "net50.System.Xml.XPath.XDocument.dll");
+        private static byte[]? _SystemXmlXPathXDocument_xml; internal static byte[] SystemXmlXPathXDocument_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPathXDocument_xml, "net50.System.Xml.XPath.XDocument.xml");
+        private static byte[]? _WindowsBase_dll; internal static byte[] WindowsBase_dll => ResourceLoader.GetOrCreateResource(ref _WindowsBase_dll, "net50.WindowsBase.dll");
+        private static byte[]? _WindowsBase_xml; internal static byte[] WindowsBase_xml => ResourceLoader.GetOrCreateResource(ref _WindowsBase_xml, "net50.WindowsBase.xml");
     }
     public static class Net50
     {
-        public static PortableExecutableReference MicrosoftCSharp { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftCSharp).GetReference(display: "Microsoft.CSharp (net50)");
-        public static PortableExecutableReference MicrosoftVisualBasicCore { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftVisualBasicCore).GetReference(display: "Microsoft.VisualBasic.Core (net50)");
-        public static PortableExecutableReference MicrosoftVisualBasic { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftVisualBasic).GetReference(display: "Microsoft.VisualBasic (net50)");
-        public static PortableExecutableReference MicrosoftWin32Primitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftWin32Primitives).GetReference(display: "Microsoft.Win32.Primitives (net50)");
-        public static PortableExecutableReference mscorlib { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.mscorlib).GetReference(display: "mscorlib (net50)");
-        public static PortableExecutableReference netstandard { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.netstandard).GetReference(display: "netstandard (net50)");
-        public static PortableExecutableReference SystemAppContext { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemAppContext).GetReference(display: "System.AppContext (net50)");
-        public static PortableExecutableReference SystemBuffers { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemBuffers).GetReference(display: "System.Buffers (net50)");
-        public static PortableExecutableReference SystemCollectionsConcurrent { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsConcurrent).GetReference(display: "System.Collections.Concurrent (net50)");
-        public static PortableExecutableReference SystemCollections { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollections).GetReference(display: "System.Collections (net50)");
-        public static PortableExecutableReference SystemCollectionsImmutable { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsImmutable).GetReference(display: "System.Collections.Immutable (net50)");
-        public static PortableExecutableReference SystemCollectionsNonGeneric { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsNonGeneric).GetReference(display: "System.Collections.NonGeneric (net50)");
-        public static PortableExecutableReference SystemCollectionsSpecialized { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsSpecialized).GetReference(display: "System.Collections.Specialized (net50)");
-        public static PortableExecutableReference SystemComponentModelAnnotations { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelAnnotations).GetReference(display: "System.ComponentModel.Annotations (net50)");
-        public static PortableExecutableReference SystemComponentModelDataAnnotations { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelDataAnnotations).GetReference(display: "System.ComponentModel.DataAnnotations (net50)");
-        public static PortableExecutableReference SystemComponentModel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModel).GetReference(display: "System.ComponentModel (net50)");
-        public static PortableExecutableReference SystemComponentModelEventBasedAsync { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelEventBasedAsync).GetReference(display: "System.ComponentModel.EventBasedAsync (net50)");
-        public static PortableExecutableReference SystemComponentModelPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelPrimitives).GetReference(display: "System.ComponentModel.Primitives (net50)");
-        public static PortableExecutableReference SystemComponentModelTypeConverter { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelTypeConverter).GetReference(display: "System.ComponentModel.TypeConverter (net50)");
-        public static PortableExecutableReference SystemConfiguration { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemConfiguration).GetReference(display: "System.Configuration (net50)");
-        public static PortableExecutableReference SystemConsole { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemConsole).GetReference(display: "System.Console (net50)");
-        public static PortableExecutableReference SystemCore { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCore).GetReference(display: "System.Core (net50)");
-        public static PortableExecutableReference SystemDataCommon { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDataCommon).GetReference(display: "System.Data.Common (net50)");
-        public static PortableExecutableReference SystemDataDataSetExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDataDataSetExtensions).GetReference(display: "System.Data.DataSetExtensions (net50)");
-        public static PortableExecutableReference SystemData { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemData).GetReference(display: "System.Data (net50)");
-        public static PortableExecutableReference SystemDiagnosticsContracts { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsContracts).GetReference(display: "System.Diagnostics.Contracts (net50)");
-        public static PortableExecutableReference SystemDiagnosticsDebug { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsDebug).GetReference(display: "System.Diagnostics.Debug (net50)");
-        public static PortableExecutableReference SystemDiagnosticsDiagnosticSource { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsDiagnosticSource).GetReference(display: "System.Diagnostics.DiagnosticSource (net50)");
-        public static PortableExecutableReference SystemDiagnosticsFileVersionInfo { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsFileVersionInfo).GetReference(display: "System.Diagnostics.FileVersionInfo (net50)");
-        public static PortableExecutableReference SystemDiagnosticsProcess { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsProcess).GetReference(display: "System.Diagnostics.Process (net50)");
-        public static PortableExecutableReference SystemDiagnosticsStackTrace { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsStackTrace).GetReference(display: "System.Diagnostics.StackTrace (net50)");
-        public static PortableExecutableReference SystemDiagnosticsTextWriterTraceListener { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsTextWriterTraceListener).GetReference(display: "System.Diagnostics.TextWriterTraceListener (net50)");
-        public static PortableExecutableReference SystemDiagnosticsTools { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsTools).GetReference(display: "System.Diagnostics.Tools (net50)");
-        public static PortableExecutableReference SystemDiagnosticsTraceSource { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsTraceSource).GetReference(display: "System.Diagnostics.TraceSource (net50)");
-        public static PortableExecutableReference SystemDiagnosticsTracing { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDiagnosticsTracing).GetReference(display: "System.Diagnostics.Tracing (net50)");
-        public static PortableExecutableReference System { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.System).GetReference(display: "System (net50)");
-        public static PortableExecutableReference SystemDrawing { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDrawing).GetReference(display: "System.Drawing (net50)");
-        public static PortableExecutableReference SystemDrawingPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDrawingPrimitives).GetReference(display: "System.Drawing.Primitives (net50)");
-        public static PortableExecutableReference SystemDynamicRuntime { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDynamicRuntime).GetReference(display: "System.Dynamic.Runtime (net50)");
-        public static PortableExecutableReference SystemFormatsAsn1 { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemFormatsAsn1).GetReference(display: "System.Formats.Asn1 (net50)");
-        public static PortableExecutableReference SystemGlobalizationCalendars { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalizationCalendars).GetReference(display: "System.Globalization.Calendars (net50)");
-        public static PortableExecutableReference SystemGlobalization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalization).GetReference(display: "System.Globalization (net50)");
-        public static PortableExecutableReference SystemGlobalizationExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalizationExtensions).GetReference(display: "System.Globalization.Extensions (net50)");
-        public static PortableExecutableReference SystemIOCompressionBrotli { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompressionBrotli).GetReference(display: "System.IO.Compression.Brotli (net50)");
-        public static PortableExecutableReference SystemIOCompression { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompression).GetReference(display: "System.IO.Compression (net50)");
-        public static PortableExecutableReference SystemIOCompressionFileSystem { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompressionFileSystem).GetReference(display: "System.IO.Compression.FileSystem (net50)");
-        public static PortableExecutableReference SystemIOCompressionZipFile { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompressionZipFile).GetReference(display: "System.IO.Compression.ZipFile (net50)");
-        public static PortableExecutableReference SystemIO { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIO).GetReference(display: "System.IO (net50)");
-        public static PortableExecutableReference SystemIOFileSystem { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystem).GetReference(display: "System.IO.FileSystem (net50)");
-        public static PortableExecutableReference SystemIOFileSystemDriveInfo { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystemDriveInfo).GetReference(display: "System.IO.FileSystem.DriveInfo (net50)");
-        public static PortableExecutableReference SystemIOFileSystemPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystemPrimitives).GetReference(display: "System.IO.FileSystem.Primitives (net50)");
-        public static PortableExecutableReference SystemIOFileSystemWatcher { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystemWatcher).GetReference(display: "System.IO.FileSystem.Watcher (net50)");
-        public static PortableExecutableReference SystemIOIsolatedStorage { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOIsolatedStorage).GetReference(display: "System.IO.IsolatedStorage (net50)");
-        public static PortableExecutableReference SystemIOMemoryMappedFiles { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOMemoryMappedFiles).GetReference(display: "System.IO.MemoryMappedFiles (net50)");
-        public static PortableExecutableReference SystemIOPipes { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOPipes).GetReference(display: "System.IO.Pipes (net50)");
-        public static PortableExecutableReference SystemIOUnmanagedMemoryStream { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOUnmanagedMemoryStream).GetReference(display: "System.IO.UnmanagedMemoryStream (net50)");
-        public static PortableExecutableReference SystemLinq { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinq).GetReference(display: "System.Linq (net50)");
-        public static PortableExecutableReference SystemLinqExpressions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqExpressions).GetReference(display: "System.Linq.Expressions (net50)");
-        public static PortableExecutableReference SystemLinqParallel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqParallel).GetReference(display: "System.Linq.Parallel (net50)");
-        public static PortableExecutableReference SystemLinqQueryable { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqQueryable).GetReference(display: "System.Linq.Queryable (net50)");
-        public static PortableExecutableReference SystemMemory { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemMemory).GetReference(display: "System.Memory (net50)");
-        public static PortableExecutableReference SystemNet { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNet).GetReference(display: "System.Net (net50)");
-        public static PortableExecutableReference SystemNetHttp { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetHttp).GetReference(display: "System.Net.Http (net50)");
-        public static PortableExecutableReference SystemNetHttpJson { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetHttpJson).GetReference(display: "System.Net.Http.Json (net50)");
-        public static PortableExecutableReference SystemNetHttpListener { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetHttpListener).GetReference(display: "System.Net.HttpListener (net50)");
-        public static PortableExecutableReference SystemNetMail { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetMail).GetReference(display: "System.Net.Mail (net50)");
-        public static PortableExecutableReference SystemNetNameResolution { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetNameResolution).GetReference(display: "System.Net.NameResolution (net50)");
-        public static PortableExecutableReference SystemNetNetworkInformation { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetNetworkInformation).GetReference(display: "System.Net.NetworkInformation (net50)");
-        public static PortableExecutableReference SystemNetPing { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetPing).GetReference(display: "System.Net.Ping (net50)");
-        public static PortableExecutableReference SystemNetPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetPrimitives).GetReference(display: "System.Net.Primitives (net50)");
-        public static PortableExecutableReference SystemNetRequests { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetRequests).GetReference(display: "System.Net.Requests (net50)");
-        public static PortableExecutableReference SystemNetSecurity { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetSecurity).GetReference(display: "System.Net.Security (net50)");
-        public static PortableExecutableReference SystemNetServicePoint { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetServicePoint).GetReference(display: "System.Net.ServicePoint (net50)");
-        public static PortableExecutableReference SystemNetSockets { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetSockets).GetReference(display: "System.Net.Sockets (net50)");
-        public static PortableExecutableReference SystemNetWebClient { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetWebClient).GetReference(display: "System.Net.WebClient (net50)");
-        public static PortableExecutableReference SystemNetWebHeaderCollection { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetWebHeaderCollection).GetReference(display: "System.Net.WebHeaderCollection (net50)");
-        public static PortableExecutableReference SystemNetWebProxy { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetWebProxy).GetReference(display: "System.Net.WebProxy (net50)");
-        public static PortableExecutableReference SystemNetWebSocketsClient { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetWebSocketsClient).GetReference(display: "System.Net.WebSockets.Client (net50)");
-        public static PortableExecutableReference SystemNetWebSockets { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNetWebSockets).GetReference(display: "System.Net.WebSockets (net50)");
-        public static PortableExecutableReference SystemNumerics { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNumerics).GetReference(display: "System.Numerics (net50)");
-        public static PortableExecutableReference SystemNumericsVectors { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNumericsVectors).GetReference(display: "System.Numerics.Vectors (net50)");
-        public static PortableExecutableReference SystemObjectModel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemObjectModel).GetReference(display: "System.ObjectModel (net50)");
-        public static PortableExecutableReference SystemReflectionDispatchProxy { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionDispatchProxy).GetReference(display: "System.Reflection.DispatchProxy (net50)");
-        public static PortableExecutableReference SystemReflection { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflection).GetReference(display: "System.Reflection (net50)");
-        public static PortableExecutableReference SystemReflectionEmit { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionEmit).GetReference(display: "System.Reflection.Emit (net50)");
-        public static PortableExecutableReference SystemReflectionEmitILGeneration { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionEmitILGeneration).GetReference(display: "System.Reflection.Emit.ILGeneration (net50)");
-        public static PortableExecutableReference SystemReflectionEmitLightweight { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionEmitLightweight).GetReference(display: "System.Reflection.Emit.Lightweight (net50)");
-        public static PortableExecutableReference SystemReflectionExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionExtensions).GetReference(display: "System.Reflection.Extensions (net50)");
-        public static PortableExecutableReference SystemReflectionMetadata { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionMetadata).GetReference(display: "System.Reflection.Metadata (net50)");
-        public static PortableExecutableReference SystemReflectionPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionPrimitives).GetReference(display: "System.Reflection.Primitives (net50)");
-        public static PortableExecutableReference SystemReflectionTypeExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemReflectionTypeExtensions).GetReference(display: "System.Reflection.TypeExtensions (net50)");
-        public static PortableExecutableReference SystemResourcesReader { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemResourcesReader).GetReference(display: "System.Resources.Reader (net50)");
-        public static PortableExecutableReference SystemResourcesResourceManager { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemResourcesResourceManager).GetReference(display: "System.Resources.ResourceManager (net50)");
-        public static PortableExecutableReference SystemResourcesWriter { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemResourcesWriter).GetReference(display: "System.Resources.Writer (net50)");
-        public static PortableExecutableReference SystemRuntimeCompilerServicesUnsafe { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeCompilerServicesUnsafe).GetReference(display: "System.Runtime.CompilerServices.Unsafe (net50)");
-        public static PortableExecutableReference SystemRuntimeCompilerServicesVisualC { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeCompilerServicesVisualC).GetReference(display: "System.Runtime.CompilerServices.VisualC (net50)");
-        public static PortableExecutableReference SystemRuntime { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntime).GetReference(display: "System.Runtime (net50)");
-        public static PortableExecutableReference SystemRuntimeExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeExtensions).GetReference(display: "System.Runtime.Extensions (net50)");
-        public static PortableExecutableReference SystemRuntimeHandles { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeHandles).GetReference(display: "System.Runtime.Handles (net50)");
-        public static PortableExecutableReference SystemRuntimeInteropServices { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeInteropServices).GetReference(display: "System.Runtime.InteropServices (net50)");
-        public static PortableExecutableReference SystemRuntimeInteropServicesRuntimeInformation { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeInteropServicesRuntimeInformation).GetReference(display: "System.Runtime.InteropServices.RuntimeInformation (net50)");
-        public static PortableExecutableReference SystemRuntimeIntrinsics { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeIntrinsics).GetReference(display: "System.Runtime.Intrinsics (net50)");
-        public static PortableExecutableReference SystemRuntimeLoader { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeLoader).GetReference(display: "System.Runtime.Loader (net50)");
-        public static PortableExecutableReference SystemRuntimeNumerics { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeNumerics).GetReference(display: "System.Runtime.Numerics (net50)");
-        public static PortableExecutableReference SystemRuntimeSerialization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerialization).GetReference(display: "System.Runtime.Serialization (net50)");
-        public static PortableExecutableReference SystemRuntimeSerializationFormatters { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationFormatters).GetReference(display: "System.Runtime.Serialization.Formatters (net50)");
-        public static PortableExecutableReference SystemRuntimeSerializationJson { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationJson).GetReference(display: "System.Runtime.Serialization.Json (net50)");
-        public static PortableExecutableReference SystemRuntimeSerializationPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationPrimitives).GetReference(display: "System.Runtime.Serialization.Primitives (net50)");
-        public static PortableExecutableReference SystemRuntimeSerializationXml { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationXml).GetReference(display: "System.Runtime.Serialization.Xml (net50)");
-        public static PortableExecutableReference SystemSecurityClaims { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityClaims).GetReference(display: "System.Security.Claims (net50)");
-        public static PortableExecutableReference SystemSecurityCryptographyAlgorithms { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyAlgorithms).GetReference(display: "System.Security.Cryptography.Algorithms (net50)");
-        public static PortableExecutableReference SystemSecurityCryptographyCsp { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyCsp).GetReference(display: "System.Security.Cryptography.Csp (net50)");
-        public static PortableExecutableReference SystemSecurityCryptographyEncoding { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyEncoding).GetReference(display: "System.Security.Cryptography.Encoding (net50)");
-        public static PortableExecutableReference SystemSecurityCryptographyPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyPrimitives).GetReference(display: "System.Security.Cryptography.Primitives (net50)");
-        public static PortableExecutableReference SystemSecurityCryptographyX509Certificates { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyX509Certificates).GetReference(display: "System.Security.Cryptography.X509Certificates (net50)");
-        public static PortableExecutableReference SystemSecurity { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurity).GetReference(display: "System.Security (net50)");
-        public static PortableExecutableReference SystemSecurityPrincipal { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityPrincipal).GetReference(display: "System.Security.Principal (net50)");
-        public static PortableExecutableReference SystemSecuritySecureString { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecuritySecureString).GetReference(display: "System.Security.SecureString (net50)");
-        public static PortableExecutableReference SystemServiceModelWeb { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemServiceModelWeb).GetReference(display: "System.ServiceModel.Web (net50)");
-        public static PortableExecutableReference SystemServiceProcess { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemServiceProcess).GetReference(display: "System.ServiceProcess (net50)");
-        public static PortableExecutableReference SystemTextEncodingCodePages { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncodingCodePages).GetReference(display: "System.Text.Encoding.CodePages (net50)");
-        public static PortableExecutableReference SystemTextEncoding { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncoding).GetReference(display: "System.Text.Encoding (net50)");
-        public static PortableExecutableReference SystemTextEncodingExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncodingExtensions).GetReference(display: "System.Text.Encoding.Extensions (net50)");
-        public static PortableExecutableReference SystemTextEncodingsWeb { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncodingsWeb).GetReference(display: "System.Text.Encodings.Web (net50)");
-        public static PortableExecutableReference SystemTextJson { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextJson).GetReference(display: "System.Text.Json (net50)");
-        public static PortableExecutableReference SystemTextRegularExpressions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextRegularExpressions).GetReference(display: "System.Text.RegularExpressions (net50)");
-        public static PortableExecutableReference SystemThreadingChannels { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingChannels).GetReference(display: "System.Threading.Channels (net50)");
-        public static PortableExecutableReference SystemThreading { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreading).GetReference(display: "System.Threading (net50)");
-        public static PortableExecutableReference SystemThreadingOverlapped { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingOverlapped).GetReference(display: "System.Threading.Overlapped (net50)");
-        public static PortableExecutableReference SystemThreadingTasksDataflow { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasksDataflow).GetReference(display: "System.Threading.Tasks.Dataflow (net50)");
-        public static PortableExecutableReference SystemThreadingTasks { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasks).GetReference(display: "System.Threading.Tasks (net50)");
-        public static PortableExecutableReference SystemThreadingTasksExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasksExtensions).GetReference(display: "System.Threading.Tasks.Extensions (net50)");
-        public static PortableExecutableReference SystemThreadingTasksParallel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasksParallel).GetReference(display: "System.Threading.Tasks.Parallel (net50)");
-        public static PortableExecutableReference SystemThreadingThread { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingThread).GetReference(display: "System.Threading.Thread (net50)");
-        public static PortableExecutableReference SystemThreadingThreadPool { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingThreadPool).GetReference(display: "System.Threading.ThreadPool (net50)");
-        public static PortableExecutableReference SystemThreadingTimer { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTimer).GetReference(display: "System.Threading.Timer (net50)");
-        public static PortableExecutableReference SystemTransactions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTransactions).GetReference(display: "System.Transactions (net50)");
-        public static PortableExecutableReference SystemTransactionsLocal { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTransactionsLocal).GetReference(display: "System.Transactions.Local (net50)");
-        public static PortableExecutableReference SystemValueTuple { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemValueTuple).GetReference(display: "System.ValueTuple (net50)");
-        public static PortableExecutableReference SystemWeb { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemWeb).GetReference(display: "System.Web (net50)");
-        public static PortableExecutableReference SystemWebHttpUtility { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemWebHttpUtility).GetReference(display: "System.Web.HttpUtility (net50)");
-        public static PortableExecutableReference SystemWindows { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemWindows).GetReference(display: "System.Windows (net50)");
-        public static PortableExecutableReference SystemXml { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXml).GetReference(display: "System.Xml (net50)");
-        public static PortableExecutableReference SystemXmlLinq { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlLinq).GetReference(display: "System.Xml.Linq (net50)");
-        public static PortableExecutableReference SystemXmlReaderWriter { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlReaderWriter).GetReference(display: "System.Xml.ReaderWriter (net50)");
-        public static PortableExecutableReference SystemXmlSerialization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlSerialization).GetReference(display: "System.Xml.Serialization (net50)");
-        public static PortableExecutableReference SystemXmlXDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXDocument).GetReference(display: "System.Xml.XDocument (net50)");
-        public static PortableExecutableReference SystemXmlXmlDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXmlDocument).GetReference(display: "System.Xml.XmlDocument (net50)");
-        public static PortableExecutableReference SystemXmlXmlSerializer { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXmlSerializer).GetReference(display: "System.Xml.XmlSerializer (net50)");
-        public static PortableExecutableReference SystemXmlXPath { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXPath).GetReference(display: "System.Xml.XPath (net50)");
-        public static PortableExecutableReference SystemXmlXPathXDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXPathXDocument).GetReference(display: "System.Xml.XPath.XDocument (net50)");
-        public static PortableExecutableReference WindowsBase { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.WindowsBase).GetReference(display: "WindowsBase (net50)");
-        public static IEnumerable<PortableExecutableReference> All { get; }= new PortableExecutableReference[]
+        public static PortableExecutableReference MicrosoftCSharp { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftCSharp_dll).GetReference(display: "Microsoft.CSharp (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.MicrosoftCSharp_xml));
+        public static PortableExecutableReference MicrosoftVisualBasicCore { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftVisualBasicCore_dll).GetReference(display: "Microsoft.VisualBasic.Core (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.MicrosoftVisualBasicCore_xml));
+        public static PortableExecutableReference MicrosoftVisualBasic { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftVisualBasic_dll).GetReference(display: "Microsoft.VisualBasic (net50)");
+        public static PortableExecutableReference MicrosoftWin32Primitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftWin32Primitives_dll).GetReference(display: "Microsoft.Win32.Primitives (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.MicrosoftWin32Primitives_xml));
+        public static PortableExecutableReference mscorlib { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.mscorlib_dll).GetReference(display: "mscorlib (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.mscorlib_xml));
+        public static PortableExecutableReference netstandard { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.netstandard_dll).GetReference(display: "netstandard (net50)");
+        public static PortableExecutableReference SystemAppContext { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemAppContext_dll).GetReference(display: "System.AppContext (net50)");
+        public static PortableExecutableReference SystemBuffers { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemBuffers_dll).GetReference(display: "System.Buffers (net50)");
+        public static PortableExecutableReference SystemCollectionsConcurrent { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsConcurrent_dll).GetReference(display: "System.Collections.Concurrent (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemCollectionsConcurrent_xml));
+        public static PortableExecutableReference SystemCollections { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollections_dll).GetReference(display: "System.Collections (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemCollections_xml));
+        public static PortableExecutableReference SystemCollectionsImmutable { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsImmutable_dll).GetReference(display: "System.Collections.Immutable (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemCollectionsImmutable_xml));
+        public static PortableExecutableReference SystemCollectionsNonGeneric { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsNonGeneric_dll).GetReference(display: "System.Collections.NonGeneric (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemCollectionsNonGeneric_xml));
+        public static PortableExecutableReference SystemCollectionsSpecialized { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCollectionsSpecialized_dll).GetReference(display: "System.Collections.Specialized (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemCollectionsSpecialized_xml));
+        public static PortableExecutableReference SystemComponentModelAnnotations { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelAnnotations_dll).GetReference(display: "System.ComponentModel.Annotations (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemComponentModelAnnotations_xml));
+        public static PortableExecutableReference SystemComponentModelDataAnnotations { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelDataAnnotations_dll).GetReference(display: "System.ComponentModel.DataAnnotations (net50)");
+        public static PortableExecutableReference SystemComponentModel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModel_dll).GetReference(display: "System.ComponentModel (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemComponentModel_xml));
+        public static PortableExecutableReference SystemComponentModelEventBasedAsync { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelEventBasedAsync_dll).GetReference(display: "System.ComponentModel.EventBasedAsync (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemComponentModelEventBasedAsync_xml));
+        public static PortableExecutableReference SystemComponentModelPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelPrimitives_dll).GetReference(display: "System.ComponentModel.Primitives (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemComponentModelPrimitives_xml));
+        public static PortableExecutableReference SystemComponentModelTypeConverter { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemComponentModelTypeConverter_dll).GetReference(display: "System.ComponentModel.TypeConverter (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemComponentModelTypeConverter_xml));
+        public static PortableExecutableReference SystemConfiguration { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemConfiguration_dll).GetReference(display: "System.Configuration (net50)");
+        public static PortableExecutableReference SystemConsole { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemConsole_dll).GetReference(display: "System.Console (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemConsole_xml));
+        public static PortableExecutableReference SystemCore { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemCore_dll).GetReference(display: "System.Core (net50)");
+        public static PortableExecutableReference SystemDataCommon { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDataCommon_dll).GetReference(display: "System.Data.Common (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemDataCommon_xml));
+        public static PortableExecutableReference SystemDataDataSetExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDataDataSetExtensions_dll).GetReference(display: "System.Data.DataSetExtensions (net50)");
+        public static PortableExecutableReference SystemData { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemData_dll).GetReference(display: "System.Data (net50)");
+        public static PortableExecutableReference System { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.System_dll).GetReference(display: "System (net50)");
+        public static PortableExecutableReference SystemDynamicRuntime { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemDynamicRuntime_dll).GetReference(display: "System.Dynamic.Runtime (net50)");
+        public static PortableExecutableReference SystemFormatsAsn1 { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemFormatsAsn1_dll).GetReference(display: "System.Formats.Asn1 (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemFormatsAsn1_xml));
+        public static PortableExecutableReference SystemGlobalizationCalendars { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalizationCalendars_dll).GetReference(display: "System.Globalization.Calendars (net50)");
+        public static PortableExecutableReference SystemGlobalization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalization_dll).GetReference(display: "System.Globalization (net50)");
+        public static PortableExecutableReference SystemGlobalizationExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalizationExtensions_dll).GetReference(display: "System.Globalization.Extensions (net50)");
+        public static PortableExecutableReference SystemLinq { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinq_dll).GetReference(display: "System.Linq (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinq_xml));
+        public static PortableExecutableReference SystemLinqExpressions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqExpressions_dll).GetReference(display: "System.Linq.Expressions (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinqExpressions_xml));
+        public static PortableExecutableReference SystemLinqParallel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqParallel_dll).GetReference(display: "System.Linq.Parallel (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinqParallel_xml));
+        public static PortableExecutableReference SystemLinqQueryable { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqQueryable_dll).GetReference(display: "System.Linq.Queryable (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinqQueryable_xml));
+        public static PortableExecutableReference SystemMemory { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemMemory_dll).GetReference(display: "System.Memory (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemMemory_xml));
+        public static PortableExecutableReference SystemNumerics { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNumerics_dll).GetReference(display: "System.Numerics (net50)");
+        public static PortableExecutableReference SystemNumericsVectors { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemNumericsVectors_dll).GetReference(display: "System.Numerics.Vectors (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemNumericsVectors_xml));
+        public static PortableExecutableReference SystemObjectModel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemObjectModel_dll).GetReference(display: "System.ObjectModel (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemObjectModel_xml));
+        public static PortableExecutableReference SystemResourcesReader { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemResourcesReader_dll).GetReference(display: "System.Resources.Reader (net50)");
+        public static PortableExecutableReference SystemResourcesResourceManager { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemResourcesResourceManager_dll).GetReference(display: "System.Resources.ResourceManager (net50)");
+        public static PortableExecutableReference SystemResourcesWriter { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemResourcesWriter_dll).GetReference(display: "System.Resources.Writer (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemResourcesWriter_xml));
+        public static PortableExecutableReference SystemRuntimeCompilerServicesUnsafe { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeCompilerServicesUnsafe_dll).GetReference(display: "System.Runtime.CompilerServices.Unsafe (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeCompilerServicesUnsafe_xml));
+        public static PortableExecutableReference SystemRuntimeCompilerServicesVisualC { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeCompilerServicesVisualC_dll).GetReference(display: "System.Runtime.CompilerServices.VisualC (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeCompilerServicesVisualC_xml));
+        public static PortableExecutableReference SystemRuntime { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntime_dll).GetReference(display: "System.Runtime (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntime_xml));
+        public static PortableExecutableReference SystemRuntimeExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeExtensions_dll).GetReference(display: "System.Runtime.Extensions (net50)");
+        public static PortableExecutableReference SystemRuntimeHandles { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeHandles_dll).GetReference(display: "System.Runtime.Handles (net50)");
+        public static PortableExecutableReference SystemRuntimeInteropServices { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeInteropServices_dll).GetReference(display: "System.Runtime.InteropServices (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeInteropServices_xml));
+        public static PortableExecutableReference SystemRuntimeInteropServicesRuntimeInformation { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeInteropServicesRuntimeInformation_dll).GetReference(display: "System.Runtime.InteropServices.RuntimeInformation (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeInteropServicesRuntimeInformation_xml));
+        public static PortableExecutableReference SystemRuntimeIntrinsics { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeIntrinsics_dll).GetReference(display: "System.Runtime.Intrinsics (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeIntrinsics_xml));
+        public static PortableExecutableReference SystemRuntimeLoader { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeLoader_dll).GetReference(display: "System.Runtime.Loader (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeLoader_xml));
+        public static PortableExecutableReference SystemRuntimeNumerics { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeNumerics_dll).GetReference(display: "System.Runtime.Numerics (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeNumerics_xml));
+        public static PortableExecutableReference SystemRuntimeSerialization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerialization_dll).GetReference(display: "System.Runtime.Serialization (net50)");
+        public static PortableExecutableReference SystemRuntimeSerializationFormatters { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationFormatters_dll).GetReference(display: "System.Runtime.Serialization.Formatters (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeSerializationFormatters_xml));
+        public static PortableExecutableReference SystemRuntimeSerializationJson { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationJson_dll).GetReference(display: "System.Runtime.Serialization.Json (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeSerializationJson_xml));
+        public static PortableExecutableReference SystemRuntimeSerializationPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationPrimitives_dll).GetReference(display: "System.Runtime.Serialization.Primitives (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeSerializationPrimitives_xml));
+        public static PortableExecutableReference SystemRuntimeSerializationXml { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemRuntimeSerializationXml_dll).GetReference(display: "System.Runtime.Serialization.Xml (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemRuntimeSerializationXml_xml));
+        public static PortableExecutableReference SystemSecurityClaims { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityClaims_dll).GetReference(display: "System.Security.Claims (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemSecurityClaims_xml));
+        public static PortableExecutableReference SystemSecurityCryptographyAlgorithms { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyAlgorithms_dll).GetReference(display: "System.Security.Cryptography.Algorithms (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemSecurityCryptographyAlgorithms_xml));
+        public static PortableExecutableReference SystemSecurityCryptographyCsp { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyCsp_dll).GetReference(display: "System.Security.Cryptography.Csp (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemSecurityCryptographyCsp_xml));
+        public static PortableExecutableReference SystemSecurityCryptographyEncoding { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyEncoding_dll).GetReference(display: "System.Security.Cryptography.Encoding (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemSecurityCryptographyEncoding_xml));
+        public static PortableExecutableReference SystemSecurityCryptographyPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyPrimitives_dll).GetReference(display: "System.Security.Cryptography.Primitives (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemSecurityCryptographyPrimitives_xml));
+        public static PortableExecutableReference SystemSecurityCryptographyX509Certificates { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityCryptographyX509Certificates_dll).GetReference(display: "System.Security.Cryptography.X509Certificates (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemSecurityCryptographyX509Certificates_xml));
+        public static PortableExecutableReference SystemSecurity { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurity_dll).GetReference(display: "System.Security (net50)");
+        public static PortableExecutableReference SystemSecurityPrincipal { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecurityPrincipal_dll).GetReference(display: "System.Security.Principal (net50)");
+        public static PortableExecutableReference SystemSecuritySecureString { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemSecuritySecureString_dll).GetReference(display: "System.Security.SecureString (net50)");
+        public static PortableExecutableReference SystemServiceModelWeb { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemServiceModelWeb_dll).GetReference(display: "System.ServiceModel.Web (net50)");
+        public static PortableExecutableReference SystemServiceProcess { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemServiceProcess_dll).GetReference(display: "System.ServiceProcess (net50)");
+        public static PortableExecutableReference SystemTextEncodingCodePages { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncodingCodePages_dll).GetReference(display: "System.Text.Encoding.CodePages (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemTextEncodingCodePages_xml));
+        public static PortableExecutableReference SystemTextEncoding { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncoding_dll).GetReference(display: "System.Text.Encoding (net50)");
+        public static PortableExecutableReference SystemTextEncodingExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncodingExtensions_dll).GetReference(display: "System.Text.Encoding.Extensions (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemTextEncodingExtensions_xml));
+        public static PortableExecutableReference SystemTextEncodingsWeb { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextEncodingsWeb_dll).GetReference(display: "System.Text.Encodings.Web (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemTextEncodingsWeb_xml));
+        public static PortableExecutableReference SystemTextJson { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextJson_dll).GetReference(display: "System.Text.Json (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemTextJson_xml));
+        public static PortableExecutableReference SystemTextRegularExpressions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTextRegularExpressions_dll).GetReference(display: "System.Text.RegularExpressions (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemTextRegularExpressions_xml));
+        public static PortableExecutableReference SystemThreadingChannels { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingChannels_dll).GetReference(display: "System.Threading.Channels (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreadingChannels_xml));
+        public static PortableExecutableReference SystemThreading { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreading_dll).GetReference(display: "System.Threading (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreading_xml));
+        public static PortableExecutableReference SystemThreadingOverlapped { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingOverlapped_dll).GetReference(display: "System.Threading.Overlapped (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreadingOverlapped_xml));
+        public static PortableExecutableReference SystemThreadingTasksDataflow { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasksDataflow_dll).GetReference(display: "System.Threading.Tasks.Dataflow (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreadingTasksDataflow_xml));
+        public static PortableExecutableReference SystemThreadingTasks { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasks_dll).GetReference(display: "System.Threading.Tasks (net50)");
+        public static PortableExecutableReference SystemThreadingTasksExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasksExtensions_dll).GetReference(display: "System.Threading.Tasks.Extensions (net50)");
+        public static PortableExecutableReference SystemThreadingTasksParallel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTasksParallel_dll).GetReference(display: "System.Threading.Tasks.Parallel (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreadingTasksParallel_xml));
+        public static PortableExecutableReference SystemThreadingThread { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingThread_dll).GetReference(display: "System.Threading.Thread (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreadingThread_xml));
+        public static PortableExecutableReference SystemThreadingThreadPool { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingThreadPool_dll).GetReference(display: "System.Threading.ThreadPool (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemThreadingThreadPool_xml));
+        public static PortableExecutableReference SystemThreadingTimer { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemThreadingTimer_dll).GetReference(display: "System.Threading.Timer (net50)");
+        public static PortableExecutableReference SystemTransactions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTransactions_dll).GetReference(display: "System.Transactions (net50)");
+        public static PortableExecutableReference SystemTransactionsLocal { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemTransactionsLocal_dll).GetReference(display: "System.Transactions.Local (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemTransactionsLocal_xml));
+        public static PortableExecutableReference SystemValueTuple { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemValueTuple_dll).GetReference(display: "System.ValueTuple (net50)");
+        public static PortableExecutableReference SystemWindows { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemWindows_dll).GetReference(display: "System.Windows (net50)");
+        public static PortableExecutableReference SystemXml { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXml_dll).GetReference(display: "System.Xml (net50)");
+        public static PortableExecutableReference SystemXmlLinq { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlLinq_dll).GetReference(display: "System.Xml.Linq (net50)");
+        public static PortableExecutableReference SystemXmlReaderWriter { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlReaderWriter_dll).GetReference(display: "System.Xml.ReaderWriter (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlReaderWriter_xml));
+        public static PortableExecutableReference SystemXmlSerialization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlSerialization_dll).GetReference(display: "System.Xml.Serialization (net50)");
+        public static PortableExecutableReference SystemXmlXDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXDocument_dll).GetReference(display: "System.Xml.XDocument (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXDocument_xml));
+        public static PortableExecutableReference SystemXmlXmlDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXmlDocument_dll).GetReference(display: "System.Xml.XmlDocument (net50)");
+        public static PortableExecutableReference SystemXmlXmlSerializer { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXmlSerializer_dll).GetReference(display: "System.Xml.XmlSerializer (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXmlSerializer_xml));
+        public static PortableExecutableReference SystemXmlXPath { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXPath_dll).GetReference(display: "System.Xml.XPath (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXPath_xml));
+        public static PortableExecutableReference SystemXmlXPathXDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXPathXDocument_dll).GetReference(display: "System.Xml.XPath.XDocument (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXPathXDocument_xml));
+        public static PortableExecutableReference WindowsBase { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.WindowsBase_dll).GetReference(display: "WindowsBase (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.WindowsBase_xml));
+        public static IEnumerable<PortableExecutableReference> All { get; } = new PortableExecutableReference[]
         {
             MicrosoftCSharp,
             MicrosoftVisualBasicCore,
@@ -493,72 +295,20 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             SystemDataCommon,
             SystemDataDataSetExtensions,
             SystemData,
-            SystemDiagnosticsContracts,
-            SystemDiagnosticsDebug,
-            SystemDiagnosticsDiagnosticSource,
-            SystemDiagnosticsFileVersionInfo,
-            SystemDiagnosticsProcess,
-            SystemDiagnosticsStackTrace,
-            SystemDiagnosticsTextWriterTraceListener,
-            SystemDiagnosticsTools,
-            SystemDiagnosticsTraceSource,
-            SystemDiagnosticsTracing,
             System,
-            SystemDrawing,
-            SystemDrawingPrimitives,
             SystemDynamicRuntime,
             SystemFormatsAsn1,
             SystemGlobalizationCalendars,
             SystemGlobalization,
             SystemGlobalizationExtensions,
-            SystemIOCompressionBrotli,
-            SystemIOCompression,
-            SystemIOCompressionFileSystem,
-            SystemIOCompressionZipFile,
-            SystemIO,
-            SystemIOFileSystem,
-            SystemIOFileSystemDriveInfo,
-            SystemIOFileSystemPrimitives,
-            SystemIOFileSystemWatcher,
-            SystemIOIsolatedStorage,
-            SystemIOMemoryMappedFiles,
-            SystemIOPipes,
-            SystemIOUnmanagedMemoryStream,
             SystemLinq,
             SystemLinqExpressions,
             SystemLinqParallel,
             SystemLinqQueryable,
             SystemMemory,
-            SystemNet,
-            SystemNetHttp,
-            SystemNetHttpJson,
-            SystemNetHttpListener,
-            SystemNetMail,
-            SystemNetNameResolution,
-            SystemNetNetworkInformation,
-            SystemNetPing,
-            SystemNetPrimitives,
-            SystemNetRequests,
-            SystemNetSecurity,
-            SystemNetServicePoint,
-            SystemNetSockets,
-            SystemNetWebClient,
-            SystemNetWebHeaderCollection,
-            SystemNetWebProxy,
-            SystemNetWebSocketsClient,
-            SystemNetWebSockets,
             SystemNumerics,
             SystemNumericsVectors,
             SystemObjectModel,
-            SystemReflectionDispatchProxy,
-            SystemReflection,
-            SystemReflectionEmit,
-            SystemReflectionEmitILGeneration,
-            SystemReflectionEmitLightweight,
-            SystemReflectionExtensions,
-            SystemReflectionMetadata,
-            SystemReflectionPrimitives,
-            SystemReflectionTypeExtensions,
             SystemResourcesReader,
             SystemResourcesResourceManager,
             SystemResourcesWriter,
@@ -607,8 +357,6 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             SystemTransactions,
             SystemTransactionsLocal,
             SystemValueTuple,
-            SystemWeb,
-            SystemWebHttpUtility,
             SystemWindows,
             SystemXml,
             SystemXmlLinq,

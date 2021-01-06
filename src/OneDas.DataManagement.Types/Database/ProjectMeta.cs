@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Database
 {
-    public class ProjectMetaInfo
+    public class ProjectMeta
     {
         #region Constructors
 
-        public ProjectMetaInfo(string id)
+        public ProjectMeta(string id)
         {
             this.Id = id;
             this.Contact = string.Empty;
@@ -16,10 +16,10 @@ namespace OneDas.DataManagement.Database
             this.IsQualityControlled = false;
             this.License = new ProjectLicense();
             this.Logbook = new List<string>();
-            this.Channels = new List<ChannelMetaInfo>();
+            this.Channels = new List<ChannelMeta>();
         }
 
-        private ProjectMetaInfo()
+        private ProjectMeta()
         {
             //
         }
@@ -42,7 +42,7 @@ namespace OneDas.DataManagement.Database
 
         public List<string> Logbook { get; set; }
 
-        public List<ChannelMetaInfo> Channels { get; set; }
+        public List<ChannelMeta> Channels { get; set; }
 
         #endregion
 
@@ -57,14 +57,14 @@ namespace OneDas.DataManagement.Database
                 this.LongDescription = "<no description available>";
 
             // create missing channel meta instances
-            var channelsToAdd = new List<ChannelMetaInfo>();
+            var channelsToAdd = new List<ChannelMeta>();
 
             foreach (var referenceChannel in project.Channels)
             {
                 var exists = this.Channels.Any(channel => channel.Id == referenceChannel.Id);
 
                 if (!exists)
-                    channelsToAdd.Add(new ChannelMetaInfo(referenceChannel.Id));
+                    channelsToAdd.Add(new ChannelMeta(referenceChannel.Id));
             }
 
             this.Channels.AddRange(channelsToAdd);

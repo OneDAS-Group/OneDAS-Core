@@ -1,7 +1,4 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using OneDas.DataManagement.Explorer.Core;
-using OneDas.DataManagement.Explorer.Services;
 using Xunit;
 
 namespace OneDas.DataManagement.Explorer.Tests

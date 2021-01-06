@@ -1,7 +1,6 @@
 ﻿using OneDas.Buffers;
 using OneDas.Infrastructure;
 using System;
-using System.Collections.Generic;
 
 namespace OneDas.Extensibility
 {
@@ -16,7 +15,6 @@ namespace OneDas.Extensibility
                                    OneDasDataType dataType,
                                    SampleRateContainer sampleRate,
                                    string unit,
-                                   List<TransferFunction> transferFunctionSet,
                                    BufferType bufferType)
         {
             this.Guid = guid;
@@ -26,7 +24,6 @@ namespace OneDas.Extensibility
             this.DataType = dataType;
             this.SampleRate = sampleRate;
             this.Unit = unit;
-            this.TransferFunctionSet = transferFunctionSet;
             this.BufferType = bufferType;
         }
 
@@ -47,8 +44,6 @@ namespace OneDas.Extensibility
         public SampleRateContainer SampleRate { get; private set; }
 
         public string Unit { get; private set; }
-
-        public List<TransferFunction> TransferFunctionSet { get; private set; }
 
         public BufferType BufferType { get; set; }
 

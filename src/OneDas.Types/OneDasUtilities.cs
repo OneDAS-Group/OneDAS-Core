@@ -121,7 +121,7 @@ namespace OneDas
             errorDescription = true switch
             {
                 true when !value.StartsWith('/') => $"{ErrorMessage.OneDasUtilities_InvalidLeadingCharacter2}{valueAsString}",
-                true when value.Split('/').Count() != 5 => $"{ErrorMessage.OneDasUtilities_InvalidPathSeparatorCount}{valueAsString}",
+                true when value.Split('/').Count() != 4 => $"{ErrorMessage.OneDasUtilities_InvalidPathSeparatorCount}{valueAsString}",
                 _ => string.Empty
             };
 

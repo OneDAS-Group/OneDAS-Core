@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
-    public partial class FilterProjectRequestModal
+    public partial class CodeDefinitionProjectRequestModal
     {
         #region Records
 
@@ -44,7 +44,6 @@ namespace OneDas.DataManagement.Explorer.Shared
         protected override void OnParametersSet()
         {
             var accessibleProjects = this.UserState.ProjectContainersInfo.Accessible;
-            var accessibleProjectIds = this.UserState.ProjectContainersInfo.Accessible;
 
             this.ProjectContainerStates = accessibleProjects.Select(projectContainer =>
             {

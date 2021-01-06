@@ -1,6 +1,4 @@
-﻿using OneDas.DataManagement.Explorer.ViewModels;
-
-namespace OneDas.DataManagement.Explorer.Shared
+﻿namespace OneDas.DataManagement.Explorer.Shared
 {
     public partial class DownloadUI
     {

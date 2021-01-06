@@ -49,11 +49,7 @@ namespace OneDas.DataManagement.Extensions
                 for (int i = 0; i < length; i++)
                 {
                     movingAverage[i % kernelSize] = (random.NextDouble() - 0.5) * mean * 10 + mean;
-
-                    if (movingAverage[kernelSize - 1] == 0)
-                        dataDouble[i] = mean;
-                    else
-                        dataDouble[i] = movingAverage.Sum() / kernelSize;
+                    dataDouble[i] = movingAverage.Sum() / kernelSize;
                 }
             }
 

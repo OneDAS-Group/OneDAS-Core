@@ -341,7 +341,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }
         }
 
-        private Project CreateProjectResponse(ProjectInfo project, ProjectMetaInfo projectMeta)
+        private Project CreateProjectResponse(ProjectInfo project, ProjectMeta projectMeta)
         {
             return new Project()
             {
@@ -381,7 +381,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             }).ToList();
         }
 
-        private Channel CreateChannelResponse(ChannelInfo channel, ChannelMetaInfo channelMeta)
+        private Channel CreateChannelResponse(ChannelInfo channel, ChannelMeta channelMeta)
         {
             return new Channel()
             {
@@ -392,10 +392,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                         ? channelMeta.Unit
                         : channel.Unit,
                 Description = channelMeta.Description,
-                SpecialInfo = channelMeta.SpecialInfo,
-                TransferFunctions = channelMeta.TransferFunctions.Any() 
-                        ? channelMeta.TransferFunctions
-                        : channel.TransferFunctions
+                SpecialInfo = channelMeta.SpecialInfo
             };
         }
 
@@ -411,7 +408,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         private ActionResult<T> ProcessProjectId<T>(
             string projectId,
             string message,
-            Func<ProjectInfo, ProjectMetaInfo, ActionResult<T>> action)
+            Func<ProjectInfo, ProjectMeta, ActionResult<T>> action)
         {
             if (!Utilities.IsProjectAccessible(this.User, projectId, _databaseManager.Database))
                 return this.Unauthorized($"The current user is not authorized to access the project '{projectId}'.");

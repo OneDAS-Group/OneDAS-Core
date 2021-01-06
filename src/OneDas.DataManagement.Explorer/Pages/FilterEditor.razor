@@ -5,7 +5,7 @@
     <Authorized>
         <div class="left-column">
             <div class="settings-box mat-elevation-z11">
-                <FilterDescriptionSettingsBox @ref="this.FilterDescriptionSettingsBox" FilterDescription="this.Filter" OnSave="async () => await this.SaveFilterAsync()" />
+                <CodeDefinitionSettingsBox @ref="this.CodeDefinitionSettingsBox" CodeDefinition="this.CodeDefinition" OnSave="async () => await this.SaveFilterAsync()" />
 
                 <div class="configuration-panel">
 
@@ -34,9 +34,9 @@
                     </div>
                 </div>
             </div>
-            <FilterGallery @bind-IsOpen="this.FilterGalleryIsOpen" OnFilterDescriptionSelected="async (filter) => await this.CopyFilterAsync(filter)" />
-            <FilterCreateModal @bind-IsOpen="this.FilterCreateDialogIsOpen" OnCodeTypeSelected="this.PrepareFilter" />
-            <FilterDeleteModal @bind-IsOpen="this.FilterDeleteDialogIsOpen" OnDelete="async () => await this.DeleteFilterAsync()" />
+            <CodeDefinitionGallery @bind-IsOpen="this.CodeDefinitionGalleryIsOpen" OnCodeDefinitionSelected="async (filter) => await this.CopyCodeDefinitionAsync(filter)" />
+            <CodeDefinitionCreateModal @bind-IsOpen="this.CodeDefinitionCreateDialogIsOpen" OnCodeTypeSelected="this.PrepareCodeDefinition" />
+            <CodeDefinitionDeleteModal @bind-IsOpen="this.CodeDefinitionDeleteDialogIsOpen" OnDelete="async () => await this.DeleteFilterAsync()" />
         </div>
         <div class="center-column monaco-editor-root-container">
             <div class="monaco-box mat-elevation-z11">
@@ -54,14 +54,14 @@
         </div>
         <div class="right-column">
             <div class="selected-channel-box mat-elevation-z11">
-                @if (this.Filters != null && this.Filters.Any())
+                @if (this.CodeDefinitions != null && this.CodeDefinitions.Any())
                 {
                     <MatNavMenu>
-                        @foreach (var filterDescription in this.Filters)
+                        @foreach (var codeDefinition in this.CodeDefinitions)
                         {
-                            <div @onclick="() => this.Filter = filterDescription">
+                            <div @onclick="() => this.CodeDefinition = codeDefinition">
                                 <MatNavItem>
-                                    <MatIcon Icon="@Utilities.GetEnumIconName(filterDescription.CodeType)"></MatIcon>&nbsp; @filterDescription.Name
+                                    <MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name
                                 </MatNavItem>
                             </div>
                         }
@@ -82,5 +82,5 @@
 </AuthorizeView>
 
 @code {
-    private FilterDescriptionSettingsBox FilterDescriptionSettingsBox { get; set; }
+    private CodeDefinitionSettingsBox CodeDefinitionSettingsBox { get; set; }
 } 

@@ -10,13 +10,13 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         #region Fields
 
         private ChannelInfo _channel;
-        private ChannelMetaInfo _channelMeta;
+        private ChannelMeta _channelMeta;
 
         #endregion
 
         #region Constructors
 
-        public ChannelInfoViewModel(ChannelInfo channel, ChannelMetaInfo channelMeta)
+        public ChannelInfoViewModel(ChannelInfo channel, ChannelMeta channelMeta)
         {
             _channel = channel;
             _channelMeta = channelMeta;
@@ -53,10 +53,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         }
 
         public ProjectInfo Parent => (ProjectInfo)_channel.Parent;
-
-        public List<TransferFunction> TransferFunctions => _channelMeta.TransferFunctions.Any() 
-            ? _channelMeta.TransferFunctions
-            : _channel.TransferFunctions;
 
         public List<DatasetInfoViewModel> Datasets { get; private set; }
 

@@ -5,11 +5,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
-    public class FilterDescriptionViewModel : BindableBase /* Must be a class to ensure reference equality! Otherwise there would be created a new copy with every modification. */
+    public class CodeDefinitionViewModel : BindableBase /* Must be a class to ensure reference equality! Otherwise there would be created a new copy with every modification. */
     {
         #region Constructors
 
-        public FilterDescriptionViewModel(FilterDescription model)
+        public CodeDefinitionViewModel(CodeDefinition model)
         {
             this.Model = model;
         }
@@ -18,7 +18,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         #region Properties
 
-        public FilterDescription Model { get; }
+        public CodeDefinition Model { get; }
 
         public string Owner
         {
@@ -49,12 +49,6 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             get { return this.Model.Code; }
             set { this.Model.Code = value; }
-        }
-
-        public string Id 
-        {
-            get { return this.Model.Id; } 
-            set { this.Model.Id = value; }
         }
 
         public bool IsPublic

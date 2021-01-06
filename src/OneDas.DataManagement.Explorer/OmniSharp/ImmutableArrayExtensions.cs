@@ -14,9 +14,7 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Omnisharp
 {

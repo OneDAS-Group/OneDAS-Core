@@ -26,15 +26,12 @@ SOFTWARE.
  
 */
 
-using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.QuickInfo;
 using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions;
-using OmniSharp.Mef;
 using OmniSharp.Models;
 using OmniSharp.Options;
 using OmniSharp.Roslyn.CSharp.Helpers;
@@ -43,7 +40,7 @@ using OmniSharp.Roslyn.CSharp.Helpers;
 
 namespace OneDas.DataManagement.Explorer.Omnisharp
 {
-    
+
     public class OmniSharpQuickInfoProvider 
     {
         // Based on https://github.com/dotnet/roslyn/blob/7dc32a952e77c96c31cae6a2ba6d253a558fc7ff/src/Features/LanguageServer/Protocol/Handler/Hover/HoverHandler.cs

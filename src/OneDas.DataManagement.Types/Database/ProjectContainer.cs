@@ -30,7 +30,7 @@ namespace OneDas.DataManagement.Database
 
         public ProjectInfo Project { get; set; }
 
-        public ProjectMetaInfo ProjectMeta { get; set; }
+        public ProjectMeta ProjectMeta { get; set; }
 
         #endregion
 
@@ -57,11 +57,7 @@ namespace OneDas.DataManagement.Database
 
                     Unit = !string.IsNullOrWhiteSpace(channelMeta.Unit) 
                         ? channelMeta.Unit
-                        : reference.Unit,
-
-                    TransferFunctions = channelMeta.TransferFunctions.Any()
-                        ? channelMeta.TransferFunctions
-                        : reference.TransferFunctions
+                        : reference.Unit
                 };
 
                 var referenceDatasets = datasets.Where(dataset => (ChannelInfo)dataset.Parent == reference);

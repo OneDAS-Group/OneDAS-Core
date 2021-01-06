@@ -30,7 +30,6 @@ SOFTWARE.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -42,14 +41,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions;
-using OmniSharp.Mef;
 using OmniSharp.Models;
 using OmniSharp.Models.v1.Completion;
 using OmniSharp.Options;
 using OmniSharp.Roslyn.CSharp.Helpers;
-using OmniSharp.Roslyn.CSharp.Services.Intellisense;
-using OmniSharp.Utilities;
 using CompletionItem = OmniSharp.Models.v1.Completion.CompletionItem;
 using CompletionTriggerKind = OmniSharp.Models.v1.Completion.CompletionTriggerKind;
 using CSharpCompletionList = Microsoft.CodeAnalysis.Completion.CompletionList;
@@ -57,9 +52,9 @@ using CSharpCompletionService = Microsoft.CodeAnalysis.Completion.CompletionServ
 
 namespace OneDas.DataManagement.Explorer.Omnisharp
 {
-    
-    
-    
+
+
+
     public class OmniSharpCompletionService
         
         

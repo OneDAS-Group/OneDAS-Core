@@ -12,9 +12,9 @@
                             <MatNavItem AllowSelection="false"><MatIcon Icon="@MatIconNames.Person"></MatIcon>&nbsp; @owner</MatNavItem>
                         </MatNavSubMenuHeader>
                         <MatNavSubMenuList>
-                            @foreach (var filterDescription in this.GetFilterDescriptionsForOwner(owner))
+                            @foreach (var codeDefinition in this.GetCodeDefinitionsForOwner(owner))
                             {
-                                <MatNavItem @onclick="() => this.Accept(filterDescription)"><MatIcon Icon="@Utilities.GetEnumIconName(filterDescription.CodeType)"></MatIcon>&nbsp; @filterDescription.Name</MatNavItem>
+                                <MatNavItem @onclick="() => this.Accept(codeDefinition)"><MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name</MatNavItem>
                             }
                         </MatNavSubMenuList>
                     </MatNavSubMenu>

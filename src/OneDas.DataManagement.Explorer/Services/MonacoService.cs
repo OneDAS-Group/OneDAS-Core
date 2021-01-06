@@ -153,7 +153,7 @@ namespace OneDas.DataManagement.Explorer.Services
             return diagnostics;
         }
 
-        public async Task CreateProjectForEditorAsync(FilterDescription filter, List<string> additionalCodeFiles)
+        public async Task CreateProjectForEditorAsync(CodeDefinition filter, List<string> additionalCodeFiles)
         {
             await Task.Run(() =>
             {
