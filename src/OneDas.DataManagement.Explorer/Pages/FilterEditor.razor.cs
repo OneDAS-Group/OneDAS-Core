@@ -194,7 +194,6 @@ namespace OneDas.DataManagement.Explorer.Pages
             {
                 this.InvokeAsync(async () =>
                 {
-                    this.UserState.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
                     await this.UpdateMonacoAndRoslyn(this.UserState.CodeDefinition);
                     this.StateHasChanged();
                 });
@@ -204,7 +203,6 @@ namespace OneDas.DataManagement.Explorer.Pages
             {
                 this.InvokeAsync(async () =>
                 {
-                    this.UserState.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
                     await this.UpdateMonacoAndRoslyn(this.UserState.CodeDefinition);
                     this.StateHasChanged();
                 });
@@ -251,7 +249,6 @@ namespace OneDas.DataManagement.Explorer.Pages
         private async Task SaveCodeDefinitionAsync()
         {
             // add new code definition
-            this.UserState.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
             this.AppState.FilterSettings.AddOrUpdateCodeDefinition(this.UserState.CodeDefinition);
 
             // update code definition list

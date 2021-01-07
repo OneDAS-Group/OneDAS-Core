@@ -9,7 +9,7 @@ namespace OneDas.DataManagement.Explorer.Filters
     /// this code file. All files of kind 'shared' get linked to other 'normal'
     /// code files to make their content available there.
     /// </summary>
-    public static class Shared
+    static class Shared
     {
         public static double AddOne(double value)
         {

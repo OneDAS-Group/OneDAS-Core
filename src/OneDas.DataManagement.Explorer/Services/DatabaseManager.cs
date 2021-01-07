@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
+using OneDas.DataManagement.Explorer.Filters;
 using OneDas.DataManagement.Extensibility;
 using OneDas.DataManagement.Extensions;
 using OneDas.Extensibility;
@@ -490,7 +491,7 @@ namespace OneDas.DataManagement.Explorer.Services
                                 usersMap[codeDefinition.Owner] = user;
                             }
 
-                            keep = Utilities.IsProjectEditable(user, projectMeta);
+                            keep = projectMeta.Id == FilterConstants.SharedProjectID || Utilities.IsProjectEditable(user, projectMeta);
                         }
 
                         if (!keep)

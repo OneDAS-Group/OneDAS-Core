@@ -4,7 +4,7 @@ namespace OneDas.DataManagement.Explorer.Filters
 {
     class Shared
     {
-        static void MySharedFunction(string myParameter1)
+        public static int MySharedFunction(string myParameter1)
         {
             
         }
