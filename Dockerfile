@@ -9,7 +9,7 @@ ENV PATH="/root/.dotnet/tools:${PATH}"
 RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 RUN libman restore
 RUN dotnet restore
-RUN ls -la /root
+RUN ls -la /root/.nuget/packages/microsoft.netcore.app.ref/5.0.0/ref/net5.0
 RUN dotnet publish -c release -o /app -r linux-x64 --self-contained false
 
 # final stage/image
