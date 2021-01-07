@@ -46,7 +46,7 @@ function RegisterMonacoProviders(editorId, filterEditor, monacoService) {
     editor.onDidChangeModelContent(async e => {
 
         var code = editor.getValue();
-        await filterEditor.invokeMethodAsync("UpdateDiagnosticsAsync", code);
+        await filterEditor.invokeMethodAsync("UpdateCodeAsync", code);
     })
 }
 

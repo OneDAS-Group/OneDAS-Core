@@ -21,7 +21,6 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private bool _monacoIsInitialized;
         private string _editorId;
-        private CodeDefinitionViewModel _filter;
         private DotNetObjectReference<FilterEditor> _filterEditorRef;
         private DotNetObjectReference<MonacoService> _monacoServiceRef;
 
@@ -36,6 +35,10 @@ namespace OneDas.DataManagement.Explorer.Pages
                 if (e.PropertyName == nameof(AppState.IsDatabaseInitialized))
                 {
                     this.InvokeAsync(this.StateHasChanged);
+                }
+                else if (e.PropertyName == nameof(UserState.CodeDefinition))
+                {
+                    _ = this.OnCodeDefinitionChangedAsync(this.UserState.CodeDefinition);
                 }
             };
         }
@@ -68,19 +71,6 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private bool CodeDefinitionDeleteDialogIsOpen { get; set; }
 
-        private CodeDefinitionViewModel CodeDefinition
-        {
-            get
-            {
-                return _filter;
-            }
-            set
-            {
-                _filter = value;
-                _ = this.OnCodeDefinitionChangedAsync(value);
-            }
-        }
-
         #endregion
 
         #region Methods
@@ -99,11 +89,8 @@ namespace OneDas.DataManagement.Explorer.Pages
             // get current user
             this.User = await this.UserIdService.GetUserAsync();
 
-            // create filter here so rendering works fine
-            _filter = this.CreateCodeDefinition(CodeType.Filter);
-
             // update filter list
-            this.UpdateFilters();
+            this.UpdateCodeDefinitions();
             await base.OnParametersSetAsync();
         }
 
@@ -117,14 +104,14 @@ namespace OneDas.DataManagement.Explorer.Pages
         {
             _filterEditorRef = DotNetObjectReference.Create(this);
             _monacoServiceRef = DotNetObjectReference.Create(this.MonacoService);
-            _editorId = "1";
+            _editorId = Guid.NewGuid().ToString();
 
             var options = new Dictionary<string, object>
             {
                 ["automaticLayout"] = true,
                 ["language"] = "csharp",
                 ["scrollBeyondLastLine"] = false,
-                ["value"] = this.CodeDefinition.Code,
+                ["value"] = this.UserState.CodeDefinition.Code,
                 ["theme"] = "vs-dark"
             };
 
@@ -132,7 +119,7 @@ namespace OneDas.DataManagement.Explorer.Pages
             await this.JS.CreateMonacoEditorAsync(_editorId, options);
 
             // update monaco and roslyn
-            await this.OnCodeDefinitionChangedAsync(this.CodeDefinition);
+            await this.OnCodeDefinitionChangedAsync(this.UserState.CodeDefinition);
 
             // register monaco providers after roslyn projects are created!
             await this.JS.RegisterMonacoProvidersAsync(_editorId, _filterEditorRef, _monacoServiceRef);
@@ -140,52 +127,23 @@ namespace OneDas.DataManagement.Explorer.Pages
             _monacoIsInitialized = true;
         }
 
-        private CodeDefinitionViewModel CreateCodeDefinition(CodeType codeType)
-        {
-            var baseName = VariableNameGenerator.Generate();
-
-            var name = baseName + codeType switch
-            {
-                CodeType.Filter => "Filter",
-                CodeType.Shared => "Shared",
-                _ => throw new Exception($"The code type '{codeType}' is not supported.")
-            };
-
-            var code = codeType switch
-            {
-                CodeType.Filter => RoslynProject.DefaultFilterCode,
-                CodeType.Shared => RoslynProject.DefaultSharedCode,
-                _ => throw new Exception($"The code type '{codeType}' is not supported.")
-            };
-
-            var owner = this.User.Identity.Name;
-
-            return new CodeDefinitionViewModel(new CodeDefinition(owner: owner))
-            {
-                CodeType = codeType,
-                Code = code,
-                Name = name,
-                SampleRate = "1 s"
-            };
-        }
-
         private async Task CreateProjectAsync()
         {
-            if (this.CodeDefinition.CodeType != CodeType.Shared)
+            if (this.UserState.CodeDefinition.CodeType != CodeType.Shared)
             {
                 var shareCodeFiles = this.AppState.FilterSettings.Model.GetSharedFiles(this.User.Identity.Name)
                     .Select(codeDefinition => codeDefinition.Code)
                     .ToList();
 
-                await this.MonacoService.CreateProjectForEditorAsync(this.CodeDefinition.Model, shareCodeFiles);
+                await this.MonacoService.CreateProjectForEditorAsync(this.UserState.CodeDefinition.Model, shareCodeFiles);
             }
             else
             {
-                await this.MonacoService.CreateProjectForEditorAsync(this.CodeDefinition.Model, new List<string>());
+                await this.MonacoService.CreateProjectForEditorAsync(this.UserState.CodeDefinition.Model, new List<string>());
             }            
         }
 
-        private void UpdateFilters()
+        private void UpdateCodeDefinitions()
         {
             var owner = this.User.Identity.Name;
 
@@ -205,11 +163,11 @@ namespace OneDas.DataManagement.Explorer.Pages
         private async Task OnCodeDefinitionChangedAsync(CodeDefinitionViewModel codeDefinition)
         {
             // attach to events
-            if (_filter is not null)
-                _filter.PropertyChanged -= this.OnCodeDefinitionPropertyChanged;
+            if (this.UserState.CodeDefinition is not null)
+                this.UserState.CodeDefinition.PropertyChanged -= this.OnCodeDefinitionPropertyChanged;
 
-            _filter = codeDefinition;
-            _filter.PropertyChanged += this.OnCodeDefinitionPropertyChanged;
+            this.UserState.SetCodeDefinitionSilently(codeDefinition);
+            this.UserState.CodeDefinition.PropertyChanged += this.OnCodeDefinitionPropertyChanged;
 
             // update monaco and roslyn
             await this.UpdateMonacoAndRoslyn(codeDefinition);
@@ -236,8 +194,8 @@ namespace OneDas.DataManagement.Explorer.Pages
             {
                 this.InvokeAsync(async () =>
                 {
-                    this.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
-                    await this.UpdateMonacoAndRoslyn(this.CodeDefinition);
+                    this.UserState.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
+                    await this.UpdateMonacoAndRoslyn(this.UserState.CodeDefinition);
                     this.StateHasChanged();
                 });
             }
@@ -246,8 +204,8 @@ namespace OneDas.DataManagement.Explorer.Pages
             {
                 this.InvokeAsync(async () =>
                 {
-                    this.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
-                    await this.UpdateMonacoAndRoslyn(this.CodeDefinition);
+                    this.UserState.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
+                    await this.UpdateMonacoAndRoslyn(this.UserState.CodeDefinition);
                     this.StateHasChanged();
                 });
             }
@@ -258,8 +216,9 @@ namespace OneDas.DataManagement.Explorer.Pages
         #region Commands
 
         [JSInvokable]
-        public async Task UpdateDiagnosticsAsync(string code)
+        public async Task UpdateCodeAsync(string code)
         {
+            this.UserState.CodeDefinition.Code = code;
             this.Diagnostics = await this.MonacoService.GetDiagnosticsAsync(code);
 
             // set monaco diagnostics
@@ -273,7 +232,7 @@ namespace OneDas.DataManagement.Explorer.Pages
         {
             var owner = this.User.Identity.Name;
 
-            this.CodeDefinition = new CodeDefinitionViewModel(filter.Model with
+            this.UserState.CodeDefinition = new CodeDefinitionViewModel(filter.Model with
             {
                 Id = Guid.NewGuid().ToString(),
                 IsPublic = false,
@@ -283,7 +242,7 @@ namespace OneDas.DataManagement.Explorer.Pages
 
         private void PrepareCodeDefinition(CodeType codeType)
         {
-            this.CodeDefinition = this.CreateCodeDefinition(codeType);
+            this.UserState.CodeDefinition = this.UserState.CreateCodeDefinition(codeType);
 
             if (codeType == CodeType.Filter)
                 this.CodeDefinitionSettingsBox.OpenCodeDefinitionProjectRequestDialog();
@@ -292,11 +251,11 @@ namespace OneDas.DataManagement.Explorer.Pages
         private async Task SaveCodeDefinitionAsync()
         {
             // add new code definition
-            this.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
-            this.AppState.FilterSettings.AddOrUpdateCodeDefinition(this.CodeDefinition);
+            this.UserState.CodeDefinition.Code = await this.JS.GetMonacoValueAsync(_editorId); // improvement: set code on every key stroke
+            this.AppState.FilterSettings.AddOrUpdateCodeDefinition(this.UserState.CodeDefinition);
 
             // update code definition list
-            this.UpdateFilters();
+            this.UpdateCodeDefinitions();
 
             // notify
             this.ToasterService.ShowSuccess(message: "The code definition has been saved.", icon: MatIconNames.Thumb_up);
@@ -309,13 +268,13 @@ namespace OneDas.DataManagement.Explorer.Pages
         private async Task DeleteFilterAsync()
         {
             // remove old code definition
-            this.AppState.FilterSettings.RemoveCodeDefinition(this.CodeDefinition);
+            this.AppState.FilterSettings.RemoveCodeDefinition(this.UserState.CodeDefinition);
 
             // create new code definition
-            this.CodeDefinition = this.CreateCodeDefinition(CodeType.Filter);
+            this.UserState.CodeDefinition = this.UserState.CreateCodeDefinition(CodeType.Filter);
 
             // update code definitions
-            this.UpdateFilters();
+            this.UpdateCodeDefinitions();
 
             // notify
             this.ToasterService.ShowSuccess(message: "The code definition has been deleted.", icon: MatIconNames.Delete);

@@ -7,7 +7,7 @@
             <div class="settings-box mat-elevation-z11">
                 @if (this.AppState.IsDatabaseInitialized)
                 {
-                    <CodeDefinitionSettingsBox @ref="this.CodeDefinitionSettingsBox" CodeDefinition="this.CodeDefinition" OnSave="async () => await this.SaveCodeDefinitionAsync()" />
+                    <CodeDefinitionSettingsBox @ref="this.CodeDefinitionSettingsBox" CodeDefinition="this.UserState.CodeDefinition" OnSave="async () => await this.SaveCodeDefinitionAsync()" />
 
                     <div class="configuration-panel">
 
@@ -62,8 +62,8 @@
                     @foreach (var codeDefinition in this.CodeDefinitions)
                     {
 
-                        <div class="codedefinition-item @(this.CodeDefinition.Id == codeDefinition.Id ? "active" : "")"
-                             @onclick="() => this.CodeDefinition = codeDefinition">
+                        <div class="codedefinition-item @(this.UserState.CodeDefinition.Id == codeDefinition.Id ? "active" : "")"
+                             @onclick="() => this.UserState.CodeDefinition = codeDefinition">
                             <MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name
                         </div>
                     }

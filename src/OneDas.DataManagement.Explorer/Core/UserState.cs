@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Explorer.Roslyn;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.DataManagement.Infrastructure;
@@ -37,14 +38,14 @@ namespace OneDas.DataManagement.Explorer.Core
         private ClientState _clientState;
         private IJSRuntime _jsRuntime;
         private IServiceProvider _serviceProvider;
-
         private AppState _appState;
         private DataService _dataService;
         private UserIdService _userIdService;
+        private OneDasExplorerOptions _options;
+        private DatabaseManager _databaseManager;
         private ExportParameters _exportParameters;
         private ProjectContainer _projectContainer;
-        private DatabaseManager _databaseManager;
-        private OneDasExplorerOptions _options;
+        private CodeDefinitionViewModel _codeDefinition;
         private JobControl<ExportJob> _exportJobControl;
         private AuthenticationStateProvider _authenticationStateProvider;
 
@@ -75,6 +76,7 @@ namespace OneDas.DataManagement.Explorer.Core
             _databaseManager = databaseManager;
             _options = options;
             _dataService = dataService;
+            _codeDefinition = this.CreateCodeDefinition(CodeType.Filter);
 
             this.VisualizeBeginAtZero = true;
             this.SampleRateValues = new List<string>();
@@ -315,6 +317,16 @@ namespace OneDas.DataManagement.Explorer.Core
 
         #region Properties - Visualization
 
+        #region Properties - FilterEditor
+
+        public CodeDefinitionViewModel CodeDefinition
+        {
+            get { return _codeDefinition; }
+            set { base.SetProperty(ref _codeDefinition, value); }
+        }
+
+        #endregion
+
         public double VisualizeProgress
         {
             get { return _visualizeProgress; }
@@ -368,6 +380,40 @@ namespace OneDas.DataManagement.Explorer.Core
         #endregion
 
         #region Methods
+
+        public void SetCodeDefinitionSilently(CodeDefinitionViewModel codeDefinition)
+        {
+            _codeDefinition = codeDefinition;
+        }
+
+        public CodeDefinitionViewModel CreateCodeDefinition(CodeType codeType)
+        {
+            var baseName = VariableNameGenerator.Generate();
+
+            var name = baseName + codeType switch
+            {
+                CodeType.Filter => "Filter",
+                CodeType.Shared => "Shared",
+                _ => throw new Exception($"The code type '{codeType}' is not supported.")
+            };
+
+            var code = codeType switch
+            {
+                CodeType.Filter => RoslynProject.DefaultFilterCode,
+                CodeType.Shared => RoslynProject.DefaultSharedCode,
+                _ => throw new Exception($"The code type '{codeType}' is not supported.")
+            };
+
+            var owner = _userIdService.User.Identity.Name;
+
+            return new CodeDefinitionViewModel(new CodeDefinition(owner: owner))
+            {
+                CodeType = codeType,
+                Code = code,
+                Name = name,
+                SampleRate = "1 s"
+            };
+        }
 
         public List<string> GetPresets()
         {

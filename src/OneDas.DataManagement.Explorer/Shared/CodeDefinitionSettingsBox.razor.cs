@@ -23,7 +23,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private void SelectProjectIds(List<string> projectIds)
         {
-            this.CodeDefinition.RequestedProjectIds = projectIds;
+            this.UserState.CodeDefinition.RequestedProjectIds = projectIds;
         }
 
         public void OpenCodeDefinitionProjectRequestDialog()

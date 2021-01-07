@@ -1,18 +1,18 @@
 ﻿@inherits StateComponentBase
 
-<EditForm class="h-100 flex-column" Model="@this.CodeDefinition" OnValidSubmit="@HandleValidSubmit">
+<EditForm class="h-100 flex-column" Model="@this.UserState.CodeDefinition" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <div>
         <MatTextField class="settings-control"
                       Label="Name"
-                      @bind-Value="this.CodeDefinition.Name">
+                      @bind-Value="this.UserState.CodeDefinition.Name">
         </MatTextField>
 
         <MatSelectItem class="settings-control"
                        Label="Code Type"
                        Disabled="true"
-                       @bind-Value="this.CodeDefinition.CodeType"
+                       @bind-Value="this.UserState.CodeDefinition.CodeType"
                        Items="this.AppState.CodeTypeValues">
             <ItemTemplate Context="value">
                 @Utilities.GetEnumLocalization(@value)
@@ -21,7 +21,7 @@
 
         <MatSelectItem class="settings-control"
                        Label="Code Language"
-                       @bind-Value="this.CodeDefinition.CodeLanguage"
+                       @bind-Value="this.UserState.CodeDefinition.CodeLanguage"
                        Items="this.AppState.CodeLanguageValues">
             <ItemTemplate Context="value">
                 @Utilities.GetEnumLocalization(@value)
@@ -30,14 +30,14 @@
 
         <MatCheckbox Class="settings-control"
                      Label="Publish"
-                     @bind-Value="this.CodeDefinition.IsPublic">
+                     @bind-Value="this.UserState.CodeDefinition.IsPublic">
         </MatCheckbox>
 
-        @if (this.CodeDefinition.CodeType == CodeType.Filter)
+        @if (this.UserState.CodeDefinition.CodeType == CodeType.Filter)
         {
             <MatSelectItem class="settings-control"
                            Label="Sample Rate"
-                           @bind-Value="this.CodeDefinition.SampleRate"
+                           @bind-Value="this.UserState.CodeDefinition.SampleRate"
                            Items="this.UserState.SampleRateValues">
             </MatSelectItem>
 
@@ -45,8 +45,8 @@
                 <div class="flex-row">
                     <div class="configuration-panel-hover">
                         <div class="icon-button" @onclick="this.OpenCodeDefinitionProjectRequestDialog">
-                            @this.CodeDefinition.RequestedProjectIds.Count
-                            @if (this.CodeDefinition.RequestedProjectIds.Count == 1)
+                            @this.UserState.CodeDefinition.RequestedProjectIds.Count
+                            @if (this.UserState.CodeDefinition.RequestedProjectIds.Count == 1)
                             {
                                 <MatSubtitle2 class="clear-margin">Project Reference</MatSubtitle2>
                             }
@@ -74,4 +74,4 @@
  MatBlazor.MatCheckbox`1[System.Boolean] requires a value for the 'ValueExpression' parameter. Normally this is provided automatically when using 'bind-Value'. -->
 <CodeDefinitionProjectRequestModal OnProjectIdsSelected="this.SelectProjectIds"
                                    @bind-IsOpen="this.CodeDefinitionProjectRequestDialogIsOpen"
-                                   SelectedProjectIds="this.CodeDefinition.RequestedProjectIds" />
+                                   SelectedProjectIds="this.UserState.CodeDefinition.RequestedProjectIds" />
