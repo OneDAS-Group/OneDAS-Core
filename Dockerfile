@@ -8,6 +8,8 @@ WORKDIR /source/src/OneDas.DataManagement.Explorer
 ENV PATH="/root/.dotnet/tools:${PATH}" 
 RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 RUN libman restore
+RUN dotnet restore
+RUN ls -la /root
 RUN dotnet publish -c release -o /app -r linux-x64 --self-contained false
 
 # final stage/image

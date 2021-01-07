@@ -27,12 +27,14 @@ function Add-TargetFramework($name, $packagePath)
   {
     $dllName        = Split-Path -Leaf $dllPath
 
-    if ($dllName.StartsWith("System.Diagnostics") -or `
+    if ($dllName.StartsWith("Microsoft.VisualBasic") -or `
+        $dllName.StartsWith("System.Diagnostics") -or `
         $dllName.StartsWith("System.Drawing") -or `
         $dllName.StartsWith("System.IO") -or `
         $dllName.StartsWith("System.Net") -or `
         $dllName.StartsWith("System.Reflection") -or `
-        $dllName.StartsWith("System.Web"))
+        $dllName.StartsWith("System.Web") -or `
+        $dllName.StartsWith("WindowsBase"))
     {
       continue
     }

@@ -6,15 +6,6 @@
         </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\Microsoft.CSharp.xml">
           <LogicalName>net50.Microsoft.CSharp.xml</LogicalName>
           <Link>Resources\net50\Microsoft.CSharp.xml</Link>
-        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\Microsoft.VisualBasic.Core.dll">
-          <LogicalName>net50.Microsoft.VisualBasic.Core.dll</LogicalName>
-          <Link>Resources\net50\Microsoft.VisualBasic.Core.dll</Link>
-        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\Microsoft.VisualBasic.Core.xml">
-          <LogicalName>net50.Microsoft.VisualBasic.Core.xml</LogicalName>
-          <Link>Resources\net50\Microsoft.VisualBasic.Core.xml</Link>
-        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\Microsoft.VisualBasic.dll">
-          <LogicalName>net50.Microsoft.VisualBasic.dll</LogicalName>
-          <Link>Resources\net50\Microsoft.VisualBasic.dll</Link>
         </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\Microsoft.Win32.Primitives.dll">
           <LogicalName>net50.Microsoft.Win32.Primitives.dll</LogicalName>
           <Link>Resources\net50\Microsoft.Win32.Primitives.dll</Link>
@@ -474,11 +465,5 @@
         </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.Xml.XPath.XDocument.xml">
           <LogicalName>net50.System.Xml.XPath.XDocument.xml</LogicalName>
           <Link>Resources\net50\System.Xml.XPath.XDocument.xml</Link>
-        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\WindowsBase.dll">
-          <LogicalName>net50.WindowsBase.dll</LogicalName>
-          <Link>Resources\net50\WindowsBase.dll</Link>
-        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\WindowsBase.xml">
-          <LogicalName>net50.WindowsBase.xml</LogicalName>
-          <Link>Resources\net50\WindowsBase.xml</Link>
         </EmbeddedResource>  </ItemGroup>
 </Project>

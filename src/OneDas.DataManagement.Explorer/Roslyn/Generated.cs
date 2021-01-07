@@ -10,9 +10,6 @@ namespace OneDas.DataManagement.Explorer.Roslyn
     {
         private static byte[]? _MicrosoftCSharp_dll; internal static byte[] MicrosoftCSharp_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftCSharp_dll, "net50.Microsoft.CSharp.dll");
         private static byte[]? _MicrosoftCSharp_xml; internal static byte[] MicrosoftCSharp_xml => ResourceLoader.GetOrCreateResource(ref _MicrosoftCSharp_xml, "net50.Microsoft.CSharp.xml");
-        private static byte[]? _MicrosoftVisualBasicCore_dll; internal static byte[] MicrosoftVisualBasicCore_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasicCore_dll, "net50.Microsoft.VisualBasic.Core.dll");
-        private static byte[]? _MicrosoftVisualBasicCore_xml; internal static byte[] MicrosoftVisualBasicCore_xml => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasicCore_xml, "net50.Microsoft.VisualBasic.Core.xml");
-        private static byte[]? _MicrosoftVisualBasic_dll; internal static byte[] MicrosoftVisualBasic_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftVisualBasic_dll, "net50.Microsoft.VisualBasic.dll");
         private static byte[]? _MicrosoftWin32Primitives_dll; internal static byte[] MicrosoftWin32Primitives_dll => ResourceLoader.GetOrCreateResource(ref _MicrosoftWin32Primitives_dll, "net50.Microsoft.Win32.Primitives.dll");
         private static byte[]? _MicrosoftWin32Primitives_xml; internal static byte[] MicrosoftWin32Primitives_xml => ResourceLoader.GetOrCreateResource(ref _MicrosoftWin32Primitives_xml, "net50.Microsoft.Win32.Primitives.xml");
         private static byte[]? _mscorlib_dll; internal static byte[] mscorlib_dll => ResourceLoader.GetOrCreateResource(ref _mscorlib_dll, "net50.mscorlib.dll");
@@ -166,14 +163,10 @@ namespace OneDas.DataManagement.Explorer.Roslyn
         private static byte[]? _SystemXmlXPath_xml; internal static byte[] SystemXmlXPath_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPath_xml, "net50.System.Xml.XPath.xml");
         private static byte[]? _SystemXmlXPathXDocument_dll; internal static byte[] SystemXmlXPathXDocument_dll => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPathXDocument_dll, "net50.System.Xml.XPath.XDocument.dll");
         private static byte[]? _SystemXmlXPathXDocument_xml; internal static byte[] SystemXmlXPathXDocument_xml => ResourceLoader.GetOrCreateResource(ref _SystemXmlXPathXDocument_xml, "net50.System.Xml.XPath.XDocument.xml");
-        private static byte[]? _WindowsBase_dll; internal static byte[] WindowsBase_dll => ResourceLoader.GetOrCreateResource(ref _WindowsBase_dll, "net50.WindowsBase.dll");
-        private static byte[]? _WindowsBase_xml; internal static byte[] WindowsBase_xml => ResourceLoader.GetOrCreateResource(ref _WindowsBase_xml, "net50.WindowsBase.xml");
     }
     public static class Net50
     {
         public static PortableExecutableReference MicrosoftCSharp { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftCSharp_dll).GetReference(display: "Microsoft.CSharp (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.MicrosoftCSharp_xml));
-        public static PortableExecutableReference MicrosoftVisualBasicCore { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftVisualBasicCore_dll).GetReference(display: "Microsoft.VisualBasic.Core (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.MicrosoftVisualBasicCore_xml));
-        public static PortableExecutableReference MicrosoftVisualBasic { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftVisualBasic_dll).GetReference(display: "Microsoft.VisualBasic (net50)");
         public static PortableExecutableReference MicrosoftWin32Primitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.MicrosoftWin32Primitives_dll).GetReference(display: "Microsoft.Win32.Primitives (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.MicrosoftWin32Primitives_xml));
         public static PortableExecutableReference mscorlib { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.mscorlib_dll).GetReference(display: "mscorlib (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.mscorlib_xml));
         public static PortableExecutableReference netstandard { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.netstandard_dll).GetReference(display: "netstandard (net50)");
@@ -268,12 +261,9 @@ namespace OneDas.DataManagement.Explorer.Roslyn
         public static PortableExecutableReference SystemXmlXmlSerializer { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXmlSerializer_dll).GetReference(display: "System.Xml.XmlSerializer (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXmlSerializer_xml));
         public static PortableExecutableReference SystemXmlXPath { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXPath_dll).GetReference(display: "System.Xml.XPath (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXPath_xml));
         public static PortableExecutableReference SystemXmlXPathXDocument { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemXmlXPathXDocument_dll).GetReference(display: "System.Xml.XPath.XDocument (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemXmlXPathXDocument_xml));
-        public static PortableExecutableReference WindowsBase { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.WindowsBase_dll).GetReference(display: "WindowsBase (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.WindowsBase_xml));
         public static IEnumerable<PortableExecutableReference> All { get; } = new PortableExecutableReference[]
         {
             MicrosoftCSharp,
-            MicrosoftVisualBasicCore,
-            MicrosoftVisualBasic,
             MicrosoftWin32Primitives,
             mscorlib,
             netstandard,
@@ -368,7 +358,6 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             SystemXmlXmlSerializer,
             SystemXmlXPath,
             SystemXmlXPathXDocument,
-            WindowsBase,
         };
     }
 }
