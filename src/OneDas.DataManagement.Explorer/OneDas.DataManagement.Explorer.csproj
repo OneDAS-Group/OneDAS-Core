@@ -8,11 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Pages\FilterEditor.razor.css" />
+    <Compile Remove="Resources\DefaultFilterCodeTemplate.cs" />
+    <Compile Remove="Resources\DefaultSharedCodeTemplate.cs" />
+    <Compile Remove="Resources\TestUserFilterCodeTemplateSimple.cs" />
+    <Compile Remove="Resources\TestUserSharedCodeTemplateSimple.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Pages\FilterEditor.razor.css" />
+    <EmbeddedResource Include="Resources\TestUserSharedCodeTemplateSimple.cs" />
+    <EmbeddedResource Include="Resources\TestUserFilterCodeTemplateSimple.cs" />
+    <EmbeddedResource Include="Resources\DefaultSharedCodeTemplate.cs" />
+    <EmbeddedResource Include="Resources\DefaultFilterCodeTemplate.cs" />
+    <EmbeddedResource Include="Resources\FilterTypesShared.cs" />
+    <EmbeddedResource Include="Resources\RandomWords.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,9 +56,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Core\FilterTypesShared.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
+    <Resource Include="Resources\RandomWords.json" />
+    <Resource Include="Templates\DefaultFilterCodeTemplate.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources\EnumerationDescription.cs">
       <DependentUpon>EnumerationDescription.resx</DependentUpon>
       <DesignTime>True</DesignTime>

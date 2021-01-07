@@ -138,7 +138,7 @@ namespace OneDas.DataManagement.Extensions
 
             // execute
             var filter = cacheEntry.FilterProvider.Filters.First(filter => filter.ToGuid().ToString() == dataset.Parent.Id);
-            cacheEntry.FilterProvider.Filter(filter, begin, end, getData, result);
+            cacheEntry.FilterProvider.Filter(begin, end, filter, getData, result);
 
             return ((T[])(object)result, status);
         }
@@ -150,7 +150,7 @@ namespace OneDas.DataManagement.Extensions
             if (this.TryGetFilterSettings(out var filterSettings))
             {
                 this.PopulateCache(filterSettings);
-                var filterCodeDefinitions = filterSettings.Codes.Where(filter => filter.CodeType == CodeType.Filter);
+                var filterCodeDefinitions = filterSettings.CodeDefinitions.Where(filter => filter.CodeType == CodeType.Filter);
 
                 foreach (var filterCodeDefinition in filterCodeDefinitions)
                 {
@@ -254,7 +254,7 @@ namespace OneDas.DataManagement.Extensions
 
         private void PopulateCache(FilterSettings filterSettings)
         {
-            var filterCodeDefinitions = filterSettings.Codes
+            var filterCodeDefinitions = filterSettings.CodeDefinitions
                 .Where(filterSetting => filterSetting.CodeType == CodeType.Filter)
                 .ToList();
 
@@ -317,8 +317,8 @@ namespace OneDas.DataManagement.Extensions
         {
             // change signature
             code = code.Replace(
-                "DateTime begin, DateTime end, DataProvider dataProvider, double[] result",
-                "DateTime begin, DateTime end, System.Func<string, string, string, double[]> getData, double[] result");
+                "DataProvider dataProvider",
+                "System.Func<string, string, string, double[]> getData");
 
             // matches strings like "= dataProvider.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
             var pattern1 = @"=\s*dataProvider\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";

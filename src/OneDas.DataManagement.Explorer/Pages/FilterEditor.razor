@@ -5,34 +5,37 @@
     <Authorized>
         <div class="left-column">
             <div class="settings-box mat-elevation-z11">
-                <CodeDefinitionSettingsBox @ref="this.CodeDefinitionSettingsBox" CodeDefinition="this.CodeDefinition" OnSave="async () => await this.SaveFilterAsync()" />
+                @if (this.AppState.IsDatabaseInitialized)
+                {
+                    <CodeDefinitionSettingsBox @ref="this.CodeDefinitionSettingsBox" CodeDefinition="this.CodeDefinition" OnSave="async () => await this.SaveCodeDefinitionAsync()" />
 
-                <div class="configuration-panel">
+                    <div class="configuration-panel">
 
-                    <div class="flex-row">
-                        <div class="configuration-panel-hover">
-                            <div class="icon-button" @onclick="this.OpenGalleryDialog">
-                                <i class="fas fa-code"></i>
-                                <MatSubtitle2 class="clear-margin">Gallery</MatSubtitle2>
+                        <div class="flex-row">
+                            <div class="configuration-panel-hover fixed-width">
+                                <div class="icon-button" @onclick="this.OpenGalleryDialog">
+                                    <i class="fas fa-code"></i>
+                                    <MatSubtitle2 class="clear-margin">Gallery</MatSubtitle2>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="configuration-panel-hover">
-                            <div class="icon-button" @onclick="this.OpenFilterCreateDialog">
-                                <i class="fas fa-plus"></i>
-                                <MatSubtitle2 class="clear-margin">New</MatSubtitle2>
+                            <div class="configuration-panel-hover fixed-width">
+                                <div class="icon-button" @onclick="this.OpenFilterCreateDialog">
+                                    <i class="fas fa-plus"></i>
+                                    <MatSubtitle2 class="clear-margin">New</MatSubtitle2>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="configuration-panel-hover">
-                            <div class="icon-button" @onclick="this.OpenFilterDeleteDialog">
-                                <i class="fas fa-minus"></i>
-                                <MatSubtitle2 class="clear-margin">Delete</MatSubtitle2>
+                            <div class="configuration-panel-hover fixed-width">
+                                <div class="icon-button" @onclick="this.OpenFilterDeleteDialog">
+                                    <i class="fas fa-minus"></i>
+                                    <MatSubtitle2 class="clear-margin">Delete</MatSubtitle2>
+                                </div>
                             </div>
-                        </div>
 
+                        </div>
                     </div>
-                </div>
+                }
             </div>
             <CodeDefinitionGallery @bind-IsOpen="this.CodeDefinitionGalleryIsOpen" OnCodeDefinitionSelected="async (filter) => await this.CopyCodeDefinitionAsync(filter)" />
             <CodeDefinitionCreateModal @bind-IsOpen="this.CodeDefinitionCreateDialogIsOpen" OnCodeTypeSelected="this.PrepareCodeDefinition" />
@@ -56,16 +59,14 @@
             <div class="selected-channel-box mat-elevation-z11">
                 @if (this.CodeDefinitions != null && this.CodeDefinitions.Any())
                 {
-                    <MatNavMenu>
-                        @foreach (var codeDefinition in this.CodeDefinitions)
-                        {
-                            <div @onclick="() => this.CodeDefinition = codeDefinition">
-                                <MatNavItem>
-                                    <MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name
-                                </MatNavItem>
-                            </div>
-                        }
-                    </MatNavMenu>
+                    @foreach (var codeDefinition in this.CodeDefinitions)
+                    {
+
+                        <div class="codedefinition-item @(this.CodeDefinition.Id == codeDefinition.Id ? "active" : "")"
+                             @onclick="() => this.CodeDefinition = codeDefinition">
+                            <MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name
+                        </div>
+                    }
                 }
                 else
                 {

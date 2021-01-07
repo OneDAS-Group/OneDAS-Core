@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Services
 {
@@ -8,14 +11,16 @@ namespace OneDas.DataManagement.Explorer.Services
         #region Fields
 
         private IHttpContextAccessor _httpContextAccessor;
+        private AuthenticationStateProvider _authenticationStateProvider;
 
         #endregion
 
         #region Constructors
 
-        public UserIdService(IHttpContextAccessor httpContextAccessor)
+        public UserIdService(IHttpContextAccessor httpContextAccessor, AuthenticationStateProvider authenticationStateProvider)
         {
             _httpContextAccessor = httpContextAccessor;
+            _authenticationStateProvider = authenticationStateProvider;
         }
 
         #endregion
@@ -27,6 +32,12 @@ namespace OneDas.DataManagement.Explorer.Services
         #endregion
 
         #region Methods
+
+        public async Task<ClaimsPrincipal> GetUserAsync()
+        {
+            var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            return state.User;
+        }
 
         public string GetUserId()
         {

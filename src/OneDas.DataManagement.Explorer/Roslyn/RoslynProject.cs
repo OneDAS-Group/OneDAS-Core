@@ -25,71 +25,11 @@ namespace OneDas.DataManagement.Explorer.Roslyn
 
         static RoslynProject()
         {
-            RoslynProject.DefaultFilterCode =
-$@"using System;
-using System.Collections.Generic;
-                 
-namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
-{{
-    class FilterProvider : FilterProviderBase
-    {{
-        /* Use this method to do the calculations for a filter that can be based on one or more
-         * channels of available and accessible projects.
-         *   begin:  Enables the user to choose the right calibration factors for that time period.
-         *   end:    Enables the user to choose the right calibration factors for that time period.
-         *   data:   Contains the data of the preselected projects.
-         *   result: The resulting double array with length matching the time period and sample rate.
-         */
-        public override void Filter(FilterChannel filter, DateTime begin, DateTime end, DataProvider dataProvider, double[] result)
-        {{
-            /* This dataset has the same length as the result array. */
-            var t1 = dataProvider.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;
-            
-            for (int i = 0; i < result.Length; i++)
-            {{
-                /* Example: Square each value. */
-                result[i] = Math.Pow(t1[i], 2);
-            }}
-        }}
+            using var streamReader1 = new StreamReader(ResourceLoader.GetResourceStream("OneDas.DataManagement.Explorer.Resources.DefaultFilterCodeTemplate.cs"));
+            RoslynProject.DefaultFilterCode = streamReader1.ReadToEnd();
 
-        /* Use this method to provide one or more filter definitions. */
-        protected override List<FilterChannel> GetFilters()
-        {{
-            return new List<FilterChannel>()
-            {{
-                new FilterChannel()
-                {{
-                    ChannelName = ""T1_squared"", 
-                    Unit = ""°C²""
-                }}
-            }};
-        }}
-    }}
-}}
-";
-
-            RoslynProject.DefaultSharedCode =
-$@"using System;
-                 
-namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
-{{
-    /// <summary>
-    /// The purpose of this class is to provide shared code, i.e. predefined and 
-    /// resuable functions. By default this class is static but you may change it
-    /// to be instantiatable. Also, you may rename or create another class within
-    /// this code file. All files of kind 'shared' get linked to other 'normal'
-    /// code files to make their content available there.
-    /// </summary>
-    public static class Shared
-    {{
-        public static void MySharedFunction(string myParameter1)
-        {{
-            /* This is only an example function. You can define functions
-             * with any signature. */
-        }}
-    }}
-}};
-";
+            using var streamReader2 = new StreamReader(ResourceLoader.GetResourceStream("OneDas.DataManagement.Explorer.Resources.DefaultSharedCodeTemplate.cs"));
+            RoslynProject.DefaultSharedCode = streamReader2.ReadToEnd();
         }
 
         public RoslynProject(CodeDefinition filter, List<string> additionalCodeFiles, OneDasDatabase database = null)
@@ -145,9 +85,12 @@ namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters
             if (database is not null)
             {
                 // shared code
-                var sharedCode = File
-                    .ReadAllText("./Core/FilterTypesShared.cs")
+                using var streamReader = new StreamReader(ResourceLoader.GetResourceStream("OneDas.DataManagement.Explorer.Resources.FilterTypesShared.cs"));
+
+                var sharedCode = streamReader
+                    .ReadToEnd()
                     .Replace("Func<string, string, string, double[]> getData", "DataProvider dataProvider");
+
                 this.Workspace.AddDocument(project.Id, "FilterTypesShared.cs", SourceText.From(sharedCode));
 
                 // database code

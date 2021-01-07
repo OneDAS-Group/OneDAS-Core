@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace OneDas.DataManagement.Explorer.Roslyn
+namespace OneDas.DataManagement.Explorer.Core
 {
     public static class ResourceLoader
     {
-        private static Stream GetResourceStream(string name)
+        public static Stream GetResourceStream(string name)
         {
             var assembly = typeof(ResourceLoader).GetTypeInfo().Assembly;
             var stream = assembly.GetManifestResourceStream(name);
@@ -19,7 +19,7 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             return stream;
         }
 
-        private static byte[] GetResourceBlob(string name)
+        public static byte[] GetResourceBlob(string name)
         {
             using (var stream = GetResourceStream(name))
             {

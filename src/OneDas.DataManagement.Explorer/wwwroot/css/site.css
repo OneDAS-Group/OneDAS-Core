@@ -230,10 +230,10 @@ app {
     }
 
 .configuration-panel-hover {
-    position: relative;
-    width: 74px;
     height: 74px;
     user-select: none;
+    padding-left: 7px;
+    padding-right: 7px;
 }
 
     .configuration-panel-hover:hover {
@@ -250,19 +250,17 @@ app {
     }
 
     .configuration-panel-hover div {
-        position: absolute;
         display: flex;
         flex-direction: column;
-        width: 100%;
         height: 100%;
     }
 
     .configuration-panel-hover input[type=file] {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        cursor: pointer;
+        display: none;
+    }
+
+    .configuration-panel-hover.fixed-width {
+        width: 74px;
     }
 
 .icon-button {

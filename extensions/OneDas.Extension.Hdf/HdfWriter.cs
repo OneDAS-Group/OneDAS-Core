@@ -335,13 +335,10 @@ namespace OneDas.Extension.Hdf
                 groupId = IOHelper.OpenOrCreateGroup(locationId, channelDescription.Guid.ToString()).GroupId;
 
                 // attributes
-                var transferFunctionSet = channelDescription.TransferFunctionSet.Select(tf => new hdf_transfer_function_t(tf.DateTime.ToISO8601(), tf.Type, tf.Option, tf.Argument)).ToArray();
-
                 IOHelper.PrepareAttribute(groupId, "name_set", new string[] { channelDescription.ChannelName }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "group_set", new string[] { channelDescription.Group }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "comment_set", new string[] { "yyyy-MM-ddTHH-mm-ssZ: Comment1" }, new ulong[] { H5S.UNLIMITED }, true);
                 IOHelper.PrepareAttribute(groupId, "unit_set", new string[] { channelDescription.Unit }, new ulong[] { H5S.UNLIMITED }, true);
-                IOHelper.PrepareAttribute(groupId, "transfer_function_set", transferFunctionSet, new ulong[] { H5S.UNLIMITED }, true);
 
                 // dataset (native)
                 datasetName = channelDescription.DatasetName;

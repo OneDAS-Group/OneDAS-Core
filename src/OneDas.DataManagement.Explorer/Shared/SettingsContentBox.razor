@@ -24,14 +24,14 @@
                         @if (!string.IsNullOrWhiteSpace(claim.Type))
                         {
                             <MatButton @onclick="() => this.Settings.RemoveClaim(claim)">
-                                <i class="fa fa-minus" aria-hidden="true"></i> &nbsp; Delete
+                                <i class="fa fa-minus"></i> &nbsp; Delete
                             </MatButton>
                         }
                     }
                 </div>
 
                 <MatButton @onclick="this.Settings.SaveClaimChanges">
-                    <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
+                    <i class="fa fa-save"></i> &nbsp; Save
                 </MatButton>
             }
 
@@ -71,7 +71,7 @@
             </MatTextField>
 
             <MatButton @onclick="this.SaveOptions">
-                <i class="fa fa-save" aria-hidden="true"></i> &nbsp; Save
+                <i class="fa fa-save"></i> &nbsp; Save
             </MatButton>
 
         </MatTab>

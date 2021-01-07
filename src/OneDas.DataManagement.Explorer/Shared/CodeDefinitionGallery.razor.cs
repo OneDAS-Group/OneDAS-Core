@@ -31,7 +31,7 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         protected override void OnAfterRender(bool firstRender)
         {
-            this.Owners = this.AppState.FilterSettings.CodeDefintions
+            this.Owners = this.AppState.FilterSettings.CodeDefinitions
                 .Where(current => current.IsPublic)
                 .Select(current => current.Owner)
                 .Distinct()
@@ -44,7 +44,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             return this.AppState
                 .FilterSettings
-                .CodeDefintions
+                .CodeDefinitions
                 .Where(current => current.IsPublic && current.Owner == owner)
                 .OrderBy(current => current.CodeType)
                 .Select(current => new CodeDefinitionViewModel(current))

@@ -87,26 +87,28 @@
     <div class="configuration-panel">
 
         <div class="flex-row">
-            <div class="configuration-panel-hover">
-                <div class="icon-button">
-                    <i class="fas fa-folder-open" aria-hidden="true"></i>
-                    <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
-                </div>
-                <InputFile OnChange="OnLoadExportSettingsAsync" accept="application/JSON" />
+            <div class="configuration-panel-hover fixed-width">
+                <label>
+                    <span class="icon-button">
+                        <i class="fas fa-folder-open"></i>
+                        <MatSubtitle2 class="clear-margin">Load</MatSubtitle2>
+                    </span>
+                    <InputFile OnChange="OnLoadExportSettingsAsync" accept="application/JSON" />
+                </label>
             </div>
 
-            <div class="configuration-panel-hover">
+            <div class="configuration-panel-hover fixed-width">
                 <div class="icon-button" @onclick="OnSaveExportSettingsAsync">
-                    <i class="fas fa-file-download" aria-hidden="true"></i>
+                    <i class="fas fa-file-download"></i>
                     <MatSubtitle2 class="clear-margin">Save</MatSubtitle2>
                 </div>
             </div>
 
             @if (this.UserState.CanVisualize())
             {
-                <div class="configuration-panel-hover @(this.UserState.ClientState == ClientState.DataVisualizing ? "active" : "")">
+                <div class="configuration-panel-hover fixed-width @(this.UserState.ClientState == ClientState.DataVisualizing ? "active" : "")">
                     <div class="icon-button" @onclick="this.UserState.ToggleDataVisualization">
-                        <i class="fas fa-chart-area" aria-hidden="true"></i>
+                        <i class="fas fa-chart-area"></i>
                         <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
                     </div>
                 </div>
@@ -115,7 +117,7 @@
             {
                 <div class="configuration-panel-hover disabled">
                     <div class="icon-button">
-                        <i class="fas fa-chart-area" aria-hidden="true"></i>
+                        <i class="fas fa-chart-area"></i>
                         <MatSubtitle2 class="clear-margin">Visualize</MatSubtitle2>
                     </div>
                 </div>

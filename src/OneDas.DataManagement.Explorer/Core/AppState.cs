@@ -124,7 +124,10 @@ namespace OneDas.DataManagement.Explorer.Core
                 Directory.CreateDirectory(_options.DataBaseFolderPath);
 
                 this.NewsPaper = NewsPaper.Load(Path.Combine(_options.DataBaseFolderPath, "news.json"));
-                this.FilterSettings = new FilterSettingsViewModel(Path.Combine(_options.DataBaseFolderPath, "filters.json"));
+
+                var filterSettingsFilePath = Path.Combine(_options.DataBaseFolderPath, "filters.json");
+                this.FilterSettings = new FilterSettingsViewModel(filterSettingsFilePath);
+                this.InitializeFilterSettings(this.FilterSettings.Model, filterSettingsFilePath);
 
                 _channelCache = new Dictionary<ProjectContainer, List<ChannelInfoViewModel>>();
                 _updateDatabaseSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
@@ -185,6 +188,52 @@ namespace OneDas.DataManagement.Explorer.Core
             }
 
             return channels;
+        }
+
+        private void InitializeFilterSettings(FilterSettings filterSettings, string filePath)
+        {
+            // ensure that code samples of test user are present
+            var testCodes = filterSettings.CodeDefinitions.Where(code => code.Owner == "test@onedas.org");
+
+            if (!testCodes.Any(testCode => testCode.Name == "Simple filter (C#)"))
+            {
+                using var streamReader1 = new StreamReader(ResourceLoader.GetResourceStream("OneDas.DataManagement.Explorer.Resources.TestUserFilterCodeTemplateSimple.cs"));
+
+                filterSettings.CodeDefinitions.Add(new CodeDefinition()
+                {
+                    Code = streamReader1.ReadToEnd(),
+                    CodeLanguage = CodeLanguage.CSharp,
+                    CodeType = CodeType.Filter,
+                    CreationDate = DateTime.UtcNow,
+                    IsPublic = true,
+                    Name = "Simple filter (C#)",
+                    Owner = "test@onedas.org",
+                    RequestedProjectIds = new List<string>() { "/IN_MEMORY/TEST/ACCESSIBLE" },
+                    SampleRate = "1 s"
+                });
+
+                filterSettings.Save(filePath);
+            }
+
+            if (!testCodes.Any(testCode => testCode.Name == "Simple shared (C#)"))
+            {
+                using var streamReader2 = new StreamReader(ResourceLoader.GetResourceStream("OneDas.DataManagement.Explorer.Resources.TestUserSharedCodeTemplateSimple.cs"));
+
+                filterSettings.CodeDefinitions.Add(new CodeDefinition()
+                {
+                    Code = streamReader2.ReadToEnd(),
+                    CodeLanguage = CodeLanguage.CSharp,
+                    CodeType = CodeType.Shared,
+                    CreationDate = DateTime.UtcNow,
+                    IsPublic = true,
+                    Name = "Simple shared (C#)",
+                    Owner = "test@onedas.org",
+                    RequestedProjectIds = new List<string>(),
+                    SampleRate = string.Empty
+                });
+
+                filterSettings.Save(filePath);
+            }
         }
 
         #endregion

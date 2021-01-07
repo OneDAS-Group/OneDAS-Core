@@ -20,6 +20,12 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public CodeDefinition Model { get; }
 
+        public string Id
+        {
+            get { return this.Model.Id; }
+            set { this.Model.Id = value; }
+        }
+
         public string Owner
         {
             get { return this.Model.Owner; }

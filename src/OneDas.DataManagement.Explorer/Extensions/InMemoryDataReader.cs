@@ -61,16 +61,16 @@ namespace OneDas.DataManagement.Extensions
 
         protected override List<ProjectInfo> LoadProjects()
         {
-            var id11 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
-            var id12 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
-            var id13 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
-            var id14 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
+            var id11 = "f01b6a96-1de6-4caa-9205-184d8a3eb2f8";
+            var id12 = "d549a4dd-e003-4d24-98de-4d5bc8c72aca";
+            var id13 = "7dec6d79-b92e-4af2-9358-21be1f3626c9";
+            var id14 = "cf50190b-fd2a-477b-9655-48f4f41ba7bf";
             var project_allowed = this.LoadProject("/IN_MEMORY/TEST/ACCESSIBLE", id11, id12, id13, id14);
 
-            var id21 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
-            var id22 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
-            var id23 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
-            var id24 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
+            var id21 = "50d38fe5-a7a8-49e8-8bd4-3e98a48a951f";
+            var id22 = "d47d1adc6-7c38-4b75-9459-742fa570ef9d";
+            var id23 = "511d6e9c-9075-41ee-bac7-891d359f0dda";
+            var id24 = "99b85689-5373-4a9a-8fd7-be04a89c9da8";
             var project_restricted = this.LoadProject("/IN_MEMORY/TEST/RESTRICTED", id21, id22, id23, id24);
 
             return new List<ProjectInfo>() { project_allowed, project_restricted };
@@ -93,39 +93,39 @@ namespace OneDas.DataManagement.Extensions
             var channelC = new ChannelInfo(id3, project);
             var channelD = new ChannelInfo(id4, project);
 
-            var dataset1 = new DatasetInfo("25 Hz", channelA) { DataType = OneDasDataType.INT32 };
-            var dataset2 = new DatasetInfo("1 s_max", channelB) { DataType = OneDasDataType.FLOAT64 };
-            var dataset3 = new DatasetInfo("1 s_mean", channelB) { DataType = OneDasDataType.FLOAT64 };
-            var dataset4 = new DatasetInfo("1 s_mean", channelC) { DataType = OneDasDataType.FLOAT64 };
+            var dataset1 = new DatasetInfo("1 s_mean", channelA) { DataType = OneDasDataType.FLOAT64 };
+            var dataset2 = new DatasetInfo("1 s_mean", channelB) { DataType = OneDasDataType.FLOAT64 };
+            var dataset3 = new DatasetInfo("25 Hz", channelC) { DataType = OneDasDataType.INT32 };
+            var dataset4 = new DatasetInfo("1 s_max", channelD) { DataType = OneDasDataType.FLOAT64 };
             var dataset5 = new DatasetInfo("1 s_mean", channelD) { DataType = OneDasDataType.FLOAT64 };
 
             // channel A
-            channelA.Name = "unix_time1";
+            channelA.Name = "T1";
             channelA.Group = "Group 1";
-            channelA.Unit = "";
+            channelA.Unit = "°C";
 
             channelA.Datasets.Add(dataset1);
 
             // channel B
-            channelB.Name = "unix_time2";
+            channelB.Name = "V1";
             channelB.Group = "Group 1";
-            channelB.Unit = string.Empty;
+            channelB.Unit = "m/s";
 
             channelB.Datasets.Add(dataset2);
-            channelB.Datasets.Add(dataset3);
 
             // channel C
-            channelC.Name = "T1";
+            channelC.Name = "unix_time1";
             channelC.Group = "Group 2";
-            channelC.Unit = "°C";
+            channelC.Unit = "";
 
-            channelC.Datasets.Add(dataset4);
+            channelC.Datasets.Add(dataset3);
 
             // channel D
-            channelD.Name = "V1";
+            channelD.Name = "unix_time2";
             channelD.Group = "Group 2";
-            channelD.Unit = "m/s";
+            channelD.Unit = string.Empty;
 
+            channelD.Datasets.Add(dataset4);
             channelD.Datasets.Add(dataset5);
 
             // project

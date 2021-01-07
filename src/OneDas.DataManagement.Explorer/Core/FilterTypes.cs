@@ -27,7 +27,9 @@ namespace OneDas.DataManagement.Explorer.Core
             this.Owner = owner;
         }
 
-        public String Owner { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        public string Owner { get; set; }
 
         public CodeType CodeType { get; set; } = CodeType.Filter;
 
@@ -41,7 +43,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public string SampleRate { get; set; }
 
-        public List<string> RequestedProjectIds { get; set; } = new List<string>() { "/IN_MEMORY/TEST/ACCESSIBLE" };
+        public List<string> RequestedProjectIds { get; set; } = new List<string>();
 
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     }
@@ -52,14 +54,14 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public FilterSettings()
         {
-            this.Codes = new List<CodeDefinition>();
+            this.CodeDefinitions = new List<CodeDefinition>();
         }
 
         #endregion
 
         #region Properties
 
-        public List<CodeDefinition> Codes { get; set; }
+        public List<CodeDefinition> CodeDefinitions { get; set; }
 
         #endregion
 
@@ -67,7 +69,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public List<CodeDefinition> GetSharedFiles(string userName)
         {
-            return this.Codes
+            return this.CodeDefinitions
                    .Where(codeDefinition =>
                           codeDefinition.Owner == userName &&
                           codeDefinition.CodeType == CodeType.Shared)

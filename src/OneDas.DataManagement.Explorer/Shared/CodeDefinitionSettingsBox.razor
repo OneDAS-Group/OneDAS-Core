@@ -4,6 +4,11 @@
     <DataAnnotationsValidator />
 
     <div>
+        <MatTextField class="settings-control"
+                      Label="Name"
+                      @bind-Value="this.CodeDefinition.Name">
+        </MatTextField>
+
         <MatSelectItem class="settings-control"
                        Label="Code Type"
                        Disabled="true"
@@ -28,37 +33,32 @@
                      @bind-Value="this.CodeDefinition.IsPublic">
         </MatCheckbox>
 
-        <MatTextField class="settings-control"
-                      Label="Name"
-                      @bind-Value="this.CodeDefinition.Name">
-        </MatTextField>
-
         @if (this.CodeDefinition.CodeType == CodeType.Filter)
-        {          
+        {
             <MatSelectItem class="settings-control"
                            Label="Sample Rate"
                            @bind-Value="this.CodeDefinition.SampleRate"
                            Items="this.UserState.SampleRateValues">
             </MatSelectItem>
-        }
 
-        <div class="configuration-panel mt-auto">
-            <div class="flex-row">
-                <div class="configuration-panel-hover">
-                    <div class="icon-button" @onclick="this.OpenCodeDefinitionProjectRequestDialog">
-                        @this.CodeDefinition.RequestedProjectIds.Count
-                        @if (this.CodeDefinition.RequestedProjectIds.Count == 1)
-                        {
-                            <MatSubtitle2 class="clear-margin">Project</MatSubtitle2>
-                        }
-                        else
-                        {
-                            <MatSubtitle2 class="clear-margin">Projects</MatSubtitle2>
-                        }
+            <div class="configuration-panel mt-auto">
+                <div class="flex-row">
+                    <div class="configuration-panel-hover">
+                        <div class="icon-button" @onclick="this.OpenCodeDefinitionProjectRequestDialog">
+                            @this.CodeDefinition.RequestedProjectIds.Count
+                            @if (this.CodeDefinition.RequestedProjectIds.Count == 1)
+                            {
+                                <MatSubtitle2 class="clear-margin">Project Reference</MatSubtitle2>
+                            }
+                            else
+                            {
+                                <MatSubtitle2 class="clear-margin">Project References</MatSubtitle2>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 
     <MatButton Class="w-100"

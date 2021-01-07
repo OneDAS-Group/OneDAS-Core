@@ -18,7 +18,7 @@ namespace OneDas.DataManagement.Explorer.Core
                 return null;
 
             var claims = await userManager.GetClaimsAsync(user);
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Basic"));
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Fake authentication type"));
 
             return principal;
         }

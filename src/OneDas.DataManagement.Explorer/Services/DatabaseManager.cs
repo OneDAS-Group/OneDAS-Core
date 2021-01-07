@@ -81,7 +81,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Properties
 
-        public OneDasDatabase Database => this.State.Database;
+        public OneDasDatabase Database => this.State?.Database;
 
         public OneDasDatabaseConfig Config { get; private set; }
 

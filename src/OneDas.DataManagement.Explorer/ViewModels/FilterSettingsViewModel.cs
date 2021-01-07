@@ -1,7 +1,9 @@
 ﻿using OneDas.DataManagement.Explorer.Core;
 using Prism.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OneDas.DataManagement.Explorer.ViewModels
 {
@@ -34,7 +36,7 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public FilterSettings Model { get; }
 
-        public IReadOnlyList<CodeDefinition> CodeDefintions => this.Model.Codes;
+        public IReadOnlyList<CodeDefinition> CodeDefinitions => this.Model.CodeDefinitions;
 
         #endregion
 
@@ -44,24 +46,24 @@ namespace OneDas.DataManagement.Explorer.ViewModels
         {
             lock (_editLock)
             {
-                if (!this.Model.Codes.Contains(description.Model))
-                    this.Model.Codes.Add(description.Model);
+                if (!this.Model.CodeDefinitions.Contains(description.Model))
+                    this.Model.CodeDefinitions.Add(description.Model);
 
                 this.Model.Save(_filePath);
             }
 
-            this.RaisePropertyChanged(nameof(this.CodeDefintions));
+            this.RaisePropertyChanged(nameof(this.CodeDefinitions));
         }
 
         public void RemoveCodeDefinition(CodeDefinitionViewModel description)
         {
             lock (_editLock)
             {
-                this.Model.Codes.Remove(description.Model);
+                this.Model.CodeDefinitions.Remove(description.Model);
                 this.Model.Save(_filePath);
             }
 
-            this.RaisePropertyChanged(nameof(this.CodeDefintions));
+            this.RaisePropertyChanged(nameof(this.CodeDefinitions));
         }
 
         #endregion

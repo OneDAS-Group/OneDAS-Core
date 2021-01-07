@@ -9,32 +9,32 @@
             <AuthorizeView Policy="RequireAdmin" Context="_">
                 <Authorized>
                     <div class="mdc-button @(this.UserState.IsEditEnabled ? "active" : "")" @onclick="() => this.UserState.IsEditEnabled = !this.UserState.IsEditEnabled">
-                        <i class="far fa-edit" aria-hidden="true"></i> &nbsp; Edit
+                        <i class="far fa-edit"></i> &nbsp; Edit
                     </div>
                     <NavLink href="/settings">
                         <div class="mdc-button">
-                            <i class="fas fa-cogs" aria-hidden="true"></i> &nbsp; Settings
+                            <i class="fas fa-cogs"></i> &nbsp; Settings
                         </div>
                     </NavLink>
                 </Authorized>
             </AuthorizeView>
 
-            @*<NavLink href="/filter-editor">
+            <NavLink href="/filter-editor">
                 <div class="mdc-button">
-                    <i class="fas fa-square-root-alt" aria-hidden="true"></i> &nbsp; Filter Editor
+                    <i class="fas fa-square-root-alt"></i> &nbsp; Filter Editor (BETA)
                 </div>
-            </NavLink>*@
+            </NavLink>
 
             <a href="Identity/Account/Manage">
                 <div class="mdc-button">
-                    <i class="fas fa-user" aria-hidden="true"></i> &nbsp; Manage
+                    <i class="fas fa-user"></i> &nbsp; Manage
                 </div>
             </a>
 
             <form method="post" action="Identity/Account/LogOut">
                 <button type="submit" class="submit-button">
                     <div class="mdc-button">
-                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> &nbsp; Log out
+                        <i class="fas fa-sign-out-alt"></i> &nbsp; Log out
                     </div>
                 </button>
             </form>
@@ -43,13 +43,13 @@
 
             <a href="Identity/Account/Register">
                 <div class="mdc-button">
-                    <i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Register
+                    <i class="fa fa-user-plus"></i> &nbsp; Register
                 </div>
             </a>
 
             <a href="Identity/Account/Login">
                 <div class="mdc-button">
-                    <i class="fa fa-sign-in-alt" aria-hidden="true"></i> &nbsp; Log in
+                    <i class="fa fa-sign-in-alt"></i> &nbsp; Log in
                 </div>
             </a>
 

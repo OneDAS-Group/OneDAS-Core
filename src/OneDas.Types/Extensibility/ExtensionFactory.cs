@@ -168,7 +168,7 @@ namespace OneDas.Extensibility
             var typeSet = this.Get<ExtensionSettingsBase>().ToList();
             var type = typeSet.FirstOrDefault(x => x.GetFirstAttribute<ExtensionIdentificationAttribute>().Id == id);
             var assembly = type?.Assembly;
-            resourceName = $"{ assembly.GetName().Name }.{ resourceName }"; // actually it should be the root namespace instead of assembly name
+            resourceName = $"{assembly.GetName().Name}.{resourceName}"; // actually it should be the root namespace instead of assembly name
 
             if (assembly != null)
             {
@@ -183,13 +183,13 @@ namespace OneDas.Extensibility
                     }
                     else
                     {
-                        throw new Exception($"The requested resource of extension ID = '{ id }' and name = '{ resourceName }' could not be found.");
+                        throw new Exception($"The requested resource of extension ID = '{id}' and name = '{resourceName}' could not be found.");
                     }
                 }
             }
             else
             {
-                throw new Exception($"The requested extension with ID = '{ id }' could not be found.");
+                throw new Exception($"The requested extension with ID = '{id}' could not be found.");
             }
         }
 

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using OneDas.DataManagement.Explorer.Core;
 
 namespace OneDas.DataManagement.Explorer.Roslyn
 {
