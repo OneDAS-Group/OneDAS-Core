@@ -96,7 +96,7 @@ namespace OneDas.DataManagement.Explorer.Core
     {
         #region Methods
 
-        public static Guid ToGuid(this FilterChannel filterChannel)
+        public static Guid ToGuid(this FilterChannel filterChannel, CodeDefinition codeDefinition)
         {
             // With the filter extension, channels are produced dynamically, so there
             // is no way to generate an ID once and store it somewhere. Therefore the 
@@ -105,7 +105,7 @@ namespace OneDas.DataManagement.Explorer.Core
             // on the project ID and channel name. In the end this means that the 
             // channel name determines the ID. And so renaming a channel means changing 
             // the ID.
-            var value = $"{filterChannel.ProjectId}/{filterChannel.ChannelName}";
+            var value = $"({codeDefinition.Id}) {filterChannel.ProjectId}/{filterChannel.ChannelName}";
             var md5 = MD5.Create(); // compute hash is not thread safe!
             var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(value)); // 
             return new Guid(hash);

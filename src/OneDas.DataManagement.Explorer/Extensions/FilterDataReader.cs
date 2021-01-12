@@ -137,7 +137,7 @@ namespace OneDas.DataManagement.Extensions
             };
 
             // execute
-            var filter = cacheEntry.FilterProvider.Filters.First(filter => filter.ToGuid().ToString() == dataset.Parent.Id);
+            var filter = cacheEntry.FilterProvider.Filters.First(filter => filter.ToGuid(cacheEntry.FilterCodeDefinition).ToString() == dataset.Parent.Id);
             cacheEntry.FilterProvider.Filter(begin, end, filter, getData, result);
 
             return ((T[])(object)result, status);
@@ -193,7 +193,7 @@ namespace OneDas.DataManagement.Extensions
                         if (!OneDasUtilities.CheckNamingConvention(localFilterChannel.ChannelName, out var _))
                             continue;
 
-                        var channel = new ChannelInfo(localFilterChannel.ToGuid().ToString(), project)
+                        var channel = new ChannelInfo(localFilterChannel.ToGuid(cacheEntry.FilterCodeDefinition).ToString(), project)
                         {
                             Name = localFilterChannel.ChannelName,
                             Group = localFilterChannel.Group,
@@ -300,7 +300,7 @@ namespace OneDas.DataManagement.Extensions
                 try
                 {
                     var filterProvider = (FilterProviderBase)Activator.CreateInstance(filterType);
-                    var supportedChanneIds = filterProvider.Filters.Select(filter => filter.ToGuid().ToString()).ToList();
+                    var supportedChanneIds = filterProvider.Filters.Select(filter => filter.ToGuid(filterCodeDefinition).ToString()).ToList();
                     cacheEntries[i] = new FilterDataReaderCacheEntry(filterCodeDefinition, loadContext, filterProvider, supportedChanneIds);
                 }
                 catch (MissingMethodException)
