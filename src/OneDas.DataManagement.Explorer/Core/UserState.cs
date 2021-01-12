@@ -539,13 +539,13 @@ namespace OneDas.DataManagement.Explorer.Core
             this.VisualizeProgress = progress;
         }
 
-        public async Task<List<AvailabilityResult>> GetAvailabilityAsync()
+        public async Task<List<AvailabilityResult>> GetAvailabilityAsync(AvailabilityGranularity granularity)
         {
             // security check
             if (!Utilities.IsProjectAccessible(_userIdService.User, this.ProjectContainer.Id, _databaseManager.Database))
                 throw new UnauthorizedAccessException($"The current user is not authorized to access project '{this.ProjectContainer.Id}'.");
 
-            return await _dataService.GetAvailabilityAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd);
+            return await _dataService.GetAvailabilityAsync(this.ProjectContainer.Id, this.DateTimeBegin, this.DateTimeEnd, granularity);
         }
 
         public void SetExportParameters(ExportParameters exportParameters)

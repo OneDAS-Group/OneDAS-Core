@@ -60,7 +60,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
-        public Task<List<AvailabilityResult>> GetAvailabilityAsync(string projectId, DateTime begin, DateTime end)
+        public Task<List<AvailabilityResult>> GetAvailabilityAsync(string projectId, DateTime begin, DateTime end, AvailabilityGranularity granularity)
         {
             return Task.Run(() =>
             {
@@ -69,7 +69,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 return dataReaders.Select(dataReaderForUsing =>
                 {
                     using var dataReader = dataReaderForUsing;
-                    return dataReader.GetAvailability(projectId, begin, end);
+                    return dataReader.GetAvailability(projectId, begin, end, granularity);
                 }).ToList();
             });
         }

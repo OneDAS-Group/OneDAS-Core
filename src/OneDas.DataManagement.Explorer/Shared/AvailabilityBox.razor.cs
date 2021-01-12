@@ -147,29 +147,35 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task UpdateChart()
         {
-            if (this.UserState.DateTimeBegin > this.UserState.DateTimeEnd)
+            var totalDays = (int)(this.UserState.DateTimeEnd.Date - this.UserState.DateTimeBegin.Date).TotalDays;
+
+            if (totalDays < 0)
                 return;
 
             var axis = (BarTimeAxis)((BarConfig)_barChart.Config).Options.Scales.XAxes[0];
 
             try
             {
-                var statistics = await this.UserState.GetAvailabilityAsync();
+                var granularity = totalDays <= 365
+                    ? AvailabilityGranularity.Day
+                    : AvailabilityGranularity.Month;
+
+                var availability = await this.UserState.GetAvailabilityAsync(granularity);
                 var hasCleared = false;
 
-                if (statistics.Count != this.Config.Data.Datasets.Count)
+                if (availability.Count != this.Config.Data.Datasets.Count)
                 {
                     this.Config.Data.Datasets.Clear();
                     hasCleared = true;
                 }
 
-                for (int i = 0; i < statistics.Count; i++)
+                for (int i = 0; i < availability.Count; i++)
                 {
                     BarDataset<TimePoint> dataset;
 
                     if (hasCleared)
                     {
-                        var registration = statistics[i].DataReaderRegistration;
+                        var registration = availability[i].DataReaderRegistration;
 
                         dataset = new BarDataset<TimePoint>
                         {
@@ -187,18 +193,16 @@ namespace OneDas.DataManagement.Explorer.Shared
                         dataset.Clear();
                     }
 
-                    var dateTimeBegin = this.UserState.DateTimeBegin.Date;
-
-                    switch (statistics[i].Granularity)
+                    switch (granularity)
                     {
                         case AvailabilityGranularity.Day:
 
                             axis.Time.Unit = TimeMeasurement.Day;
 
-                            dataset.AddRange(statistics[i].Data
-                                .Select((value, i) =>
+                            dataset.AddRange(availability[i].Data
+                                .Select((entry, i) =>
                                 {
-                                    return new TimePoint(dateTimeBegin.AddDays(i), value);
+                                    return new TimePoint(entry.Key, entry.Value * 100);
                                 })
                             );
 
@@ -208,10 +212,10 @@ namespace OneDas.DataManagement.Explorer.Shared
 
                             axis.Time.Unit = TimeMeasurement.Month;
 
-                            dataset.AddRange(statistics[i].Data
-                                .Select((value, i) =>
+                            dataset.AddRange(availability[i].Data
+                                .Select((entry, i) =>
                                 {
-                                    return new TimePoint(dateTimeBegin.AddMonths(i), value);
+                                    return new TimePoint(entry.Key, entry.Value * 100);
                                 })
                             );
 

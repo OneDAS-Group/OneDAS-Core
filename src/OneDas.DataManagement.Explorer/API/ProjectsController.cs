@@ -101,10 +101,12 @@ namespace OneDas.DataManagement.Explorer.Controllers
         /// <param name="projectId">The project identifier.</param>
         /// <param name="begin">Start date.</param>
         /// <param name="end">End date.</param>
+        /// <param name="granularity">Granularity of the resulting array.</param>
         [HttpGet("{projectId}/availability")]
         public ActionResult<List<AvailabilityResult>> GetProjectAvailability(string projectId,
                                                                              [BindRequired][JsonSchemaDate] DateTime begin,
-                                                                             [BindRequired][JsonSchemaDate] DateTime end)
+                                                                             [BindRequired][JsonSchemaDate] DateTime end,
+                                                                             [BindRequired] AvailabilityGranularity granularity)
         {
             if (_databaseManager.Database == null)
                 return this.StatusCode(503, "The database has not been loaded yet.");
@@ -121,7 +123,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
                     (project, projectMeta) =>
                     {
                         _logger.LogInformation($"{message} Done.");
-                        return this.CreateAvailabilityResponse(project, begin, end);
+                        return this.CreateAvailabilityResponse(project, begin, end, granularity);
                     });
             }
             catch (Exception ex)
@@ -357,14 +359,14 @@ namespace OneDas.DataManagement.Explorer.Controllers
             };
         }
 
-        private List<AvailabilityResult> CreateAvailabilityResponse(ProjectInfo project, DateTime begin, DateTime end)
+        private List<AvailabilityResult> CreateAvailabilityResponse(ProjectInfo project, DateTime begin, DateTime end, AvailabilityGranularity granularity)
         {
             var dataReaders = _databaseManager.GetDataReaders(_userIdService.User, project.Id);
 
             return dataReaders.Select(dataReaderForUsing =>
             {
                 using var dataReader = dataReaderForUsing;
-                var availability = dataReader.GetAvailability(project.Id, begin, end);
+                var availability = dataReader.GetAvailability(project.Id, begin, end, granularity);
 
                 var registration = new DataReaderRegistration()
                 {
@@ -375,7 +377,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
                 return new AvailabilityResult()
                 {
                     DataReaderRegistration = registration,
-                    Granularity = (AvailabilityGranularity)availability.Granularity,
                     Data = availability.Data
                 };
             }).ToList();
@@ -436,12 +437,6 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
         #region Types
 
-        public enum AvailabilityGranularity
-        {
-            Day,
-            Month
-        }
-
         public record DataReaderRegistration
         {
             public string RootPath { get; set; }
@@ -451,8 +446,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
         public record AvailabilityResult
         {
             public DataReaderRegistration DataReaderRegistration { get; set; }
-            public AvailabilityGranularity Granularity { get; set; }
-            public int[] Data { get; set; }
+            public Dictionary<DateTime, double> Data { get; set; }
         }
 
         public record Project

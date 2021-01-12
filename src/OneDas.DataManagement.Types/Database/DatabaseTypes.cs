@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace OneDas.DataManagement.Database
 {
     public enum AvailabilityGranularity
@@ -31,7 +34,6 @@ namespace OneDas.DataManagement.Database
     public record AvailabilityResult
     {
         public DataReaderRegistration DataReaderRegistration { get; set; }
-        public AvailabilityGranularity Granularity { get; set; }
-        public int[] Data { get; set; }
+        public Dictionary<DateTime, double> Data { get; set; }
     }
 }

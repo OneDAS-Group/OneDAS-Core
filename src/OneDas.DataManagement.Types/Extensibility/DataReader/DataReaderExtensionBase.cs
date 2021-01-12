@@ -2,6 +2,7 @@
 using OneDas.DataManagement.Database;
 using OneDas.Infrastructure;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -239,59 +240,78 @@ namespace OneDas.DataManagement.Extensibility
             }
         }
 
-        public AvailabilityResult GetAvailability(string projectId, DateTime begin, DateTime end)
+        public AvailabilityResult GetAvailability(string projectId, DateTime begin, DateTime end, AvailabilityGranularity granularity)
         {
             var dateBegin = begin.Date;
             var dateEnd = end.Date;
 
-            int[] aggregatedData = default;
-            var granularity = AvailabilityGranularity.Day;
+            ConcurrentDictionary<DateTime, double> aggregatedData = default;
+            
             var totalDays = (int)(dateEnd - dateBegin).TotalDays;
 
-            if (totalDays <= 365)
+            switch (granularity)
             {
-                aggregatedData = new int[totalDays];
+                case AvailabilityGranularity.Day:
 
-                Parallel.For(0, totalDays, day =>
-                {
-                    var date = dateBegin.AddDays(day);
-                    aggregatedData[day] = (int)(this.GetAvailability(projectId, date) * 100);
-                });
-            }
-            else
-            {
-                granularity = AvailabilityGranularity.Month;
+                    aggregatedData = new ConcurrentDictionary<DateTime, double>();
 
-                var months = new DateTime[totalDays];
-                var datasets = new int[totalDays];
+                    Parallel.For(0, totalDays, day =>
+                    {
+                        var date = dateBegin.AddDays(day);
+                        var availability = this.GetAvailability(projectId, date);
+                        aggregatedData.TryAdd(date, availability);
+                    });
 
-                Parallel.For(0, totalDays, day =>
-                {
-                    var date = dateBegin.AddDays(day);
-                    var month = new DateTime(date.Year, date.Month, 1);
+                    break;
 
-                    months[day] = month;
-                    datasets[day] = (int)(this.GetAvailability(projectId, date) * 100);
-                });
+                case AvailabilityGranularity.Month:
 
-                var uniqueMonths = months.Distinct().OrderBy(month => month).ToList();
-                var zipData = months.Zip(datasets, (month, dataset) => (month, dataset)).ToList();
+                    granularity = AvailabilityGranularity.Month;
 
-                aggregatedData = new int[uniqueMonths.Count];
+                    var months = new DateTime[totalDays];
+                    var datasets = new double[totalDays];
 
-                for (int i = 0; i < uniqueMonths.Count; i++)
-                {
-                    aggregatedData[i] = (int)zipData
-                        .Where(current => current.month == uniqueMonths[i])
-                        .Average(current => current.dataset);
-                }
+                    Parallel.For(0, totalDays, day =>
+                    {
+                        var date = dateBegin.AddDays(day);
+                        var month = new DateTime(date.Year, date.Month, 1);
+
+                        months[day] = month;
+                        datasets[day] = this.GetAvailability(projectId, date);
+                    });
+
+                    var uniqueMonths = months
+                        .Distinct()
+                        .OrderBy(month => month)
+                        .ToList();
+
+                    var zipData = months
+                        .Zip(datasets, (month, dataset) => (month, dataset))
+                        .ToList();
+
+                    aggregatedData = new ConcurrentDictionary<DateTime, double>();
+
+                    for (int i = 0; i < uniqueMonths.Count; i++)
+                    {
+                        var currentMonth = uniqueMonths[i];
+                        var availability = (int)zipData
+                            .Where(current => current.month == currentMonth)
+                            .Average(current => current.dataset);
+
+                        aggregatedData.TryAdd(currentMonth, availability);
+                    }
+
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Availability granularity value '{granularity}' is not supported.");
             }
 
             return new AvailabilityResult()
             {
                 DataReaderRegistration = this.Registration,
-                Granularity = granularity,
                 Data = aggregatedData
+                    .ToDictionary(entry => entry.Key, entry => entry.Value)
             };
         }
 

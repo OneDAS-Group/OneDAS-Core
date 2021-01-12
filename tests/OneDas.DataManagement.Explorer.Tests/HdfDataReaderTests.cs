@@ -70,7 +70,7 @@ namespace OneDas.DataManagement.Explorer.Tests
             dataReader.InitializeProjects();
 
             // act
-            var actual = dataReader.GetAvailability("/A/B/C", new DateTime(2020, 07, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2020, 08, 01, 0, 0, 0, DateTimeKind.Utc));
+            var actual = dataReader.GetAvailability("/A/B/C", new DateTime(2020, 07, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2020, 08, 01, 0, 0, 0, DateTimeKind.Utc), Database.AvailabilityGranularity.Day);
 
             // assert
             var expected = Enumerable.Range(0, 31).Select(number => 0).ToArray();
