@@ -61,7 +61,6 @@ namespace OneDas.DataManagement.Explorer.Services
         private OneDasExplorerOptions _options;
 
         private bool _isInitialized;
-        private string _folderPath;
         private ILogger<DatabaseManager>  _logger;
         private ILoggerFactory _loggerFactory;
         private IServiceProvider _serviceProvider;
@@ -139,7 +138,9 @@ namespace OneDas.DataManagement.Explorer.Services
             var registration = new DataReaderRegistration()
             {
                 DataReaderId = "OneDas.HDF",
-                RootPath = _folderPath,
+                RootPath = !string.IsNullOrWhiteSpace(this.Config.AggregationDataReaderRootPath) 
+                    ? this.Config.AggregationDataReaderRootPath
+                    : _options.DataBaseFolderPath,
                 IsAggregation = true
             };
 
@@ -307,9 +308,9 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private void Initialize()
         {
-            var folderPath = _options.DataBaseFolderPath;
+            var dbFolderPath = _options.DataBaseFolderPath;
 
-            if (string.IsNullOrWhiteSpace(folderPath))
+            if (string.IsNullOrWhiteSpace(dbFolderPath))
             {
                 throw new Exception("Could not initialize database. Please check the database folder path and try again.");
             }
@@ -317,15 +318,15 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 try
                 {
-                    Directory.CreateDirectory(folderPath);
-                    Directory.CreateDirectory(Path.Combine(folderPath, "ATTACHMENTS"));
-                    Directory.CreateDirectory(Path.Combine(folderPath, "DATA"));
-                    Directory.CreateDirectory(Path.Combine(folderPath, "EXPORT"));
-                    Directory.CreateDirectory(Path.Combine(folderPath, "EXTENSION"));
-                    Directory.CreateDirectory(Path.Combine(folderPath, "META"));
-                    Directory.CreateDirectory(Path.Combine(folderPath, "PRESETS"));
+                    Directory.CreateDirectory(dbFolderPath);
+                    Directory.CreateDirectory(Path.Combine(dbFolderPath, "ATTACHMENTS"));
+                    Directory.CreateDirectory(Path.Combine(dbFolderPath, "DATA"));
+                    Directory.CreateDirectory(Path.Combine(dbFolderPath, "EXPORT"));
+                    Directory.CreateDirectory(Path.Combine(dbFolderPath, "EXTENSION"));
+                    Directory.CreateDirectory(Path.Combine(dbFolderPath, "META"));
+                    Directory.CreateDirectory(Path.Combine(dbFolderPath, "PRESETS"));
 
-                    var filePath = Path.Combine(folderPath, "dbconfig.json");
+                    var filePath = Path.Combine(dbFolderPath, "dbconfig.json");
 
                     if (File.Exists(filePath))
                     {
@@ -357,7 +358,7 @@ namespace OneDas.DataManagement.Explorer.Services
                         this.Config.DataReaderRegistrations.Add(filterRegistration);
 
                     // save config to disk
-                    this.SaveConfig(folderPath, this.Config);
+                    this.SaveConfig(dbFolderPath, this.Config);
                 }
                 catch
                 {
@@ -365,7 +366,6 @@ namespace OneDas.DataManagement.Explorer.Services
                 }
             }
 
-            _folderPath = folderPath;
             _isInitialized = true;
         }
 
@@ -404,12 +404,12 @@ namespace OneDas.DataManagement.Explorer.Services
 
         private string GetProjectMetaPath(string projectName)
         {
-            return Path.Combine(_folderPath, "META", $"{projectName.TrimStart('/').Replace('/', '_')}.json");
+            return Path.Combine(_options.DataBaseFolderPath, "META", $"{projectName.TrimStart('/').Replace('/', '_')}.json");
         }
 
         private Dictionary<DataReaderRegistration, Type> LoadDataReaders(List<DataReaderRegistration> dataReaderRegistrations)
         {
-            var extensionDirectoryPath = Path.Combine(_folderPath, "EXTENSION");
+            var extensionDirectoryPath = Path.Combine(_options.DataBaseFolderPath, "EXTENSION");
 
             var extensionFilePaths = Directory.EnumerateFiles(extensionDirectoryPath, "*.deps.json", SearchOption.AllDirectories)
                                               .Select(filePath => filePath.Replace(".deps.json", ".dll")).ToList();
