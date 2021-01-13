@@ -25,11 +25,6 @@
       ]
     },
     {
-      "provider": "unpkg",
-      "library": "material-design-icons-iconfont@5.0.1",
-      "destination": "wwwroot/lib/material-design-icons-iconfont/"
-    },
-    {
       "library": "Chart.js@2.9.4",
       "destination": "wwwroot/lib/Chart.js/"
     },
@@ -72,6 +67,22 @@
         "min-maps/vs/loader.js.map",
         "min-maps/vs/base/worker/workerMain.js.map",
         "min-maps/vs/editor/editor.main.js.map"
+      ]
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "material-design-icons-iconfont@6.1.0",
+      "destination": "wwwroot/lib/material-design-icons-iconfont/",
+      "files": [
+        "dist/LICENSE",
+        "dist/material-design-icons.css",
+        "dist/material-design-icons.css.map",
+        "dist/material-design-icons.min.css",
+        "dist/fonts/MaterialIcons-Regular.eot",
+        "dist/fonts/MaterialIcons-Regular.json",
+        "dist/fonts/MaterialIcons-Regular.ttf",
+        "dist/fonts/MaterialIcons-Regular.woff",
+        "dist/fonts/MaterialIcons-Regular.woff2"
       ]
     }
   ]
