@@ -30,7 +30,7 @@ function Add-TargetFramework($name, $packagePath)
     if ($dllName.StartsWith("Microsoft.VisualBasic") -or `
         $dllName.StartsWith("System.Diagnostics") -or `
         $dllName.StartsWith("System.Drawing") -or `
-        $dllName.StartsWith("System.IO") -or `
+        # $dllName.StartsWith("System.IO") -or `
         $dllName.StartsWith("System.Net") -or `
         $dllName.StartsWith("System.Reflection") -or `
         $dllName.StartsWith("System.Web") -or `

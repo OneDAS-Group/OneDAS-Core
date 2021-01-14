@@ -53,6 +53,28 @@ namespace OneDas.DataManagement.Explorer.Roslyn
         private static byte[]? _SystemGlobalizationCalendars_dll; internal static byte[] SystemGlobalizationCalendars_dll => ResourceLoader.GetOrCreateResource(ref _SystemGlobalizationCalendars_dll, "net50.System.Globalization.Calendars.dll");
         private static byte[]? _SystemGlobalization_dll; internal static byte[] SystemGlobalization_dll => ResourceLoader.GetOrCreateResource(ref _SystemGlobalization_dll, "net50.System.Globalization.dll");
         private static byte[]? _SystemGlobalizationExtensions_dll; internal static byte[] SystemGlobalizationExtensions_dll => ResourceLoader.GetOrCreateResource(ref _SystemGlobalizationExtensions_dll, "net50.System.Globalization.Extensions.dll");
+        private static byte[]? _SystemIOCompressionBrotli_dll; internal static byte[] SystemIOCompressionBrotli_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionBrotli_dll, "net50.System.IO.Compression.Brotli.dll");
+        private static byte[]? _SystemIOCompressionBrotli_xml; internal static byte[] SystemIOCompressionBrotli_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionBrotli_xml, "net50.System.IO.Compression.Brotli.xml");
+        private static byte[]? _SystemIOCompression_dll; internal static byte[] SystemIOCompression_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOCompression_dll, "net50.System.IO.Compression.dll");
+        private static byte[]? _SystemIOCompression_xml; internal static byte[] SystemIOCompression_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOCompression_xml, "net50.System.IO.Compression.xml");
+        private static byte[]? _SystemIOCompressionFileSystem_dll; internal static byte[] SystemIOCompressionFileSystem_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionFileSystem_dll, "net50.System.IO.Compression.FileSystem.dll");
+        private static byte[]? _SystemIOCompressionZipFile_dll; internal static byte[] SystemIOCompressionZipFile_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionZipFile_dll, "net50.System.IO.Compression.ZipFile.dll");
+        private static byte[]? _SystemIOCompressionZipFile_xml; internal static byte[] SystemIOCompressionZipFile_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOCompressionZipFile_xml, "net50.System.IO.Compression.ZipFile.xml");
+        private static byte[]? _SystemIO_dll; internal static byte[] SystemIO_dll => ResourceLoader.GetOrCreateResource(ref _SystemIO_dll, "net50.System.IO.dll");
+        private static byte[]? _SystemIOFileSystem_dll; internal static byte[] SystemIOFileSystem_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystem_dll, "net50.System.IO.FileSystem.dll");
+        private static byte[]? _SystemIOFileSystem_xml; internal static byte[] SystemIOFileSystem_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystem_xml, "net50.System.IO.FileSystem.xml");
+        private static byte[]? _SystemIOFileSystemDriveInfo_dll; internal static byte[] SystemIOFileSystemDriveInfo_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemDriveInfo_dll, "net50.System.IO.FileSystem.DriveInfo.dll");
+        private static byte[]? _SystemIOFileSystemDriveInfo_xml; internal static byte[] SystemIOFileSystemDriveInfo_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemDriveInfo_xml, "net50.System.IO.FileSystem.DriveInfo.xml");
+        private static byte[]? _SystemIOFileSystemPrimitives_dll; internal static byte[] SystemIOFileSystemPrimitives_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemPrimitives_dll, "net50.System.IO.FileSystem.Primitives.dll");
+        private static byte[]? _SystemIOFileSystemWatcher_dll; internal static byte[] SystemIOFileSystemWatcher_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemWatcher_dll, "net50.System.IO.FileSystem.Watcher.dll");
+        private static byte[]? _SystemIOFileSystemWatcher_xml; internal static byte[] SystemIOFileSystemWatcher_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOFileSystemWatcher_xml, "net50.System.IO.FileSystem.Watcher.xml");
+        private static byte[]? _SystemIOIsolatedStorage_dll; internal static byte[] SystemIOIsolatedStorage_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOIsolatedStorage_dll, "net50.System.IO.IsolatedStorage.dll");
+        private static byte[]? _SystemIOIsolatedStorage_xml; internal static byte[] SystemIOIsolatedStorage_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOIsolatedStorage_xml, "net50.System.IO.IsolatedStorage.xml");
+        private static byte[]? _SystemIOMemoryMappedFiles_dll; internal static byte[] SystemIOMemoryMappedFiles_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOMemoryMappedFiles_dll, "net50.System.IO.MemoryMappedFiles.dll");
+        private static byte[]? _SystemIOMemoryMappedFiles_xml; internal static byte[] SystemIOMemoryMappedFiles_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOMemoryMappedFiles_xml, "net50.System.IO.MemoryMappedFiles.xml");
+        private static byte[]? _SystemIOPipes_dll; internal static byte[] SystemIOPipes_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOPipes_dll, "net50.System.IO.Pipes.dll");
+        private static byte[]? _SystemIOPipes_xml; internal static byte[] SystemIOPipes_xml => ResourceLoader.GetOrCreateResource(ref _SystemIOPipes_xml, "net50.System.IO.Pipes.xml");
+        private static byte[]? _SystemIOUnmanagedMemoryStream_dll; internal static byte[] SystemIOUnmanagedMemoryStream_dll => ResourceLoader.GetOrCreateResource(ref _SystemIOUnmanagedMemoryStream_dll, "net50.System.IO.UnmanagedMemoryStream.dll");
         private static byte[]? _SystemLinq_dll; internal static byte[] SystemLinq_dll => ResourceLoader.GetOrCreateResource(ref _SystemLinq_dll, "net50.System.Linq.dll");
         private static byte[]? _SystemLinq_xml; internal static byte[] SystemLinq_xml => ResourceLoader.GetOrCreateResource(ref _SystemLinq_xml, "net50.System.Linq.xml");
         private static byte[]? _SystemLinqExpressions_dll; internal static byte[] SystemLinqExpressions_dll => ResourceLoader.GetOrCreateResource(ref _SystemLinqExpressions_dll, "net50.System.Linq.Expressions.dll");
@@ -195,6 +217,19 @@ namespace OneDas.DataManagement.Explorer.Roslyn
         public static PortableExecutableReference SystemGlobalizationCalendars { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalizationCalendars_dll).GetReference(display: "System.Globalization.Calendars (net50)");
         public static PortableExecutableReference SystemGlobalization { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalization_dll).GetReference(display: "System.Globalization (net50)");
         public static PortableExecutableReference SystemGlobalizationExtensions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemGlobalizationExtensions_dll).GetReference(display: "System.Globalization.Extensions (net50)");
+        public static PortableExecutableReference SystemIOCompressionBrotli { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompressionBrotli_dll).GetReference(display: "System.IO.Compression.Brotli (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOCompressionBrotli_xml));
+        public static PortableExecutableReference SystemIOCompression { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompression_dll).GetReference(display: "System.IO.Compression (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOCompression_xml));
+        public static PortableExecutableReference SystemIOCompressionFileSystem { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompressionFileSystem_dll).GetReference(display: "System.IO.Compression.FileSystem (net50)");
+        public static PortableExecutableReference SystemIOCompressionZipFile { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOCompressionZipFile_dll).GetReference(display: "System.IO.Compression.ZipFile (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOCompressionZipFile_xml));
+        public static PortableExecutableReference SystemIO { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIO_dll).GetReference(display: "System.IO (net50)");
+        public static PortableExecutableReference SystemIOFileSystem { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystem_dll).GetReference(display: "System.IO.FileSystem (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOFileSystem_xml));
+        public static PortableExecutableReference SystemIOFileSystemDriveInfo { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystemDriveInfo_dll).GetReference(display: "System.IO.FileSystem.DriveInfo (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOFileSystemDriveInfo_xml));
+        public static PortableExecutableReference SystemIOFileSystemPrimitives { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystemPrimitives_dll).GetReference(display: "System.IO.FileSystem.Primitives (net50)");
+        public static PortableExecutableReference SystemIOFileSystemWatcher { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOFileSystemWatcher_dll).GetReference(display: "System.IO.FileSystem.Watcher (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOFileSystemWatcher_xml));
+        public static PortableExecutableReference SystemIOIsolatedStorage { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOIsolatedStorage_dll).GetReference(display: "System.IO.IsolatedStorage (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOIsolatedStorage_xml));
+        public static PortableExecutableReference SystemIOMemoryMappedFiles { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOMemoryMappedFiles_dll).GetReference(display: "System.IO.MemoryMappedFiles (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOMemoryMappedFiles_xml));
+        public static PortableExecutableReference SystemIOPipes { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOPipes_dll).GetReference(display: "System.IO.Pipes (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemIOPipes_xml));
+        public static PortableExecutableReference SystemIOUnmanagedMemoryStream { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemIOUnmanagedMemoryStream_dll).GetReference(display: "System.IO.UnmanagedMemoryStream (net50)");
         public static PortableExecutableReference SystemLinq { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinq_dll).GetReference(display: "System.Linq (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinq_xml));
         public static PortableExecutableReference SystemLinqExpressions { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqExpressions_dll).GetReference(display: "System.Linq.Expressions (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinqExpressions_xml));
         public static PortableExecutableReference SystemLinqParallel { get; } = AssemblyMetadata.CreateFromImage(Net50Resources.SystemLinqParallel_dll).GetReference(display: "System.Linq.Parallel (net50)", documentation: XmlDocumentationProvider.CreateFromBytes(Net50Resources.SystemLinqParallel_xml));
@@ -292,6 +327,19 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             SystemGlobalizationCalendars,
             SystemGlobalization,
             SystemGlobalizationExtensions,
+            SystemIOCompressionBrotli,
+            SystemIOCompression,
+            SystemIOCompressionFileSystem,
+            SystemIOCompressionZipFile,
+            SystemIO,
+            SystemIOFileSystem,
+            SystemIOFileSystemDriveInfo,
+            SystemIOFileSystemPrimitives,
+            SystemIOFileSystemWatcher,
+            SystemIOIsolatedStorage,
+            SystemIOMemoryMappedFiles,
+            SystemIOPipes,
+            SystemIOUnmanagedMemoryStream,
             SystemLinq,
             SystemLinqExpressions,
             SystemLinqParallel,

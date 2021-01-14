@@ -135,6 +135,72 @@
         </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.Globalization.Extensions.dll">
           <LogicalName>net50.System.Globalization.Extensions.dll</LogicalName>
           <Link>Resources\net50\System.Globalization.Extensions.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.Brotli.dll">
+          <LogicalName>net50.System.IO.Compression.Brotli.dll</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.Brotli.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.Brotli.xml">
+          <LogicalName>net50.System.IO.Compression.Brotli.xml</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.Brotli.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.dll">
+          <LogicalName>net50.System.IO.Compression.dll</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.xml">
+          <LogicalName>net50.System.IO.Compression.xml</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.FileSystem.dll">
+          <LogicalName>net50.System.IO.Compression.FileSystem.dll</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.FileSystem.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.ZipFile.dll">
+          <LogicalName>net50.System.IO.Compression.ZipFile.dll</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.ZipFile.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Compression.ZipFile.xml">
+          <LogicalName>net50.System.IO.Compression.ZipFile.xml</LogicalName>
+          <Link>Resources\net50\System.IO.Compression.ZipFile.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.dll">
+          <LogicalName>net50.System.IO.dll</LogicalName>
+          <Link>Resources\net50\System.IO.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.dll">
+          <LogicalName>net50.System.IO.FileSystem.dll</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.xml">
+          <LogicalName>net50.System.IO.FileSystem.xml</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.DriveInfo.dll">
+          <LogicalName>net50.System.IO.FileSystem.DriveInfo.dll</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.DriveInfo.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.DriveInfo.xml">
+          <LogicalName>net50.System.IO.FileSystem.DriveInfo.xml</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.DriveInfo.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.Primitives.dll">
+          <LogicalName>net50.System.IO.FileSystem.Primitives.dll</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.Primitives.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.Watcher.dll">
+          <LogicalName>net50.System.IO.FileSystem.Watcher.dll</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.Watcher.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.FileSystem.Watcher.xml">
+          <LogicalName>net50.System.IO.FileSystem.Watcher.xml</LogicalName>
+          <Link>Resources\net50\System.IO.FileSystem.Watcher.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.IsolatedStorage.dll">
+          <LogicalName>net50.System.IO.IsolatedStorage.dll</LogicalName>
+          <Link>Resources\net50\System.IO.IsolatedStorage.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.IsolatedStorage.xml">
+          <LogicalName>net50.System.IO.IsolatedStorage.xml</LogicalName>
+          <Link>Resources\net50\System.IO.IsolatedStorage.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.MemoryMappedFiles.dll">
+          <LogicalName>net50.System.IO.MemoryMappedFiles.dll</LogicalName>
+          <Link>Resources\net50\System.IO.MemoryMappedFiles.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.MemoryMappedFiles.xml">
+          <LogicalName>net50.System.IO.MemoryMappedFiles.xml</LogicalName>
+          <Link>Resources\net50\System.IO.MemoryMappedFiles.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Pipes.dll">
+          <LogicalName>net50.System.IO.Pipes.dll</LogicalName>
+          <Link>Resources\net50\System.IO.Pipes.dll</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.Pipes.xml">
+          <LogicalName>net50.System.IO.Pipes.xml</LogicalName>
+          <Link>Resources\net50\System.IO.Pipes.xml</Link>
+        </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.IO.UnmanagedMemoryStream.dll">
+          <LogicalName>net50.System.IO.UnmanagedMemoryStream.dll</LogicalName>
+          <Link>Resources\net50\System.IO.UnmanagedMemoryStream.dll</Link>
         </EmbeddedResource>        <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.netcore.app.ref\5.0.0\ref\net5.0\System.Linq.dll">
           <LogicalName>net50.System.Linq.dll</LogicalName>
           <Link>Resources\net50\System.Linq.dll</Link>
