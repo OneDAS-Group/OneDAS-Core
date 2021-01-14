@@ -8,6 +8,7 @@ using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
+using OneDas.Types;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -303,9 +304,9 @@ namespace OneDas.DataManagement.Extensions
                     var supportedChanneIds = filterProvider.Filters.Select(filter => filter.ToGuid(filterCodeDefinition).ToString()).ToList();
                     cacheEntries[i] = new FilterDataReaderCacheEntry(filterCodeDefinition, loadContext, filterProvider, supportedChanneIds);
                 }
-                catch (MissingMethodException)
+                catch (Exception ex)
                 {
-                    //
+                    this.Logger.LogError($"Failed to instantiate the filter provider '{filterCodeDefinition.Name}' of user {filterCodeDefinition.Owner}. Detailed error: {ex.GetFullMessage()}");
                 }
             });
 
