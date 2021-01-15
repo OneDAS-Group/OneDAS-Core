@@ -62,11 +62,6 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             {
                 projectInfo = projectInfo
                     .WithMetadataReferences(Net50.All);
-
-                //projectInfo = projectInfo.WithMetadataReferences(new[]
-                //{
-                //    MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: documentationProvider),
-                //});
             }
 
             var project = this.Workspace.AddProject(projectInfo);

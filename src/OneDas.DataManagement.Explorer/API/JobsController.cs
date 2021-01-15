@@ -161,7 +161,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner ||
                     jobControl.Job.Owner == null ||
-                    this.User.HasClaim("IsAdmin", "true"))
+                    this.User.HasClaim(Claims.IS_ADMIN, "true"))
                 {
                     return new JobStatus()
                     {
@@ -200,7 +200,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner || 
                     jobControl.Job.Owner == null ||
-                    this.User.HasClaim("IsAdmin", "true"))
+                    this.User.HasClaim(Claims.IS_ADMIN, "true"))
                 {
                     jobControl.CancellationTokenSource.Cancel();
                     return this.Accepted();
@@ -235,7 +235,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             setup.End = setup.End.ToUniversalTime();
 
             // security check
-            if (!this.User.HasClaim("IsAdmin", "true"))
+            if (!this.User.HasClaim(Claims.IS_ADMIN, "true"))
                 return this.Unauthorized($"The current user is not authorized to create an aggregation job.");
 
             //
@@ -309,7 +309,7 @@ namespace OneDas.DataManagement.Explorer.Controllers
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner ||
                     jobControl.Job.Owner == null ||
-                    this.User.HasClaim("IsAdmin", "true"))
+                    this.User.HasClaim(Claims.IS_ADMIN, "true"))
                 {
                     return new JobStatus()
                     {
@@ -345,14 +345,14 @@ namespace OneDas.DataManagement.Explorer.Controllers
         public ActionResult DeleteAggregationJob(Guid jobId)
         {
             // security check
-            if (!this.User.HasClaim("IsAdmin", "true"))
+            if (!this.User.HasClaim(Claims.IS_ADMIN, "true"))
                 return this.Unauthorized($"The current user is not authorized to cancel aggregation jobs.");
 
             if (_exportJobService.TryGetJob(jobId, out var jobControl))
             {
                 if (this.User.Identity.Name == jobControl.Job.Owner ||
                     jobControl.Job.Owner == null ||
-                    this.User.HasClaim("IsAdmin", "true"))
+                    this.User.HasClaim(Claims.IS_ADMIN, "true"))
                 {
                     jobControl.CancellationTokenSource.Cancel();
                     return this.Accepted();

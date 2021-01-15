@@ -108,6 +108,9 @@ namespace OneDas.DataManagement.Explorer.Shared
         #region Properties
 
         [Inject]
+        public DatabaseManager DatabaseManager { get; set; }
+
+        [Inject]
         public ToasterService ToasterService { get; set; }
 
         private BarConfig Config { get; set; }
@@ -176,10 +179,11 @@ namespace OneDas.DataManagement.Explorer.Shared
                     if (hasCleared)
                     {
                         var registration = availability[i].DataReaderRegistration;
+                        var isAggregation = registration.Equals(this.DatabaseManager.State.AggregationRegistration);
 
                         dataset = new BarDataset<TimePoint>
                         {
-                            Label = registration.IsAggregation ? "Aggregations" : $"Raw ({registration.RootPath} - {registration.DataReaderId})",
+                            Label = isAggregation ? "Aggregations" : $"Raw ({registration.RootPath} - {registration.DataReaderId})",
                             BackgroundColor = _backgroundColors[i % _backgroundColors.Count()],
                             BorderColor = _borderColors[i % _borderColors.Count()],
                             BorderWidth = 2

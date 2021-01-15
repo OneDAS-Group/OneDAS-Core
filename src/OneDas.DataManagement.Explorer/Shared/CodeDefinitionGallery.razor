@@ -3,16 +3,16 @@
     <MatDialogContent>
         <p>Browse code of other users and use it as template:</p>
         <MatNavMenu>
-            @if (this.Owners != null && this.Owners.Any())
+            @if (this.OwnerToCodeDefinitionsMap != null && this.OwnerToCodeDefinitionsMap.Any())
             {
-                @foreach (var owner in this.Owners)
+                @foreach (var entry in this.OwnerToCodeDefinitionsMap)
                 {
                     <MatNavSubMenu>
                         <MatNavSubMenuHeader>
-                            <MatNavItem AllowSelection="false"><MatIcon Icon="@MatIconNames.Person"></MatIcon>&nbsp; @owner</MatNavItem>
+                            <MatNavItem AllowSelection="false"><MatIcon Icon="@MatIconNames.Person"></MatIcon>&nbsp; @entry.Key</MatNavItem>
                         </MatNavSubMenuHeader>
                         <MatNavSubMenuList>
-                            @foreach (var codeDefinition in this.GetCodeDefinitionsForOwner(owner))
+                            @foreach (var codeDefinition in @entry.Value)
                             {
                                 <MatNavItem @onclick="() => this.Accept(codeDefinition)"><MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name</MatNavItem>
                             }

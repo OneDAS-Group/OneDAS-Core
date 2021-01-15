@@ -109,7 +109,7 @@ namespace OneDas.DataManagement.Explorer
             // authorization
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("RequireAdmin", policy => policy.RequireClaim("IsAdmin", "true"));
+                options.AddPolicy("RequireAdmin", policy => policy.RequireClaim(Claims.IS_ADMIN, "true"));
             });
 
             // swagger

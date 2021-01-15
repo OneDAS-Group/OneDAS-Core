@@ -53,7 +53,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     if (result.Succeeded)
                     {
-                        var claim = new Claim("IsAdmin", "true");
+                        var claim = new Claim(Claims.IS_ADMIN, "true");
                         userManager.AddClaimAsync(user, claim).Wait();
 
                         // remove default root user
@@ -82,7 +82,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     if (result.Succeeded)
                     {
-                        var claim = new Claim("CanAccessProject", "/IN_MEMORY/TEST/ACCESSIBLE;/IN_MEMORY/TEST/RESTRICTED");
+                        var claim = new Claim(Claims.CAN_ACCESS_PROJECT, "/IN_MEMORY/TEST/ACCESSIBLE;/IN_MEMORY/TEST/RESTRICTED");
                         userManager.AddClaimAsync(user, claim).Wait();
                     }
                 }

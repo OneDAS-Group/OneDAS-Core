@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OneDas.DataManagement.Explorer.Shared
 {
@@ -14,6 +16,9 @@ namespace OneDas.DataManagement.Explorer.Shared
         [Inject]
         public AppState AppState { get; set; }
 
+        [Inject]
+        public UserManager<IdentityUser> UserManager { get; set; }
+
         [Parameter]
         public bool IsOpen { get; set; }
 
@@ -23,29 +28,40 @@ namespace OneDas.DataManagement.Explorer.Shared
         [Parameter]
         public Action<CodeDefinitionViewModel> OnCodeDefinitionSelected { get; set; }
 
-        private List<string> Owners { get; set; }
+        private Dictionary<string, List<CodeDefinitionViewModel>> OwnerToCodeDefinitionsMap { get; set; }
 
         #endregion
 
         #region Methods
 
-        protected override void OnAfterRender(bool firstRender)
-        {
-            this.Owners = this.AppState.FilterSettings.CodeDefinitions
-                .Where(current => current.IsPublic)
-                .Select(current => current.Owner)
-                .Distinct()
-                .ToList();
 
-            base.OnAfterRender(firstRender);
+
+        protected override async Task OnParametersSetAsync()
+        {
+            var owners = this.AppState.FilterSettings.CodeDefinitions
+                   .Where(current => current.IsPublic)
+                   .Select(current => current.Owner)
+                   .Distinct()
+                   .ToList();
+
+            this.OwnerToCodeDefinitionsMap = new Dictionary<string, List<CodeDefinitionViewModel>>();
+
+            foreach (var owner in owners)
+            {
+                this.OwnerToCodeDefinitionsMap[owner] = await this.GetCodeDefinitionsForOwnerAsync(owner);
+            }
+
+            await base.OnParametersSetAsync();
         }
 
-        private List<CodeDefinitionViewModel> GetCodeDefinitionsForOwner(string owner)
+        private async Task<List<CodeDefinitionViewModel>> GetCodeDefinitionsForOwnerAsync(string owner)
         {
+            var user = await Utilities.GetClaimsPrincipalAsync(owner, UserManager);
+
             return this.AppState
                 .FilterSettings
                 .CodeDefinitions
-                .Where(current => current.IsPublic && current.Owner == owner)
+                .Where(current => user.HasClaim(Claims.IS_ADMIN, "true") || (current.IsPublic && current.Owner == owner))
                 .OrderBy(current => current.CodeType)
                 .Select(current => new CodeDefinitionViewModel(current))
                 .ToList();

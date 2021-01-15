@@ -57,7 +57,6 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Fields
 
-        private DatabaseManagerState _state;
         private OneDasExplorerOptions _options;
 
         private bool _isInitialized;
@@ -85,17 +84,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
         public OneDasDatabaseConfig Config { get; private set; }
 
-        private DatabaseManagerState State
-        {
-            get
-            {
-                return _state;
-            }
-            set
-            {
-                _state = value;
-            }
-        }
+        public DatabaseManagerState State { get; private set; }
 
         #endregion
 
@@ -140,8 +129,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 DataReaderId = "OneDas.HDF",
                 RootPath = !string.IsNullOrWhiteSpace(this.Config.AggregationDataReaderRootPath) 
                     ? this.Config.AggregationDataReaderRootPath
-                    : _options.DataBaseFolderPath,
-                IsAggregation = true
+                    : _options.DataBaseFolderPath
             };
 
             registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);

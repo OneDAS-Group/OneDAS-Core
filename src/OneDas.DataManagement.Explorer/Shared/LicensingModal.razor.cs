@@ -40,7 +40,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         {
             var authenticationState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
             var principal = authenticationState.User;
-            var claimType = "CanAccessProject";
+            var claimType = Claims.CAN_ACCESS_PROJECT;
 
             if (principal.Identity.IsAuthenticated)
             {

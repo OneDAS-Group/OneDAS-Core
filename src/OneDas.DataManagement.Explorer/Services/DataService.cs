@@ -277,9 +277,11 @@ namespace OneDas.DataManagement.Explorer.Services
 
                     try
                     {
+                        var isAggregation = dataReader.Registration.Equals(_databaseManager.State.AggregationRegistration);
+
                         foreach (var progressRecord in dataReader.Read(entry.Value, exportParameters.Begin, exportParameters.End, _blockSizeLimit, cancellationToken))
                         {
-                            this.ProcessData(dataWriter, progressRecord, applyStatus: !dataReader.Registration.IsAggregation);
+                            this.ProcessData(dataWriter, progressRecord, applyStatus: !isAggregation);
                         }
                     }
                     finally

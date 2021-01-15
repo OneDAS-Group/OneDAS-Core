@@ -48,8 +48,8 @@ namespace OneDas.DataManagement.Explorer.Core
             }
             else if (identity.IsAuthenticated)
             {
-                var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
-                var canAccessProject = principal.HasClaim(claim => claim.Type == "CanAccessProject"
+                var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
+                var canAccessProject = principal.HasClaim(claim => claim.Type == Claims.CAN_ACCESS_PROJECT
                                                        && claim.Value.Split(";").Any(current => current == projectMeta.Id));
 
                 return isAdmin || canAccessProject;
@@ -67,8 +67,8 @@ namespace OneDas.DataManagement.Explorer.Core
 
             if (identity.IsAuthenticated)
             {
-                var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
-                var canEditProject = principal.HasClaim(claim => claim.Type == "CanEditProject"
+                var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
+                var canEditProject = principal.HasClaim(claim => claim.Type == Claims.CAN_EDIT_PROJECT
                                                        && claim.Value.Split(";").Any(current => current == projectMeta.Id));
 
                 return isAdmin || canEditProject;
@@ -87,7 +87,7 @@ namespace OneDas.DataManagement.Explorer.Core
             }
             else if (identitiy.IsAuthenticated)
             {
-                var isAdmin = principal.HasClaim(claim => claim.Type == "IsAdmin" && claim.Value == "true");
+                var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
                 return isAdmin;
             }
 
