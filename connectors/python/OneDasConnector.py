@@ -23,7 +23,6 @@ class ChannelInfo():
         self.name = dict["name"]
         self.group = dict["group"]
         self.unit = dict["unit"]
-        self.transfer_functions = dict["transferFunctions"]
         self.dataset_name = channelPath.split("/")[-1]
         self.description = dict["description"]
         self.special_info = dict["specialInfo"]

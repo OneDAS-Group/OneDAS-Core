@@ -13,4 +13,3 @@ namespace OneDas.Extensibility
         public Type LogicType { get; }
     }
 }
-
