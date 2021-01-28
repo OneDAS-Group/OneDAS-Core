@@ -1,7 +1,9 @@
-# https://hub.docker.com/_/microsoft-dotnet-core
+# https://hub.docker.com/_/microsoft-dotnet-sdk
 # https://github.com/dotnet/dotnet-docker/blob/master/src/sdk/5.0/buster-slim/amd64/Dockerfile
 # = 5.0.101-buster-slim-amd64 (Debian 10)
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+
+# use patch version because of certifcate issue, otherwise just 5.0 (https://github.com/NuGet/Home/issues/10491)
+FROM mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim AS build
 WORKDIR /source
 
 # copy everything else and build app
