@@ -74,8 +74,8 @@ namespace OneDas.DataManagement.Explorer.Controllers
             else
                 userName = "anonymous";
 
-            DateTime.SpecifyKind(begin, DateTimeKind.Utc);
-            DateTime.SpecifyKind(end, DateTimeKind.Utc);
+            begin = DateTime.SpecifyKind(begin, DateTimeKind.Utc);
+            end = DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
             var message = $"User '{userName}' ({remoteIpAddress}) streams data: {begin.ToISO8601()} to {end.ToISO8601()} ...";
             _logger.LogInformation(message);

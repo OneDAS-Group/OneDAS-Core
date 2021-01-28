@@ -1,7 +1,8 @@
 import asyncio
+import logging
 import json
 import logging
-import struct
+
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
