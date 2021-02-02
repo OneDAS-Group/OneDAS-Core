@@ -335,7 +335,7 @@ namespace OneDas.DataManagement.Extensions
                 var firstDateTime = this.GetFirstDateTime(files);
 
                 project.ProjectStart = firstDateTime;
-                project.ProjectEnd = versioning.ScannedUntilMap[project.Id].AddDays(1);
+                project.ProjectEnd = versioning.ScannedUntilMap[project.Id];
             }
 
             return mainCache;
