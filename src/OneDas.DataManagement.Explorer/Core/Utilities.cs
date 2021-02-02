@@ -49,10 +49,14 @@ namespace OneDas.DataManagement.Explorer.Core
             else if (identity.IsAuthenticated)
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
-                var canAccessProject = principal.HasClaim(claim => claim.Type == Claims.CAN_ACCESS_PROJECT
-                                                       && claim.Value.Split(";").Any(current => current == projectMeta.Id));
 
-                return isAdmin || canAccessProject;
+                var canAccessProject = principal.HasClaim(claim => claim.Type == Claims.CAN_ACCESS_PROJECT &&
+                                                          claim.Value.Split(";").Any(current => current == projectMeta.Id));
+
+                var canAccessGroup = principal.HasClaim(claim => claim.Type == Claims.CAN_ACCESS_GROUP &&
+                                                        claim.Value.Split(";").Any(group => projectMeta.GroupMemberships.Contains(group)));
+
+                return isAdmin || canAccessProject || canAccessGroup;
             }
 
             return false;
@@ -68,6 +72,7 @@ namespace OneDas.DataManagement.Explorer.Core
             if (identity.IsAuthenticated)
             {
                 var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
+
                 var canEditProject = principal.HasClaim(claim => claim.Type == Claims.CAN_EDIT_PROJECT
                                                        && claim.Value.Split(";").Any(current => current == projectMeta.Id));
 
@@ -77,21 +82,28 @@ namespace OneDas.DataManagement.Explorer.Core
             return false;
         }
 
-        public static bool IsProjectVisible(ClaimsPrincipal principal, string projectId, List<string> hiddenProjects)
+        public static bool IsProjectVisible(ClaimsPrincipal principal, ProjectMeta projectMeta, bool isProjectAccessible)
         {
-            var identitiy = principal.Identity;
+            var identity = principal.Identity;
 
-            if (!hiddenProjects.Contains(projectId))
-            {
+            // 1. project is visible if user is admin (this check must come before 2.)
+            if (identity.IsAuthenticated)
+                return principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
+
+            // 2. test projects are hidden by default
+            if (Constants.HiddenProjects.Contains(projectMeta.Id))
+                return false;
+
+            // 3. other projects
+
+            // project is hidden, addtional checks required
+            if (projectMeta.IsHidden)
+                // ignore hidden property in case user has access to project
+                return isProjectAccessible;
+
+            // project is visible
+            else
                 return true;
-            }
-            else if (identitiy.IsAuthenticated)
-            {
-                var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
-                return isAdmin;
-            }
-
-            return false;
         }
 
         public static string GetEnumLocalization(Enum enumValue)

@@ -53,10 +53,13 @@ namespace OneDas.DataManagement.Explorer.Controllers
 
             var projectContainers = _databaseManager.Database.ProjectContainers;
 
-            projectContainers = projectContainers.Where(projectContainer
-                => Utilities.IsProjectAccessible(this.User, projectContainer.Id, _databaseManager.Database)
-                && Utilities.IsProjectVisible(this.User, projectContainer.Id, Constants.HiddenProjects))
-                .ToList();
+            projectContainers = projectContainers.Where(projectContainer =>
+            {
+                var isProjectAccessible = Utilities.IsProjectAccessible(this.User, projectContainer.Id, _databaseManager.Database);
+                var isProjectVisible = Utilities.IsProjectVisible(this.User, projectContainer.ProjectMeta, isProjectAccessible);
+
+                return isProjectAccessible && isProjectVisible;
+            }).ToList();
 
             return projectContainers.Select(projectContainer
                 => this.CreateProjectResponse(projectContainer.Project, projectContainer.ProjectMeta))

@@ -626,7 +626,7 @@ namespace OneDas.DataManagement.Explorer.Core
         {
             var projectContainers = database.ProjectContainers;
 
-            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, database, Constants.HiddenProjects).Result;
+            this.ProjectContainersInfo = this.SplitCampainContainersAsync(projectContainers, database).Result;
 
             // this triggers a search to find the new container instance
             this.ProjectContainer = this.ProjectContainer;
@@ -744,22 +744,25 @@ namespace OneDas.DataManagement.Explorer.Core
         }
 
         private async Task<SplittedProjectContainers> SplitCampainContainersAsync(List<ProjectContainer> projectContainers,
-                                                                                  OneDasDatabase database,
-                                                                                  List<string> hiddenProjects)
+                                                                                  OneDasDatabase database)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var principal = authState.User;
 
             var accessible = projectContainers.Where(projectContainer =>
             {
-                return Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, database)
-                    && Utilities.IsProjectVisible(principal, projectContainer.Project.Id, hiddenProjects);
+                var isProjectAccessible = Utilities.IsProjectAccessible(principal, projectContainer.Id, database);
+                var isProjectVisible = Utilities.IsProjectVisible(principal, projectContainer.ProjectMeta, isProjectAccessible);
+
+                return isProjectAccessible && isProjectVisible;
             }).OrderBy(projectContainer => projectContainer.Id).ToList();
 
             var restricted = projectContainers.Where(projectContainer =>
             {
-                return !Utilities.IsProjectAccessible(principal, projectContainer.Project.Id, database)
-                    && Utilities.IsProjectVisible(principal, projectContainer.Project.Id, hiddenProjects);
+                var isProjectAccessible = Utilities.IsProjectAccessible(principal, projectContainer.Id, database);
+                var isProjectVisible = Utilities.IsProjectVisible(principal, projectContainer.ProjectMeta, isProjectAccessible);
+
+                return !isProjectAccessible && isProjectVisible;
             }).OrderBy(projectContainer => projectContainer.Id).ToList();
 
             return new SplittedProjectContainers(accessible, restricted);
