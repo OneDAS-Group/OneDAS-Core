@@ -9,8 +9,8 @@ classdef OneDasConnector < matlab.net.http.ProgressMonitor
         Token
         
         % Progress monitor
-        Direction
-        Value
+        Direction matlab.net.http.MessageType
+        Value uint64
         ProgressAction
         LastProgress
     end
@@ -236,9 +236,7 @@ classdef OneDasConnector < matlab.net.http.ProgressMonitor
                     self.Token = self.GetToken();
                 end
                 
-                header                  = HeaderField;
-                header.Name             = 'Authorization';
-                header.Value            = ['Bearer ' self.Token];
+                header                  = matlab.net.http.field.GenericField('Authorization', ['Bearer ' self.Token]);
                 requestMessage.Header   = header;
                 
                 if (nargin == 3)
