@@ -89,8 +89,10 @@ namespace OneDas.DataManagement.Explorer.Core
             // 1. project is visible if user is admin (this check must come before 2.)
             if (identity.IsAuthenticated)
             {
-                if (principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true"))
-                    return true;
+                var isAdmin = principal.HasClaim(claim => claim.Type == Claims.IS_ADMIN && claim.Value == "true");
+
+                if (isAdmin)
+                    return true; // not "return isAdmin"!!
             }
 
             // 2. test projects are hidden by default

@@ -191,8 +191,11 @@ namespace OneDas.DataManagement.Extensions
                         }
 
                         // create channel
-                        if (!OneDasUtilities.CheckNamingConvention(localFilterChannel.ChannelName, out var _))
+                        if (!OneDasUtilities.CheckNamingConvention(localFilterChannel.ChannelName, out var message))
+                        {
+                            this.Logger.LogWarning($"Skipping channel '{localFilterChannel.ChannelName}' due to the following reason: {message}.");
                             continue;
+                        }
 
                         var channel = new ChannelInfo(localFilterChannel.ToGuid(cacheEntry.FilterCodeDefinition).ToString(), project)
                         {
