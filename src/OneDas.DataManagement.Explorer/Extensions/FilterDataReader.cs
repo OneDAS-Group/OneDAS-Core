@@ -148,7 +148,7 @@ namespace OneDas.DataManagement.Extensions
         {
             var projects = new Dictionary<string, ProjectInfo>();
 
-            if (false && this.TryGetFilterSettings(out var filterSettings))
+            if (this.TryGetFilterSettings(out var filterSettings))
             {
                 this.PopulateCache(filterSettings);
                 var filterCodeDefinitions = filterSettings.CodeDefinitions.Where(filter => filter.CodeType == CodeType.Filter);
