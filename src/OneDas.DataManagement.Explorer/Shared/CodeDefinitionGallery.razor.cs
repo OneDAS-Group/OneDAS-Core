@@ -34,8 +34,6 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         #region Methods
 
-
-
         protected override async Task OnParametersSetAsync()
         {
             var owners = this.AppState.FilterSettings.CodeDefinitions
@@ -56,12 +54,12 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         private async Task<List<CodeDefinitionViewModel>> GetCodeDefinitionsForOwnerAsync(string owner)
         {
-            var user = await Utilities.GetClaimsPrincipalAsync(owner, UserManager);
+            var user = await Utilities.GetClaimsPrincipalAsync(owner, this.UserManager);
 
             return this.AppState
                 .FilterSettings
                 .CodeDefinitions
-                .Where(current => user.HasClaim(Claims.IS_ADMIN, "true") || (current.IsEnabled && current.Owner == owner))
+                .Where(current => current.Owner == owner && current.IsEnabled)
                 .OrderBy(current => current.CodeType)
                 .Select(current => new CodeDefinitionViewModel(current))
                 .ToList();
