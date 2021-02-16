@@ -84,7 +84,7 @@ namespace OneDas.DataManagement.Explorer.Roslyn
 
                 var sharedCode = streamReader
                     .ReadToEnd()
-                    .Replace("Func<string, string, string, double[]> getData", "DataProvider dataProvider");
+                    .Replace("Func<string, string, string, DateTime, DateTime, double[]> getData", "DataProvider dataProvider");
 
                 this.Workspace.AddDocument(project.Id, "FilterTypesShared.cs", SourceText.From(sharedCode));
 
@@ -128,6 +128,7 @@ namespace OneDas.DataManagement.Explorer.Roslyn
             // generate code
             var classStringBuilder = new StringBuilder();
 
+            classStringBuilder.AppendLine($"using System;");
             classStringBuilder.AppendLine($"namespace {nameof(OneDas)}.{nameof(DataManagement)}.{nameof(Explorer)}.Filters");
             classStringBuilder.AppendLine($"{{");
 
@@ -136,6 +137,11 @@ namespace OneDas.DataManagement.Explorer.Roslyn
 
             // add Read() method
             classStringBuilder.AppendLine($"public double[] Read(string projectId, string channelName, string datasetId)");
+            classStringBuilder.AppendLine($"{{");
+            classStringBuilder.AppendLine($"return new double[0];");
+            classStringBuilder.AppendLine($"}}");
+
+            classStringBuilder.AppendLine($"public double[] Read(string projectId, string channelName, string datasetId, DateTime begin, DateTime end)");
             classStringBuilder.AppendLine($"{{");
             classStringBuilder.AppendLine($"return new double[0];");
             classStringBuilder.AppendLine($"}}");

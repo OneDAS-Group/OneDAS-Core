@@ -37,7 +37,7 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public string Code { get; set; } = string.Empty;
 
-        public bool IsPublic { get; set; }
+        public bool IsEnabled { get; set; }
 
         public string Name { get; set; } = string.Empty;
 

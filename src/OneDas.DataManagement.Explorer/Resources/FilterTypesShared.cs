@@ -64,7 +64,7 @@ namespace OneDas.DataManagement.Explorer.Filters
 
         #region Methods
 
-        public abstract void Filter(DateTime begin, DateTime end, FilterChannel filterChannel, Func<string, string, string, double[]> getData, double[] result);
+        public abstract void Filter(DateTime begin, DateTime end, FilterChannel filterChannel, Func<string, string, string, DateTime, DateTime, double[]> getData, double[] result);
 
         protected abstract List<FilterChannel> GetFilters();
 

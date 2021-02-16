@@ -112,7 +112,7 @@ namespace OneDas.DataManagement.Extensions
             status.AsSpan().Fill(1);
 
             // fill database
-            Func<string, string, string, double[]> getData = (string projectId, string channelId, string datasetId) =>
+            Func<string, string, string, DateTime, DateTime, double[]> getData = (string projectId, string channelId, string datasetId, DateTime begin, DateTime end) =>
             {
 #warning improve this (PhysicalName)
                 var project = this.DatabaseManager.Database.ProjectContainers
@@ -216,6 +216,10 @@ namespace OneDas.DataManagement.Extensions
                         // append
                         channel.Datasets.AddRange(datasets);
                         project.Channels.Add(channel);
+
+                        // set begin and end
+                        project.ProjectStart = DateTime.MaxValue;
+                        project.ProjectEnd = DateTime.MinValue;
                     }
                 }
             }
@@ -259,7 +263,7 @@ namespace OneDas.DataManagement.Extensions
         private void PopulateCache(FilterSettings filterSettings)
         {
             var filterCodeDefinitions = filterSettings.CodeDefinitions
-                .Where(filterSetting => filterSetting.CodeType == CodeType.Filter)
+                .Where(filterSetting => filterSetting.CodeType == CodeType.Filter && filterSetting.IsEnabled)
                 .ToList();
 
             var message = $"Compiling {filterCodeDefinitions.Count} filter(s) ...";
@@ -322,7 +326,7 @@ namespace OneDas.DataManagement.Extensions
             // change signature
             code = code.Replace(
                 "DataProvider dataProvider",
-                "System.Func<string, string, string, double[]> getData");
+                "System.Func<string, string, string, System.DateTime, System.DateTime, double[]> getData");
 
             // matches strings like "= dataProvider.IN_MEMORY_TEST_ACCESSIBLE.T1.DATASET_1_s_mean;"
             var pattern1 = @"=\s*dataProvider\.([a-zA-Z_0-9]+)\.([a-zA-Z_0-9]+)\.DATASET_([a-zA-Z_0-9]+);";
@@ -335,21 +339,31 @@ namespace OneDas.DataManagement.Extensions
                 var regex = new Regex("_");
                 var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
 
-                return $"= (double[])getData(\"{projectId}\", \"{channelId}\", \"{datasetId}\");";
+                return $"= (double[])getData(\"{projectId}\", \"{channelId}\", \"{datasetId}\", begin, end);";
+            });
+
+            // matches strings like "= dataProvider.Read(campaignId, channelId, datasetId, begin, end);"
+            var pattern3 = @"=\s*dataProvider\.Read\((.*?),(.*?),(.*?),(.*?),(.*?)\);";
+            code = Regex.Replace(code, pattern3, match =>
+            {
+                var projectId = match.Groups[1].Value;
+                var channelId = match.Groups[2].Value;
+                var datasetId = match.Groups[3].Value;
+                var begin = match.Groups[4].Value;
+                var end = match.Groups[5].Value;
+
+                return $"= (double[])getData({projectId}, {channelId}, {datasetId}, {begin}, {end});";
             });
 
             // matches strings like "= dataProvider.Read(campaignId, channelId, datasetId);"
-            var pattern2 = @"=\s*dataProvider\.Read\((.*),(.*),(.*)\);";
+            var pattern2 = @"=\s*dataProvider\.Read\((.*?),(.*?),(.*?)\);";
             code = Regex.Replace(code, pattern2, match =>
             {
                 var projectId = match.Groups[1].Value;
                 var channelId = match.Groups[2].Value;
+                var datasetId = match.Groups[3].Value;
 
-#warning: Whenever the space in the dataset name is removed, update this code
-                var regex = new Regex("_");
-                var datasetId = regex.Replace(match.Groups[3].Value, " ", 1);
-
-                return $"= (double[])getData({projectId}, {channelId}, {datasetId});";
+                return $"= (double[])getData({projectId}, {channelId}, {datasetId}, begin, end);";
             });
 
             return code;

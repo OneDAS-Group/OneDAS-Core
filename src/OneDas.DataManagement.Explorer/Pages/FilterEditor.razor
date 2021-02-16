@@ -57,22 +57,25 @@
         </div>
         <div class="right-column">
             <div class="selected-channel-box mat-elevation-z11">
-                @if (this.CodeDefinitions != null && this.CodeDefinitions.Any())
+                @if (this.AppState.IsDatabaseInitialized)
                 {
-                    @foreach (var codeDefinition in this.CodeDefinitions)
+                    @if (this.CodeDefinitions != null && this.CodeDefinitions.Any())
                     {
+                        @foreach (var codeDefinition in this.CodeDefinitions)
+                        {
 
-                        <div class="codedefinition-item @(this.UserState.CodeDefinition.Id == codeDefinition.Id ? "active" : "")"
-                             @onclick="() => this.UserState.CodeDefinition = codeDefinition">
-                            <MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name
+                            <div class="codedefinition-item @(this.UserState.CodeDefinition.Id == codeDefinition.Id ? "active" : "")"
+                                 @onclick="() => this.UserState.CodeDefinition = codeDefinition">
+                                <MatIcon Icon="@Utilities.GetEnumIconName(codeDefinition.CodeType)"></MatIcon>&nbsp; @codeDefinition.Name
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="flex-centered h-100">
+                            <MatSubtitle1>You have no filters created yet.</MatSubtitle1>
                         </div>
                     }
-                }
-                else
-                {
-                    <div class="flex-centered h-100">
-                        <MatSubtitle1>You have no filters created yet.</MatSubtitle1>
-                    </div>
                 }
             </div>
         </div>

@@ -29,8 +29,8 @@
         </MatSelectItem>
 
         <MatCheckbox Class="settings-control"
-                     Label="Publish"
-                     @bind-Value="this.UserState.CodeDefinition.IsPublic">
+                     Label="Enable"
+                     @bind-Value="this.UserState.CodeDefinition.IsEnabled">
         </MatCheckbox>
 
         @if (this.UserState.CodeDefinition.CodeType == CodeType.Filter)

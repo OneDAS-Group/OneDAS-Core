@@ -39,7 +39,7 @@ namespace OneDas.DataManagement.Explorer.Shared
         protected override async Task OnParametersSetAsync()
         {
             var owners = this.AppState.FilterSettings.CodeDefinitions
-                   .Where(current => current.IsPublic)
+                   .Where(current => current.IsEnabled)
                    .Select(current => current.Owner)
                    .Distinct()
                    .ToList();
@@ -61,7 +61,7 @@ namespace OneDas.DataManagement.Explorer.Shared
             return this.AppState
                 .FilterSettings
                 .CodeDefinitions
-                .Where(current => user.HasClaim(Claims.IS_ADMIN, "true") || (current.IsPublic && current.Owner == owner))
+                .Where(current => user.HasClaim(Claims.IS_ADMIN, "true") || (current.IsEnabled && current.Owner == owner))
                 .OrderBy(current => current.CodeType)
                 .Select(current => new CodeDefinitionViewModel(current))
                 .ToList();

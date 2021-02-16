@@ -233,7 +233,7 @@ namespace OneDas.DataManagement.Explorer.Pages
             this.UserState.CodeDefinition = new CodeDefinitionViewModel(filter.Model with
             {
                 Id = Guid.NewGuid().ToString(),
-                IsPublic = false,
+                IsEnabled = false,
                 Owner = owner
             });
         }
@@ -255,7 +255,11 @@ namespace OneDas.DataManagement.Explorer.Pages
             this.UpdateCodeDefinitions();
 
             // notify
-            this.ToasterService.ShowSuccess(message: "The code definition has been saved.", icon: MatIconNames.Thumb_up);
+            if (this.Diagnostics.Any())
+                this.ToasterService.ShowWarning(message: "The code definition has been saved. Note that there are some compilation errors.", icon: MatIconNames.Warning);
+            else
+                this.ToasterService.ShowSuccess(message: "The code definition has been saved.", icon: MatIconNames.Thumb_up);
+
             await this.InvokeAsync(() => this.StateHasChanged());
 
             // update database

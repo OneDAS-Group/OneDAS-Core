@@ -57,10 +57,10 @@ namespace OneDas.DataManagement.Explorer.ViewModels
             set { this.Model.Code = value; }
         }
 
-        public bool IsPublic
+        public bool IsEnabled
         {
-            get { return this.Model.IsPublic; }
-            set { this.Model.IsPublic = value; }
+            get { return this.Model.IsEnabled; }
+            set { this.Model.IsEnabled = value; }
         }
 
         public string Name

@@ -30,6 +30,15 @@ namespace OneDas.DataManagement.Explorer.Services
                 icon: icon);
         }
 
+        public void ShowWarning(string message, string icon)
+        {
+            _toaster.Add(
+                message,
+                MatToastType.Warning,
+                "Warning!",
+                icon: icon);
+        }
+
         public void ShowError(string message, string icon)
         {
             _toaster.Add(
