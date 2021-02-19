@@ -145,6 +145,8 @@ namespace OneDas.DataManagement.Extensions
 
                                         if (currentStatus != null)
                                             currentStatus.CopyTo(status.AsSpan(bufferOffset));
+                                        else // for averaged data
+                                            status.AsSpan(bufferOffset, currentDataset.Length).Fill(1);
 
                                         // update loop state
                                         fileOffset += currentBlock; // file offset
