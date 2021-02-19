@@ -46,7 +46,7 @@ namespace OneDas.DataManagement.Database
 
         public List<string> Logbook { get; set; }
 
-        public List<string> GroupMemberships { get; internal set; }
+        public List<string> GroupMemberships { get; set; }
 
         public List<ChannelMeta> Channels { get; set; }
 
