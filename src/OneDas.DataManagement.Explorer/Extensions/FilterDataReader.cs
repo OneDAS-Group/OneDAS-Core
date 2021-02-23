@@ -201,7 +201,8 @@ namespace OneDas.DataManagement.Extensions
                         {
                             Name = localFilterChannel.ChannelName,
                             Group = localFilterChannel.Group,
-                            Unit = localFilterChannel.Unit
+                            Unit = localFilterChannel.Unit,
+                            Description = localFilterChannel.Description
                         };
 
                         // create datasets

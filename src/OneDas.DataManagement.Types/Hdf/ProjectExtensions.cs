@@ -107,7 +107,6 @@ namespace OneDas.DataManagement.Types.Hdf
             }
         }
 
-
         public static void Update(this DatasetInfo dataset, long datasetId)
         {
             long dataspaceId = -1;

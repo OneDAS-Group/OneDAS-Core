@@ -19,12 +19,13 @@ namespace OneDas.DataManagement.Explorer.Filters
             //
         }
 
-        public FilterChannel(string projectId, string channelName, string group, string unit)
+        public FilterChannel(string projectId, string channelName, string group, string unit, string description)
         {
             this.ProjectId = projectId;
             this.ChannelName = channelName;
             this.Group = group;
             this.Unit = unit;
+            this.Description = description;
         }
 
         #endregion
@@ -35,6 +36,7 @@ namespace OneDas.DataManagement.Explorer.Filters
         public string ChannelName { get; init; } = string.Empty;
         public string Group { get; init; } = string.Empty;
         public string Unit { get; init; } = string.Empty;
+        public string Description { get; init; } = string.Empty;
 
         #endregion
     }

@@ -416,7 +416,7 @@ namespace OneDas.DataManagement.Explorer.Services
             }
 
 #warning Improve this.
-            // add additional data reader
+            // add additional data readers
             types.Add(typeof(HdfDataReader));
             types.Add(typeof(InMemoryDataReader));
             types.Add(typeof(FilterDataReader));

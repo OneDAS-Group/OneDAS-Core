@@ -36,14 +36,32 @@ namespace OneDas.DataManagement.Explorer.ViewModels
 
         public string Group => _channel.Group;
 
-        public string Unit => !string.IsNullOrWhiteSpace(_channelMeta.Unit) 
-            ? _channelMeta.Unit 
-            : _channel.Unit;
+        public string Unit
+        {
+            get
+            { 
+                return !string.IsNullOrWhiteSpace(_channelMeta.Unit)
+                    ? _channelMeta.Unit
+                    : _channel.Unit;
+            }
+            set 
+            {
+                _channelMeta.Unit = value; 
+            }
+        }
 
         public string Description
         {
-            get { return _channelMeta.Description; }
-            set { _channelMeta.Description = value; }
+            get
+            {
+                return !string.IsNullOrWhiteSpace(_channelMeta.Description)
+                    ? _channelMeta.Description
+                    : _channel.Description;
+            }
+            set
+            {
+                _channelMeta.Description = value;
+            }
         }
 
         public string SpecialInfo

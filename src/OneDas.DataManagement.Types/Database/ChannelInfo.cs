@@ -16,6 +16,7 @@ namespace OneDas.DataManagement.Database
             this.Name = string.Empty;
             this.Group = string.Empty;
             this.Unit = string.Empty;
+            this.Description = string.Empty;
             this.Datasets = new List<DatasetInfo>();
         }
 
@@ -33,6 +34,8 @@ namespace OneDas.DataManagement.Database
         public string Group { get; set; }
 
         public string Unit { get; set; }
+
+        public string Description { get; set; }
 
         public List<DatasetInfo> Datasets { get; set; }
 
@@ -59,12 +62,16 @@ namespace OneDas.DataManagement.Database
                     if (string.IsNullOrWhiteSpace(this.Unit))
                         this.Unit = channel.Unit;
 
+                    if (string.IsNullOrWhiteSpace(this.Description))
+                        this.Description = channel.Description;
+
                     break;
 
                 case ChannelMergeMode.NewWins:
                     this.Name = channel.Name;
                     this.Group = channel.Group;
                     this.Unit = channel.Unit;
+                    this.Description = channel.Description;
                     break;
 
                 default:

@@ -57,7 +57,11 @@ namespace OneDas.DataManagement.Database
 
                     Unit = !string.IsNullOrWhiteSpace(channelMeta.Unit) 
                         ? channelMeta.Unit
-                        : reference.Unit
+                        : reference.Unit,
+
+                    Description = !string.IsNullOrWhiteSpace(channelMeta.Description)
+                        ? channelMeta.Description
+                        : reference.Description
                 };
 
                 var referenceDatasets = datasets.Where(dataset => (ChannelInfo)dataset.Parent == reference);

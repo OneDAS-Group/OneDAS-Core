@@ -103,6 +103,7 @@ namespace OneDas.DataManagement.Extensions
             channelA.Name = "T1";
             channelA.Group = "Group 1";
             channelA.Unit = "°C";
+            channelA.Description = "Test channel.";
 
             channelA.Datasets.Add(dataset1);
 
@@ -110,6 +111,7 @@ namespace OneDas.DataManagement.Extensions
             channelB.Name = "V1";
             channelB.Group = "Group 1";
             channelB.Unit = "m/s";
+            channelB.Description = "Test channel.";
 
             channelB.Datasets.Add(dataset2);
 
@@ -117,6 +119,7 @@ namespace OneDas.DataManagement.Extensions
             channelC.Name = "unix_time1";
             channelC.Group = "Group 2";
             channelC.Unit = "";
+            channelC.Description = "Test channel.";
 
             channelC.Datasets.Add(dataset3);
 
@@ -124,6 +127,7 @@ namespace OneDas.DataManagement.Extensions
             channelD.Name = "unix_time2";
             channelD.Group = "Group 2";
             channelD.Unit = string.Empty;
+            channelD.Description = "Test channel.";
 
             channelD.Datasets.Add(dataset4);
             channelD.Datasets.Add(dataset5);

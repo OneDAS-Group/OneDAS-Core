@@ -44,7 +44,9 @@ namespace OneDas.DataManagement.Explorer.API
                     Unit = !string.IsNullOrWhiteSpace(channelMeta.Unit)
                             ? channelMeta.Unit
                             : channel.Unit,
-                    Description = channelMeta.Description,
+                    Description = !string.IsNullOrWhiteSpace(channelMeta.Description)
+                            ? channelMeta.Description
+                            : channel.Description,
                     SpecialInfo = channelMeta.SpecialInfo
                 };
 

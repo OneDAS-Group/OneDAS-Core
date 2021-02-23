@@ -1,12 +1,20 @@
 ﻿<div class="channel-expander" @onclick="this.OnClick" @onmouseover="() => _showSampleRates = true" @onmouseout="() => _showSampleRates = false">
     <div class="channel-name">
-        @if (string.IsNullOrWhiteSpace(this.Channel.Unit))
+
+        @if (this.UserState.IsEditEnabled)
         {
-            @this.Channel.Name
+            <span>@this.Channel.Name&nbsp;</span><input type="text" @bind-value="this.Channel.Unit" />
         }
         else
         {
-            <span>@this.Channel.Name / @this.Channel.Unit</span>
+            @if (string.IsNullOrWhiteSpace(this.Channel.Unit))
+            {
+                @this.Channel.Name
+            }
+            else
+            {
+                <span>@this.Channel.Name&nbsp;</span><span class="small-text">@this.Channel.Unit</span>
+            }
         }
 
         <div class="channel-special-info">
