@@ -225,12 +225,23 @@ namespace OneDas.DataManagement.Explorer.Services
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            var dataset = aggregationChannel.Channel.Datasets.First();
+                            try
+                            {
+                                var dataset = aggregationChannel.Channel.Datasets.First();
 
-                            OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
-                                                                BindingFlags.Instance | BindingFlags.NonPublic,
-                                                                OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                                new object[] { dataReader, dataset, aggregationChannel.Aggregations, date, targetFileId, setup.Force, cancellationToken });
+                                OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
+                                                                    BindingFlags.Instance | BindingFlags.NonPublic,
+                                                                    OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                                    new object[] { dataReader, dataset, aggregationChannel.Aggregations, date, targetFileId, setup.Force, cancellationToken });
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex.GetFullMessage());
+                            }
                         }
                     }
                     finally
