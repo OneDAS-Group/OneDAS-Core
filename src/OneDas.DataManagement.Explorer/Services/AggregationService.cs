@@ -167,8 +167,10 @@ namespace OneDas.DataManagement.Explorer.Services
                     var targetFileId = -1L;
 
                     // project
-                    if (!dataReader.TryGetProject(projectId, out var project))
-                        throw new Exception($"The requested project '{projectId}' could not be found.");
+                    var container = _databaseManager.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
+
+                    if (container == null)
+                        throw new Exception($"The requested project '{projectId}' could not be found.");                     
 
                     // targetFileId
                     var projectFileName = projectId.TrimStart('/').Replace("/", "_");
@@ -203,18 +205,21 @@ namespace OneDas.DataManagement.Explorer.Services
 
                         // find aggregations for project ID
                         var potentialAggregations = setup.Aggregations
-                            .Where(parameters => parameters.ProjectId == project.Id)
+                            .Where(parameters => parameters.ProjectId == container.Project.Id)
                             .ToList();
 
                         // create channel to aggregations map
-                        var aggregationChannels = project.Channels
+                        var aggregationChannels = container.Project.Channels
                             // find all aggregations for current channel
                             .Select(channel =>
                             {
+                                var channelMeta = container.ProjectMeta.Channels
+                                    .First(current => current.Id == channel.Id);
+
                                 return new AggregationChannel()
                                 {
                                     Channel = channel,
-                                    Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, current.Filters)).ToList()
+                                    Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, channelMeta, current.Filters)).ToList()
                                 };
                             })
                             // keep all channels with aggregations
@@ -710,7 +715,7 @@ namespace OneDas.DataManagement.Explorer.Services
                 .ToArray();
         }
 
-        private bool ApplyAggregationFilter(ChannelInfo channel, Dictionary<string, string> filters)
+        private bool ApplyAggregationFilter(ChannelInfo channel, ChannelMeta channelMeta, Dictionary<string, string> filters)
         {
             bool result = true;
 
@@ -739,7 +744,11 @@ namespace OneDas.DataManagement.Explorer.Services
                 }
                 else
                 {
-                    result &= Regex.IsMatch(channel.Unit, filters["--include-unit"]);
+                    var unit = !string.IsNullOrWhiteSpace(channelMeta.Unit)
+                        ? channelMeta.Unit
+                        : channel.Unit;
+
+                    result &= Regex.IsMatch(unit, filters["--include-unit"]);
                 }
             }
 
@@ -754,7 +763,11 @@ namespace OneDas.DataManagement.Explorer.Services
                 }
                 else
                 {
-                    result &= !Regex.IsMatch(channel.Unit, filters["--exclude-unit"]);
+                    var unit = !string.IsNullOrWhiteSpace(channelMeta.Unit)
+                        ? channelMeta.Unit
+                        : channel.Unit;
+
+                    result &= !Regex.IsMatch(unit, filters["--exclude-unit"]);
                 }
             }
 
