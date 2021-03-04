@@ -210,6 +210,8 @@ namespace OneDas.DataManagement.Explorer.Services
 
                         // create channel to aggregations map
                         var aggregationChannels = container.Project.Channels
+                            // find all channels for current reader registration
+                            .Where(channel => channel.Datasets.Any(dataset => dataset.Registration == dataReader.Registration))
                             // find all aggregations for current channel
                             .Select(channel =>
                             {
@@ -222,7 +224,7 @@ namespace OneDas.DataManagement.Explorer.Services
                                     Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, channelMeta, current.Filters)).ToList()
                                 };
                             })
-                            // keep all channels with aggregations
+                            // take all channels with aggregations
                             .Where(aggregationChannel => aggregationChannel.Aggregations.Any());
 
                         // for each channel
