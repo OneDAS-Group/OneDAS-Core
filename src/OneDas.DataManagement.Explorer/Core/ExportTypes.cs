@@ -20,6 +20,9 @@ namespace OneDas.DataManagement.Explorer.Core
         /// <example>CSV</example>
         public FileFormat FileFormat { get; set; } = FileFormat.CSV;
 
+        /// <example>Web</example>
+        public ExportMode ExportMode { get; set; } = ExportMode.Web;
+
         /// <example>["/IN_MEMORY/TEST/ACCESSIBLE/T1/1 s_mean", "/IN_MEMORY/TEST/ACCESSIBLE/V1/1 s_mean"]</example>
         public List<string> ChannelPaths { get; set; } = new List<string>();
 

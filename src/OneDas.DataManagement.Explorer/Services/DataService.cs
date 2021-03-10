@@ -97,9 +97,6 @@ namespace OneDas.DataManagement.Explorer.Services
                 var message = $"User '{username}' exports data: {exportParameters.Begin.ToISO8601()} to {exportParameters.End.ToISO8601()} ... ";
                 _logger.LogInformation(message);
 
-                // zip file path
-                var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{exportParameters.Begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
-
                 try
                 {
                     // convert datasets into projects
@@ -114,30 +111,84 @@ namespace OneDas.DataManagement.Explorer.Services
                     });
 
                     // start
+                    var zipFilePath = Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{exportParameters.Begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}.zip");
                     using var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create);
+
+                    // create tmp/target directory
+                    var directoryPath = exportParameters.ExportMode switch
+                    {
+                        ExportMode.Web => Path.Combine(Path.GetTempPath(), "OneDas.DataManagement.Explorer", Guid.NewGuid().ToString()),
+                        ExportMode.Local => Path.Combine(_options.ExportDirectoryPath, $"OneDAS_{exportParameters.Begin.ToString("yyyy-MM-ddTHH-mm")}_{sampleRate.ToUnitString(underscore: true)}_{Guid.NewGuid().ToString().Substring(0, 8)}"),
+                        _ => throw new Exception("Unsupported export mode.")
+                    };
+
+                    Directory.CreateDirectory(directoryPath);
 
                     foreach (var sparseProject in sparseProjects)
                     {
-                        this.WriteZipFileProjectEntry(_userIdService.User, zipArchive, exportParameters, sparseProject, cancellationToken);
+                        this.CreateFiles(_userIdService.User, exportParameters, sparseProject, directoryPath, cancellationToken);
+
+                        switch (exportParameters.ExportMode)
+                        {
+                            case ExportMode.Web:
+                                this.WriteZipArchiveEntries(zipArchive, directoryPath, cancellationToken); 
+                                break;
+
+                            case ExportMode.Local:
+                                 break;
+
+                            default:
+                                break;
+                        }
                     }
+
+                    _logger.LogInformation($"{message} Done.");
+
+                    return $"export/{Path.GetFileName(zipFilePath)}";
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError($"{message} Fail. Reason: {ex.GetFullMessage()}");
                     throw;
                 }
-
-                _logger.LogInformation($"{message} Done.");
-
-                return $"export/{Path.GetFileName(zipFilePath)}";
             }, cancellationToken);
         }
 
-        private void WriteZipFileProjectEntry(ClaimsPrincipal user, 
-                                              ZipArchive zipArchive,
-                                              ExportParameters exportParameters,
-                                              SparseProjectInfo sparseProject,
-                                              CancellationToken cancellationToken)
+        private void WriteZipArchiveEntries(ZipArchive zipArchive, string directoryPath, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // write zip archive entries
+                var filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
+                var currentFile = 0;
+                var fileCount = filePathSet.Count();
+
+                foreach (string filePath in filePathSet)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
+
+                    this.OnProgress(new ProgressUpdatedEventArgs(currentFile / (double)fileCount, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));
+
+                    using var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+                    using var zipArchiveEntryStream = zipArchiveEntry.Open();
+
+                    fileStream.CopyTo(zipArchiveEntryStream);
+                    currentFile++;
+                }
+            }
+            finally
+            {
+                this.CleanUp(directoryPath);
+            }
+        }
+
+        private void CreateFiles(ClaimsPrincipal user, 
+                                 ExportParameters exportParameters,
+                                 SparseProjectInfo sparseProject,
+                                 string directoryPath,
+                                 CancellationToken cancellationToken)
         {
             var channelDescriptionSet = sparseProject.ToChannelDescriptions();
             var singleFile = exportParameters.FileGranularity == FileGranularity.SingleFile;
@@ -196,10 +247,6 @@ namespace OneDas.DataManagement.Explorer.Services
                     throw new NotImplementedException();
             }
 
-            // create temp directory
-            var directoryPath = Path.Combine(Path.GetTempPath(), "OneDas.DataManagement.Explorer", Guid.NewGuid().ToString());
-            Directory.CreateDirectory(directoryPath);
-
             // create custom meta data
             var customMetadataEntrySet = new List<CustomMetadataEntry>();
             //customMetadataEntrySet.Add(new CustomMetadataEntry("system_name", "OneDAS Explorer", CustomMetadataEntryLevel.File));
@@ -216,31 +263,10 @@ namespace OneDas.DataManagement.Explorer.Services
             {
                 // create temp files
                 this.CreateFiles(user, dataWriter, exportParameters, sparseProject, cancellationToken);
-                dataWriter.Dispose();
-
-                // write zip archive entries
-                var filePathSet = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
-                var currentFile = 0;
-                var fileCount = filePathSet.Count();
-
-                foreach (string filePath in filePathSet)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var zipArchiveEntry = zipArchive.CreateEntry(Path.GetFileName(filePath), CompressionLevel.Optimal);
-
-                    this.OnProgress(new ProgressUpdatedEventArgs(currentFile / (double)fileCount, $"Writing file {currentFile + 1} / {fileCount} to ZIP archive ..."));
-
-                    using var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
-                    using var zipArchiveEntryStream = zipArchiveEntry.Open();
-
-                    fileStream.CopyTo(zipArchiveEntryStream);
-                    currentFile++;
-                }
+                dataWriter.Dispose();               
             }
             finally
             {
-                this.CleanUp(directoryPath);
                 dataWriter.Dispose();
             }
         }
