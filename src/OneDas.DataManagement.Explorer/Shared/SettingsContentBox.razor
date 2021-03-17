@@ -56,14 +56,14 @@
             </MatTextField>
 
             @*<MatTextField @bind-Value="@this.Options.InactiveOn"
-                      Label="Inactive On"
-                      PlaceHolder="e.g. 02:00">
-            </MatTextField>*@
+                          Label="Inactive On"
+                          PlaceHolder="e.g. 02:00">
+                </MatTextField>*@
 
-                @*<MatTextField @bind-Value="@this.Options.InactivityPeriod"
-                          Label="Inactive Period"
-                          PlaceHolder="e.g. 01:00">
-            </MatTextField>*@
+            @*<MatTextField @bind-Value="@this.Options.InactivityPeriod"
+                              Label="Inactive Period"
+                              PlaceHolder="e.g. 01:00">
+                </MatTextField>*@
 
             <MatTextField @bind-Value="@this.Options.Language"
                           Label="Language"
@@ -73,6 +73,12 @@
             <MatButton @onclick="this.SaveOptions">
                 <i class="fa fa-save"></i> &nbsp; Save
             </MatButton>
+
+        </MatTab>
+
+        <MatTab Label="Job Creator">
+
+            <FormGenerator DataContext="new AggregationSetup() { Aggregations = new List<Aggregation>() { new Aggregation() } }"></FormGenerator>
 
         </MatTab>
 

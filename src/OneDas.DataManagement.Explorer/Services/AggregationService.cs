@@ -722,21 +722,21 @@ namespace OneDas.DataManagement.Explorer.Services
             bool result = true;
 
             // channel
-            if (filters.ContainsKey("--include-channel"))
-                result &= Regex.IsMatch(channel.Name, filters["--include-channel"]);
+            if (filters.ContainsKey("include-channel"))
+                result &= Regex.IsMatch(channel.Name, filters["include-channel"]);
 
-            if (filters.ContainsKey("--exclude-channel"))
-                result &= !Regex.IsMatch(channel.Name, filters["--exclude-channel"]);
+            if (filters.ContainsKey("exclude-channel"))
+                result &= !Regex.IsMatch(channel.Name, filters["exclude-channel"]);
 
             // group
-            if (filters.ContainsKey("--include-group"))
-                result &= channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--include-group"]));
+            if (filters.ContainsKey("include-group"))
+                result &= channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["include-group"]));
 
-            if (filters.ContainsKey("--exclude-group"))
-                result &= !channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["--exclude-group"]));
+            if (filters.ContainsKey("exclude-group"))
+                result &= !channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["exclude-group"]));
 
             // unit
-            if (filters.ContainsKey("--include-unit"))
+            if (filters.ContainsKey("include-unit"))
             {
 #warning Remove this special case check.
                 if (channel.Unit == null)
@@ -750,11 +750,11 @@ namespace OneDas.DataManagement.Explorer.Services
                         ? channelMeta.Unit
                         : channel.Unit;
 
-                    result &= Regex.IsMatch(unit, filters["--include-unit"]);
+                    result &= Regex.IsMatch(unit, filters["include-unit"]);
                 }
             }
 
-            if (filters.ContainsKey("--exclude-unit"))
+            if (filters.ContainsKey("exclude-unit"))
             {
 #warning Remove this special case check.
                 if (channel.Unit == null)
@@ -769,7 +769,7 @@ namespace OneDas.DataManagement.Explorer.Services
                         ? channelMeta.Unit
                         : channel.Unit;
 
-                    result &= !Regex.IsMatch(unit, filters["--exclude-unit"]);
+                    result &= !Regex.IsMatch(unit, filters["exclude-unit"]);
                 }
             }
 

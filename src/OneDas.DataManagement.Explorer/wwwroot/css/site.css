@@ -1022,3 +1022,28 @@ app {
         opacity: 0.0;
     }
 }
+
+/* FormGenerator */
+.form-generator {
+    margin: 1rem;
+}
+
+.form-generator-property {
+    margin: 1rem;
+}
+
+.form-generator-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--active-bg-color);
+    padding: 1rem;
+}
+
+.form-generator-list > span {
+    color: var(--font-color-subtitle);
+    align-self: center;
+}
+
+.form-generator-list-item {
+    border: 1px solid var(--hover-color);
+}
