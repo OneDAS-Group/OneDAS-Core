@@ -78,7 +78,15 @@
 
         <MatTab Label="Job Creator">
 
-            <FormGenerator DataContext="new AggregationSetup() { Aggregations = new List<Aggregation>() { new Aggregation() } }"></FormGenerator>
+            <div class="flex-row">
+                <div class="flex-column w-50">
+                    <FormGenerator Changed="this.UpdateJsonString"
+                                   DataContext="this.JobEditor.AggregationSetup"></FormGenerator>
+                </div>
+                <div class="flex-column w-50">
+                    <textarea class="json-text" @bind-value="this.JobEditor.JsonString" @bind-value:event="oninput" />
+                </div>
+            </div>
 
         </MatTab>
 

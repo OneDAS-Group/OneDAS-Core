@@ -41,7 +41,7 @@ namespace OneDas.DataManagement.Explorer.Core
         public string ProjectId { get; set; } = string.Empty;
 
         /// <example>{ Mean: null, MeanPolar: "360" }</example>
-        public Dictionary<AggregationMethod, string> Methods { get; set; } = new Dictionary<AggregationMethod, string>() ;
+        public Dictionary<AggregationMethod, string> Methods { get; set; } = new Dictionary<AggregationMethod, string>();
 
         /// <example>{ "include-group": "GroupA|GroupB", "exclude-unit": "deg", "include-channel": "T1" }</example>
         public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();

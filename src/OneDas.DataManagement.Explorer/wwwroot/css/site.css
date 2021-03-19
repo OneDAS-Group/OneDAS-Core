@@ -908,6 +908,10 @@ app {
     align-self: end;
 }
 
+.flex-space-between {
+    justify-content: space-between;
+}
+
 .flex-column {
     display: flex;
     flex-direction: column;
@@ -927,6 +931,10 @@ app {
 
 .w-100 {
     width: 100%;
+}
+
+.w-50 {
+    width: 50%;
 }
 
 .mt-auto {
@@ -1024,26 +1032,42 @@ app {
 }
 
 /* FormGenerator */
-.form-generator {
-    margin: 1rem;
-}
-
 .form-generator-property {
     margin: 1rem;
 }
 
-.form-generator-list {
+.form-generator-list-add-button {
+    padding-left: 1rem;
+    color: lightgrey;
+}
+
+.form-generator-list-title:hover + .form-generator-list-add-button, .form-generator-list-add-button:hover {
+    color: var(--nav-bg-color);
+    cursor: pointer;
+}
+
+.form-generator-list-content {
     display: flex;
-    flex-direction: column;
-    background: var(--active-bg-color);
+    flex-direction: row;
+    flex-wrap: wrap;
     padding: 1rem;
 }
 
-.form-generator-list > span {
-    color: var(--font-color-subtitle);
-    align-self: center;
+.form-generator-list-item {
+    border: 1px dashed var(--hover-color);
 }
 
-.form-generator-list-item {
-    border: 1px solid var(--hover-color);
+.form-generator-list-item-remove-button {
+    padding-left: 1rem;
+    font-size: 1.5rem;
+    color: lightgrey;
+}
+
+    .form-generator-list-item-remove-button:hover {
+        color: darkred;
+    }
+
+.json-text {
+    height: 100%;
+    margin: 1rem;
 }
