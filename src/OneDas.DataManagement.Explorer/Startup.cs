@@ -158,6 +158,7 @@ namespace OneDas.DataManagement.Explorer
             services.AddScoped<SettingsViewModel>();
             services.AddScoped<ToasterService>();
             services.AddScoped<JwtService<IdentityUser>>();
+            services.AddScoped<JobEditor>();
 
             services.AddTransient<DataService>();
             services.AddTransient<AggregationService>();

@@ -908,6 +908,10 @@ app {
     align-self: end;
 }
 
+.flex-space-between {
+    justify-content: space-between;
+}
+
 .flex-column {
     display: flex;
     flex-direction: column;
@@ -927,6 +931,10 @@ app {
 
 .w-100 {
     width: 100%;
+}
+
+.w-50 {
+    width: 50%;
 }
 
 .mt-auto {
@@ -1021,4 +1029,60 @@ app {
         transform: scale(1.2, 1.2);
         opacity: 0.0;
     }
+}
+
+/* FormGenerator */
+.form-generator-property {
+    margin: 1rem;
+}
+
+.form-generator-add-button {
+    padding-left: 1rem;
+    color: lightgrey;
+}
+
+.form-generator-title:hover + .form-generator-add-button, .form-generator-add-button:hover {
+    color: var(--nav-bg-color);
+    cursor: pointer;
+}
+
+.form-generator-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 1rem;
+}
+
+.form-generator-list-item {
+    border: 1px dashed var(--hover-color);
+}
+
+.form-generator-remove-button {
+    padding-left: 1rem;
+    font-size: 1.5rem;
+    color: lightgrey;
+}
+
+    .form-generator-remove-button:hover {
+        color: darkred;
+    }
+
+.job-creator-analysis {
+    width: 100%;
+    margin: 1rem;
+}
+
+.job-creator-json-text {
+    width: 100%;
+    margin: 1rem;
+}
+
+.settings-content-box .mat-tab-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.settings-content-box .mat-tab-group .mat-tab-group-content {
+    height: 100%;
 }

@@ -55,16 +55,6 @@
                           PlaceHolder="e.g. 0.0.0.0:8080">
             </MatTextField>
 
-            @*<MatTextField @bind-Value="@this.Options.InactiveOn"
-                      Label="Inactive On"
-                      PlaceHolder="e.g. 02:00">
-            </MatTextField>*@
-
-                @*<MatTextField @bind-Value="@this.Options.InactivityPeriod"
-                          Label="Inactive Period"
-                          PlaceHolder="e.g. 01:00">
-            </MatTextField>*@
-
             <MatTextField @bind-Value="@this.Options.Language"
                           Label="Language"
                           PlaceHolder="e.g. en">
@@ -73,6 +63,25 @@
             <MatButton @onclick="this.SaveOptions">
                 <i class="fa fa-save"></i> &nbsp; Save
             </MatButton>
+
+        </MatTab>
+
+        <MatTab Label="Job Creator">
+
+            <div class="flex-row h-100">
+                <div class="flex-column w-50">
+                    <FormGenerator Changed="this.UpdateJobEditor"
+                                   DataContext="this.JobEditor.AggregationSetup"></FormGenerator>
+                </div>
+                <div class="flex-column w-50">
+                    <div class="flex-row h-50">
+                        <textarea class="job-creator-analysis" readonly>@this.JobEditor.Analysis</textarea>
+                    </div>
+                    <div class="flex-row h-50">
+                        <textarea class="job-creator-json-text" @bind-value="this.JobEditor.JsonString" @bind-value:event="oninput" />
+                    </div>
+                </div>
+            </div>
 
         </MatTab>
 
