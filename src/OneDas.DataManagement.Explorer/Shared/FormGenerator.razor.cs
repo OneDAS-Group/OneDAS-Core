@@ -96,19 +96,19 @@ namespace OneDas.DataManagement.Explorer.Shared
                     builder.AddAttribute(sequence++, "class", "form-generator-list");
 
                     builder.OpenElement(sequence++, "div");
-                    builder.AddAttribute(sequence++, "class", "form-generator-list-header");
+                    builder.AddAttribute(sequence++, "class", "form-generator-header");
 
                     builder.OpenElement(sequence++, "span");
-                    builder.AddAttribute(sequence++, "class", "form-generator-list-title");
+                    builder.AddAttribute(sequence++, "class", "form-generator-title");
                     builder.AddContent(sequence++, $"{property.Name} ({list.Count})");
                     builder.CloseComponent();
 
                     builder.OpenElement(sequence++, "span");
-                    builder.AddAttribute(sequence++, "class", "form-generator-list-add-button");
+                    builder.AddAttribute(sequence++, "class", "form-generator-add-button");
                     builder.AddAttribute(sequence++, "onclick",
                        EventCallback.Factory.Create<MouseEventArgs>(this, value =>
                        {
-                           var element = Activator.CreateInstance(elementType);
+                           var element = this.Instantiate(elementType);
                            list.Add(element);
                            this.OnChanged();
                        }));
@@ -120,7 +120,7 @@ namespace OneDas.DataManagement.Explorer.Shared
                     builder.CloseElement();
 
                     builder.OpenElement(sequence++, "div");
-                    builder.AddAttribute(sequence++, "class", "form-generator-list-content");
+                    builder.AddAttribute(sequence++, "class", "form-generator-content");
 
                     if (list.Count > 0)
                     {
@@ -133,13 +133,30 @@ namespace OneDas.DataManagement.Explorer.Shared
 
                             if (elementType.IsPrimitive || elementType.IsEnum || elementType == typeof(string) || elementType == typeof(decimal))
                             {
+                                var localIndex = index;
+
+                                Action<object> valueChanged = newValue =>
+                                {
+                                    list[localIndex] = newValue;
+                                    this.OnChanged();
+                                };
+
+                                var onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(this, e =>
+                                {
+                                    if (e.Key == "Delete")
+                                    {
+                                        list.RemoveAt(localIndex);
+                                        this.OnChanged();
+                                    }
+                                });
+
                                 sequence = (int)OneDasUtilities.InvokeGenericMethod(
                                     this.GetType(),
                                     this,
-                                    nameof(AddGeneric),
+                                    nameof(AddGenericPrimitive),
                                     BindingFlags.NonPublic | BindingFlags.Instance,
                                     elementType,
-                                    new object[] { builder, sequence, list, index, item });
+                                    new object[] { builder, sequence, "Value", item, valueChanged, onKeyDown });
                             }
                             else
                             {
@@ -151,11 +168,11 @@ namespace OneDas.DataManagement.Explorer.Shared
 
                                 var localIndex = index;
                                 builder.OpenElement(sequence++, "span");
-                                builder.AddAttribute(sequence++, "class", "form-generator-list-item-remove-button");
+                                builder.AddAttribute(sequence++, "class", "form-generator-remove-button");
                                 builder.AddAttribute(sequence++, "onclick",
-                                   EventCallback.Factory.Create<MouseEventArgs>(this, value =>
+                                   EventCallback.Factory.Create<MouseEventArgs>(this, e =>
                                    {
-                                       var element = Activator.CreateInstance(elementType);
+                                       var element = this.Instantiate(elementType);
                                        list.RemoveAt(localIndex);
                                        this.OnChanged();
                                    }));
@@ -174,6 +191,115 @@ namespace OneDas.DataManagement.Explorer.Shared
                     builder.CloseElement();
                     builder.CloseElement();
                 }
+                // Dictionary
+                else if (value is IDictionary dict)
+                {
+                    var elementTypes = dict.GetType().GetGenericArguments();
+
+                    if (!(elementTypes[0].IsPrimitive || elementTypes[0].IsEnum || elementTypes[0] == typeof(string) || elementTypes[0] == typeof(decimal)))
+                        throw new Exception("Only primitive keys are supported.");
+
+                    builder.OpenElement(sequence++, "div");
+                    builder.AddAttribute(sequence++, "class", "form-generator-dict");
+
+                    builder.OpenElement(sequence++, "div");
+                    builder.AddAttribute(sequence++, "class", "form-generator-header");
+
+                    builder.OpenElement(sequence++, "span");
+                    builder.AddAttribute(sequence++, "class", "form-generator-title");
+                    builder.AddContent(sequence++, $"{property.Name} ({dict.Count})");
+                    builder.CloseComponent();
+
+                    builder.OpenElement(sequence++, "span");
+                    builder.AddAttribute(sequence++, "class", "form-generator-add-button");
+                    builder.AddAttribute(sequence++, "onclick",
+                       EventCallback.Factory.Create<MouseEventArgs>(this, value =>
+                       {
+                           var dictKey = this.Instantiate(elementTypes[0]);
+                           var dictValue = this.Instantiate(elementTypes[1]);
+                           dict[dictKey] = dictValue;
+                           this.OnChanged();
+                       }));
+                    builder.OpenElement(sequence++, "i");
+                    builder.AddAttribute(sequence++, "class", "fas fa-plus");
+                    builder.CloseElement();
+                    builder.CloseElement();
+
+                    builder.CloseElement();
+
+                    builder.OpenElement(sequence++, "div");
+                    builder.AddAttribute(sequence++, "class", "form-generator-content");
+
+                    if (dict.Count > 0)
+                    {
+                        foreach (var key in dict.Keys)
+                        {
+                            builder.OpenElement(sequence++, "div");
+                            builder.AddAttribute(sequence++, "class", "form-generator-dict-entry");
+
+                            // key
+                            Action<object> valueChanged = newKey =>
+                            {
+                                dict.Remove(key);
+                                dict[newKey] = this.Instantiate(elementTypes[1]);
+                                this.OnChanged();
+                            };
+
+                            var onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(this, e =>
+                            {
+                                if (e.Key == "Delete")
+                                {
+                                    dict.Remove(key);
+                                    this.OnChanged();
+                                }
+                            });
+
+                            sequence = (int)OneDasUtilities.InvokeGenericMethod(
+                                   this.GetType(),
+                                   this,
+                                   nameof(AddGenericPrimitive),
+                                   BindingFlags.NonPublic | BindingFlags.Instance,
+                                   elementTypes[0],
+                                   new object[] { builder, sequence, "Key", key, valueChanged, onKeyDown });
+
+                            // space
+                            builder.OpenElement(sequence++, "span");
+                            builder.AddContent(sequence++, " ");
+                            builder.CloseElement();
+
+                            // value
+                            if (elementTypes[1].IsPrimitive || elementTypes[1].IsEnum || elementTypes[1] == typeof(string) || elementTypes[1] == typeof(decimal))
+                            {
+                                Action<object> valueChanged2 = newValue =>
+                                {
+                                    dict[key] = newValue;
+                                    this.OnChanged();
+                                };
+
+                                sequence = (int)OneDasUtilities.InvokeGenericMethod(
+                                    this.GetType(),
+                                    this,
+                                    nameof(AddGenericPrimitive),
+                                    BindingFlags.NonPublic | BindingFlags.Instance,
+                                    elementTypes[1],
+                                    new object[] { builder, sequence, "Value", dict[key], valueChanged2, null });
+                            }
+                            else
+                            {
+                                builder.OpenComponent(sequence++, typeof(FormGenerator));
+                                builder.AddAttribute(sequence++, "DataContext", dict[key]);
+                                builder.AddAttribute(sequence++, "Changed",
+                                    EventCallback.Factory.Create(this, value => this.OnChanged()));
+                                builder.CloseComponent();
+                            }
+
+                            builder.CloseElement();
+                        }
+                    }
+
+                    builder.CloseElement();
+                    builder.CloseElement();
+                }
 
                 builder.CloseElement();
             }
@@ -181,31 +307,41 @@ namespace OneDas.DataManagement.Explorer.Shared
             builder.CloseComponent();
         };
 
-        private int AddGeneric<T>(RenderTreeBuilder builder, int sequence, IList list, int index, object value)
+        private int AddGenericPrimitive<T>(RenderTreeBuilder builder, int sequence, string label, T value, Action<object> valueChanged, EventCallback<KeyboardEventArgs> onKeyDown)
         {
-            builder.OpenComponent(sequence++, typeof(MatTextField<T>));
+            if (typeof(T).IsEnum)
+            {
+                builder.OpenComponent(sequence++, typeof(MatSelectItem<T>));
+                builder.AddAttribute(sequence++, "Items", Enum.GetValues(typeof(T)));
+            }
+            else
+            {
+                builder.OpenComponent(sequence++, typeof(MatTextField<T>));
+            }
+
+            builder.AddAttribute(sequence++, "Label", label);
             builder.AddAttribute(sequence++, "Value", value);
 
-            builder.AddAttribute(sequence++, "ValueChanged",
-                EventCallback.Factory.Create<T>(this, value =>
-                {
-                    list[index] = value;
-                    this.OnChanged();
-                }));
+            builder.AddAttribute(sequence++, "ValueChanged", EventCallback.Factory.Create<T>(this, newValue =>
+            {
+                valueChanged?.Invoke(newValue);
+            }));
 
-            builder.AddAttribute(sequence++, "OnKeyDown",
-               EventCallback.Factory.Create<KeyboardEventArgs>(this, e =>
-               {
-                   if (e.Key == "Delete")
-                   {
-                       list.RemoveAt(index);
-                       this.OnChanged();
-                   }
-               }));
+            if (!onKeyDown.Equals(default))
+                builder.AddAttribute(sequence++, "OnKeyDown", onKeyDown);
 
             builder.CloseComponent();
 
             return sequence;
+        }
+
+        private object Instantiate(Type type)
+        {
+            if (type == typeof(string))
+                return string.Empty;
+
+            else
+                return Activator.CreateInstance(type);
         }
 
         private void OnChanged()

@@ -1,4 +1,5 @@
 ﻿using OneDas.DataManagement.Database;
+using OneDas.DataManagement.Extensibility;
 using System;
 using System.Collections.Generic;
 
@@ -43,8 +44,8 @@ namespace OneDas.DataManagement.Explorer.Core
         /// <example>{ Mean: null, MeanPolar: "360" }</example>
         public Dictionary<AggregationMethod, string> Methods { get; set; } = new Dictionary<AggregationMethod, string>();
 
-        /// <example>{ "include-group": "GroupA|GroupB", "exclude-unit": "deg", "include-channel": "T1" }</example>
-        public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();
+        /// <example>{ "IncludeGroup": "GroupA|GroupB", "exclude-unit": "deg", "include-channel": "T1" }</example>
+        public Dictionary<AggregationFilter, string> Filters { get; set; } = new Dictionary<AggregationFilter, string>();
 
         /// <example>[ 1, 60, 600 ]</example>
         public List<int> Periods { get; set; } = new List<int>();
@@ -62,6 +63,16 @@ namespace OneDas.DataManagement.Explorer.Core
         MaxBitwise = 7,
         SampleAndHold = 8,
         Sum = 9
+    }
+
+    public enum AggregationFilter
+    {
+        IncludeChannel = 0,
+        ExcludeChannel = 1,
+        IncludeGroup = 2,
+        ExcludeGroup = 3,
+        IncludeUnit = 4,
+        ExcludeUnit = 5
     }
 
     public record AggregationChannel
@@ -97,4 +108,6 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public AggregationTargetBufferInfo TargetBufferInfo { get; init; }
     }
+
+    public record AggregationInstruction(ProjectContainer Container, Dictionary<DataReaderRegistration, List<AggregationChannel>> DataReaderToAggregationsMap);
 }

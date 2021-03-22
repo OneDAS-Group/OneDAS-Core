@@ -20,6 +20,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using static OneDas.DataManagement.Explorer.Services.DatabaseManager;
 
 namespace OneDas.DataManagement.Explorer.Services
 {
@@ -65,6 +66,58 @@ namespace OneDas.DataManagement.Explorer.Services
 
         #region Methods
 
+        public static List<AggregationInstruction> ComputeInstructions(AggregationSetup setup, DatabaseManagerState state, ILogger logger)
+        {
+            var projectIds = setup.Aggregations
+                .Select(aggregation => aggregation.ProjectId)
+                .Distinct().ToList();
+
+            return projectIds.Select(projectId =>
+            {
+                var container = state.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
+
+                if (container is null)
+                    return null;
+
+                var dataReaderRegistrations = container
+                    .Project
+                    .Channels
+                    .SelectMany(channel => channel.Datasets.Select(dataset => dataset.Registration))
+                    .Distinct()
+                    .Where(registration => registration != state.AggregationRegistration)
+                    .ToList();
+
+                return new AggregationInstruction(container, dataReaderRegistrations.ToDictionary(registration => registration, registration =>
+                {
+                    // find aggregations for project ID
+                    var potentialAggregations = setup.Aggregations
+                        .Where(parameters => parameters.ProjectId == container.Project.Id)
+                        .ToList();
+
+                    // create channel to aggregations map
+                    var aggregationChannels = container.Project.Channels
+                        // find all channels for current reader registration
+                        .Where(channel => channel.Datasets.Any(dataset => dataset.Registration == registration))
+                        // find all aggregations for current channel
+                        .Select(channel =>
+                        {
+                            var channelMeta = container.ProjectMeta.Channels
+                                .First(current => current.Id == channel.Id);
+
+                            return new AggregationChannel()
+                            {
+                                Channel = channel,
+                                Aggregations = potentialAggregations.Where(current => AggregationService.ApplyAggregationFilter(channel, channelMeta, current.Filters, logger)).ToList()
+                            };
+                        })
+                        // take all channels with aggregations
+                        .Where(aggregationChannel => aggregationChannel.Aggregations.Any());
+
+                    return aggregationChannels.ToList();
+                }));
+            }).Where(instruction => instruction != null).ToList();
+        }
+
         public Task<string> AggregateDataAsync(UserIdService userIdService,
                                                string databaseFolderPath,
                                                AggregationSetup setup,
@@ -85,19 +138,14 @@ namespace OneDas.DataManagement.Explorer.Services
                 try
                 {
                     var progress = (IProgress<ProgressUpdatedEventArgs>)this.Progress;
-                    progress.Report(new ProgressUpdatedEventArgs(0, "Updating database ..."));
-
-                    _databaseManager.Update(CancellationToken.None);
-
-                    var projectIds = setup.Aggregations
-                        .Select(aggregation => aggregation.ProjectId)
-                        .Distinct().ToList();
+                    var instructions = AggregationService.ComputeInstructions(setup, _databaseManager.State, _logger);
                     var days = (setup.End - setup.Begin).TotalDays;
-                    var totalDays = projectIds.Count * days;
+                    var totalDays = instructions.Count() * days;
+                    var i = 0;
 
-                    for (int i = 0; i < projectIds.Count; i++)
+                    foreach (var instruction in instructions)
                     {
-                        var projectId = projectIds[i];
+                        var projectId = instruction.Container.Id;
 
                         for (int j = 0; j < days; j++)
                         {
@@ -109,8 +157,10 @@ namespace OneDas.DataManagement.Explorer.Services
                             var eventArgs = new ProgressUpdatedEventArgs(progressValue, progressMessage);
                             progress.Report(eventArgs);
 
-                            this.AggregateProject(userIdService.User, databaseFolderPath, projectId, currentDay, setup, cancellationToken);
+                            this.AggregateProject(userIdService.User, databaseFolderPath, projectId, currentDay, setup, instruction, cancellationToken);
                         }
+
+                        i++;
                     }
                 }
                 catch (Exception ex)
@@ -130,27 +180,27 @@ namespace OneDas.DataManagement.Explorer.Services
                                       string projectId,
                                       DateTime date,
                                       AggregationSetup setup,
+                                      AggregationInstruction instruction,
                                       CancellationToken cancellationToken)
         {
             var subfolderName = date.ToString("yyyy-MM");
             var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
-            var dataReaders = _databaseManager.GetDataReaders(user, projectId, excludeAggregation: true);
 
-            foreach (var dataReaderForUsing in dataReaders)
+            foreach (var (registration, aggregationChannels) in instruction.DataReaderToAggregationsMap)
             {
-                using var dataReader = dataReaderForUsing;
+                using var dataReader = _databaseManager.GetDataReader(user, registration);
 
                 // find reader configurations
                 foreach (var configuration in setup.ReaderConfigurations
                     .Where(configuration => configuration.ProjectId == projectId))
                 {
-                    var registration = new DataReaderRegistration()
+                    var tmpRegistration = new DataReaderRegistration()
                     {
                         RootPath = configuration.DataReaderRootPath,
                         DataReaderId = configuration.DataReaderId
                     };
 
-                    if (dataReader.Registration.Equals(registration))
+                    if (dataReader.Registration.Equals(tmpRegistration))
                     {
                         dataReader.OptionalParameters = configuration.Parameters;
                         break;
@@ -202,30 +252,6 @@ namespace OneDas.DataManagement.Explorer.Services
                             var dateTimeString = date.ToISO8601();
                             IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
                         }
-
-                        // find aggregations for project ID
-                        var potentialAggregations = setup.Aggregations
-                            .Where(parameters => parameters.ProjectId == container.Project.Id)
-                            .ToList();
-
-                        // create channel to aggregations map
-                        var aggregationChannels = container.Project.Channels
-                            // find all channels for current reader registration
-                            .Where(channel => channel.Datasets.Any(dataset => dataset.Registration == dataReader.Registration))
-                            // find all aggregations for current channel
-                            .Select(channel =>
-                            {
-                                var channelMeta = container.ProjectMeta.Channels
-                                    .First(current => current.Id == channel.Id);
-
-                                return new AggregationChannel()
-                                {
-                                    Channel = channel,
-                                    Aggregations = potentialAggregations.Where(current => this.ApplyAggregationFilter(channel, channelMeta, current.Filters)).ToList()
-                                };
-                            })
-                            // take all channels with aggregations
-                            .Where(aggregationChannel => aggregationChannel.Aggregations.Any());
 
                         // for each channel
                         foreach (var aggregationChannel in aggregationChannels)
@@ -717,31 +743,31 @@ namespace OneDas.DataManagement.Explorer.Services
                 .ToArray();
         }
 
-        private bool ApplyAggregationFilter(ChannelInfo channel, ChannelMeta channelMeta, Dictionary<string, string> filters)
+        private static bool ApplyAggregationFilter(ChannelInfo channel, ChannelMeta channelMeta, Dictionary<AggregationFilter, string> filters, ILogger logger)
         {
             bool result = true;
 
             // channel
-            if (filters.ContainsKey("include-channel"))
-                result &= Regex.IsMatch(channel.Name, filters["include-channel"]);
+            if (filters.ContainsKey(AggregationFilter.IncludeChannel))
+                result &= Regex.IsMatch(channel.Name, filters[AggregationFilter.IncludeChannel]);
 
-            if (filters.ContainsKey("exclude-channel"))
-                result &= !Regex.IsMatch(channel.Name, filters["exclude-channel"]);
+            if (filters.ContainsKey(AggregationFilter.ExcludeChannel))
+                result &= !Regex.IsMatch(channel.Name, filters[AggregationFilter.ExcludeChannel]);
 
             // group
-            if (filters.ContainsKey("include-group"))
-                result &= channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["include-group"]));
+            if (filters.ContainsKey(AggregationFilter.IncludeGroup))
+                result &= channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters[AggregationFilter.IncludeGroup]));
 
-            if (filters.ContainsKey("exclude-group"))
-                result &= !channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters["exclude-group"]));
+            if (filters.ContainsKey(AggregationFilter.ExcludeGroup))
+                result &= !channel.Group.Split('\n').Any(groupName => Regex.IsMatch(groupName, filters[AggregationFilter.ExcludeGroup]));
 
             // unit
-            if (filters.ContainsKey("include-unit"))
+            if (filters.ContainsKey(AggregationFilter.IncludeUnit))
             {
 #warning Remove this special case check.
                 if (channel.Unit == null)
                 {
-                    _logger.LogWarning("Unit 'null' value detected.");
+                    logger.LogWarning("Unit 'null' value detected.");
                     result &= false;
                 }
                 else
@@ -750,16 +776,16 @@ namespace OneDas.DataManagement.Explorer.Services
                         ? channelMeta.Unit
                         : channel.Unit;
 
-                    result &= Regex.IsMatch(unit, filters["include-unit"]);
+                    result &= Regex.IsMatch(unit, filters[AggregationFilter.IncludeUnit]);
                 }
             }
 
-            if (filters.ContainsKey("exclude-unit"))
+            if (filters.ContainsKey(AggregationFilter.ExcludeUnit))
             {
 #warning Remove this special case check.
                 if (channel.Unit == null)
                 {
-                    _logger.LogWarning("Unit 'null' value detected.");
+                    logger.LogWarning("Unit 'null' value detected.");
                     result &= true;
 
                 }
@@ -769,7 +795,7 @@ namespace OneDas.DataManagement.Explorer.Services
                         ? channelMeta.Unit
                         : channel.Unit;
 
-                    result &= !Regex.IsMatch(unit, filters["exclude-unit"]);
+                    result &= !Regex.IsMatch(unit, filters[AggregationFilter.ExcludeUnit]);
                 }
             }
 

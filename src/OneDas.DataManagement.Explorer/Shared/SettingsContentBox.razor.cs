@@ -52,9 +52,9 @@ namespace OneDas.DataManagement.Explorer.Shared
 
         #region Commands
 
-        public void UpdateJsonString()
+        public void UpdateJobEditor()
         {
-            this.JobEditor.UpdateJsonString();
+            this.JobEditor.Update();
             this.InvokeAsync(() => this.StateHasChanged());
         }
 

@@ -239,17 +239,13 @@ namespace OneDas.DataManagement.Explorer.Services
             this.DatabaseUpdated?.Invoke(this, database);
         }
 
-        public List<DataReaderExtensionBase> GetDataReaders(ClaimsPrincipal user, string projectId, bool excludeAggregation = false)
+        public List<DataReaderExtensionBase> GetDataReaders(ClaimsPrincipal user, string projectId)
         {
             var state = this.State;
-            var except = new List<DataReaderRegistration>();
-
-            if (excludeAggregation)
-                except.Add(state.AggregationRegistration);
 
             return state.RegistrationToProjectsMap
-                // where registration is not part of exception list and where the project list contains the project ID
-                .Where(entry => !except.Contains(entry.Key) && entry.Value.Any(project => project.Id == projectId))
+                // where the project list contains the project ID
+                .Where(entry => entry.Value.Any(project => project.Id == projectId))
                 // select the registration and get a brand new data reader from it
                 .Select(entry => this.GetDataReader(user, entry.Key, state))
                 // to list

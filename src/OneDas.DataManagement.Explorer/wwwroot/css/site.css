@@ -1036,17 +1036,17 @@ app {
     margin: 1rem;
 }
 
-.form-generator-list-add-button {
+.form-generator-add-button {
     padding-left: 1rem;
     color: lightgrey;
 }
 
-.form-generator-list-title:hover + .form-generator-list-add-button, .form-generator-list-add-button:hover {
+.form-generator-title:hover + .form-generator-add-button, .form-generator-add-button:hover {
     color: var(--nav-bg-color);
     cursor: pointer;
 }
 
-.form-generator-list-content {
+.form-generator-content {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -1057,17 +1057,32 @@ app {
     border: 1px dashed var(--hover-color);
 }
 
-.form-generator-list-item-remove-button {
+.form-generator-remove-button {
     padding-left: 1rem;
     font-size: 1.5rem;
     color: lightgrey;
 }
 
-    .form-generator-list-item-remove-button:hover {
+    .form-generator-remove-button:hover {
         color: darkred;
     }
 
-.json-text {
-    height: 100%;
+.job-creator-analysis {
+    width: 100%;
     margin: 1rem;
+}
+
+.job-creator-json-text {
+    width: 100%;
+    margin: 1rem;
+}
+
+.settings-content-box .mat-tab-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.settings-content-box .mat-tab-group .mat-tab-group-content {
+    height: 100%;
 }
