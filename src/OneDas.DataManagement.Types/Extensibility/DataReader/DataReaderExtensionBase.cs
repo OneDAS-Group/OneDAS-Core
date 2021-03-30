@@ -89,7 +89,12 @@ namespace OneDas.DataManagement.Extensibility
             ulong upperBlockSize,
             CancellationToken cancellationToken)
         {
-            return this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cancellationToken);
+#warning This is only a workaround. Should not be necessary when 1 Minute Base limit has been removed and all code is unit tested and rewritten.
+            var fundamentalPeriod = (dataset.GetSampleRate().SamplesPerDay == 144)
+                ? TimeSpan.FromMinutes(10)
+                : TimeSpan.FromMinutes(1);
+
+            return this.Read(new List<DatasetInfo>() { dataset }, begin, end, upperBlockSize, fundamentalPeriod, cancellationToken);
         }
 
         public IEnumerable<DataReaderProgressRecord> Read(
@@ -99,7 +104,13 @@ namespace OneDas.DataManagement.Extensibility
             ulong upperBlockSize,
             CancellationToken cancellationToken)
         {
-            return this.Read(datasets, begin, end, upperBlockSize, TimeSpan.FromMinutes(1), cancellationToken);
+#warning This is only a workaround. Should not be necessary when 1 Minute Base limit has been removed and all code is unit tested and rewritten.
+
+            var fundamentalPeriod = (datasets.First().GetSampleRate().SamplesPerDay == 144) 
+                ? TimeSpan.FromMinutes(10) 
+                : TimeSpan.FromMinutes(1);
+
+            return this.Read(datasets, begin, end, upperBlockSize, fundamentalPeriod, cancellationToken);
         }
 
         public IEnumerable<DataReaderProgressRecord> Read(
