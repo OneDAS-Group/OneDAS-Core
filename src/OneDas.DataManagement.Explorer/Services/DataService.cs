@@ -127,19 +127,19 @@ namespace OneDas.DataManagement.Explorer.Services
                     foreach (var sparseProject in sparseProjects)
                     {
                         this.CreateFiles(_userIdService.User, exportParameters, sparseProject, directoryPath, cancellationToken);
+                    }
 
-                        switch (exportParameters.ExportMode)
-                        {
-                            case ExportMode.Web:
-                                this.WriteZipArchiveEntries(zipArchive, directoryPath, cancellationToken); 
-                                break;
+                    switch (exportParameters.ExportMode)
+                    {
+                        case ExportMode.Web:
+                            this.WriteZipArchiveEntries(zipArchive, directoryPath, cancellationToken);
+                            break;
 
-                            case ExportMode.Local:
-                                 break;
+                        case ExportMode.Local:
+                            break;
 
-                            default:
-                                break;
-                        }
+                        default:
+                            break;
                     }
 
                     _logger.LogInformation($"{message} Done.");
