@@ -237,6 +237,7 @@ namespace OneDas.DataManagement.Explorer.Services
             };
 
             this.DatabaseUpdated?.Invoke(this, database);
+            _logger.LogInformation("Database loaded.");
         }
 
         public List<DataReaderExtensionBase> GetDataReaders(ClaimsPrincipal user, string projectId)
