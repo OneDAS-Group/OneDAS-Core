@@ -5,11 +5,7 @@
     <PackageTags>OneDAS data management measurement</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="HDF.PInvoke.1.10" Version="1.10.611" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\OneDas.Types\OneDas.Types.csproj" />
   </ItemGroup>

@@ -17,6 +17,10 @@
       <Pack>false</Pack>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HDF.PInvoke.1.10" Version="1.10.612" />
+  </ItemGroup>
   
   <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">

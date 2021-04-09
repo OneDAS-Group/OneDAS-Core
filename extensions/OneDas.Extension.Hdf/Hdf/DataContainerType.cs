@@ -1,4 +1,4 @@
-﻿namespace OneDas.DataManagement.Hdf
+﻿namespace OneDas.Extension.Hdf
 {
     public enum DataContainerType
     {

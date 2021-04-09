@@ -122,5 +122,113 @@ namespace OneDas.Extension.Hdf {
                 return ResourceManager.GetString("HdfWriter_HdfLibraryNotThreadSafe", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open attribute. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotOpenAttribute {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotOpenAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open dataset. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotOpenDataset {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotOpenDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create attribute. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotOpenOrCreateAttribute {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotOpenOrCreateAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create dataset. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotOpenOrCreateDataset {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotOpenOrCreateDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not open or create group. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotOpenOrCreateGroup {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotOpenOrCreateGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not read attribute. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotReadAttribute {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotReadAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not read dataset. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotReadDataset {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotReadDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not select hyperslab. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotSelectHyperslab {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotSelectHyperslab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not write attribute. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotWriteAttribute {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotWriteAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not write dataset. ähnelt.
+        /// </summary>
+        internal static string IOHelper_CouldNotWriteDataset {
+            get {
+                return ResourceManager.GetString("IOHelper_CouldNotWriteDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Data type mismatch. ähnelt.
+        /// </summary>
+        internal static string IOHelper_DataTypeMismatch {
+            get {
+                return ResourceManager.GetString("IOHelper_DataTypeMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Could not commit data type. ähnelt.
+        /// </summary>
+        internal static string TypeConversionHelper_CouldNotCommitDataType {
+            get {
+                return ResourceManager.GetString("TypeConversionHelper_CouldNotCommitDataType", resourceCulture);
+            }
+        }
     }
 }

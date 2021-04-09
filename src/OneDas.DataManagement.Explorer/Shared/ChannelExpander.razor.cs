@@ -13,7 +13,7 @@ namespace OneDas.DataManagement.Explorer.Shared
     {
         #region Fields
 
-        private bool _showSampleRates;
+        private bool _showAdditionalInfo;
         private List<DatasetInfoViewModel> _filteredDatasets;
 
         #endregion

@@ -1,6 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http
-
-@inherits StateComponentBase
+﻿@inherits StateComponentBase
 
 <div class="selected-channel-box-sub">
     <div class="selected-channels">
@@ -12,8 +10,23 @@
         {
             @foreach (var dataset in this.UserState.SelectedDatasets)
             {
-                <div class="selected-channel" @onclick="() => this.UserState.ToggleDatasetSelection(dataset)">
-                    <span class="selected-channel-name">@dataset.Parent.Name (@dataset.Name)</span>
+                <div class="selected-channel" 
+                     @ondblclick="() => this.UserState.ToggleDatasetSelection(dataset)"
+                     @onmouseover="() => _showCopyButton = true" 
+                     @onmouseout="() => _showCopyButton = false">
+
+                    <div class="flex-row flex-space-between">
+                        <span class="selected-channel-name">@dataset.Parent.Name (@dataset.Name)</span>
+
+                        @if (_showCopyButton)
+                        {
+                            @* Wrap is required due to https://github.com/SamProf/MatBlazor/issues/464. *@
+                            <MatTooltip Tooltip="Copy to clipboard." Wrap="true" Position="MatTooltipPosition.Top">
+                                <span @onclick="() => this.CopyPath(dataset)">&nbsp;&nbsp;<i class="far fa-copy" /></span>
+                            </MatTooltip>
+                        }
+                    </div>
+
                     <span class="selected-channel-project">@dataset.Parent.Parent.Id.TrimStart('/').Replace("/", " / ")</span>
                 </div>
             }

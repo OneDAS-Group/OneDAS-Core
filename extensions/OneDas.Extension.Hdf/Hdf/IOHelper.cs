@@ -7,25 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace OneDas.DataManagement.Hdf
+namespace OneDas.Extension.Hdf
 {
     public static class IOHelper
     {
         #region "Methods"
 
-        /// <summary>
-        /// Prepares an attribute. The following use cases exist:
-        /// InitializeAttribute = False: no data is written
-        /// InitializeAttribute = True and DimensionLimitSet &lt; H5S.Unlimited: overwrite attribute data
-        /// InitializeAttribute = True and DimensionLimitSet = H5S.Unlimited: merge attribute data
-        /// </summary>
-        /// <typeparam name="T">The data type of the attribute to be created.</typeparam>
-        /// <param name="locationId">The location ID.</param>
-        /// <param name="name">The name of the attribute.</param>
-        /// <param name="valueSet">The values to be written to the attribute.</param>
-        /// <param name="dimensionLimitSet">The maximum dimensions of the attribute.</param>
-        /// <param name="initializeAttribute">A boolean which indicates if the attribute data shall be untouched, overwritten or merged.</param>
-        /// <param name="callerMemberName">The name of the calling function.</param>
         public static void PrepareAttribute<T>(long locationId, string name, T[] valueSet, ulong[] dimensionLimitSet, bool initializeAttribute, [CallerMemberName()] string callerMemberName = "")
         {
             Contract.Requires(valueSet != null, nameof(valueSet));
@@ -81,13 +68,6 @@ namespace OneDas.DataManagement.Hdf
             }
         }
 
-        /// <summary>
-        /// Reads the data from the specified attribute.
-        /// </summary>
-        /// <typeparam name="T">The data type.</typeparam>
-        /// <param name="locationId">The location ID.</param>
-        /// <param name="attributeName">The name of the attribute.</param>
-        /// <returns>Returns a set of type T which represents the read data.</returns>
         public static T[] ReadAttribute<T>(long locationId, string attributeName)
         {
             long attributeId = -1;
@@ -105,36 +85,6 @@ namespace OneDas.DataManagement.Hdf
             }
             finally
             {
-                if (H5I.is_valid(attributeId) > 0) { H5A.close(attributeId); }
-            }
-
-            return result;
-        }
-
-        public static object ReadAttribute(long locationId, string attributeName)
-        {
-            long attributeId = -1;
-            long typeId = -1;
-
-            object result;
-
-            try
-            {
-                attributeId = H5A.open(locationId, attributeName);
-
-                if (H5I.is_valid(attributeId) <= 0)
-                    throw new Exception(ErrorMessage.IOHelper_CouldNotOpenAttribute);
-
-                typeId = H5A.get_type(attributeId);
-
-                result = OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
-                                                            BindingFlags.Public | BindingFlags.Static,
-                                                            TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                            new object[] { attributeId, DataContainerType.Attribute, Type.Missing });
-            }
-            finally
-            {
-                if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
                 if (H5I.is_valid(attributeId) > 0) { H5A.close(attributeId); }
             }
 
@@ -172,53 +122,6 @@ namespace OneDas.DataManagement.Hdf
             finally
             {
                 if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
-                if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
-            }
-
-            return result;
-        }
-
-        public static Array ReadDataset(long locationId, string datasetPath, ulong start = 0, ulong block = 0)
-        {
-            long datasetId = -1;
-            long dataspaceId = -1;
-            long typeId = -1;
-
-            Array result;
-
-            try
-            {
-                datasetId = H5D.open(locationId, datasetPath);
-
-                if (H5I.is_valid(datasetId) <= 0)
-                    throw new Exception(ErrorMessage.IOHelper_CouldNotOpenDataset);
-
-                typeId = H5D.get_type(datasetId);
-
-                if (start == 0 && block == 0)
-                {
-                    result = (Array)OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
-                                                                       BindingFlags.Public | BindingFlags.Static,
-                                                                       TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                                       new object[] { datasetId, DataContainerType.Dataset, Type.Missing });
-                }
-                else
-                {
-                    dataspaceId = H5D.get_space(datasetId);
-
-                    if (H5S.select_hyperslab(dataspaceId, H5S.seloper_t.SET, new ulong[] { start }, new ulong[] { 1 }, new ulong[] { 1 }, new ulong[] { block }) < 0)
-                        throw new Exception(ErrorMessage.IOHelper_CouldNotSelectHyperslab);
-
-                    result = (Array)OneDasUtilities.InvokeGenericMethod(typeof(IOHelper), null, nameof(IOHelper.Read),
-                                                                       BindingFlags.Public | BindingFlags.Static,
-                                                                       TypeConversionHelper.GetTypeFromHdfTypeId(typeId),
-                                                                       new object[] { datasetId, DataContainerType.Dataset, dataspaceId });
-                }
-            }
-            finally
-            {
-                if (H5I.is_valid(dataspaceId) > 0) { H5S.close(dataspaceId); }
-                if (H5I.is_valid(typeId) > 0) { H5T.close(typeId); }
                 if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
             }
 
@@ -374,13 +277,6 @@ namespace OneDas.DataManagement.Hdf
             return returnValue;
         }
 
-        /// <summary>
-        /// Writes data to the specified attribute.
-        /// </summary>
-        /// <typeparam name="T">The data type.</typeparam>
-        /// <param name="locationId">The location ID.</param>
-        /// <param name="attributeName">The name of the attribute.</param>
-        /// <param name="valueSet">The data to be written.</param>
         public static void WriteAttribute<T>(long locationId, string attributeName, T[] valueSet)
         {
             Contract.Requires(valueSet != null, nameof(valueSet));
@@ -770,23 +666,6 @@ namespace OneDas.DataManagement.Hdf
             }
 
             return true;
-        }
-
-        public static T[] UpdateAttributeList<T>(long locationId, string attributeName, T[] referenceValueSet)
-        {
-            long attributeId = -1;
-
-            try
-            {
-                attributeId = H5A.open(locationId, attributeName);
-                IOHelper.PrepareAttributeValueSet(attributeId, ref referenceValueSet, true);
-            }
-            finally
-            {
-                if (H5I.is_valid(attributeId) > 0) { H5A.close(attributeId); }
-            }
-
-            return referenceValueSet;
         }
 
         #endregion

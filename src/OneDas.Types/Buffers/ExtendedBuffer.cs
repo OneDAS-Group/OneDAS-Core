@@ -17,6 +17,7 @@ namespace OneDas.Buffers
         public ExtendedBuffer(int length) : base(length)
         {
             _buffer = MemoryPool<T>.Shared.Rent(length);
+            MemoryMarshal.AsBytes(_buffer.Memory.Span).Fill(0);
 
             this.ElementSize = OneDasUtilities.SizeOf(typeof(T));
         }

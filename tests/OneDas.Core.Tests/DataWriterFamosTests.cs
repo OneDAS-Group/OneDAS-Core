@@ -71,9 +71,8 @@ namespace OneDas.Core.Tests
         {
             var guid = Guid.NewGuid();
             var datasetName = sampleRate.ToUnitString();
-            var transferFunctionSet = new List<TransferFunction>();
 
-            return new ChannelDescription(guid, channelName, datasetName, group, dataType, sampleRate, unit, transferFunctionSet, BufferType.Simple);
+            return new ChannelDescription(guid, channelName, datasetName, group, dataType, sampleRate, unit, BufferType.Simple);
         }
 
         private static void ConfigureServices(IServiceCollection services)

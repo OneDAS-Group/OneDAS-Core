@@ -120,43 +120,7 @@
   <data name="ProjectInfo" xml:space="preserve">
     <value>Invalid group identifier.</value>
   </data>
-  <data name="IOHelper_CouldNotOpenAttribute" xml:space="preserve">
-    <value>Could not open attribute.</value>
-  </data>
-  <data name="IOHelper_CouldNotOpenDataset" xml:space="preserve">
-    <value>Could not open dataset.</value>
-  </data>
-  <data name="IOHelper_CouldNotOpenOrCreateAttribute" xml:space="preserve">
-    <value>Could not open or create attribute.</value>
-  </data>
-  <data name="IOHelper_CouldNotOpenOrCreateDataset" xml:space="preserve">
-    <value>Could not open or create dataset.</value>
-  </data>
-  <data name="IOHelper_CouldNotOpenOrCreateGroup" xml:space="preserve">
-    <value>Could not open or create group.</value>
-  </data>
-  <data name="IOHelper_CouldNotReadAttribute" xml:space="preserve">
-    <value>Could not read attribute.</value>
-  </data>
-  <data name="IOHelper_CouldNotReadDataset" xml:space="preserve">
-    <value>Could not read dataset.</value>
-  </data>
-  <data name="IOHelper_CouldNotSelectHyperslab" xml:space="preserve">
-    <value>Could not select hyperslab.</value>
-  </data>
-  <data name="IOHelper_CouldNotWriteAttribute" xml:space="preserve">
-    <value>Could not write attribute.</value>
-  </data>
-  <data name="IOHelper_CouldNotWriteDataset" xml:space="preserve">
-    <value>Could not write dataset.</value>
-  </data>
-  <data name="IOHelper_DataTypeMismatch" xml:space="preserve">
-    <value>Data type mismatch.</value>
-  </data>
   <data name="TypeConversionHelper_CouldNotCommitDataType" xml:space="preserve">
     <value>Could not commit data type.</value>
-  </data>
-  <data name="VdsCommand_CouldNotOpenFile" xml:space="preserve">
-    <value>Could not open file.</value>
   </data>
 </root>

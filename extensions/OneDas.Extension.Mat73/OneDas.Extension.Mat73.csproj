@@ -5,10 +5,6 @@
     <PackageTags>$(PackageTags) OneDAS data aquisition measurement extension MATLAB HDF</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\OneDas.DataManagement.Types\OneDas.DataManagement.Types.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="WebClient\Mat73.js" />
@@ -16,6 +12,10 @@
     <Content Include="WebClient\tsconfig.json">
       <Pack>false</Pack>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OneDas.Extension.Hdf\OneDas.Extension.Hdf.csproj" />
   </ItemGroup>
  
   <ItemGroup>

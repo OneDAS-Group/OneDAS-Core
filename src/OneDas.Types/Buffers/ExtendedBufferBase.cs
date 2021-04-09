@@ -16,6 +16,7 @@ namespace OneDas.Buffers
         public ExtendedBufferBase(int length)
         {
             _statusBuffer = MemoryPool<byte>.Shared.Rent(length);
+            _statusBuffer.Memory.Span.Fill(0);
         }
 
         #endregion

@@ -1,8 +1,10 @@
 ﻿using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Explorer.Services;
+using OneDas.DataManagement.Explorer.ViewModels;
 using OneDas.Types;
 using System;
 using System.Threading.Tasks;
@@ -11,9 +13,15 @@ namespace OneDas.DataManagement.Explorer.Shared
 {
     public partial class DownloadBox
     {
-        #region Constructors
+		#region Fields
 
-        public DownloadBox()
+		private bool _showCopyButton = true;
+
+		#endregion
+
+		#region Constructors
+
+		public DownloadBox()
         {
 			this.PropertyChanged = (sender, e) =>
 			{
@@ -45,13 +53,25 @@ namespace OneDas.DataManagement.Explorer.Shared
 		#region Properties - Injected
 
 		[Inject]
+		public IJSRuntime JsRuntime { get; set; }
+
+		[Inject]
 		public ToasterService ToasterService { get; set; }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Commands
 
-		private async Task DownloadAsync()
+		private void CopyPath(DatasetInfoViewModel dataset)
+        {
+			this.JsRuntime.WriteToClipboard($"{dataset.Parent.Parent.Id}/{dataset.Parent.Name}/{dataset.Model.Id}");
+        }
+
+        #endregion
+
+        #region Methods
+
+        private async Task DownloadAsync()
         {
             try
             {

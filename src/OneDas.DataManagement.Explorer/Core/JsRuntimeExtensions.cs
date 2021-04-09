@@ -12,14 +12,19 @@ namespace OneDas.DataManagement.Explorer.Core
     {
         #region Methods
 
-        public static async Task BlobSaveAs(this IJSRuntime jsRuntime, string fileName, byte[] data)
+        public static ValueTask WriteToClipboard(this IJSRuntime jsRuntime, string text)
         {
-            await jsRuntime.InvokeAsync<object>("BlobSaveAs", fileName, Convert.ToBase64String(data));
+            return jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
         }
 
-        public static async Task FileSaveAs(this IJSRuntime jsRuntime, string fileName, string href)
+        public static ValueTask BlobSaveAs(this IJSRuntime jsRuntime, string fileName, byte[] data)
         {
-            await jsRuntime.InvokeVoidAsync("FileSaveAs", fileName, href);
+            return jsRuntime.InvokeVoidAsync("BlobSaveAs", fileName, Convert.ToBase64String(data));
+        }
+
+        public static ValueTask FileSaveAs(this IJSRuntime jsRuntime, string fileName, string href)
+        {
+            return jsRuntime.InvokeVoidAsync("FileSaveAs", fileName, href);
         }
 
         public static ValueTask<int> GetBrowserTimeZoneOffset(this IJSRuntime jsRuntime, DateTime value)
@@ -27,25 +32,25 @@ namespace OneDas.DataManagement.Explorer.Core
             return jsRuntime.InvokeAsync<int>("GetBrowserTimeZoneOffset", value);
         }
 
-        public static async Task UpdateChartAsync(this IJSRuntime jsRuntime, UserState userState, List<ChartEntry> chartEntries, DateTime begin, DateTime end, int count, double dt, bool beginAtZero)
+        public static ValueTask UpdateChartAsync(this IJSRuntime jsRuntime, UserState userState, List<ChartEntry> chartEntries, DateTime begin, DateTime end, int count, double dt, bool beginAtZero)
         {
             var userStateRef = DotNetObjectReference.Create(userState);
-            await jsRuntime.InvokeVoidAsync("UpdateChart", userStateRef, chartEntries, begin, end, count, dt, beginAtZero);
+            return jsRuntime.InvokeVoidAsync("UpdateChart", userStateRef, chartEntries, begin, end, count, dt, beginAtZero);
         }
 
-        public static async Task CreateMonacoEditorAsync(this IJSRuntime jsRuntime, string editorId, Dictionary<string, object> options)
+        public static ValueTask CreateMonacoEditorAsync(this IJSRuntime jsRuntime, string editorId, Dictionary<string, object> options)
         {
-            await jsRuntime.InvokeVoidAsync("CreateMonacoEditor", editorId, options);
+            return jsRuntime.InvokeVoidAsync("CreateMonacoEditor", editorId, options);
         }
 
-        public static async Task RegisterMonacoProvidersAsync(this IJSRuntime jsRuntime, string editorId, DotNetObjectReference<FilterEditor> filterEditor, DotNetObjectReference<MonacoService> monacoService)
+        public static ValueTask RegisterMonacoProvidersAsync(this IJSRuntime jsRuntime, string editorId, DotNetObjectReference<FilterEditor> filterEditor, DotNetObjectReference<MonacoService> monacoService)
         {
-            await jsRuntime.InvokeVoidAsync("RegisterMonacoProviders", editorId, filterEditor, monacoService);
+            return jsRuntime.InvokeVoidAsync("RegisterMonacoProviders", editorId, filterEditor, monacoService);
         }
 
-        public static async Task SetMonacoValueAsync(this IJSRuntime jsRuntime, string editorId, string value)
+        public static ValueTask SetMonacoValueAsync(this IJSRuntime jsRuntime, string editorId, string value)
         {
-            await jsRuntime.InvokeVoidAsync("SetMonacoValue", editorId, value);
+            return jsRuntime.InvokeVoidAsync("SetMonacoValue", editorId, value);
         }
 
         public static ValueTask<string> GetMonacoValueAsync(this IJSRuntime jsRuntime, string editorId)
@@ -53,9 +58,9 @@ namespace OneDas.DataManagement.Explorer.Core
             return jsRuntime.InvokeAsync<string>("GetMonacoValue", editorId);
         }
 
-        public static async Task SetMonacoDiagnosticsAsync(this IJSRuntime jsRuntime, string editorId, List<Diagnostic> diagnostics)
+        public static ValueTask SetMonacoDiagnosticsAsync(this IJSRuntime jsRuntime, string editorId, List<Diagnostic> diagnostics)
         {
-            await jsRuntime.InvokeVoidAsync("SetMonacoDiagnostics", editorId, diagnostics);
+            return jsRuntime.InvokeVoidAsync("SetMonacoDiagnostics", editorId, diagnostics);
         }
 
         #endregion

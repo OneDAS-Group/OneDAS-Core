@@ -1,4 +1,4 @@
-﻿<div class="channel-expander" @onclick="this.OnClick" @onmouseover="() => _showSampleRates = true" @onmouseout="() => _showSampleRates = false">
+﻿<div class="channel-expander" @onclick="this.OnClick" @onmouseover="() => _showAdditionalInfo = true" @onmouseout="() => _showAdditionalInfo = false">
     <div class="channel-name">
 
         @if (this.UserState.IsEditEnabled)
@@ -33,7 +33,7 @@
         </div>
 
         <div class="channel-sample-rates">
-            @if (_showSampleRates)
+            @if (_showAdditionalInfo)
             {
                 @foreach (var sampleRate in this.GetSampleRates())
                 {
@@ -45,15 +45,12 @@
         </div>
 
         <div class="channel-datasets ml-auto">
-            @if (_filteredDatasets.Any())
+            @foreach (var dataset in _filteredDatasets)
             {
-                @foreach (var dataset in _filteredDatasets)
-                {
-                    <div class="channel-dataset @(this.UserState.IsDatasetSeleced(dataset) ? "selected" : "")"
-                         @onclick="() => this.UserState.ToggleDatasetSelection(dataset)">
-                        @dataset.Name
-                    </div>
-                }
+                <div class="channel-dataset @(this.UserState.IsDatasetSeleced(dataset) ? "selected" : "")"
+                     @onclick="() => this.UserState.ToggleDatasetSelection(dataset)">
+                    @dataset.Name
+                </div>
             }
         </div>
     </div>

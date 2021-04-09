@@ -1,9 +1,8 @@
-﻿using HDF.PInvoke;
+﻿using HDF5.NET;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Services;
 using OneDas.DataManagement.Extensibility;
-using OneDas.DataManagement.Hdf;
 using OneDas.Extensibility;
 using OneDas.Infrastructure;
 using OneDas.Types;
@@ -51,8 +50,6 @@ namespace OneDas.DataManagement.Extensions
                 _copyToLocal = value == "true";
 
             // 
-            long fileId = -1;
-
             var folderPath = Path.Combine(this.RootPath, "DATA");
             var samplesPerDay = new SampleRateContainer(dataset.Id).SamplesPerDay;
             var length = (long)Math.Round((end - begin).TotalDays * samplesPerDay, MidpointRounding.AwayFromZero);
@@ -101,75 +98,77 @@ namespace OneDas.DataManagement.Extensions
                     try
                     {
                         this.FileAccessManager?.Register(filePath, CancellationToken.None);
-                        fileId = H5F.open(filePath, H5F.ACC_RDONLY);
 
-                        if (H5I.is_valid(fileId) > 0)
-                        {
-                            int lastIndex = -1;
+                        using var file = H5File.OpenRead(filePath);
+                        int lastIndex = -1;
 
-                            // the averages database has no "is_chunk_completed_set"
+                        // the averages database has no "is_chunk_completed_set"
 #warning use format version instead to check this?
-                            var isChunkCompletedSetPath = $"{project.GetPath()}/is_chunk_completed_set";
+                        var isChunkCompletedSetPath = $"{project.GetPath()}/is_chunk_completed_set";
 
-                            if (IOHelper.CheckLinkExists(fileId, isChunkCompletedSetPath))
-                            {
-                                var isChunkCompletedSet = IOHelper.ReadDataset<byte>(fileId, isChunkCompletedSetPath).ToList();
-                                lastIndex = isChunkCompletedSet.FindLastIndex(value => value > 0);
-                            }
-                            else
-                            {
-                                lastIndex = 1440 - 1;
-                            }
-
-                            if (lastIndex > -1)
-                            {
-                                var actualFileLength = (int)Math.Round(fileLength * (double)(lastIndex + 1) / 1440, MidpointRounding.AwayFromZero);
-                                var fileBlock = actualFileLength - fileOffset;
-                                
-                                if (fileBlock >= 0) /* data available in file */
-                                {
-                                    var currentBlock = Math.Min(remainingBufferLength, fileBlock);
-                                    var datasetPath = dataset.GetPath();
-
-                                    if (IOHelper.CheckLinkExists(fileId, datasetPath))
-                                    {
-                                        var currentDataset = IOHelper.ReadDataset<T>(fileId, datasetPath, (ulong)fileOffset, (ulong)currentBlock);
-
-                                        byte[] currentStatus = null;
-
-                                        if (IOHelper.CheckLinkExists(fileId, datasetPath + "_status"))
-                                            currentStatus = IOHelper.ReadDataset(fileId, datasetPath + "_status", (ulong)fileOffset, (ulong)currentBlock).Cast<byte>().ToArray();
-
-                                        // write data
-                                        currentDataset.CopyTo(data.AsSpan(bufferOffset));
-
-                                        if (currentStatus != null)
-                                            currentStatus.CopyTo(status.AsSpan(bufferOffset));
-
-                                        else // for averaged data
-                                            status.AsSpan(bufferOffset, currentDataset.Length).Fill(1);
-
-                                        // update loop state
-                                        fileOffset += currentBlock; // file offset
-                                        bufferOffset += currentBlock; // buffer offset
-                                        compensation -= currentBlock; // file remaining 
-                                        remainingBufferLength -= currentBlock; // buffer remaining
-                                    }
-                                    else
-                                    {
-                                        this.Logger.LogDebug($"Could not find dataset '{datasetPath}'.");
-                                    }
-                                }
-                            }
+                        if (file.LinkExists(isChunkCompletedSetPath))
+                        {
+                            var h5Dataset = file.Dataset(isChunkCompletedSetPath);
+                            var isChunkCompletedSet = h5Dataset.Read<byte>().ToList();
+                            lastIndex = isChunkCompletedSet.FindLastIndex(value => value > 0);
                         }
                         else
                         {
-                            this.Logger.LogWarning($"Could not open file '{filePath}'.");
+                            lastIndex = 1440 - 1;
                         }
+
+                        if (lastIndex > -1)
+                        {
+                            var actualFileLength = (int)Math.Round(fileLength * (double)(lastIndex + 1) / 1440, MidpointRounding.AwayFromZero);
+                            var fileBlock = actualFileLength - fileOffset;
+
+                            if (fileBlock >= 0) /* data available in file */
+                            {
+                                var currentBlock = Math.Min(remainingBufferLength, fileBlock);
+                                var datasetPath = dataset.GetPath();
+
+                                if (file.LinkExists(datasetPath))
+                                {
+                                    var h5Dataset = file.Dataset(datasetPath);
+                                    var currentDataset = h5Dataset.Read<T>(new HyperslabSelection((ulong)fileOffset, (ulong)currentBlock));
+
+                                    byte[] currentStatus = null;
+
+                                    if (file.LinkExists(datasetPath + "_status"))
+                                    {
+                                        var h5Status = file.Dataset(datasetPath + "_status");
+                                        currentStatus = h5Status.Read(new HyperslabSelection((ulong)fileOffset, (ulong)currentBlock));
+                                    }
+
+                                    // write data
+                                    currentDataset.CopyTo(data.AsSpan(bufferOffset));
+
+                                    if (currentStatus != null)
+                                        currentStatus.CopyTo(status.AsSpan(bufferOffset));
+
+                                    else // for averaged data
+                                        status.AsSpan(bufferOffset, currentDataset.Length).Fill(1);
+
+                                    // update loop state
+                                    fileOffset += currentBlock; // file offset
+                                    bufferOffset += currentBlock; // buffer offset
+                                    compensation -= currentBlock; // file remaining 
+                                    remainingBufferLength -= currentBlock; // buffer remaining
+                                }
+                                else
+                                {
+                                    this.Logger.LogDebug($"Could not find dataset '{datasetPath}'.");
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Logger.LogWarning($"Could not process file '{filePath}'. Reason: {ex.Message}");
                     }
                     finally
                     {
-                        if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                         this.FileAccessManager?.Unregister(filePath);
                     }
                 }
@@ -450,7 +449,7 @@ namespace OneDas.DataManagement.Extensions
                 try
                 {
                     this.FileAccessManager?.Register(filePath, CancellationToken.None);
-                    var projectId = GeneralHelper.GetProjectIdFromFile(filePath);
+                    var projectId = this.GetProjectIdFromFile(filePath);
                     return projectId;
                 }
                 finally
@@ -481,22 +480,16 @@ namespace OneDas.DataManagement.Extensions
             {
                 foreach (var filePath in filePaths)
                 {
-                    long fileId = 0;
-
                     try
                     {
                         this.FileAccessManager?.Register(filePath, CancellationToken.None);
-                        fileId = H5F.open(filePath, H5F.ACC_RDONLY);
+                        using var file = H5File.OpenRead(filePath);
 
-                        if (H5I.is_valid(fileId) > 0)
-                        {
-                            var newProject = GeneralHelper.GetProject(fileId, projectId);
-                            project.Merge(newProject, ChannelMergeMode.NewWins);
-                        }
+                        var newProject = this.GetProject(file, projectId);
+                        project.Merge(newProject, ChannelMergeMode.NewWins);
                     }
                     finally
                     {
-                        if (H5I.is_valid(fileId) > 0) { H5F.close(fileId); }
                         this.FileAccessManager?.Unregister(filePath);
                     }
                 }
@@ -559,6 +552,95 @@ namespace OneDas.DataManagement.Extensions
         private string ToUnderscoredId(string projectId)
         {
             return projectId.Replace('/', '_').TrimStart('_');
+        }
+
+        private string GetProjectIdFromFile(string filePath)
+        {
+            using var file = H5File.OpenRead(filePath);
+
+            var level1 = file.Children.OfType<H5Group>().First();
+            var level2 = level1.Children.OfType<H5Group>().First();
+            var level3 = level2.Children.OfType<H5Group>().First();
+
+            return $"/{level1.Name}/{level2.Name}/{level3.Name}";
+        }
+
+        private ProjectInfo GetProject(H5File file, string projectId)
+        {
+            int formatVersion;
+
+            if (file.AttributeExists("format_version")) // original data file
+            {
+                formatVersion = file
+                    .Attribute("format_version")
+                    .Read<int>()[0]; 
+            }
+            else // aggregated data
+            {
+                formatVersion = -1;
+            }
+
+            var project = new ProjectInfo(projectId);
+            var projectGroup = file.Group(projectId);
+
+            var channels = projectGroup
+                .Children
+                .OfType<H5Group>()
+                .Select(channelGroup =>
+                {
+                    var channel = new ChannelInfo(channelGroup.Name, project);
+
+                    if (formatVersion == -1) // aggregation data file
+                    {
+                        // do nothing
+                    }
+                    else
+                    {
+                        channel.Name = channelGroup.Attribute("name_set").ReadString().Last();
+                        channel.Group = channelGroup.Attribute("group_set").ReadString().Last();
+
+                        if (formatVersion != 1)
+                        {
+                            channel.Unit = channelGroup.Attribute("unit_set").ReadString().LastOrDefault();
+
+#warning sometimes the unit property is null in the HDF5 file
+                            if (string.IsNullOrWhiteSpace(channel.Unit))
+                                channel.Unit = string.Empty;
+                        }
+
+                        var datasets = channelGroup
+                            .Children
+                            .OfType<H5Dataset>()
+                            .Select(datasetDataset =>
+                            {
+                                var dataset = new DatasetInfo(datasetDataset.Name, channel);
+                                dataset.DataType = this.GetOneDasDataTypeFromHdf5Type(datasetDataset.Type);
+                                return dataset;
+                            });
+
+                        channel.Datasets.AddRange(datasets);
+                    }
+
+                    return channel;
+                });
+
+            project.Channels.AddRange(channels);
+
+            return project;
+        }
+
+        public OneDasDataType GetOneDasDataTypeFromHdf5Type(H5DataType type)
+        {
+            return (type.Class, type.Size) switch
+            {
+                (H5DataTypeClass.FixedPoint, 1) => type.FixedPoint.IsSigned ? OneDasDataType.INT8 : OneDasDataType.UINT8,
+                (H5DataTypeClass.FixedPoint, 2) => type.FixedPoint.IsSigned ? OneDasDataType.INT16 : OneDasDataType.UINT16,
+                (H5DataTypeClass.FixedPoint, 4) => type.FixedPoint.IsSigned ? OneDasDataType.INT32 : OneDasDataType.UINT32,
+                (H5DataTypeClass.FixedPoint, 8) => type.FixedPoint.IsSigned ? OneDasDataType.INT64 : OneDasDataType.UINT64,
+                (H5DataTypeClass.FloatingPoint, 4) => OneDasDataType.FLOAT32,
+                (H5DataTypeClass.FloatingPoint, 8) => OneDasDataType.FLOAT64,
+                _ => throw new Exception($"The data type class '{type.Class}' is not supported.")
+            };
         }
 
         #endregion

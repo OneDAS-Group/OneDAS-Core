@@ -64,7 +64,7 @@ namespace OneDas.DataManagement.Explorer.Tests
             var projectDescription = new OneDasProjectDescription(Guid.NewGuid(), 1, "A", "B", "C");
             var context = new DataWriterContext("HdfTestDatabase", dataFolderPath, projectDescription, new List<CustomMetadataEntry>());
             var varDesc = new List<ChannelDescription>();
-            varDesc.Add(new ChannelDescription(Guid.NewGuid(), "A", "100 Hz", "Group A", OneDasDataType.FLOAT64, new SampleRateContainer(SampleRate.SampleRate_100), "Hz", new List<TransferFunction>(), BufferType.Extended));
+            varDesc.Add(new ChannelDescription(Guid.NewGuid(), "A", "100 Hz", "Group A", OneDasDataType.FLOAT64, new SampleRateContainer(SampleRate.SampleRate_100), "Hz", BufferType.Extended));
 
             writer1.Configure(context, varDesc);
 

@@ -1,93 +1,12 @@
 ﻿using HDF.PInvoke;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace OneDas.DataManagement.Hdf
+namespace OneDas.Extension.Hdf
 {
     public static class TypeConversionHelper
     {
-        #region "Fields"
-
-        private static Dictionary<long, List<long>> _openHdfTypeSet;
-
-        #endregion
-
-        #region "Constructors"
-
-        static TypeConversionHelper()
-        {
-            _openHdfTypeSet = new Dictionary<long, List<long>>();
-        }
-
-        #endregion
-
-        public static Type GetTypeFromHdfTypeId(long typeId)
-        {
-            long typeId_reference = -1;
-            Type type = null;
-
-            type = null;
-
-            if (H5T.equal(typeId, H5T.NATIVE_UINT8) > 0)
-            {
-                type = typeof(Byte);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_INT8) > 0)
-            {
-                type = typeof(SByte);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_UINT16) > 0)
-            {
-                type = typeof(UInt16);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_INT16) > 0)
-            {
-                type = typeof(Int16);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_UINT32) > 0)
-            {
-                type = typeof(UInt32);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_INT32) > 0)
-            {
-                type = typeof(Int32);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_UINT64) > 0)
-            {
-                type = typeof(UInt64);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_INT64) > 0)
-            {
-                type = typeof(Int64);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_FLOAT) > 0)
-            {
-                type = typeof(Single);
-            }
-            else if (H5T.equal(typeId, H5T.NATIVE_DOUBLE) > 0)
-            {
-                type = typeof(Double);
-            }
-            else if (H5T.equal(typeId, typeId_reference = TypeConversionHelper.GetHdfTypeIdFromType(typeof(string))) > 0)
-            {
-                type = typeof(string);
-            }
-            else if (H5T.equal(typeId, typeId_reference = TypeConversionHelper.GetHdfTypeIdFromType(typeof(hdf_transfer_function_t))) > 0)
-            {
-                type = typeof(hdf_transfer_function_t);
-            }
-
-            if (H5I.is_valid(typeId_reference) > 0)
-                H5T.close(typeId_reference);
-
-            if (type == null)
-                throw new NotSupportedException();
-
-            return type;
-        }
-
         public static long GetHdfTypeIdFromType(Type type)
         {
             return TypeConversionHelper.GetHdfTypeIdFromType(-1, type);
