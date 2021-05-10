@@ -1,5 +1,6 @@
 ﻿using GraphQL.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;

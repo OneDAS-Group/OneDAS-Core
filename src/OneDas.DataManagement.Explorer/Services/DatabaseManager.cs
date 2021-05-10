@@ -126,13 +126,13 @@ namespace OneDas.DataManagement.Explorer.Services
             // register aggregation data reader
             var registration = new DataReaderRegistration()
             {
-                DataReaderId = "OneDas.HDF",
+                DataReaderId = "OneDas.Aggregation",
                 RootPath = !string.IsNullOrWhiteSpace(this.Config.AggregationDataReaderRootPath) 
                     ? this.Config.AggregationDataReaderRootPath
                     : _options.DataBaseFolderPath
             };
 
-            registrationToDataReaderTypeMap[registration] = typeof(HdfDataReader);
+            registrationToDataReaderTypeMap[registration] = typeof(AggregationDataReader);
 
             // instantiate data readers
             var dataReaders = registrationToDataReaderTypeMap
@@ -362,10 +362,10 @@ namespace OneDas.DataManagement.Explorer.Services
             var dataReader = (DataReaderExtensionBase)Activator.CreateInstance(type, registration, logger);
 
             // special case checks
-            if (type == typeof(HdfDataReader))
+            if (type == typeof(AggregationDataReader))
             {
                 var fileAccessManger = _serviceProvider.GetRequiredService<FileAccessManager>();
-                ((HdfDataReader)dataReader).FileAccessManager = fileAccessManger;
+                ((AggregationDataReader)dataReader).FileAccessManager = fileAccessManger;
             }
 
             // initialize projects property
@@ -414,7 +414,7 @@ namespace OneDas.DataManagement.Explorer.Services
 
 #warning Improve this.
             // add additional data readers
-            types.Add(typeof(HdfDataReader));
+            types.Add(typeof(AggregationDataReader));
             types.Add(typeof(InMemoryDataReader));
             types.Add(typeof(FilterDataReader));
 

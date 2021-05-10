@@ -1,5 +1,4 @@
-﻿using HDF.PInvoke;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Statistics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -7,7 +6,6 @@ using OneDas.Buffers;
 using OneDas.DataManagement.Database;
 using OneDas.DataManagement.Explorer.Core;
 using OneDas.DataManagement.Extensibility;
-using OneDas.Extension.Hdf;
 using OneDas.Infrastructure;
 using OneDas.Types;
 using System;
@@ -15,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -183,9 +182,6 @@ namespace OneDas.DataManagement.Explorer.Services
                                       AggregationInstruction instruction,
                                       CancellationToken cancellationToken)
         {
-            var subfolderName = date.ToString("yyyy-MM");
-            var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", subfolderName);
-
             foreach (var (registration, aggregationChannels) in instruction.DataReaderToAggregationsMap)
             {
                 using var dataReader = _databaseManager.GetDataReader(user, registration);
@@ -211,208 +207,164 @@ namespace OneDas.DataManagement.Explorer.Services
                 if (!dataReader.IsDataOfDayAvailable(projectId, date))
                     return;
 
-                // process data
-                try
+                // project
+                var container = _databaseManager.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
+
+                if (container == null)
+                    throw new Exception($"The requested project '{projectId}' could not be found.");
+
+                var targetDirectoryPath = Path.Combine(databaseFolderPath, "DATA", WebUtility.UrlEncode(container.Id), date.ToString("yyyy-MM"), date.ToString("dd"));
+
+                // for each channel
+                foreach (var aggregationChannel in aggregationChannels)
                 {
-                    var targetFileId = -1L;
-
-                    // project
-                    var container = _databaseManager.Database.ProjectContainers.FirstOrDefault(container => container.Id == projectId);
-
-                    if (container == null)
-                        throw new Exception($"The requested project '{projectId}' could not be found.");                     
-
-                    // targetFileId
-                    var projectFileName = projectId.TrimStart('/').Replace("/", "_");
-                    var dateTimeFileName = date.ToISO8601();
-                    var targetFileName = $"{projectFileName}_{dateTimeFileName}.h5";
-                    var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
-
-                    if (!Directory.Exists(targetDirectoryPath))
-                        Directory.CreateDirectory(targetDirectoryPath);
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     try
                     {
-                        _fileAccessManager.Register(targetFilePath, cancellationToken);
+                        var dataset = aggregationChannel.Channel.Datasets.First();
 
-                        var fapl = H5P.create(H5P.FILE_ACCESS);
-                        var res = H5P.set_libver_bounds(fapl, H5F.libver_t.V110, H5F.libver_t.V110);
-
-                        if (File.Exists(targetFilePath))
-                            targetFileId = H5F.open(targetFilePath, H5F.ACC_RDWR, fapl);
-
-                        if (targetFileId == -1)
-                            targetFileId = H5F.create(targetFilePath, H5F.ACC_TRUNC, access_plist: fapl);
-
-                        if (H5I.is_valid(fapl) > 0) { H5P.close(fapl); }
-
-                        // create attribute if necessary
-                        if (H5A.exists(targetFileId, "date_time") == 0)
-                        {
-                            var dateTimeString = date.ToISO8601();
-                            IOHelper.PrepareAttribute(targetFileId, "date_time", new string[] { dateTimeString }, new ulong[] { 1 }, true);
-                        }
-
-                        // for each channel
-                        foreach (var aggregationChannel in aggregationChannels)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            try
-                            {
-                                var dataset = aggregationChannel.Channel.Datasets.First();
-
-                                OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
-                                                                    BindingFlags.Instance | BindingFlags.NonPublic,
-                                                                    OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
-                                                                    new object[] { dataReader, dataset, aggregationChannel.Aggregations, date, targetFileId, setup.Force, cancellationToken });
-                            }
-                            catch (TaskCanceledException)
-                            {
-                                throw;
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex.GetFullMessage());
-                            }
-                        }
+                        OneDasUtilities.InvokeGenericMethod(this, nameof(this.OrchestrateAggregation),
+                                                            BindingFlags.Instance | BindingFlags.NonPublic,
+                                                            OneDasUtilities.GetTypeFromOneDasDataType(dataset.DataType),
+                                                            new object[] 
+                                                            {
+                                                                targetDirectoryPath,
+                                                                dataReader, 
+                                                                dataset, 
+                                                                aggregationChannel.Aggregations, 
+                                                                date, 
+                                                                setup.Force, 
+                                                                cancellationToken
+                                                            });
                     }
-                    finally
+                    catch (TaskCanceledException)
                     {
-                        if (H5I.is_valid(targetFileId) > 0) { H5F.close(targetFileId); }
-                        _fileAccessManager.Unregister(targetFilePath);
+                        throw;
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex.GetFullMessage());
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.GetFullMessage());
+                    }
                 }
             }
         }
 
-        private void OrchestrateAggregation<T>(DataReaderExtensionBase dataReader,
+        private void OrchestrateAggregation<T>(string targetDirectoryPath,
+                                               DataReaderExtensionBase dataReader,
                                                DatasetInfo dataset,
                                                List<Aggregation> aggregations,
                                                DateTime date,
-                                               long targetFileId,
                                                bool force,
                                                CancellationToken cancellationToken) where T : unmanaged
         {
             // check source sample rate
             var sampleRate = new SampleRateContainer(dataset.Id, ensureNonZeroIntegerHz: true);
 
-            // prepare period data
-            var groupPath = dataset.Parent.GetPath();
+            // prepare variables
             var units = new List<AggregationUnit>();
+            var channel = (ChannelInfo)dataset.Parent;
 
-            try
+            // prepare buffers
+            foreach (var aggregation in aggregations)
             {
-                // prepare buffers
-                foreach (var aggregation in aggregations)
-                {
-                    var periodsToSkip = new List<int>();
+                var periodsToSkip = new List<int>();
 
-                    foreach (var period in aggregation.Periods)
-                    {
+                foreach (var period in aggregation.Periods)
+                {
 #warning Ensure that period is a sensible value
 
-                        foreach (var entry in aggregation.Methods)
-                        {
-                            var method = entry.Key;
-                            var arguments = entry.Value;
+                    foreach (var entry in aggregation.Methods)
+                    {
+                        var method = entry.Key;
+                        var arguments = entry.Value;
 
-                            // translate method name
-                            var methodIdentifier = method switch
+                        // translate method name
+                        var methodIdentifier = method switch
+                        {
+                            AggregationMethod.Mean => "mean",
+                            AggregationMethod.MeanPolar => "mean_polar",
+                            AggregationMethod.Min => "min",
+                            AggregationMethod.Max => "max",
+                            AggregationMethod.Std => "std",
+                            AggregationMethod.Rms => "rms",
+                            AggregationMethod.MinBitwise => "min_bitwise",
+                            AggregationMethod.MaxBitwise => "max_bitwise",
+                            AggregationMethod.SampleAndHold => "sample_and_hold",
+                            AggregationMethod.Sum => "sum",
+                            _ => throw new Exception($"The aggregation method '{method}' is unknown.")
+                        };
+
+                        var targetFileName = $"{channel.Id}_{period}_s_{methodIdentifier}.nex";
+                        var targetFilePath = Path.Combine(targetDirectoryPath, targetFileName);
+
+                        if (force || !File.Exists(targetFileName))
+                        {
+                            var buffer = new double[86400 / period];
+
+                            var unit = new AggregationUnit()
                             {
-                                AggregationMethod.Mean => "mean",
-                                AggregationMethod.MeanPolar => "mean_polar",
-                                AggregationMethod.Min => "min",
-                                AggregationMethod.Max => "max",
-                                AggregationMethod.Std => "std",
-                                AggregationMethod.Rms => "rms",
-                                AggregationMethod.MinBitwise => "min_bitwise",
-                                AggregationMethod.MaxBitwise => "max_bitwise",
-                                AggregationMethod.SampleAndHold => "sample_and_hold",
-                                AggregationMethod.Sum => "sum",
-                                _ => throw new Exception($"The aggregation method '{method}' is unknown.")
+                                Aggregation = aggregation,
+                                Period = period,
+                                Method = method,
+                                Argument = arguments,
+                                Buffer = buffer,
+                                TargetFilePath = targetFilePath
                             };
 
-                            var targetDatasetPath = $"{groupPath}/{period} s_{methodIdentifier}";
-
-                            if (force || !IOHelper.CheckLinkExists(targetFileId, targetDatasetPath))
-                            {
-                                // buffer data
-                                var targetBufferInfo = new AggregationTargetBufferInfo(period);
-                                var bufferSize = (ulong)targetBufferInfo.Buffer.Length;
-                                var datasetId = IOHelper.OpenOrCreateDataset(targetFileId, targetDatasetPath, H5T.NATIVE_DOUBLE, bufferSize, 1).DatasetId;
-
-                                if (!(H5I.is_valid(datasetId) > 0))
-                                    throw new FormatException($"Could not open dataset '{targetDatasetPath}'.");
-
-                                targetBufferInfo.DatasetId = datasetId;
-
-                                var unit = new AggregationUnit()
-                                {
-                                    Aggregation = aggregation,
-                                    Period = period,
-                                    Method = method,
-                                    Argument = arguments,
-                                    TargetBufferInfo = targetBufferInfo
-                                };
-
-                                units.Add(unit);
-                            }
-                            else
-                            {
-                                // skip period / method combination
-                            }
+                            units.Add(unit);
+                        }
+                        else
+                        {
+                            // skip period / method combination
                         }
                     }
                 }
+            }
 
-                if (!units.Any())
-                    return;
+            if (!units.Any())
+                return;
 
-                // process data
-                var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions get data with a multiple length of 10 minutes
-                var endDate = date.AddDays(1);
-                var blockSizeLimit = _aggregationChunkSizeMb * 1000 * 1000;
+            // process data
+            var fundamentalPeriod = TimeSpan.FromMinutes(10); // required to ensure that the aggregation functions get data with a multiple length of 10 minutes
+            var endDate = date.AddDays(1);
+            var blockSizeLimit = _aggregationChunkSizeMb * 1000 * 1000;
 
-                // read raw data
-                foreach (var progressRecord in dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, cancellationToken))
+            // read raw data
+            foreach (var progressRecord in dataReader.Read(dataset, date, endDate, blockSizeLimit, fundamentalPeriod, cancellationToken))
+            {
+                var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
+
+                // aggregate data
+                var partialBuffersMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, units);
+
+                foreach (var entry in partialBuffersMap)
                 {
-                    var dataRecord = progressRecord.DatasetToRecordMap.First().Value;
+                    // copy aggregated data to target buffer
+                    var partialBuffer = entry.Value;
+                    var unit = entry.Key;
 
-                    // aggregate data
-                    var partialBuffersMap = this.ApplyAggregationFunction(dataset, (T[])dataRecord.Dataset, dataRecord.Status, units);
-
-                    foreach (var entry in partialBuffersMap)
-                    {
-                        // copy aggregated data to target buffer
-                        var partialBuffer = entry.Value;
-                        var targetBufferInfo = entry.Key.TargetBufferInfo;
-
-                        Array.Copy(partialBuffer, 0, targetBufferInfo.Buffer, targetBufferInfo.BufferPosition, partialBuffer.Length);
-                        targetBufferInfo.BufferPosition += partialBuffer.Length;
-                    }
-                }
-
-                // write data to file
-                foreach (var unit in units)
-                {
-                    var targetBufferInfo = unit.TargetBufferInfo;
-
-                    IOHelper.Write(targetBufferInfo.DatasetId, targetBufferInfo.Buffer, DataContainerType.Dataset);
-                    H5F.flush(targetBufferInfo.DatasetId, H5F.scope_t.LOCAL);
+                    Array.Copy(partialBuffer, 0, unit.Buffer, unit.BufferPosition, partialBuffer.Length);
+                    unit.BufferPosition += partialBuffer.Length;
                 }
             }
-            finally
-            {
-                foreach (var unit in units)
-                {
-                    var datasetId = unit.TargetBufferInfo.DatasetId;
 
-                    if (H5I.is_valid(datasetId) > 0) { H5D.close(datasetId); }
+            // write data to file
+            foreach (var unit in units)
+            {
+                try
+                {
+                    _fileAccessManager.Register(unit.TargetFilePath, cancellationToken);
+
+                    if (File.Exists(unit.TargetFilePath))
+                        File.Delete(unit.TargetFilePath);
+
+                    // create data file
+                    AggregationFile.Create<double>(unit.TargetFilePath, unit.Buffer);
+                }
+                finally
+                {
+                    _fileAccessManager.Unregister(unit.TargetFilePath);
                 }
             }
         }

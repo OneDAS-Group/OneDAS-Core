@@ -25,12 +25,11 @@
 
   <ItemGroup>
     <PackageReference Include="ChartJs.Blazor.Fork" Version="2.0.0" />
-    <PackageReference Include="GraphQL" Version="3.2.0" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="4.4.0" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="4.4.0" />
-    <PackageReference Include="GraphQL.Server.Ui.Playground" Version="4.4.0" />
-    <PackageReference Include="HDF5.NET" Version="1.0.0-alpha.10.final" />
-    <PackageReference Include="MathNet.Numerics" Version="4.12.0" />
+    <PackageReference Include="GraphQL" Version="4.5.0" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="5.0.2" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="5.0.2" />
+    <PackageReference Include="GraphQL.Server.Ui.Playground" Version="5.0.2" />
+    <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
     <PackageReference Include="MatBlazor" Version="2.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.0" />
@@ -44,10 +43,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
     <!-- needed for Generate.ps1 script -->
     <PackageReference Include="Microsoft.NETCore.App.Ref" Version="5.0.0" IncludeAssets="none" PrivateAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="NSwag.AspNetCore" Version="13.9.4" />
+    <PackageReference Include="NSwag.AspNetCore" Version="13.11.1" />
     <PackageReference Include="OmniSharp.Roslyn.CSharp" Version="1.37.4" />
     <PackageReference Include="Prism.Core" Version="8.0.0.1909" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
   </ItemGroup>
 
   <ItemGroup>

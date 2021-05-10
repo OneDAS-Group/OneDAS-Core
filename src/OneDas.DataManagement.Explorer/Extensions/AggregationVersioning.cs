@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace OneDas.DataManagement.Extensions
 {
-    public class HdfVersioning
+    public class AggregationVersioning
     {
         #region Constructors
 
-        public HdfVersioning()
+        public AggregationVersioning()
         {
             this.ScannedUntilMap = new Dictionary<string, DateTime>();
         }
@@ -22,9 +22,9 @@ namespace OneDas.DataManagement.Extensions
 
         #region Methods
 
-        public static HdfVersioning Load(string filePath)
+        public static AggregationVersioning Load(string filePath)
         {
-            return JsonSerializerHelper.Deserialize<HdfVersioning>(filePath);
+            return JsonSerializerHelper.Deserialize<AggregationVersioning>(filePath);
         }
 
         #endregion

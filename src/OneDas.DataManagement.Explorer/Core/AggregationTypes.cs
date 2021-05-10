@@ -82,20 +82,6 @@ namespace OneDas.DataManagement.Explorer.Core
         public List<Aggregation> Aggregations { get; init; }
     }
 
-    public record AggregationTargetBufferInfo
-    {
-        public AggregationTargetBufferInfo(int period)
-        {
-            this.Buffer = new double[86400 / period];
-        }
-
-        public double[] Buffer { get; }
-
-        public int BufferPosition { get; set; }
-
-        public long DatasetId { get; set; }
-    }
-
     public record AggregationUnit
     {
         public Aggregation Aggregation { get; init; }
@@ -106,7 +92,11 @@ namespace OneDas.DataManagement.Explorer.Core
 
         public string Argument { get; init; }
 
-        public AggregationTargetBufferInfo TargetBufferInfo { get; init; }
+        public double[] Buffer { get; init; }
+
+        public int BufferPosition { get; set; }
+
+        public string TargetFilePath { get; init; }
     }
 
     public record AggregationInstruction(ProjectContainer Container, Dictionary<DataReaderRegistration, List<AggregationChannel>> DataReaderToAggregationsMap);
