@@ -12,7 +12,7 @@
     "jquery": "3.4.1",
     "knockout": "3.5.1",
     "mathjs": "4.2.2",
-    "moment": "2.24.0",
+    "moment": "2.29.4",
     "pagerjs": "1.1.0",
     "popper.js": "1.16.0",
     "tempusdominus-bootstrap-4": "5.0.1"
